@@ -1,0 +1,11 @@
+# Directories
+vendor
+.idea
+.vscode
+build
+
+# Files
+.DS_Store
+glide.lock
+go-api
+go-api.exe
