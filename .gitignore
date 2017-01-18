@@ -7,5 +7,5 @@ build
 # Files
 .DS_Store
 glide.lock
-go-api
-go-api.exe
+go-api*
+gin-bin*
