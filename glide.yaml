@@ -2,3 +2,5 @@ package: twreporter.org/go-api
 import:
 - package: github.com/gin-gonic/gin
   version: ^1.1.4
+- package: github.com/Sirupsen/logrus
+  version: ^0.11.0

@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +16,11 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Origin, Authorization, Accept, Client-Security-Token, Accept-Encoding, x-access-token")
 		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// test logging
+		log.WithFields(log.Fields{
+			"message": "test",
+		}).Info("Test output")
 
 		if c.Request.Method == "OPTIONS" {
 			fmt.Println("OPTIONS")

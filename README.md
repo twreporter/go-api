@@ -14,7 +14,7 @@ go run main.go                          # Run without live-reloading
 Note that `GOPATH/bin` should be in your `PATH`.
 ```
 go get github.com/codegangsta/gin
-gin -a "8080" run                       # Run on port 8080
+gin                                     # Run with live-reloading
 ```
 
 

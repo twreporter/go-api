@@ -6,11 +6,8 @@ import (
 )
 
 func main() {
-	r := gin.Default()
-
-	r.Use(middlewares.CORSMiddleware())
-
 	router := gin.Default()
+	router.Use(middlewares.CORSMiddleware())
 
 	// Simple group: v1
 	v1 := router.Group("/v1")
@@ -22,5 +19,5 @@ func main() {
 		})
 	}
 
-	r.Run() // listen and server on 0.0.0.0:8080
+	router.Run() // listen and server on 0.0.0.0:8080
 }
