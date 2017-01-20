@@ -1,7 +1,11 @@
 package main
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
+	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/middlewares"
 )
 
@@ -12,12 +16,15 @@ func main() {
 	// Simple group: v1
 	v1 := router.Group("/v1")
 	{
-		v1.GET("/ping", func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"message": "pong",
-			})
-		})
+		menuitems := new(controllers.MenuItemsController)
+		v1.GET("/ping", menuitems.Retrieve)
 	}
 
-	router.Run() // listen and server on 0.0.0.0:8080
+	s := &http.Server{
+		Addr:         ":8080",
+		Handler:      router,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+	}
+	s.ListenAndServe()
 }
