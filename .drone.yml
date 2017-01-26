@@ -5,8 +5,8 @@ pipeline:
       - go build
       - go test
 
-notify:
-  image: plugins/slack
-  channel: dev
-    when:
-    event: [ push, tag, deployment, pull_request ]
+  notify:
+    image: plugins/slack
+    channel: dev
+      when:
+      event: [ push, tag, deployment, pull_request ]
