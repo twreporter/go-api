@@ -1,15 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/unrolled/secure"
+	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/routers"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 func main() {
+	cfg := configs.GetConfig()
+
 	// security: no one can put it in an iframe
 	secureMiddleware := secure.New(secure.Options{
 		FrameDeny: true,
@@ -30,6 +37,13 @@ func main() {
 			}
 		}
 	}()
+
+	// connect to MySQL database
+	db, err := gorm.Open("mysql", cfg.DB.User+":"+cfg.DB.Password+"@tcp("+cfg.DB.Address+":"+cfg.DB.Port+")/"+cfg.DB.Name)
+	defer db.Close()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	router := routers.SetupRouter()
 
