@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/controllers"
+	"twreporter.org/go-api/controllers/oauth"
 	"twreporter.org/go-api/middlewares"
 )
 
@@ -16,6 +17,10 @@ func SetupRouter() *gin.Engine {
 	{
 		menuitems := new(controllers.MenuItemsController)
 		v1.GET("/ping", menuitems.Retrieve)
+		// handle login
+		oauth := new(oauth.Facebook)
+		v1.GET("/auth/facebook", oauth.BeginAuth)
+		v1.GET("/auth/facebook/callback", oauth.Authenticate)
 	}
 
 	return router
