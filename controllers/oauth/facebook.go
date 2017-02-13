@@ -23,7 +23,7 @@ var (
 		ClientID:     cfg.OAUTH.FACEBOOK.ID,
 		ClientSecret: cfg.OAUTH.FACEBOOK.Secret,
 		RedirectURL:  cfg.OAUTH.FACEBOOK.URL,
-		Scopes:       []string{"public_profile"},
+		Scopes:       []string{"public_profile", "email"},
 		Endpoint:     facebook.Endpoint,
 	}
 	oauthStateString = cfg.OAUTH.FACEBOOK.Statestr
@@ -48,6 +48,7 @@ func (o Facebook) BeginAuth(c *gin.Context) {
 	URL.RawQuery = parameters.Encode()
 	url := URL.String()
 	http.Redirect(c.Writer, c.Request, url, http.StatusTemporaryRedirect)
+	fmt.Print(strings.Join(oauthConf.Scopes, " "))
 }
 
 // Authenticate ...
@@ -75,7 +76,7 @@ func (o Facebook) Authenticate(c *gin.Context) {
 		return
 	}
 
-	resp, err := http.Get("https://graph.facebook.com/me?access_token=" +
+	resp, err := http.Get("https://graph.facebook.com/v2.8/me?fields=id,name,email,education,devices&access_token=" +
 		url.QueryEscape(token.AccessToken))
 	if err != nil {
 		log.Warn("Get: %s\n", err)

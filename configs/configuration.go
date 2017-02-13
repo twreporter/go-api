@@ -5,7 +5,8 @@ import "github.com/jinzhu/configor"
 // Config ...
 type Config struct {
 	APP struct {
-		Path string
+		Path  string
+		Token string
 	}
 	DB struct {
 		Name     string `required:"true"`

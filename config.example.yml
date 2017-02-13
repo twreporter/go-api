@@ -1,5 +1,6 @@
 app:
   path: http://testtest.twreporter.org:8888
+  token: YOUR_AUTH_TOKEN
 
 db:
   name:     test_membership
