@@ -17,6 +17,10 @@ func SetupRouter() *gin.Engine {
 	{
 		menuitems := new(controllers.MenuItemsController)
 		v1.GET("/ping", menuitems.Retrieve)
+
+		v1.GET("/secured/ping", middlewares.CheckJWT(), func(g *gin.Context) {
+			g.JSON(200, gin.H{"text": "Hello from private"})
+		})
 		// handle login
 		oauth := new(oauth.Facebook)
 		v1.GET("/auth/facebook", oauth.BeginAuth)

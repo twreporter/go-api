@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"twreporter.org/go-api/configs"
+	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
@@ -16,9 +18,8 @@ import (
 	"golang.org/x/oauth2/facebook"
 )
 
-var cfg = configs.GetConfig()
-
 var (
+	cfg       = configs.GetConfig()
 	oauthConf = &oauth2.Config{
 		ClientID:     cfg.OAUTH.FACEBOOK.ID,
 		ClientSecret: cfg.OAUTH.FACEBOOK.Secret,
@@ -32,6 +33,13 @@ var (
 
 // Facebook ...
 type Facebook struct{}
+
+// User ...
+type User struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
 
 // BeginAuth ...
 func (o Facebook) BeginAuth(c *gin.Context) {
@@ -76,7 +84,7 @@ func (o Facebook) Authenticate(c *gin.Context) {
 		return
 	}
 
-	resp, err := http.Get("https://graph.facebook.com/v2.8/me?fields=id,name,email,education,devices&access_token=" +
+	resp, err := http.Get("https://graph.facebook.com/v2.8/me?fields=id,name,email&access_token=" +
 		url.QueryEscape(token.AccessToken))
 	if err != nil {
 		log.Warn("Get: %s\n", err)
@@ -91,6 +99,16 @@ func (o Facebook) Authenticate(c *gin.Context) {
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return
 	}
+
+	// Decode user data returned by Facebook
+	var u User
+	err = json.Unmarshal(response, &u)
+	if err != nil {
+		fmt.Printf("Decode Error: %s\n", err)
+	}
+	log.Info("User structure", u.Name, u.Email)
+
+	w.Write([]byte(utils.RetrieveToken(false, u.Name)))
 
 	log.Info("parseResponseBody: %s\n", string(response))
 }

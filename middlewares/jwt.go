@@ -16,7 +16,8 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	SigningMethod: jwt.SigningMethodHS256,
 })
 
-func checkJWT() gin.HandlerFunc {
+// CheckJWT ...
+func CheckJWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		jwtMid := *jwtMiddleware
 		if err := jwtMid.CheckJWT(c.Writer, c.Request); err != nil {
