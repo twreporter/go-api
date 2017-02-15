@@ -1,7 +1,6 @@
 package oauth
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/tidwall/gjson"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
@@ -33,13 +33,6 @@ var (
 
 // Facebook ...
 type Facebook struct{}
-
-// User ...
-type User struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
 
 // BeginAuth ...
 func (o Facebook) BeginAuth(c *gin.Context) {
@@ -64,19 +57,16 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	r := c.Request
 	w := c.Writer
 
-	log.WithFields(log.Fields{
-		"type": "Facebook",
-	}).Info("OAuth")
+	log.WithFields(log.Fields{"type": "Facebook"}).Info("OAuth")
 
+	// get Facebook OAuth Token
 	state := r.FormValue("state")
 	if state != oauthStateString {
 		log.Warn("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return
 	}
-
 	code := r.FormValue("code")
-
 	token, err := oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Warn("oauthConf.Exchange() failed with '%s'\n", err)
@@ -84,7 +74,8 @@ func (o Facebook) Authenticate(c *gin.Context) {
 		return
 	}
 
-	resp, err := http.Get("https://graph.facebook.com/v2.8/me?fields=id,name,email&access_token=" +
+	// get user data from Facebook
+	resp, err := http.Get("https://graph.facebook.com/v2.8/me?fields=id,name,email,picture,birthday,first_name,last_name,gender&access_token=" +
 		url.QueryEscape(token.AccessToken))
 	if err != nil {
 		log.Warn("Get: %s\n", err)
@@ -100,15 +91,20 @@ func (o Facebook) Authenticate(c *gin.Context) {
 		return
 	}
 
-	// Decode user data returned by Facebook
-	var u User
-	err = json.Unmarshal(response, &u)
-	if err != nil {
-		fmt.Printf("Decode Error: %s\n", err)
-	}
-	log.Info("User structure", u.Name, u.Email)
+	// decode user data returned by Facebook
+	fstring := string(response)
+	fid := gjson.Get(fstring, "id").Str
+	femail := gjson.Get(fstring, "email").Str
+	fname := gjson.Get(fstring, "name").Str
+	ffirst := gjson.Get(fstring, "first_name").Str
+	flast := gjson.Get(fstring, "last_name").Str
+	fgender := gjson.Get(fstring, "gender").Str
+	fpicture := gjson.Get(fstring, "picture.data.url").Str
+	fbirth := gjson.Get(fstring, "birthday").Str
 
-	w.Write([]byte(utils.RetrieveToken(false, u.Name)))
+	log.Info("User structure", fid, femail, fname, ffirst, flast, fgender, fpicture, fbirth)
 
-	log.Info("parseResponseBody: %s\n", string(response))
+	w.Write([]byte(utils.RetrieveToken(false, fname, femail)))
+
+	log.Info("parseResponseBody: %s\n", fstring)
 }

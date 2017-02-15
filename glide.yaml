@@ -20,3 +20,4 @@ import:
 - package: github.com/dgrijalva/jwt-go
   version: ^3.0.0
 - package: github.com/auth0/go-jwt-middleware
+- package: github.com/tidwall/gjson

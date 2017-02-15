@@ -27,3 +27,15 @@ type User struct {
 	Education        string `gorm:"size:20"` // e.g., "High School"
 	EnableEmail      int    `gorm:"size:2"`
 }
+
+// OAuthAccount ...
+type OAuthAccount struct {
+	gorm.Model
+	Email     string `gorm:"size:100"`
+	Name      string `gorm:"size:80"`
+	FirstName string `gorm:"size:50"`
+	LastName  string `gorm:"size:50"`
+	Gender    string `gorm:"size:20"`
+	Picture   string // user profile photo url
+	Birthday  time.Time
+}

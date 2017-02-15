@@ -1,12 +1,17 @@
 package configs
 
-import "github.com/jinzhu/configor"
+import (
+	"time"
+
+	"github.com/jinzhu/configor"
+)
 
 // Config ...
 type Config struct {
 	APP struct {
-		Path  string
-		Token string
+		Path       string
+		Token      string
+		Expiration time.Duration
 	}
 	DB struct {
 		Name     string `required:"true"`

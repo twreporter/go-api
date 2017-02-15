@@ -1,6 +1,7 @@
 app:
   path: http://testtest.twreporter.org:8888
   token: YOUR_AUTH_TOKEN
+  expiration: 24  # day
 
 db:
   name:     test_membership
