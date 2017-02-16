@@ -6,7 +6,6 @@ build
 
 # Files
 .DS_Store
-glide.lock
 go-api*
 gin-bin*
 config.yml

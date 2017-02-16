@@ -5,10 +5,11 @@ import (
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/controllers/oauth"
 	"twreporter.org/go-api/middlewares"
+	"twreporter.org/go-api/storage"
 )
 
 // SetupRouter ...
-func SetupRouter() *gin.Engine {
+func SetupRouter(userStorage *storage.UserStorage) *gin.Engine {
 	router := gin.Default()
 	router.Use(middlewares.CORSMiddleware())
 
@@ -22,9 +23,9 @@ func SetupRouter() *gin.Engine {
 			g.JSON(200, gin.H{"text": "Hello from private"})
 		})
 		// handle login
-		oauth := new(oauth.Facebook)
-		v1.GET("/auth/facebook", oauth.BeginAuth)
-		v1.GET("/auth/facebook/callback", oauth.Authenticate)
+		auth := oauth.Facebook{userStorage}
+		v1.GET("/auth/facebook", auth.BeginAuth)
+		v1.GET("/auth/facebook/callback", auth.Authenticate)
 	}
 
 	return router

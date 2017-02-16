@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"twreporter.org/go-api/configs"
+	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
@@ -32,7 +33,9 @@ var (
 )
 
 // Facebook ...
-type Facebook struct{}
+type Facebook struct {
+	Storage *storage.UserStorage
+}
 
 // BeginAuth ...
 func (o Facebook) BeginAuth(c *gin.Context) {
@@ -104,6 +107,8 @@ func (o Facebook) Authenticate(c *gin.Context) {
 
 	log.Info("User structure", fid, femail, fname, ffirst, flast, fgender, fpicture, fbirth)
 
+	// find the user from the database
+	o.Storage.GetUserByOAuth(fstring)
 	w.Write([]byte(utils.RetrieveToken(false, fname, femail)))
 
 	log.Info("parseResponseBody: %s\n", fstring)
