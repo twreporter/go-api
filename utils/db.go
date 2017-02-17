@@ -12,14 +12,15 @@ func InitDB() (*gorm.DB, error) {
 	cfg := configs.GetConfig()
 
 	// connect to MySQL database
-	db, err := gorm.Open("mysql", cfg.DB.User+":"+cfg.DB.Password+"@tcp("+cfg.DB.Address+":"+cfg.DB.Port+")/"+cfg.DB.Name)
-
-	db.AutoMigrate(&models.User{}, &models.OAuthAccount{})
+	db, err := gorm.Open("mysql", cfg.DB.User+":"+cfg.DB.Password+"@tcp("+cfg.DB.Address+":"+cfg.DB.Port+")/"+cfg.DB.Name+"?parseTime=true")
 
 	if err != nil {
 		log.Error("Please check the MySQL database connection.")
 		return nil, err
 	}
+
+	// automatically migrate the schema, to keep them update to date.
+	db.AutoMigrate(&models.User{}, &models.OAuthAccount{})
 
 	return db, nil
 }
