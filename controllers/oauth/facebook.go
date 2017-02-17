@@ -111,17 +111,17 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	matchOauth := o.Storage.GetOAuthData(fstring)
 	// if the user doesn't exist
 	log.Info("matchOauth: ", matchOauth, matchOauth.AId)
-	if matchOauth.AId == "" {
+	if !matchOauth.AId.Valid {
 		fmt.Println("is zero value")
 		o.Storage.InsertUserByOAuth(models.OAuthAccount{
 			Type:      "Facebook",
-			AId:       fid,
-			Email:     femail,
-			Name:      fname,
-			FirstName: ffirst,
-			LastName:  flast,
-			Gender:    fgender,
-			Picture:   fpicture,
+			AId:       utils.ToNullString(fid),
+			Email:     utils.ToNullString(femail),
+			Name:      utils.ToNullString(fname),
+			FirstName: utils.ToNullString(ffirst),
+			LastName:  utils.ToNullString(flast),
+			Gender:    utils.ToNullString(fgender),
+			Picture:   utils.ToNullString(fpicture),
 		})
 	}
 

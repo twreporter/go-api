@@ -4,6 +4,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/models"
 )
@@ -26,8 +27,7 @@ func (s UserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
 		Email:            omodel.Email,
 		FirstName:        omodel.FirstName,
 		LastName:         omodel.LastName,
-		RegistrationDate: time.Now(),
-		Birthday:         time.Now(),
+		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
 	}
 	s.db.Create(&user)
 	return user
