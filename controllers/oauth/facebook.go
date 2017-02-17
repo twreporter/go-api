@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"twreporter.org/go-api/configs"
+	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 
@@ -37,7 +38,7 @@ type Facebook struct {
 	Storage *storage.UserStorage
 }
 
-// BeginAuth ...
+// BeginAuth redirects user to the Facebook Authentication
 func (o Facebook) BeginAuth(c *gin.Context) {
 	URL, err := url.Parse(oauthConf.Endpoint.AuthURL)
 	if err != nil {
@@ -52,10 +53,9 @@ func (o Facebook) BeginAuth(c *gin.Context) {
 	URL.RawQuery = parameters.Encode()
 	url := URL.String()
 	http.Redirect(c.Writer, c.Request, url, http.StatusTemporaryRedirect)
-	fmt.Print(strings.Join(oauthConf.Scopes, " "))
 }
 
-// Authenticate ...
+// Authenticate requests the user profile from Facebook
 func (o Facebook) Authenticate(c *gin.Context) {
 	r := c.Request
 	w := c.Writer
@@ -107,8 +107,24 @@ func (o Facebook) Authenticate(c *gin.Context) {
 
 	log.Info("User structure", fid, femail, fname, ffirst, flast, fgender, fpicture, fbirth)
 
-	// find the user from the database
-	o.Storage.GetUserByOAuth(fstring)
+	// find the OAuth user from the database
+	matchOauth := o.Storage.GetOAuthData(fstring)
+	// if the user doesn't exist
+	log.Info("matchOauth: ", matchOauth, matchOauth.AId)
+	if matchOauth.AId == "" {
+		fmt.Println("is zero value")
+		o.Storage.InsertUserByOAuth(models.OAuthAccount{
+			Type:      "Facebook",
+			AId:       fid,
+			Email:     femail,
+			Name:      fname,
+			FirstName: ffirst,
+			LastName:  flast,
+			Gender:    fgender,
+			Picture:   fpicture,
+		})
+	}
+
 	w.Write([]byte(utils.RetrieveToken(false, fname, femail)))
 
 	log.Info("parseResponseBody: %s\n", fstring)

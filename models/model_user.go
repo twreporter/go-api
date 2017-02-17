@@ -9,7 +9,7 @@ import (
 // User ...
 type User struct {
 	gorm.Model                      // contains fields `ID`, `CreatedAt`, `UpdatedAt`, `DeletedAt`
-	OAuthAccounts    []OAuthAccount // a user has multiple oauth accounts //
+	OAuthAccounts    []OAuthAccount `gorm:"ForeignKey:UserID"` // a user has multiple oauth accounts //
 	Email            string         `gorm:"size:100"`
 	FirstName        string         `gorm:"size:50"`
 	LastName         string         `gorm:"size:50"`
@@ -32,6 +32,7 @@ type User struct {
 // OAuthAccount ...
 type OAuthAccount struct {
 	gorm.Model
+	UserID    uint
 	Type      string `gorm:"size:10"`  // Facebook / Google ...
 	AId       string `gorm:"not null"` // user ID returned by OAuth services
 	Email     string `gorm:"size:100"`
@@ -40,5 +41,5 @@ type OAuthAccount struct {
 	LastName  string `gorm:"size:50"`
 	Gender    string `gorm:"size:20"`
 	Picture   string // user profile photo url
-	Birthday  time.Time
+	Birthday  string
 }

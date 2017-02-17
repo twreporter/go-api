@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/models"
@@ -16,16 +18,27 @@ type UserStorage struct {
 	db *gorm.DB
 }
 
-// // InsertUserByOAuth insert a new user into db after the oath login
-// func (s UserStorage) InsertUserByOAuth(id string) (*User, error) {
-//
-// }
-
-// GetUserByOAuth gets the corresponding user by using the oauth information
-func (s UserStorage) GetUserByOAuth(aid string) models.User {
-	log.Info("Getting the matching user data")
-	user := models.User{}
-	oac := models.OAuthAccount{Type: "Facebook", AId: aid}
-	s.db.Model(&user).Related(&oac)
+// InsertUserByOAuth insert a new user into db after the oath loginin
+func (s UserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
+	log.Info("Inserting user data")
+	user := models.User{
+		OAuthAccounts:    []models.OAuthAccount{omodel},
+		Email:            omodel.Email,
+		FirstName:        omodel.FirstName,
+		LastName:         omodel.LastName,
+		RegistrationDate: time.Now(),
+		Birthday:         time.Now(),
+	}
+	s.db.Create(&user)
 	return user
+
+	// TODO: gender, birthday
+}
+
+// GetOAuthData gets the corresponding OAuth by using the OAuth information
+func (s UserStorage) GetOAuthData(aid string) models.OAuthAccount {
+	log.Info("Getting the matching OAuth data")
+	oac := models.OAuthAccount{}
+	s.db.Where(&models.OAuthAccount{Type: "Facebook"}).First(&oac)
+	return oac
 }
