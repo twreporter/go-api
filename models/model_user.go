@@ -22,7 +22,7 @@ type User struct {
 	Zip              sql.NullString `gorm:"size:20"`
 	Address          sql.NullString
 	Phone            sql.NullString `gorm:"size:20"`
-	Privilege        sql.NullInt64  `gorm:"size:2"`
+	Privilege        int            `gorm:"size:3;not null"`
 	RegistrationDate mysql.NullTime
 	Birthday         mysql.NullTime
 	Gender           sql.NullString `gorm:"size:2"`  // e.g., "M", "F" ...

@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -8,6 +10,7 @@ import (
 	"strings"
 
 	"twreporter.org/go-api/configs"
+	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -57,24 +60,56 @@ func (o Facebook) BeginAuth(c *gin.Context) {
 
 // Authenticate requests the user profile from Facebook
 func (o Facebook) Authenticate(c *gin.Context) {
-	r := c.Request
-	w := c.Writer
+	log.WithFields(log.Fields{"type": constants.Facebook}).Info("OAuth")
 
-	log.WithFields(log.Fields{"type": "Facebook"}).Info("OAuth")
+	// get user data from Facebook
+	fstring, err := getRemoteUserData(c.Request, c.Writer)
+	if err != nil {
+		return
+	}
 
+	// decode user data returned by Facebook
+	remoteOauth := models.OAuthAccount{
+		Type:      constants.Facebook,
+		AId:       utils.ToNullString(gjson.Get(fstring, "id").Str),
+		Email:     utils.ToNullString(gjson.Get(fstring, "email").Str),
+		Name:      utils.ToNullString(gjson.Get(fstring, "name").Str),
+		FirstName: utils.ToNullString(gjson.Get(fstring, "first_name").Str),
+		LastName:  utils.ToNullString(gjson.Get(fstring, "last_name").Str),
+		Gender:    getGender(gjson.Get(fstring, "gender").Str),
+		Picture:   utils.ToNullString(gjson.Get(fstring, "picture.data.url").Str),
+	}
+
+	// find the OAuth user from the database
+	matchOauth := o.Storage.GetOAuthData(fstring)
+	// if the user doesn't exist
+	log.Info("matchOauth: ", matchOauth, matchOauth.AId)
+	if !matchOauth.AId.Valid {
+		fmt.Println("is zero value", constants.Facebook)
+		o.Storage.InsertUserByOAuth(remoteOauth)
+	}
+	// TODO: get user privilege, in order to generate the token
+
+	c.Writer.Write([]byte(utils.RetrieveToken(false, remoteOauth.Name.String, remoteOauth.Email.String)))
+
+	log.Info("parseResponseBody: %s\n", fstring)
+}
+
+// getRemoteUserData fetched user data from Facebook
+func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 	// get Facebook OAuth Token
 	state := r.FormValue("state")
 	if state != oauthStateString {
 		log.Warn("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
-		return
+		return "", errors.New("invalid oauth state")
 	}
 	code := r.FormValue("code")
 	token, err := oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Warn("oauthConf.Exchange() failed with '%s'\n", err)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
-		return
+		return "", err
 	}
 
 	// get user data from Facebook
@@ -83,7 +118,7 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	if err != nil {
 		log.Warn("Get: %s\n", err)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
-		return
+		return "", err
 	}
 	defer resp.Body.Close()
 
@@ -91,41 +126,24 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	if err != nil {
 		fmt.Printf("ReadAll: %s\n", err)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
-		return
+		return "", err
 	}
 
-	// decode user data returned by Facebook
-	fstring := string(response)
-	fid := gjson.Get(fstring, "id").Str
-	femail := gjson.Get(fstring, "email").Str
-	fname := gjson.Get(fstring, "name").Str
-	ffirst := gjson.Get(fstring, "first_name").Str
-	flast := gjson.Get(fstring, "last_name").Str
-	fgender := gjson.Get(fstring, "gender").Str
-	fpicture := gjson.Get(fstring, "picture.data.url").Str
-	fbirth := gjson.Get(fstring, "birthday").Str
+	return string(response), nil
+}
 
-	log.Info("User structure", fid, femail, fname, ffirst, flast, fgender, fpicture, fbirth)
-
-	// find the OAuth user from the database
-	matchOauth := o.Storage.GetOAuthData(fstring)
-	// if the user doesn't exist
-	log.Info("matchOauth: ", matchOauth, matchOauth.AId)
-	if !matchOauth.AId.Valid {
-		fmt.Println("is zero value")
-		o.Storage.InsertUserByOAuth(models.OAuthAccount{
-			Type:      "Facebook",
-			AId:       utils.ToNullString(fid),
-			Email:     utils.ToNullString(femail),
-			Name:      utils.ToNullString(fname),
-			FirstName: utils.ToNullString(ffirst),
-			LastName:  utils.ToNullString(flast),
-			Gender:    utils.ToNullString(fgender),
-			Picture:   utils.ToNullString(fpicture),
-		})
+func getGender(s string) sql.NullString {
+	var ngender sql.NullString
+	switch s {
+	case "":
+		ngender = utils.GetNullString()
+	case "male":
+		ngender = utils.ToNullString(constants.GenderMale)
+	case "female":
+		ngender = utils.ToNullString(constants.GenderFemale)
+	default:
+		// Other gender
+		ngender = utils.ToNullString(constants.GenderOthers)
 	}
-
-	w.Write([]byte(utils.RetrieveToken(false, fname, femail)))
-
-	log.Info("parseResponseBody: %s\n", fstring)
+	return ngender
 }
