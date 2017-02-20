@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -9,7 +10,10 @@ import (
 
 // User ...
 type User struct {
-	gorm.Model
+	ID               uint `gorm:"primary_key"`
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        *time.Time
 	OAuthAccounts    []OAuthAccount  `gorm:"ForeignKey:UserID"` // a user has multiple oauth accounts //
 	ReporterAccount  ReporterAccount `gorm:"ForeignKey:UserID"`
 	Email            sql.NullString  `gorm:"size:100"`
@@ -23,12 +27,12 @@ type User struct {
 	Zip              sql.NullString  `gorm:"size:20"`
 	Address          sql.NullString
 	Phone            sql.NullString `gorm:"size:20"`
-	Privilege        sql.NullInt64  `gorm:"size:2"`
+	Privilege        int            `gorm:"type:int(5);not null"`
 	RegistrationDate mysql.NullTime
 	Birthday         mysql.NullTime
 	Gender           sql.NullString `gorm:"size:2"`  // e.g., "M", "F" ...
 	Education        sql.NullString `gorm:"size:20"` // e.g., "High School"
-	EnableEmail      sql.NullInt64  `gorm:"size:2"`
+	EnableEmail      int            `gorm:"type:int(5);size:2"`
 }
 
 // OAuthAccount ...

@@ -30,7 +30,7 @@ type Config struct {
 	}
 }
 
-// GetConfig ...
+// GetConfig gets the app configuration from config.yml
 func GetConfig() Config {
 	// load the config for the API
 	var config = Config{}

@@ -6,3 +6,8 @@ import "database/sql"
 func ToNullString(s string) sql.NullString {
 	return sql.NullString{String: s, Valid: s != ""}
 }
+
+// GetNullString returns a invalid NullString
+func GetNullString() sql.NullString {
+	return sql.NullString{String: "", Valid: false}
+}
