@@ -21,3 +21,6 @@ import:
   version: ^3.0.0
 - package: github.com/auth0/go-jwt-middleware
 - package: github.com/tidwall/gjson
+- package: golang.org/x/crypto
+  subpackages:
+  - bcrypt

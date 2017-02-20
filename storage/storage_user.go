@@ -7,6 +7,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/utils"
 )
 
 // NewUserStorage initializes the user storage
@@ -41,4 +42,46 @@ func (s UserStorage) GetOAuthData(aid string) models.OAuthAccount {
 	oac := models.OAuthAccount{}
 	s.db.Where(&models.OAuthAccount{Type: "Facebook"}).First(&oac)
 	return oac
+}
+
+// UpdateOAuthData updates the corresponding OAuth by using the OAuth information
+func (s UserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAccount {
+	log.Info("Getting the matching OAuth data", newData.AId)
+	matO := s.GetOAuthData(newData.AId)
+	matO.Email = newData.Email
+	matO.Name = newData.Name
+	matO.FirstName = newData.FirstName
+	matO.LastName = newData.LastName
+	matO.Gender = newData.Gender
+	matO.Picture = newData.Picture
+	s.db.Save(&matO)
+	return matO
+}
+
+// InsertUserByReporterAccount insert a new user into db after the sign up
+func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) models.User {
+	log.WithFields(log.Fields{
+		"account":       raModel.Email,
+		"password":      raModel.Password,
+		"Active":        raModel.Active,
+		"ActivateToken": raModel.ActivateToken,
+	}).Info("Inserting user data")
+	user := models.User{
+		ReporterAccount:  raModel,
+		Email:            utils.ToNullString(raModel.Email),
+		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
+	}
+	log.WithFields(log.Fields{
+		"userinfo": user,
+	}).Info("Inserted user data")
+	s.db.Create(&user)
+	return user
+}
+
+// GetReporterAccountData get the corresponding Reporter account by comparing email and password
+func (s UserStorage) GetReporterAccountData(email, password string) models.ReporterAccount {
+	log.Info("Getting the matching Reporter account data")
+	rc := models.ReporterAccount{}
+	s.db.Where(&models.ReporterAccount{Email: email, Password: password}).Find(&rc)
+	return rc
 }

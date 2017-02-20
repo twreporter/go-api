@@ -11,7 +11,7 @@ import (
 // SetupRouter ...
 func SetupRouter(userStorage *storage.UserStorage) *gin.Engine {
 	router := gin.Default()
-	router.Use(middlewares.CORSMiddleware())
+	// router.Use(middlewares.CORSMiddleware())
 
 	// Simple group: v1
 	v1 := router.Group("/v1")
@@ -26,6 +26,10 @@ func SetupRouter(userStorage *storage.UserStorage) *gin.Engine {
 		auth := oauth.Facebook{userStorage}
 		v1.GET("/auth/facebook", auth.BeginAuth)
 		v1.GET("/auth/facebook/callback", auth.Authenticate)
+
+		account := controllers.AccountController{userStorage}
+		v1.POST("/login", account.Authenticate)
+		v1.POST("/signup", account.Signup)
 	}
 
 	return router

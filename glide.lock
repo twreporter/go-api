@@ -1,5 +1,5 @@
-hash: bc9f782b3f93c48120baba3a9e45d0d0cd2af6a719323c73b146f23696b217bc
-updated: 2017-02-15T19:21:57.6038379+08:00
+hash: df094c8e6a2409a87c87f540ec915fb094c829e87118f1783324aa070ff0d95e
+updated: 2017-02-20T15:58:44.814391559+08:00
 imports:
 - name: github.com/auth0/go-jwt-middleware
   version: f3f7de3b9e394e3af3b88e1b9457f6f71d1ae0ac
@@ -44,6 +44,11 @@ imports:
   version: 173748da739a410c5b0b813b956f89ff94730b4c
 - name: github.com/unrolled/secure
   version: 019273209f1c9e05be9592606ae174592febebf5
+- name: golang.org/x/crypto
+  version: 453249f01cfeb54c3d549ddb75ff152ca243f9d8
+  subpackages:
+  - bcrypt
+  - blowfish
 - name: golang.org/x/net
   version: f315505cf3349909cdf013ea56690da34e96a451
   subpackages:
