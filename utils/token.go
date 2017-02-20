@@ -5,6 +5,7 @@ import (
 
 	"twreporter.org/go-api/configs"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -14,7 +15,14 @@ var (
 )
 
 // RetrieveToken ...
-func RetrieveToken(admin bool, name string, email string) string {
+func RetrieveToken(privilege int, firstName string, lastName string, email string) string {
+	log.WithFields(log.Fields{
+		"privilege": privilege,
+		"firstName": firstName,
+		"lastName":  lastName,
+		"email":     email,
+	}).Info("RetrieveToken")
+
 	// create the token
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -22,8 +30,9 @@ func RetrieveToken(admin bool, name string, email string) string {
 	claims := token.Claims.(jwt.MapClaims)
 
 	// set token claims
-	claims["admin"] = admin
-	claims["name"] = name
+	claims["privilege"] = privilege
+	claims["firstName"] = firstName
+	claims["lastName"] = lastName
 	claims["email"] = email
 	claims["exp"] = time.Now().Add(time.Hour * cfg.APP.Expiration).Unix()
 

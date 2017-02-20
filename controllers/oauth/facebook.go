@@ -81,16 +81,19 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	}
 
 	// find the OAuth user from the database
-	matchOauth := o.Storage.GetOAuthData(fstring)
-	// if the user doesn't exist
-	log.Info("matchOauth: ", matchOauth, matchOauth.AId)
-	if !matchOauth.AId.Valid {
+	matchUser := o.Storage.GetUserDataByOAuth(remoteOauth)
+	// if the user doesn't exist, register the user automatically
+	log.Info("matchUser: ", matchUser)
+	if matchUser.ID == 0 {
 		fmt.Println("is zero value", constants.Facebook)
 		o.Storage.InsertUserByOAuth(remoteOauth)
+	} else {
+		// update existing OAuth data
+		o.Storage.UpdateOAuthData(remoteOauth)
 	}
-	// TODO: get user privilege, in order to generate the token
 
-	c.Writer.Write([]byte(utils.RetrieveToken(false, remoteOauth.Name.String, remoteOauth.Email.String)))
+	c.Writer.Write([]byte(utils.RetrieveToken(matchUser.Privilege,
+		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)))
 
 	log.Info("parseResponseBody: %s\n", fstring)
 }

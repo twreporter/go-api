@@ -18,9 +18,9 @@ const (
 	/* Privilege Types */
 
 	// PrivilegeRegistered ...
-	PrivilegeRegistered = 1
+	PrivilegeRegistered = 5
 	// PrivilegeMember ...
-	PrivilegeMember = 5
+	PrivilegeMember = 10
 	// PrivilegeAdmin ...
-	PrivilegeAdmin = 10
+	PrivilegeAdmin = 50
 )
