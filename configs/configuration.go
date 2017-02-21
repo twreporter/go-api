@@ -1,9 +1,8 @@
 package configs
 
 import (
-	"time"
-
 	"github.com/jinzhu/configor"
+	"time"
 )
 
 // Config ...
@@ -27,6 +26,10 @@ type Config struct {
 			URL      string
 			Statestr string
 		}
+	}
+
+	ENCRYPT struct {
+		SALT string
 	}
 }
 

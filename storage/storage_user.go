@@ -9,6 +9,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/utils"
 )
 
 // NewUserStorage initializes the user storage
@@ -66,4 +67,32 @@ func (s UserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAc
 	matO.Picture = newData.Picture
 	s.db.Save(&matO)
 	return matO
+}
+
+// InsertUserByReporterAccount insert a new user into db after the sign up
+func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
+	log.WithFields(log.Fields{
+		"account":       raModel.Email,
+		"password":      raModel.Password,
+		"Active":        raModel.Active,
+		"ActivateToken": raModel.ActivateToken,
+	}).Info("Inserting user data")
+	user := models.User{
+		ReporterAccount:  raModel,
+		Email:            utils.ToNullString(raModel.Email),
+		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
+	}
+	err := s.db.Create(&user).Error
+	return user, err
+}
+
+// GetReporterAccountData get the corresponding Reporter account by comparing email and password
+func (s UserStorage) GetReporterAccountData(email string) (models.ReporterAccount, error) {
+	log.WithFields(log.Fields{
+		"email": email,
+	}).Info("Getting the matching Reporter account data")
+
+	rc := models.ReporterAccount{}
+	err := s.db.Where(&models.ReporterAccount{Email: email}).Find(&rc).Error
+	return rc, err
 }
