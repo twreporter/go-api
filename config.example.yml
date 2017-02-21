@@ -16,3 +16,6 @@ oauth:
     secret: YOUR_CLIENT_SECRET
     url: http://testtest.twreporter.org:8080/v1/auth/facebook/callback
     statestr: thisshouldberandom
+
+encrypt:
+  salt: '@#$%'

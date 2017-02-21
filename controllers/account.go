@@ -7,10 +7,18 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/scrypt"
+	"net/mail"
+	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
+	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
+)
+
+var (
+	cfg  = configs.GetConfig()
+	salt = []byte(cfg.ENCRYPT.SALT)
 )
 
 // LoginForm is to be binded from form values
@@ -30,11 +38,11 @@ type AccountController struct {
 	Storage *storage.UserStorage
 }
 
-// GenerateRandomBytes returns securely generated random bytes.
+// generateRandomBytes returns securely generated random bytes.
 // It will return an error if the system's secure random
 // number generator fails to function correctly, in which
 // case the caller should not continue.
-func GenerateRandomBytes(n int) ([]byte, error) {
+func generateRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
 	// Note that err == nil only if we read len(b) bytes.
@@ -45,30 +53,22 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 	return b, nil
 }
 
-// GenerateRandomString returns a URL-safe, base64 encoded
+// generateRandomString returns a URL-safe, base64 encoded
 // securely generated random string.
-func GenerateRandomString(s int) (string, error) {
-	b, err := GenerateRandomBytes(s)
+func generateRandomString(s int) (string, error) {
+	b, err := generateRandomBytes(s)
 	return base64.URLEncoding.EncodeToString(b), err
 }
 
-// GenerateEncryptedPassword returns encryptedly
+// generateEncryptedPassword returns encryptedly
 // securely generated string.
-func GenerateEncryptedPassword(password []byte) (string, error) {
-	salt := []byte("@#$%")
+func generateEncryptedPassword(password []byte) (string, error) {
 	key, err := scrypt.Key(password, salt, 16384, 8, 1, 32)
 	return fmt.Sprintf("%x", key), err
 }
 
-// LogError print log message and log error as error log level
-func LogError(err error, message string) {
-	log.WithFields(log.Fields{
-		"error": err,
-	}).Error(message)
-}
-
-// GetEmailAndPasswordFromPOSTBody get email and password value from the POST body
-func GetEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
+// getEmailAndPasswordFromPOSTBody get email and password value from the POST body
+func getEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
 	var email string
 	var form LoginForm
 	var json LoginJSON
@@ -99,17 +99,17 @@ func GetEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
 // Authenticate Reporter account
 func (ac AccountController) Authenticate(c *gin.Context) {
 
-	email, password, err := GetEmailAndPasswordFromPOSTBody(c)
+	email, password, err := getEmailAndPasswordFromPOSTBody(c)
 
 	if err != nil {
 		c.JSON(400, gin.H{"status": err})
 		return
 	}
 
-	encryptedPassword, err := GenerateEncryptedPassword(password)
+	encryptedPassword, err := generateEncryptedPassword(password)
 
 	if err != nil {
-		LogError(err, "Encrypting password occurs error")
+		utils.LogError(err, "Encrypting password occurs error")
 		c.JSON(500, gin.H{"status": "internal server error"})
 	} else {
 
@@ -131,16 +131,24 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 // Signup Reporter account
 func (ac AccountController) Signup(c *gin.Context) {
 
-	email, password, err := GetEmailAndPasswordFromPOSTBody(c)
+	email, password, err := getEmailAndPasswordFromPOSTBody(c)
 
 	if err != nil {
-		c.JSON(400, gin.H{"status": err})
+		c.JSON(400, gin.H{"status": err.Error()})
 		return
 	}
 
-	encryptedPassword, err := GenerateEncryptedPassword(password)
+	// Check if mail address is not malform
+	_, err = mail.ParseAddress(email)
+
 	if err != nil {
-		LogError(err, "Encrypting password occurs error")
+		c.JSON(400, gin.H{"status": err.Error()})
+		return
+	}
+
+	encryptedPassword, err := generateEncryptedPassword(password)
+	if err != nil {
+		utils.LogError(err, "Encrypting password occurs error")
 		c.JSON(500, gin.H{"status": "Internal server error"})
 		return
 	}
@@ -158,10 +166,10 @@ func (ac AccountController) Signup(c *gin.Context) {
 	}
 
 	// generate active token
-	activeToken, err := GenerateRandomString(8)
+	activeToken, err := generateRandomString(8)
 
 	if err != nil {
-		LogError(err, "Generating active token occurs error")
+		utils.LogError(err, "Generating active token occurs error")
 		c.JSON(500, gin.H{"status": "Internal server error"})
 		return
 	}
@@ -175,7 +183,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 	})
 
 	if err != nil {
-		LogError(err, "Inserting record into users table occurs error")
+		utils.LogError(err, "Inserting record into users table occurs error")
 		c.JSON(500, gin.H{"status": "Internal server error"})
 		return
 	}

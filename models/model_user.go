@@ -53,6 +53,9 @@ type OAuthAccount struct {
 // ReporterAccount ...
 type ReporterAccount struct {
 	UserID        uint
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     *time.Time
 	ID            uint   `gorm:"primary_key"`
 	Email         string `gorm:"size:100;unique_index;not null"`
 	Password      string `gorm:"not null"`
