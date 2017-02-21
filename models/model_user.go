@@ -56,6 +56,6 @@ type ReporterAccount struct {
 	ID            uint   `gorm:"primary_key"`
 	Email         string `gorm:"size:100;unique_index;not null"`
 	Password      string `gorm:"not null"`
-	Active        bool   `gorm:"default:false`
+	Active        bool   `gorm:"default:0"`
 	ActivateToken string `gorm:"size:50"`
 }

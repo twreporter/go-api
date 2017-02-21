@@ -23,4 +23,4 @@ import:
 - package: github.com/tidwall/gjson
 - package: golang.org/x/crypto
   subpackages:
-  - bcrypt
+  - scrypt

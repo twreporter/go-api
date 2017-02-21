@@ -11,7 +11,7 @@ import (
 // SetupRouter ...
 func SetupRouter(userStorage *storage.UserStorage) *gin.Engine {
 	router := gin.Default()
-	// router.Use(middlewares.CORSMiddleware())
+	router.Use(middlewares.CORSMiddleware())
 
 	// Simple group: v1
 	v1 := router.Group("/v1")

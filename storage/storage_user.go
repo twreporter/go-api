@@ -70,7 +70,7 @@ func (s UserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAc
 }
 
 // InsertUserByReporterAccount insert a new user into db after the sign up
-func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) models.User {
+func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
 	log.WithFields(log.Fields{
 		"account":       raModel.Email,
 		"password":      raModel.Password,
@@ -82,17 +82,17 @@ func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount)
 		Email:            utils.ToNullString(raModel.Email),
 		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
 	}
-	log.WithFields(log.Fields{
-		"userinfo": user,
-	}).Info("Inserted user data")
-	s.db.Create(&user)
-	return user
+	err := s.db.Create(&user).Error
+	return user, err
 }
 
 // GetReporterAccountData get the corresponding Reporter account by comparing email and password
-func (s UserStorage) GetReporterAccountData(email, password string) models.ReporterAccount {
-	log.Info("Getting the matching Reporter account data")
+func (s UserStorage) GetReporterAccountData(email string) (models.ReporterAccount, error) {
+	log.WithFields(log.Fields{
+		"email": email,
+	}).Info("Getting the matching Reporter account data")
+
 	rc := models.ReporterAccount{}
-	s.db.Where(&models.ReporterAccount{Email: email, Password: password}).Find(&rc)
-	return rc
+	err := s.db.Where(&models.ReporterAccount{Email: email}).Find(&rc).Error
+	return rc, err
 }

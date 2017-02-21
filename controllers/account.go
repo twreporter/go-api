@@ -1,22 +1,26 @@
 package controllers
 
 import (
-	"golang.org/x/crypto/bcrypt"
-	"twreporter.org/go-api/configs"
+	"crypto/rand"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/scrypt"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/gin-gonic/gin"
 )
 
-var (
-	cfg       = configs.GetConfig()
-	loginPath = cfg.APP.Path + "/login"
-)
-
-// LoginForm ...
+// LoginForm is to be binded from form values
 type LoginForm struct {
+	Email    string `form:"email" binding:"required"`
+	Password string `form:"password" binding:"required"`
+}
+
+// LoginJSON is to be binded from json values
+type LoginJSON struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
@@ -26,96 +30,155 @@ type AccountController struct {
 	Storage *storage.UserStorage
 }
 
+// GenerateRandomBytes returns securely generated random bytes.
+// It will return an error if the system's secure random
+// number generator fails to function correctly, in which
+// case the caller should not continue.
+func GenerateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+// GenerateRandomString returns a URL-safe, base64 encoded
+// securely generated random string.
+func GenerateRandomString(s int) (string, error) {
+	b, err := GenerateRandomBytes(s)
+	return base64.URLEncoding.EncodeToString(b), err
+}
+
+// GenerateEncryptedPassword returns encryptedly
+// securely generated string.
+func GenerateEncryptedPassword(password []byte) (string, error) {
+	salt := []byte("@#$%")
+	key, err := scrypt.Key(password, salt, 16384, 8, 1, 32)
+	return fmt.Sprintf("%x", key), err
+}
+
+// LogError print log message and log error as error log level
+func LogError(err error, message string) {
+	log.WithFields(log.Fields{
+		"error": err,
+	}).Error(message)
+}
+
+// GetEmailAndPasswordFromPOSTBody get email and password value from the POST body
+func GetEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
+	var email string
+	var form LoginForm
+	var json LoginJSON
+	var password []byte
+
+	// Request Header
+	// Content-Type: x-www-form-urlencoded
+	formErr := c.Bind(&form)
+
+	// Content-Type: application-json
+	jsonErr := c.Bind(&json)
+
+	if formErr == nil || jsonErr == nil {
+		if formErr == nil {
+			email = form.Email
+			password = []byte(form.Password)
+		} else {
+			email = json.Email
+			password = []byte(json.Password)
+		}
+
+		return email, password, nil
+	}
+
+	return "", nil, errors.New("Bad syntax in POST body")
+}
+
 // Authenticate Reporter account
 func (ac AccountController) Authenticate(c *gin.Context) {
-	// you can bind multipart form with explicit binding declaration:
-	// c.BindWith(&form, binding.Form)
-	// or you can simply use autobinding with Bind method:
-	var form LoginForm
-	// in this case proper binding will be automatically selected
 
-	if c.Bind(&form) == nil {
-		email := form.Email
-		password := []byte(form.Password)
+	email, password, err := GetEmailAndPasswordFromPOSTBody(c)
 
-		// Hashing the password with the default cost of 10
-		hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(400, gin.H{"status": err})
+		return
+	}
 
-		_password := string(hashedPassword)
+	encryptedPassword, err := GenerateEncryptedPassword(password)
+
+	if err != nil {
+		LogError(err, "Encrypting password occurs error")
+		c.JSON(500, gin.H{"status": "internal server error"})
+	} else {
+
+		_account, err := ac.Storage.GetReporterAccountData(email)
 
 		if err != nil {
-			c.JSON(500, gin.H{"status": "internal server error"})
-		} else {
-			log.WithFields(log.Fields{
-				"account":  email,
-				"password": _password,
-			}).Info("User account and encrypted password")
+			c.JSON(401, gin.H{"status": "Account is not existed"})
+			return
+		}
 
-			_account := ac.Storage.GetReporterAccountData(email, _password)
-			if _account.Email != "" {
-				c.JSON(401, gin.H{"status": "unauthorized"})
-			} else {
-				c.JSON(200, gin.H{"status": "you are logged in"})
-			}
+		if encryptedPassword == _account.Password {
+			c.JSON(200, gin.H{"status": "You are logged in"})
+		} else {
+			c.JSON(401, gin.H{"status": "Invalid password"})
 		}
 	}
 }
 
 // Signup Reporter account
 func (ac AccountController) Signup(c *gin.Context) {
-	// you can bind multipart form with explicit binding declaration:
-	// c.BindWith(&form, binding.Form)
-	// or you can simply use autobinding with Bind method:
-	var form LoginForm
-	// in this case proper binding will be automatically selected
 
-	log.Info("signup...")
+	email, password, err := GetEmailAndPasswordFromPOSTBody(c)
 
-	if c.Bind(&form) == nil {
-		log.WithFields(log.Fields{
-			"account":  form.Email,
-			"password": form.Password,
-		}).Info("User account and password")
-
-		email := form.Email
-		password := []byte(form.Password)
-
-		// Hashing the password with the default cost of 10
-		hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
-
-		_password := string(hashedPassword)
-
-		if err != nil {
-			c.JSON(500, gin.H{"status": "internal server error"})
-		} else {
-			log.WithFields(log.Fields{
-				"account":  email,
-				"password": _password,
-			}).Info("User account and encrypted password")
-
-			_account := ac.Storage.GetReporterAccountData(email, _password)
-
-			if _account.Email == "" {
-				user := ac.Storage.InsertUserByReporterAccount(models.ReporterAccount{
-					Email:         email,
-					Password:      _password,
-					Active:        false,
-					ActivateToken: "test activate token",
-				})
-
-				log.WithFields(log.Fields{
-					"Email": user.Email,
-					"ID":    user.ID,
-				}).Info("Inserted User")
-
-				if user.ID != 0 && user.Email.Valid {
-					c.JSON(201, gin.H{"status": "Sign up successfully", "email": user.Email})
-				} else {
-					c.JSON(500, gin.H{"status": "internal server error"})
-				}
-			} else {
-				c.JSON(409, gin.H{"status": "Email already signed up"})
-			}
-		}
+	if err != nil {
+		c.JSON(400, gin.H{"status": err})
+		return
 	}
+
+	encryptedPassword, err := GenerateEncryptedPassword(password)
+	if err != nil {
+		LogError(err, "Encrypting password occurs error")
+		c.JSON(500, gin.H{"status": "Internal server error"})
+		return
+	}
+
+	log.WithFields(log.Fields{
+		"account":  email,
+		"password": encryptedPassword,
+	}).Info("User account and password")
+
+	_, err = ac.Storage.GetReporterAccountData(email)
+
+	if err == nil {
+		c.JSON(409, gin.H{"status": "Email already signed up"})
+		return
+	}
+
+	// generate active token
+	activeToken, err := GenerateRandomString(8)
+
+	if err != nil {
+		LogError(err, "Generating active token occurs error")
+		c.JSON(500, gin.H{"status": "Internal server error"})
+		return
+	}
+
+	// create records both in reporter_accounts and users table
+	_, err = ac.Storage.InsertUserByReporterAccount(models.ReporterAccount{
+		Email:         email,
+		Password:      encryptedPassword,
+		Active:        false,
+		ActivateToken: activeToken,
+	})
+
+	if err != nil {
+		LogError(err, "Inserting record into users table occurs error")
+		c.JSON(500, gin.H{"status": "Internal server error"})
+		return
+	}
+
+	c.JSON(201, gin.H{"status": "Sign up successfully", "email": email})
 }
