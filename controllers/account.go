@@ -96,7 +96,7 @@ func getEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
 	return "", nil, errors.New("Bad syntax in POST body")
 }
 
-// Authenticate Reporter account
+// Authenticate authenticate a reporter account
 func (ac AccountController) Authenticate(c *gin.Context) {
 
 	email, password, err := getEmailAndPasswordFromPOSTBody(c)
@@ -120,6 +120,11 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 			return
 		}
 
+		if !_account.Active {
+			c.JSON(401, gin.H{"status": "Account is not activated yet"})
+			return
+		}
+
 		if encryptedPassword == _account.Password {
 			c.JSON(200, gin.H{"status": "You are logged in"})
 		} else {
@@ -128,7 +133,7 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 	}
 }
 
-// Signup Reporter account
+// Signup create/update a reporter account
 func (ac AccountController) Signup(c *gin.Context) {
 
 	email, password, err := getEmailAndPasswordFromPOSTBody(c)
@@ -158,10 +163,24 @@ func (ac AccountController) Signup(c *gin.Context) {
 		"password": encryptedPassword,
 	}).Info("User account and password")
 
-	_, err = ac.Storage.GetReporterAccountData(email)
+	ra, err := ac.Storage.GetReporterAccountData(email)
 
 	if err == nil {
-		c.JSON(409, gin.H{"status": "Email already signed up"})
+		// account is signuped and activated
+		if ra.Active {
+			c.JSON(409, gin.H{"status": "Email already signed up"})
+			return
+		}
+
+		// account is not activated,
+		// we think the signup request as a request for changing password
+		_, err = ac.Storage.UpdateReporterAccountPassword(ra, encryptedPassword, "")
+		if err != nil {
+			utils.LogError(err, "Updating account password occurs error")
+			c.JSON(500, gin.H{"status": "Internal server error"})
+		} else {
+			c.JSON(200, gin.H{"status": "Password reset"})
+		}
 		return
 	}
 
@@ -189,4 +208,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 	}
 
 	c.JSON(201, gin.H{"status": "Sign up successfully", "email": email})
+}
+
+func (ac AccountController) Activate(c *gin.Context) {
 }

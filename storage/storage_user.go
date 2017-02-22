@@ -87,12 +87,26 @@ func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount)
 }
 
 // GetReporterAccountData get the corresponding Reporter account by comparing email and password
-func (s UserStorage) GetReporterAccountData(email string) (models.ReporterAccount, error) {
+func (s UserStorage) GetReporterAccountData(email string) (*models.ReporterAccount, error) {
 	log.WithFields(log.Fields{
 		"email": email,
 	}).Info("Getting the matching Reporter account data")
 
-	rc := models.ReporterAccount{}
-	err := s.db.Where(&models.ReporterAccount{Email: email}).Find(&rc).Error
-	return rc, err
+	ra := models.ReporterAccount{}
+	err := s.db.Where(&models.ReporterAccount{Email: email}).Find(&ra).Error
+	return &ra, err
+}
+
+// UpdateReporterAccountPassword update password for a reporter account
+func (s UserStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password, email string) (*models.ReporterAccount, error) {
+	var err error
+	if ra == nil {
+		ra, err = s.GetReporterAccountData(email)
+		if err != nil {
+			return nil, err
+		}
+	}
+	ra.Password = password
+	err = s.db.Save(ra).Error
+	return ra, err
 }
