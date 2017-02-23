@@ -168,13 +168,13 @@ func (ac AccountController) Signup(c *gin.Context) {
 	if err == nil {
 		// account is signuped and activated
 		if ra.Active {
-			c.JSON(409, gin.H{"status": "Email already signed up"})
+			c.JSON(409, gin.H{"status": "Account already signed up"})
 			return
 		}
 
 		// account is not activated,
 		// we think the signup request as a request for changing password
-		_, err = ac.Storage.UpdateReporterAccountPassword(ra, encryptedPassword, "")
+		_, err = ac.Storage.UpdateReporterAccountPassword(ra, encryptedPassword)
 		if err != nil {
 			utils.LogError(err, "Updating account password occurs error")
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
@@ -195,7 +195,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 
 	// create records both in reporter_accounts and users table
 	_, err = ac.Storage.InsertUserByReporterAccount(models.ReporterAccount{
-		Email:         email,
+		Account:       email,
 		Password:      encryptedPassword,
 		Active:        false,
 		ActivateToken: activeToken,
@@ -229,7 +229,7 @@ func (ac AccountController) Activate(c *gin.Context) {
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		}
 
-		c.JSON(200, gin.H{"status": "Email is activated", "email": email})
+		c.JSON(200, gin.H{"status": "Account is activated", "Account": email})
 		return
 	}
 

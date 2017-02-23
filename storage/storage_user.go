@@ -72,14 +72,14 @@ func (s UserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAc
 // InsertUserByReporterAccount insert a new user into db after the sign up
 func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
 	log.WithFields(log.Fields{
-		"account":       raModel.Email,
+		"account":       raModel.Account,
 		"password":      raModel.Password,
 		"Active":        raModel.Active,
 		"ActivateToken": raModel.ActivateToken,
 	}).Info("Inserting user data")
 	user := models.User{
 		ReporterAccount:  raModel,
-		Email:            utils.ToNullString(raModel.Email),
+		Email:            utils.ToNullString(raModel.Account),
 		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
 	}
 	err := s.db.Create(&user).Error
@@ -93,21 +93,14 @@ func (s UserStorage) GetReporterAccountData(email string) (*models.ReporterAccou
 	}).Info("Getting the matching Reporter account data")
 
 	ra := models.ReporterAccount{}
-	err := s.db.Where(&models.ReporterAccount{Email: email}).Find(&ra).Error
+	err := s.db.Where(&models.ReporterAccount{Account: email}).Find(&ra).Error
 	return &ra, err
 }
 
 // UpdateReporterAccountPassword update password for a reporter account
-func (s UserStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password, email string) (*models.ReporterAccount, error) {
-	var err error
-	if ra == nil {
-		ra, err = s.GetReporterAccountData(email)
-		if err != nil {
-			return nil, err
-		}
-	}
+func (s UserStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password string) (*models.ReporterAccount, error) {
 	ra.Password = password
-	err = s.db.Save(ra).Error
+	err := s.db.Save(ra).Error
 	return ra, err
 }
 
