@@ -22,14 +22,17 @@ func SetupRouter(userStorage *storage.UserStorage) *gin.Engine {
 		v1.GET("/secured/ping", middlewares.CheckJWT(), func(g *gin.Context) {
 			g.JSON(200, gin.H{"text": "Hello from private"})
 		})
-		// handle login
+
+		// handle oauth login
 		auth := oauth.Facebook{userStorage}
 		v1.GET("/auth/facebook", auth.BeginAuth)
 		v1.GET("/auth/facebook/callback", auth.Authenticate)
 
+		// handle login
 		account := controllers.AccountController{userStorage}
 		v1.POST("/login", account.Authenticate)
 		v1.POST("/signup", account.Signup)
+		v1.GET("/activate", account.Activate)
 	}
 
 	return router

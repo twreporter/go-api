@@ -110,3 +110,10 @@ func (s UserStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, p
 	err = s.db.Save(ra).Error
 	return ra, err
 }
+
+// UpdateReporterAccountActive update password for a reporter account
+func (s UserStorage) UpdateReporterAccountActive(ra *models.ReporterAccount, active bool) (*models.ReporterAccount, error) {
+	ra.Active = active
+	err := s.db.Save(ra).Error
+	return ra, err
+}

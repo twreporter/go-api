@@ -110,7 +110,7 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 
 	if err != nil {
 		utils.LogError(err, "Encrypting password occurs error")
-		c.JSON(500, gin.H{"status": "internal server error"})
+		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 	} else {
 
 		_account, err := ac.Storage.GetReporterAccountData(email)
@@ -177,7 +177,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 		_, err = ac.Storage.UpdateReporterAccountPassword(ra, encryptedPassword, "")
 		if err != nil {
 			utils.LogError(err, "Updating account password occurs error")
-			c.JSON(500, gin.H{"status": "Internal server error"})
+			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		} else {
 			c.JSON(200, gin.H{"status": "Password reset"})
 		}
@@ -189,7 +189,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 
 	if err != nil {
 		utils.LogError(err, "Generating active token occurs error")
-		c.JSON(500, gin.H{"status": "Internal server error"})
+		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		return
 	}
 
@@ -210,5 +210,28 @@ func (ac AccountController) Signup(c *gin.Context) {
 	c.JSON(201, gin.H{"status": "Sign up successfully", "email": email})
 }
 
+// Activate make existed reporter account active
 func (ac AccountController) Activate(c *gin.Context) {
+	email := c.Query("email")
+	token := c.Query("token")
+
+	ra, err := ac.Storage.GetReporterAccountData(email)
+
+	if err != nil {
+		c.JSON(401, gin.H{"status": "Account not found"})
+	}
+
+	if ra.ActivateToken == token {
+		_, err = ac.Storage.UpdateReporterAccountActive(ra, true)
+
+		if err != nil {
+			utils.LogError(err, "Updating reporter account active occurs error")
+			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
+		}
+
+		c.JSON(200, gin.H{"status": "Email is activated", "email": email})
+		return
+	}
+
+	c.JSON(401, gin.H{"status": "Invalid token"})
 }
