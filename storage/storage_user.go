@@ -97,6 +97,14 @@ func (s UserStorage) GetReporterAccountData(email string) (*models.ReporterAccou
 	return &ra, err
 }
 
+// GetUserDataByReporterAccount get user data from user table by providing its reporter account data
+func (s UserStorage) GetUserDataByReporterAccount(ra *models.ReporterAccount) *models.User {
+	log.Info("Getting the matching User data by reporter account")
+	user := models.User{}
+	s.db.Model(ra).Related(&user)
+	return &user
+}
+
 // UpdateReporterAccountPassword update password for a reporter account
 func (s UserStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password string) (*models.ReporterAccount, error) {
 	ra.Password = password

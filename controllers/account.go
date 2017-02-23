@@ -113,20 +113,22 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 	} else {
 
-		_account, err := ac.Storage.GetReporterAccountData(email)
+		account, err := ac.Storage.GetReporterAccountData(email)
 
 		if err != nil {
 			c.JSON(401, gin.H{"status": "Account is not existed"})
 			return
 		}
 
-		if !_account.Active {
+		if !account.Active {
 			c.JSON(401, gin.H{"status": "Account is not activated yet"})
 			return
 		}
 
-		if encryptedPassword == _account.Password {
-			c.JSON(200, gin.H{"status": "You are logged in"})
+		if encryptedPassword == account.Password {
+			user := ac.Storage.GetUserDataByReporterAccount(account)
+			jwt := utils.RetrieveToken(user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
+			c.JSON(200, gin.H{"status": "You are logged in", "jwt": jwt})
 		} else {
 			c.JSON(401, gin.H{"status": "Invalid password"})
 		}
@@ -229,7 +231,9 @@ func (ac AccountController) Activate(c *gin.Context) {
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		}
 
-		c.JSON(200, gin.H{"status": "Account is activated", "Account": email})
+		user := ac.Storage.GetUserDataByReporterAccount(ra)
+		jwt := utils.RetrieveToken(user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
+		c.JSON(200, gin.H{"status": "Account is activated", "account": email, "jwt": jwt})
 		return
 	}
 
