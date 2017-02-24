@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"strings"
 
-	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
@@ -23,26 +22,29 @@ import (
 	"golang.org/x/oauth2/facebook"
 )
 
-var (
-	cfg       = configs.GetConfig()
-	oauthConf = &oauth2.Config{
-		ClientID:     cfg.OAUTH.FACEBOOK.ID,
-		ClientSecret: cfg.OAUTH.FACEBOOK.Secret,
-		RedirectURL:  cfg.OAUTH.FACEBOOK.URL,
-		Scopes:       []string{"public_profile", "email"},
-		Endpoint:     facebook.Endpoint,
-	}
-	oauthStateString = cfg.OAUTH.FACEBOOK.Statestr
-	loginPath        = cfg.APP.Path + "/login"
-)
+var oauthConf *oauth2.Config
 
 // Facebook ...
 type Facebook struct {
 	Storage *storage.UserStorage
 }
 
+func initOauthConfig() {
+	if oauthConf == nil {
+		oauthConf = &oauth2.Config{
+			ClientID:     utils.Cfg.OauthSettings.FacebookSettings.Id,
+			ClientSecret: utils.Cfg.OauthSettings.FacebookSettings.Secret,
+			RedirectURL:  utils.Cfg.OauthSettings.FacebookSettings.Url,
+			Scopes:       []string{"public_profile", "email"},
+			Endpoint:     facebook.Endpoint,
+		}
+	}
+}
+
 // BeginAuth redirects user to the Facebook Authentication
 func (o Facebook) BeginAuth(c *gin.Context) {
+	initOauthConfig()
+
 	URL, err := url.Parse(oauthConf.Endpoint.AuthURL)
 	if err != nil {
 		log.Error("Parse: ", err)
@@ -52,7 +54,7 @@ func (o Facebook) BeginAuth(c *gin.Context) {
 	parameters.Add("scope", strings.Join(oauthConf.Scopes, " "))
 	parameters.Add("redirect_uri", oauthConf.RedirectURL)
 	parameters.Add("response_type", "code")
-	parameters.Add("state", oauthStateString)
+	parameters.Add("state", utils.Cfg.OauthSettings.FacebookSettings.Statestr)
 	URL.RawQuery = parameters.Encode()
 	url := URL.String()
 	http.Redirect(c.Writer, c.Request, url, http.StatusTemporaryRedirect)
@@ -100,6 +102,10 @@ func (o Facebook) Authenticate(c *gin.Context) {
 
 // getRemoteUserData fetched user data from Facebook
 func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
+
+	oauthStateString := utils.Cfg.OauthSettings.FacebookSettings.Statestr
+	loginPath := utils.Cfg.AppSettings.Path + "/login"
+
 	// get Facebook OAuth Token
 	state := r.FormValue("state")
 	if state != oauthStateString {
@@ -108,6 +114,7 @@ func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 		return "", errors.New("invalid oauth state")
 	}
 	code := r.FormValue("code")
+
 	token, err := oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Warn("oauthConf.Exchange() failed with '%s'\n", err)

@@ -3,7 +3,7 @@
 ## Configurations
 
 #### MySQL connection
-Copy `config.example.yml` and rename as `config.yml`. Change its content to connect to your own database.
+Copy `configs/config.example.json` and rename as `configs/config.json`. Change its content to connect to your own database.
 
 ## Development
 Please make sure that you install [Glide

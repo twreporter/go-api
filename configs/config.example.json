@@ -1,0 +1,32 @@
+{
+  "AppSettings": {
+    "Path": "http://testtest.twreporter.org:8080",
+    "Token": "",
+    "Expiration": 168
+  },
+  "EmailSettings": {
+    "SMTPUsername": "",
+    "SMTPPassword": "",
+    "SMTPServer": "smtp.office365.com",
+    "SMTPPort": "587",
+    "ConnectionSecurity": "STARTTLS"
+  },
+  "DBSettings": {
+    "Name":     "test_membership",
+    "User":     "",
+    "Password": "",
+    "Address":  "127.0.0.1",
+    "Port":     "3306"
+  },
+  "OauthSettings": {
+    "FacebookSettings": {
+      "Id": "",
+      "Secret": "",
+      "Url": "http://testtest.twreporter.org:8080/v1/auth/facebook/callback",
+      "Statestr": ""
+    }
+  },
+  "EncryptSettings": {
+    "Salt": "@#$%"
+  }
+}

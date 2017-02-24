@@ -8,17 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/scrypt"
 	"net/mail"
-	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
-)
-
-var (
-	cfg  = configs.GetConfig()
-	salt = []byte(cfg.ENCRYPT.SALT)
 )
 
 // LoginForm is to be binded from form values
@@ -63,6 +57,7 @@ func generateRandomString(s int) (string, error) {
 // generateEncryptedPassword returns encryptedly
 // securely generated string.
 func generateEncryptedPassword(password []byte) (string, error) {
+	salt := []byte(utils.Cfg.EncryptSettings.Salt)
 	key, err := scrypt.Key(password, salt, 16384, 8, 1, 32)
 	return fmt.Sprintf("%x", key), err
 }
@@ -125,6 +120,12 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 			return
 		}
 
+		log.WithFields(log.Fields{
+			"salt":              utils.Cfg.EncryptSettings.Salt,
+			"encryptedPassword": encryptedPassword,
+			"password":          account.Password,
+		}).Info("Password Info ")
+
 		if encryptedPassword == account.Password {
 			user := ac.Storage.GetUserDataByReporterAccount(account)
 			jwt := utils.RetrieveToken(user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
@@ -181,6 +182,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 			utils.LogError(err, "Updating account password occurs error")
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		} else {
+			// utils.SendEmail("", "", "")
 			c.JSON(200, gin.H{"status": "Password reset"})
 		}
 		return
@@ -209,6 +211,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 		return
 	}
 
+	// utils.SendEmail("", "", "")
 	c.JSON(201, gin.H{"status": "Sign up successfully", "email": email})
 }
 

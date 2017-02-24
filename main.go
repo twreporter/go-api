@@ -14,6 +14,10 @@ import (
 )
 
 func main() {
+
+	// Load config file
+	utils.LoadConfig("config.json")
+
 	// security: no one can put it in an iframe
 	secureMiddleware := secure.New(secure.Options{
 		FrameDeny: true,
