@@ -3,7 +3,6 @@ package controllers
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/scrypt"
@@ -88,27 +87,33 @@ func getEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
 		return email, password, nil
 	}
 
-	return "", nil, errors.New("Bad syntax in POST body")
+	return "", nil, models.NewAppError("getEmailAndPasswordFromPOSTBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 500)
 }
 
 // Authenticate authenticate a reporter account
 func (ac AccountController) Authenticate(c *gin.Context) {
+	var account *models.ReporterAccount
+	var err error
+	var email string
+	var password []byte
+	var encryptedPassword string
 
-	email, password, err := getEmailAndPasswordFromPOSTBody(c)
+	email, password, err = getEmailAndPasswordFromPOSTBody(c)
 
 	if err != nil {
+		log.Error(err.Error())
 		c.JSON(400, gin.H{"status": err})
 		return
 	}
 
-	encryptedPassword, err := generateEncryptedPassword(password)
+	encryptedPassword, err = generateEncryptedPassword(password)
 
 	if err != nil {
-		utils.LogError(err, "Encrypting password occurs error")
+		log.Error("controllers.account.authenticate.generate_encrypted_password_error \n", err.Error())
 		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 	} else {
 
-		account, err := ac.Storage.GetReporterAccountData(email)
+		account, err = ac.Storage.GetReporterAccountData(email)
 
 		if err != nil {
 			c.JSON(401, gin.H{"status": "Account is not existed"})
@@ -138,10 +143,18 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 
 // Signup create/update a reporter account
 func (ac AccountController) Signup(c *gin.Context) {
+	var activeToken string
+	var email string
+	var err error
+	var encryptedPassword string
+	var password []byte
+	var ra *models.ReporterAccount
 
-	email, password, err := getEmailAndPasswordFromPOSTBody(c)
+	email, password, err = getEmailAndPasswordFromPOSTBody(c)
+	log.Info("email", email, " password ", password)
 
 	if err != nil {
+		log.Error(err.Error())
 		c.JSON(400, gin.H{"status": err.Error()})
 		return
 	}
@@ -154,9 +167,9 @@ func (ac AccountController) Signup(c *gin.Context) {
 		return
 	}
 
-	encryptedPassword, err := generateEncryptedPassword(password)
+	encryptedPassword, err = generateEncryptedPassword(password)
 	if err != nil {
-		utils.LogError(err, "Encrypting password occurs error")
+		log.Error("controllers.account.sign_up.generate_encrypted_password_error \n", err.Error())
 		c.JSON(500, gin.H{"status": "Internal server error"})
 		return
 	}
@@ -166,7 +179,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 		"password": encryptedPassword,
 	}).Info("User account and password")
 
-	ra, err := ac.Storage.GetReporterAccountData(email)
+	ra, err = ac.Storage.GetReporterAccountData(email)
 
 	if err == nil {
 		// account is signuped and activated
@@ -179,7 +192,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 		// we think the signup request as a request for changing password
 		_, err = ac.Storage.UpdateReporterAccountPassword(ra, encryptedPassword)
 		if err != nil {
-			utils.LogError(err, "Updating account password occurs error")
+			log.Error("controllers.account.sign_up.update_db_error \n", err.Error())
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		} else {
 			// utils.SendEmail("", "", "")
@@ -189,10 +202,10 @@ func (ac AccountController) Signup(c *gin.Context) {
 	}
 
 	// generate active token
-	activeToken, err := generateRandomString(8)
+	activeToken, err = generateRandomString(8)
 
 	if err != nil {
-		utils.LogError(err, "Generating active token occurs error")
+		log.Error("controllers.account.sign_up.generate_active_token_error \n", err.Error())
 		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		return
 	}
@@ -206,7 +219,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 	})
 
 	if err != nil {
-		utils.LogError(err, "Inserting record into users table occurs error")
+		log.Error("controllers.account.sign_up.insert_db_error \n", err.Error())
 		c.JSON(500, gin.H{"status": "Internal server error"})
 		return
 	}
@@ -230,7 +243,7 @@ func (ac AccountController) Activate(c *gin.Context) {
 		_, err = ac.Storage.UpdateReporterAccountActive(ra, true)
 
 		if err != nil {
-			utils.LogError(err, "Updating reporter account active occurs error")
+			log.Error("controllers.account.active.update_db_error \n", err.Error())
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		}
 

@@ -31,6 +31,8 @@ type EmailSettings struct {
 	SMTPServer         string
 	SMTPPort           string
 	ConnectionSecurity string
+	FeedbackName       string
+	FeedbackEmail      string
 }
 
 type DBSettings struct {
