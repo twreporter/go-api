@@ -5,36 +5,69 @@ import (
 )
 
 const (
-	CONN_SECURITY_NONE                 = ""
-	CONN_SECURITY_PLAIN                = "PLAIN"
-	CONN_SECURITY_TLS                  = "TLS"
-	CONN_SECURITY_STARTTLS             = "STARTTLS"
-	APP_SETTINGS_DEFAULT_PATH          = "http://testtest.twreporter.org:8080"
-	APP_SETTINGS_DEFAULT_EXPIRATION    = 168 // 7 days
-	EMAIL_SETTINGS_DEFAULT_SMTP_SERVER = "smtp.office365.com"
-	EMAIL_SETTINGS_DEFAULT_SMTP_PORT   = "587"
-	DB_SETTINGS_DEFAULT_NAME           = "test_membership"
-	DB_SETTINGS_DEFAULT_ADDRESS        = "127.0.0.1"
-	DB_SETTINGS_DEFAULT_PORT           = "3306"
-	ENCRYPT_SETTINGS_DEFAULT_SALT      = "@#$%"
+	// Office360 global string constants
+	Office360 = "Office360"
+
+	// ConnSecurityPlain global string constants
+	ConnSecurityPlain = "PLAIN"
+
+	// ConnSecurityTLS global string constants
+	ConnSecurityTLS = "TLS"
+
+	// ConnSecurityStarttls global string constants
+	ConnSecurityStarttls = "STARTTLS"
+
+	// AppSettingsDefaultPath default path of app
+	AppSettingsDefaultPath = "http://testtest.twreporter.org:8080"
+
+	// AppSettingsDefaultExpiration default expiration of app
+	AppSettingsDefaultExpiration = 168 // 7 days
+
+	// EmailSettingsDefaultSMTPServer default smtp server hostname
+	EmailSettingsDefaultSMTPServer = "smtp.office365.com"
+
+	// EmailSettingsDefaultSMTPPort default port of smtp
+	EmailSettingsDefaultSMTPPort = "587"
+
+	// EmailSettingsDefaultSMTPServerOwner default owner of smtp server
+	EmailSettingsDefaultSMTPServerOwner = Office360
+
+	// EmailSettingsDefaultConnSecurity default connection security
+	EmailSettingsDefaultConnSecurity = ConnSecurityStarttls
+
+	// DbSettingsDefaultName default database name
+	DbSettingsDefaultName = "test_membership"
+
+	// DbSettingsDefaultAddress default address of database
+	DbSettingsDefaultAddress = "127.0.0.1"
+
+	// DbSettingsDefaultPort default port of database
+	DbSettingsDefaultPort = "3306"
+
+	// EncryptSettingsDefaultSalt default salt for encryption
+	EncryptSettingsDefaultSalt = "@#$%"
 )
 
+// AppSettings could be defined in configs/config.json
 type AppSettings struct {
 	Path       string
 	Token      string
 	Expiration time.Duration
 }
 
+// EmailSettings could be defined in configs/config.json
 type EmailSettings struct {
 	SMTPUsername       string
 	SMTPPassword       string
 	SMTPServer         string
 	SMTPPort           string
 	ConnectionSecurity string
+	SMTPServerOwner    string
 	FeedbackName       string
 	FeedbackEmail      string
 }
 
+// DBSettings could be defined in configs/config.json
 type DBSettings struct {
 	Name     string
 	User     string
@@ -43,21 +76,25 @@ type DBSettings struct {
 	Port     string
 }
 
+// FacebookSettings could be defined in configs/config.json
 type FacebookSettings struct {
-	Id       string
+	ID       string
 	Secret   string
-	Url      string
+	URL      string
 	Statestr string
 }
 
+// OauthSettings could be defined in configs/config.json
 type OauthSettings struct {
 	FacebookSettings FacebookSettings
 }
 
+// EncryptSettings could be defined in configs/config.json
 type EncryptSettings struct {
 	Salt string
 }
 
+// Config contains all the other configs
 type Config struct {
 	AppSettings     AppSettings
 	EmailSettings   EmailSettings
@@ -66,30 +103,34 @@ type Config struct {
 	EncryptSettings EncryptSettings
 }
 
+// SetDefaults could set default value in the Config struct
 func (o *Config) SetDefaults() {
 	if o.AppSettings.Expiration == 0 {
-		o.AppSettings.Expiration = APP_SETTINGS_DEFAULT_EXPIRATION
+		o.AppSettings.Expiration = AppSettingsDefaultExpiration
 	}
 
 	if o.DBSettings.Name == "" {
-		o.DBSettings.Name = DB_SETTINGS_DEFAULT_NAME
+		o.DBSettings.Name = DbSettingsDefaultName
 	}
 	if o.DBSettings.Address == "" {
-		o.DBSettings.Address = DB_SETTINGS_DEFAULT_ADDRESS
+		o.DBSettings.Address = DbSettingsDefaultAddress
 	}
 	if o.DBSettings.Port == "" {
-		o.DBSettings.Port = DB_SETTINGS_DEFAULT_PORT
+		o.DBSettings.Port = DbSettingsDefaultPort
 	}
 	if o.EmailSettings.SMTPServer == "" {
-		o.EmailSettings.SMTPServer = EMAIL_SETTINGS_DEFAULT_SMTP_SERVER
+		o.EmailSettings.SMTPServer = EmailSettingsDefaultSMTPServer
 	}
 	if o.EmailSettings.SMTPPort == "" {
-		o.EmailSettings.SMTPPort = EMAIL_SETTINGS_DEFAULT_SMTP_PORT
+		o.EmailSettings.SMTPPort = EmailSettingsDefaultSMTPPort
+	}
+	if o.EmailSettings.SMTPServerOwner == "" {
+		o.EmailSettings.SMTPServerOwner = EmailSettingsDefaultSMTPServerOwner
 	}
 	if o.EmailSettings.ConnectionSecurity == "" {
-		o.EmailSettings.ConnectionSecurity = CONN_SECURITY_STARTTLS
+		o.EmailSettings.ConnectionSecurity = EmailSettingsDefaultConnSecurity
 	}
 	if o.EncryptSettings.Salt == "" {
-		o.EncryptSettings.Salt = ENCRYPT_SETTINGS_DEFAULT_SALT
+		o.EncryptSettings.Salt = EncryptSettingsDefaultSalt
 	}
 }

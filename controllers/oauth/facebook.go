@@ -32,9 +32,9 @@ type Facebook struct {
 func initOauthConfig() {
 	if oauthConf == nil {
 		oauthConf = &oauth2.Config{
-			ClientID:     utils.Cfg.OauthSettings.FacebookSettings.Id,
+			ClientID:     utils.Cfg.OauthSettings.FacebookSettings.ID,
 			ClientSecret: utils.Cfg.OauthSettings.FacebookSettings.Secret,
-			RedirectURL:  utils.Cfg.OauthSettings.FacebookSettings.Url,
+			RedirectURL:  utils.Cfg.OauthSettings.FacebookSettings.URL,
 			Scopes:       []string{"public_profile", "email"},
 			Endpoint:     facebook.Endpoint,
 		}
