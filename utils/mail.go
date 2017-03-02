@@ -1,6 +1,3 @@
-// Copyright (c) 2015 Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
-
 package utils
 
 import (
@@ -95,19 +92,14 @@ func newSMTPClient(conn net.Conn, config *models.Config) (*smtp.Client, *models.
 			return nil, models.NewAppError("SendMail", "utils.mail.new_client.auth.app_error", err.Error(), 500)
 		}
 	} else if config.EmailSettings.ConnectionSecurity == models.ConnSecurityStarttls {
-		log.Info("Send mail with STARTTLS")
 		tlsconfig := &tls.Config{
 			InsecureSkipVerify: true,
 			ServerName:         config.EmailSettings.SMTPServer,
 		}
 		c.StartTLS(tlsconfig)
 		if config.EmailSettings.SMTPServerOwner == models.Office360 {
-			log.Info("SMTP server is owned by office360")
-			log.Info("username:", config.EmailSettings.SMTPUsername)
-			log.Info("password:", config.EmailSettings.SMTPPassword)
 			err = c.Auth(LoginAuth(config.EmailSettings.SMTPUsername, config.EmailSettings.SMTPPassword))
 		} else {
-			log.Info("SMTP server is not owned by office360")
 			err = c.Auth(auth)
 		}
 		if err != nil {
@@ -129,8 +121,6 @@ func SendMail(to, subject, body string) *models.AppError {
 
 // SendMailUsingConfig will connect ot the SMTP server and create the connection to STMP server, and send the email to <to> address
 func SendMailUsingConfig(to, subject, body string, config *models.Config) *models.AppError {
-
-	log.Info("config:", config)
 
 	if len(config.EmailSettings.SMTPServer) == 0 {
 		return nil

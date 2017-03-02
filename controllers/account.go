@@ -207,12 +207,12 @@ func (ac AccountController) Signup(c *gin.Context) {
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		}
 
-		// re-send the activation email
-		if err1 := utils.SendMail(email, activateMailSubject, generateActivateMailBody(email, ra.ActivateToken)); err1 != nil {
-			log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
-			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
-			return
-		}
+		go func() {
+			// re-send the activation email
+			if err1 := utils.SendMail(email, activateMailSubject, generateActivateMailBody(email, ra.ActivateToken)); err1 != nil {
+				log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
+			}
+		}()
 
 		c.JSON(200, gin.H{"status": "Password reset and activation email resent"})
 		return
@@ -241,11 +241,11 @@ func (ac AccountController) Signup(c *gin.Context) {
 		return
 	}
 
-	if err1 := utils.SendMail(email, activateMailSubject, generateActivateMailBody(email, activeToken)); err1 != nil {
-		log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
-		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
-		return
-	}
+	go func() {
+		if err1 := utils.SendMail(email, activateMailSubject, generateActivateMailBody(email, activeToken)); err1 != nil {
+			log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
+		}
+	}()
 
 	c.JSON(201, gin.H{"status": "Sign up successfully", "email": email})
 }
