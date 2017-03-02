@@ -4,14 +4,12 @@ import (
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/configs"
+	"twreporter.org/go-api/utils"
 )
-
-var cfg = configs.GetConfig()
 
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-		return []byte(cfg.APP.Token), nil
+		return []byte(utils.Cfg.AppSettings.Token), nil
 	},
 	SigningMethod: jwt.SigningMethodHS256,
 })

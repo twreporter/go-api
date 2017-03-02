@@ -3,15 +3,12 @@ package utils
 import (
 	"time"
 
-	"twreporter.org/go-api/configs"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 )
 
 var (
-	cfg          = configs.GetConfig()
-	mySigningKey = []byte(cfg.APP.Token)
+	mySigningKey = []byte(Cfg.AppSettings.Token)
 )
 
 // RetrieveToken ...
@@ -34,7 +31,7 @@ func RetrieveToken(privilege int, firstName string, lastName string, email strin
 	claims["firstName"] = firstName
 	claims["lastName"] = lastName
 	claims["email"] = email
-	claims["exp"] = time.Now().Add(time.Hour * cfg.APP.Expiration).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * Cfg.AppSettings.Expiration).Unix()
 
 	/* Sign the token with our secret */
 	tokenString, _ := token.SignedString(mySigningKey)
