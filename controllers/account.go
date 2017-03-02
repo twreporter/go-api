@@ -14,6 +14,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+const (
+	activateMailSubject = "啟動報導者帳號"
+)
+
 // LoginForm is to be binded from form values
 type LoginForm struct {
 	Email    string `form:"email" binding:"required"`
@@ -29,6 +33,14 @@ type LoginJSON struct {
 // AccountController ...
 type AccountController struct {
 	Storage *storage.UserStorage
+}
+
+// generateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
+func generateActivateMailBody(mailAddress, activeToken string) string {
+	href := fmt.Sprintf("%s/%s/activate?email=%s&token=%s", utils.Cfg.AppSettings.Path, utils.Cfg.AppSettings.Version, mailAddress, activeToken)
+
+	// TBD make the activate mail more beautiful and informative
+	return fmt.Sprintf("<a href=\"%s\" target=\"_blank\">Activate Your Account</a>", href)
 }
 
 // generateRandomBytes returns securely generated random bytes.
@@ -190,14 +202,19 @@ func (ac AccountController) Signup(c *gin.Context) {
 
 		// account is not activated,
 		// we think the signup request as a request for changing password
-		_, err = ac.Storage.UpdateReporterAccountPassword(ra, encryptedPassword)
-		if err != nil {
+		if _, err = ac.Storage.UpdateReporterAccountPassword(ra, encryptedPassword); err != nil {
 			log.Error("controllers.account.sign_up.update_db_error \n", err.Error())
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
-		} else {
-			// utils.SendEmail("", "", "")
-			c.JSON(200, gin.H{"status": "Password reset"})
 		}
+
+		// re-send the activation email
+		if err1 := utils.SendMail(email, activateMailSubject, generateActivateMailBody(email, ra.ActivateToken)); err1 != nil {
+			log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
+			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
+			return
+		}
+
+		c.JSON(200, gin.H{"status": "Password reset and activation email resent"})
 		return
 	}
 
@@ -224,7 +241,12 @@ func (ac AccountController) Signup(c *gin.Context) {
 		return
 	}
 
-	// utils.SendEmail("", "", "")
+	if err1 := utils.SendMail(email, activateMailSubject, generateActivateMailBody(email, activeToken)); err1 != nil {
+		log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
+		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
+		return
+	}
+
 	c.JSON(201, gin.H{"status": "Sign up successfully", "email": email})
 }
 

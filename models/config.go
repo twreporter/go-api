@@ -6,7 +6,7 @@ import (
 
 const (
 	// Office360 global string constants
-	Office360 = "Office360"
+	Office360 = "office360"
 
 	// ConnSecurityPlain global string constants
 	ConnSecurityPlain = "PLAIN"
@@ -22,6 +22,9 @@ const (
 
 	// AppSettingsDefaultExpiration default expiration of app
 	AppSettingsDefaultExpiration = 168 // 7 days
+
+	// AppSettingsDefaultVersion default version
+	AppSettingsDefaultVersion = "v1"
 
 	// EmailSettingsDefaultSMTPServer default smtp server hostname
 	EmailSettingsDefaultSMTPServer = "smtp.office365.com"
@@ -51,6 +54,7 @@ const (
 // AppSettings could be defined in configs/config.json
 type AppSettings struct {
 	Path       string
+	Version    string
 	Token      string
 	Expiration time.Duration
 }
@@ -108,7 +112,9 @@ func (o *Config) SetDefaults() {
 	if o.AppSettings.Expiration == 0 {
 		o.AppSettings.Expiration = AppSettingsDefaultExpiration
 	}
-
+	if o.AppSettings.Version == "" {
+		o.AppSettings.Version = AppSettingsDefaultVersion
+	}
 	if o.DBSettings.Name == "" {
 		o.DBSettings.Name = DbSettingsDefaultName
 	}
