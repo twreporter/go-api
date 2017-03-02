@@ -6,6 +6,9 @@ const (
 	// Facebook ...
 	Facebook = "Facebook"
 
+	// Google ...
+	Google = "Google"
+
 	/* Gender Types */
 
 	// GenderMale ...

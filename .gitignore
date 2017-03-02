@@ -9,3 +9,4 @@ build
 go-api*
 gin-bin*
 config.yml
+configs/config.json

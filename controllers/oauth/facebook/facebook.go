@@ -1,4 +1,4 @@
-package oauth
+package facebook
 
 import (
 	"database/sql"

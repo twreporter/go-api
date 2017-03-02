@@ -84,9 +84,16 @@ type FacebookSettings struct {
 	Statestr string
 }
 
-// OauthSettings could be defined in configs/config.json
+type GoogleSettings struct {
+	Id       string
+	Secret   string
+	Url      string
+	Statestr string
+}
+
 type OauthSettings struct {
 	FacebookSettings FacebookSettings
+	GoogleSettings   GoogleSettings
 }
 
 // EncryptSettings could be defined in configs/config.json

@@ -24,3 +24,14 @@ import:
 - package: golang.org/x/crypto
   subpackages:
   - scrypt
+- package: cloud.google.com/go
+  version: ^0.6.0
+  subpackages:
+  - compute/metadata
+- package: google.golang.org/grpc
+  version: ^1.0.5
+- package: golang.org/x/net
+  version: release-branch.go1.7
+  subpackages:
+  - http2
+  - context
