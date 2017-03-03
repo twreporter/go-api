@@ -1,7 +1,6 @@
 package facebook
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -78,7 +77,7 @@ func (o Facebook) Authenticate(c *gin.Context) {
 		Name:      utils.ToNullString(gjson.Get(fstring, "name").Str),
 		FirstName: utils.ToNullString(gjson.Get(fstring, "first_name").Str),
 		LastName:  utils.ToNullString(gjson.Get(fstring, "last_name").Str),
-		Gender:    getGender(gjson.Get(fstring, "gender").Str),
+		Gender:    utils.GetGender(gjson.Get(fstring, "gender").Str),
 		Picture:   utils.ToNullString(gjson.Get(fstring, "picture.data.url").Str),
 	}
 
@@ -140,20 +139,4 @@ func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 	}
 
 	return string(response), nil
-}
-
-func getGender(s string) sql.NullString {
-	var ngender sql.NullString
-	switch s {
-	case "":
-		ngender = utils.GetNullString()
-	case "male":
-		ngender = utils.ToNullString(constants.GenderMale)
-	case "female":
-		ngender = utils.ToNullString(constants.GenderFemale)
-	default:
-		// Other gender
-		ngender = utils.ToNullString(constants.GenderOthers)
-	}
-	return ngender
 }

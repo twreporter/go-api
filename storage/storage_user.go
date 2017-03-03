@@ -39,17 +39,17 @@ func (s UserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
-func (s UserStorage) GetOAuthData(aid sql.NullString) models.OAuthAccount {
+func (s UserStorage) GetOAuthData(aid sql.NullString, aType string) models.OAuthAccount {
 	log.Info("Getting the matching OAuth data", aid)
 	oac := models.OAuthAccount{}
-	s.db.Where(&models.OAuthAccount{Type: constants.Facebook, AId: aid}).First(&oac)
+	s.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).First(&oac)
 	return oac
 }
 
 // GetUserDataByOAuth gets the corresponding user data by using the OAuth information
 func (s UserStorage) GetUserDataByOAuth(oac models.OAuthAccount) models.User {
 	log.Info("Getting the matching User data")
-	matO := s.GetOAuthData(oac.AId)
+	matO := s.GetOAuthData(oac.AId, oac.Type)
 	user := models.User{}
 	s.db.Model(&matO).Related(&user)
 	return user
@@ -58,7 +58,7 @@ func (s UserStorage) GetUserDataByOAuth(oac models.OAuthAccount) models.User {
 // UpdateOAuthData updates the corresponding OAuth by using the OAuth information
 func (s UserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAccount {
 	log.Info("Getting the matching OAuth data", newData.AId)
-	matO := s.GetOAuthData(newData.AId)
+	matO := s.GetOAuthData(newData.AId, newData.Type)
 	matO.Email = newData.Email
 	matO.Name = newData.Name
 	matO.FirstName = newData.FirstName
