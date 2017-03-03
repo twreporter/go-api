@@ -47,12 +47,12 @@ func (s UserStorage) GetOAuthData(aid sql.NullString, aType string) models.OAuth
 }
 
 // GetUserDataByOAuth gets the corresponding user data by using the OAuth information
-func (s UserStorage) GetUserDataByOAuth(oac models.OAuthAccount) models.User {
+func (s UserStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User, error) {
 	log.Info("Getting the matching User data")
 	matO := s.GetOAuthData(oac.AId, oac.Type)
 	user := models.User{}
-	s.db.Model(&matO).Related(&user)
-	return user
+	err := s.db.Model(&matO).Related(&user).Error
+	return user, err
 }
 
 // UpdateOAuthData updates the corresponding OAuth by using the OAuth information
