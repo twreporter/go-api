@@ -1,10 +1,13 @@
-hash: 6932519c0c223852a9bdce8132bbdbcd00aa4354050e7676d586237c39c810d2
-updated: 2017-02-21T15:43:44.998962025+08:00
+hash: 8fa25f031b6a0f67d80c25ffeb9a1f4376e0e658ed05cad9d8f5f7bc439f8706
+updated: 2017-03-03T16:48:54.173692261+08:00
 imports:
+- name: cloud.google.com/go
+  version: c116c7972ec94f148459a304d07a67ecbc770d4b
+  subpackages:
+  - compute/metadata
+  - internal
 - name: github.com/auth0/go-jwt-middleware
   version: f3f7de3b9e394e3af3b88e1b9457f6f71d1ae0ac
-- name: github.com/BurntSushi/toml
-  version: 99064174e013895bbd9b025c31100bd1d9b590ca
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/gin-gonic/gin
@@ -18,6 +21,8 @@ imports:
   version: 2402d76f3d41f928c7902a765dfc872356dd3aad
   subpackages:
   - proto
+- name: github.com/googleapis/gax-go
+  version: da06d194a00e19ce00d9011a13931c3f6f6887c7
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/jinzhu/configor
@@ -31,9 +36,9 @@ imports:
 - name: github.com/manucorporat/sse
   version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
 - name: github.com/mattn/go-isatty
-  version: 30a891c33c7cde7b02a981314b4228ec99380cca
+  version: dda3de49cbfcec471bd7a70e6cc01fcc3ff90109
 - name: github.com/Sirupsen/logrus
-  version: c078b1e43f58d563c74cebe63c85789e76ddb627
+  version: 0208149b40d863d2c1a2f8fe5753096a9cf2cc8b
 - name: github.com/stretchr/testify
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
@@ -43,41 +48,63 @@ imports:
 - name: github.com/tidwall/match
   version: 173748da739a410c5b0b813b956f89ff94730b4c
 - name: github.com/unrolled/secure
-  version: 019273209f1c9e05be9592606ae174592febebf5
+  version: 219ebb9a1ee60251b93212d455b645c86b01adb9
 - name: golang.org/x/crypto
-  version: 453249f01cfeb54c3d549ddb75ff152ca243f9d8
+  version: 40541ccb1c6e64c947ed6f606b8a6cb4b67d7436
   subpackages:
   - pbkdf2
   - scrypt
 - name: golang.org/x/net
-  version: f315505cf3349909cdf013ea56690da34e96a451
+  version: d4c55e66d8c3a2f3382d264b08e3e3454a66355a
   subpackages:
   - context
+  - context/ctxhttp
+  - http2
+  - http2/hpack
+  - internal/timeseries
+  - lex/httplex
+  - trace
 - name: golang.org/x/oauth2
-  version: de0725b330ab43c1a3d6c84d961cf01183783f1e
+  version: b9780ec78894ab900c062d58ee3076cd9b2a4501
   subpackages:
   - facebook
+  - google
   - internal
+  - jws
+  - jwt
 - name: golang.org/x/sys
-  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  version: 075e574b89e4c2d22f2286a7e2b919519c6f3547
   subpackages:
   - unix
 - name: google.golang.org/appengine
-  version: 2e4a801b39fc199db615bfca7d0b9f8cd9580599
+  version: 150dc57a1b433e64154302bdc40b6bb8aefa313a
   subpackages:
   - internal
+  - internal/app_identity
   - internal/base
   - internal/datastore
   - internal/log
+  - internal/modules
   - internal/remote_api
   - internal/urlfetch
   - urlfetch
+- name: google.golang.org/grpc
+  version: 708a7f9f3283aa2d4f6132d287d78683babe55c8
+  subpackages:
+  - codes
+  - credentials
+  - grpclog
+  - internal
+  - metadata
+  - naming
+  - peer
+  - stats
+  - tap
+  - transport
 - name: gopkg.in/go-playground/validator.v8
   version: c193cecd124b5cc722d7ee5538e945bdb3348435
-- name: gopkg.in/yaml.v1
-  version: 9f9df34309c04878acc86042b16630b0f696e1de
 - name: gopkg.in/yaml.v2
-  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+  version: a3f3340b5840cee44f372bddb5880fcbc419b46a
 testImports:
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d

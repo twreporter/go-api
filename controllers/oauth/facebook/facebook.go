@@ -1,9 +1,6 @@
-package oauth
+package facebook
 
 import (
-	"database/sql"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -62,11 +59,16 @@ func (o Facebook) BeginAuth(c *gin.Context) {
 
 // Authenticate requests the user profile from Facebook
 func (o Facebook) Authenticate(c *gin.Context) {
-	log.WithFields(log.Fields{"type": constants.Facebook}).Info("OAuth")
+	log.Info("controllers.oauth.google.authenticate. OAuth type: ", constants.Facebook)
 
 	// get user data from Facebook
 	fstring, err := getRemoteUserData(c.Request, c.Writer)
 	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":      "unauthorized",
+			"type":        constants.Facebook,
+			"description": "Cannot get user data from Facebook.",
+		})
 		return
 	}
 
@@ -78,16 +80,24 @@ func (o Facebook) Authenticate(c *gin.Context) {
 		Name:      utils.ToNullString(gjson.Get(fstring, "name").Str),
 		FirstName: utils.ToNullString(gjson.Get(fstring, "first_name").Str),
 		LastName:  utils.ToNullString(gjson.Get(fstring, "last_name").Str),
-		Gender:    getGender(gjson.Get(fstring, "gender").Str),
+		Gender:    utils.GetGender(gjson.Get(fstring, "gender").Str),
 		Picture:   utils.ToNullString(gjson.Get(fstring, "picture.data.url").Str),
 	}
 
+	log.WithFields(log.Fields{
+		"Type": constants.Facebook,
+		"AId":  remoteOauth.AId,
+	}).Info("controllers.oauth.facebook.authenticate. OAuth Login")
+
 	// find the OAuth user from the database
-	matchUser := o.Storage.GetUserDataByOAuth(remoteOauth)
+	matchUser, err := o.Storage.GetUserDataByOAuth(remoteOauth)
 	// if the user doesn't exist, register the user automatically
-	log.Info("matchUser: ", matchUser)
-	if matchUser.ID == 0 {
-		fmt.Println("is zero value", constants.Facebook)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Type": constants.Facebook,
+			"AId":  remoteOauth.AId,
+			"Name": remoteOauth.Name,
+		}).Info("controllers.oauth.facebook.authenticate. Create OAuth User")
 		o.Storage.InsertUserByOAuth(remoteOauth)
 	} else {
 		// update existing OAuth data
@@ -109,51 +119,35 @@ func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 	// get Facebook OAuth Token
 	state := r.FormValue("state")
 	if state != oauthStateString {
-		log.Warn("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
+		log.Warnf("controllers.oauth.facebook.getRemoteUserData. invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
-		return "", errors.New("invalid oauth state")
+		return "", models.NewAppError("OAuth state", "controllers.oauth.facebook", "Invalid oauth state", 500)
 	}
 	code := r.FormValue("code")
 
 	token, err := oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		log.Warn("oauthConf.Exchange() failed with '%s'\n", err)
+		log.Warnf("controllers.oauth.facebook.getRemoteUserData. oauthConf.Exchange() failed with '%s'\n", err)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
-		return "", err
+		return "", models.NewAppError("Code exchange failed", "controllers.oauth.facebook", err.Error(), 500)
 	}
 
 	// get user data from Facebook
 	resp, err := http.Get("https://graph.facebook.com/v2.8/me?fields=id,name,email,picture,birthday,first_name,last_name,gender&access_token=" +
 		url.QueryEscape(token.AccessToken))
 	if err != nil {
-		log.Warn("Get: %s\n", err)
+		log.Warnf("controllers.oauth.facebook.getRemoteUserData. Cannot get user info using Facebook API: %s\n", err)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
-		return "", err
+		return "", models.NewAppError("Cannot get user info using Facebook API", "controllers.oauth.facebook", err.Error(), 500)
 	}
 	defer resp.Body.Close()
 
 	response, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("ReadAll: %s\n", err)
+		log.Warnf("controllers.oauth.facebook.getRemoteUserData. Error parsing Facebook user data: %s\n", err)
 		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
-		return "", err
+		return "", models.NewAppError("Error parsing Facebook user data", "controllers.oauth.facebook", err.Error(), 500)
 	}
 
 	return string(response), nil
-}
-
-func getGender(s string) sql.NullString {
-	var ngender sql.NullString
-	switch s {
-	case "":
-		ngender = utils.GetNullString()
-	case "male":
-		ngender = utils.ToNullString(constants.GenderMale)
-	case "female":
-		ngender = utils.ToNullString(constants.GenderFemale)
-	default:
-		// Other gender
-		ngender = utils.ToNullString(constants.GenderOthers)
-	}
-	return ngender
 }

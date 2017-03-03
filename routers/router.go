@@ -3,7 +3,8 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/controllers"
-	"twreporter.org/go-api/controllers/oauth"
+	"twreporter.org/go-api/controllers/oauth/facebook"
+	"twreporter.org/go-api/controllers/oauth/google"
 	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/storage"
 )
@@ -24,9 +25,12 @@ func SetupRouter(userStorage *storage.UserStorage) *gin.Engine {
 		})
 
 		// handle oauth login
-		auth := oauth.Facebook{userStorage}
-		v1.GET("/auth/facebook", auth.BeginAuth)
-		v1.GET("/auth/facebook/callback", auth.Authenticate)
+		fbAuth := facebook.Facebook{userStorage}
+		v1.GET("/auth/facebook", fbAuth.BeginAuth)
+		v1.GET("/auth/facebook/callback", fbAuth.Authenticate)
+		gooAuth := google.Google{userStorage}
+		v1.GET("/auth/google", gooAuth.BeginAuth)
+		v1.GET("/auth/google/callback", gooAuth.Authenticate)
 
 		// handle login
 		account := controllers.AccountController{userStorage}

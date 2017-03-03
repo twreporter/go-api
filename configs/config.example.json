@@ -24,6 +24,12 @@
       "Secret": "",
       "Url": "http://testtest.twreporter.org:8080/v1/auth/facebook/callback",
       "Statestr": ""
+    },
+    "GoogleSettings": {
+      "Id": "",
+      "Secret": "",
+      "Url": "http://testtest.twreporter.org:8080/v1/auth/google/callback",
+      "Statestr": ""
     }
   },
   "EncryptSettings": {
