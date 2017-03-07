@@ -154,7 +154,7 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 }
 
 // Signup create/update a reporter account
-func (ac AccountController) Signup(c *gin.Context) {
+func (ac AccountController) Signup(c *gin.Context, mailSender utils.EmailSender) {
 	var activeToken string
 	var email string
 	var err error
@@ -209,7 +209,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 
 		go func() {
 			// re-send the activation email
-			if err1 := utils.SendMail(email, activateMailSubject, generateActivateMailBody(email, ra.ActivateToken)); err1 != nil {
+			if err1 := mailSender.Send(email, activateMailSubject, generateActivateMailBody(email, ra.ActivateToken)); err1 != nil {
 				log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
 			}
 		}()
@@ -242,7 +242,7 @@ func (ac AccountController) Signup(c *gin.Context) {
 	}
 
 	go func() {
-		if err1 := utils.SendMail(email, activateMailSubject, generateActivateMailBody(email, activeToken)); err1 != nil {
+		if err1 := mailSender.Send(email, activateMailSubject, generateActivateMailBody(email, activeToken)); err1 != nil {
 			log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
 		}
 	}()
