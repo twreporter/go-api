@@ -7,10 +7,11 @@ import (
 	"twreporter.org/go-api/controllers/oauth/google"
 	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/storage"
+	"twreporter.org/go-api/utils"
 )
 
 // SetupRouter ...
-func SetupRouter(userStorage *storage.UserStorage) *gin.Engine {
+func SetupRouter(userStorage *storage.UserStorage, mailSender utils.EmailSender) *gin.Engine {
 	router := gin.Default()
 	router.Use(middlewares.CORSMiddleware())
 
@@ -35,7 +36,9 @@ func SetupRouter(userStorage *storage.UserStorage) *gin.Engine {
 		// handle login
 		account := controllers.AccountController{userStorage}
 		v1.POST("/login", account.Authenticate)
-		v1.POST("/signup", account.Signup)
+		v1.POST("/signup", func(c *gin.Context) {
+			account.Signup(c, mailSender)
+		})
 		v1.GET("/activate", account.Activate)
 	}
 

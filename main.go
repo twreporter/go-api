@@ -16,7 +16,7 @@ import (
 func main() {
 
 	// Load config file
-	utils.LoadConfig("config.json")
+	utils.LoadConfig("configs/config.json")
 
 	// security: no one can put it in an iframe
 	secureMiddleware := secure.New(secure.Options{
@@ -47,8 +47,10 @@ func main() {
 	// userStorage := storage.NewUserStorage(db)
 	userStorage := storage.NewUserStorage(db)
 
+	mailSender := utils.NewSMTPEmailSender(utils.Cfg.EmailSettings)
+
 	// set up the router
-	router := routers.SetupRouter(userStorage)
+	router := routers.SetupRouter(userStorage, mailSender)
 
 	router.Use(secureFunc)
 

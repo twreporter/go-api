@@ -1,6 +1,7 @@
 {
   "AppSettings": {
     "Path": "http://testtest.twreporter.org:8080",
+    "Version": "v1",
     "Token": "",
     "Expiration": 168
   },
@@ -8,8 +9,11 @@
     "SMTPUsername": "",
     "SMTPPassword": "",
     "SMTPServer": "smtp.office365.com",
+    "SMTPServerOwner": "office360",
     "SMTPPort": "587",
     "ConnectionSecurity": "STARTTLS"
+    "FeedbackName": "報導者 The Reporter",
+    "FeedbackEmail": "contact@twreporter.org"
   },
   "DBSettings": {
     "Name":     "test_membership",
