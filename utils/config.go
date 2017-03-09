@@ -15,11 +15,10 @@ var Cfg *models.Config = &models.Config{}
 // CfgFileName it is filename of config file
 var CfgFileName string
 
-// LoadConfig will try to search around for the corresponding config file.
-// It will search ../config/fileName and last it will look at fileName
+// LoadConfig it will load config file
 func LoadConfig(fileName string) {
 
-	file, err := os.Open("configs/" + fileName)
+	file, err := os.Open(fileName)
 	if err != nil {
 		panic("utils.config.load_config.open.panic: " + err.Error())
 	}
