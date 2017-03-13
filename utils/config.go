@@ -16,21 +16,25 @@ var Cfg *models.Config = &models.Config{}
 var CfgFileName string
 
 // LoadConfig it will load config file
-func LoadConfig(fileName string) {
+func LoadConfig(fileName string) *models.AppError {
 
 	file, err := os.Open(fileName)
 	if err != nil {
-		panic("utils.config.load_config.open.panic: " + err.Error())
+		appError := models.NewAppError("LoadConfig", "utils.config.load_conifg.open_file: ", err.Error(), 500)
+		return appError
 	}
 
 	decoder := json.NewDecoder(file)
 	config := models.Config{}
 	err = decoder.Decode(&config)
 	if err != nil {
-		panic("utils.config.load_config.decoding.panic: " + err.Error())
+		appError := models.NewAppError("LoadConfig", "utils.config.load_config.decode_json: ", err.Error(), 500)
+		return appError
 	}
 
 	config.SetDefaults()
 
 	Cfg = &config
+
+	return nil
 }

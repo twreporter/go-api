@@ -10,13 +10,17 @@ import (
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 
+	log "github.com/Sirupsen/logrus"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 func main() {
 
 	// Load config file
-	utils.LoadConfig("configs/config.json")
+	err := utils.LoadConfig("configs/config.json")
+	if err != nil {
+		log.Fatal("main.load_config.fatal_error: ", err.Error())
+	}
 
 	// security: no one can put it in an iframe
 	secureMiddleware := secure.New(secure.Options{
