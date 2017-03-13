@@ -21,7 +21,7 @@ var oauthConf *oauth2.Config
 
 // Google ...
 type Google struct {
-	Storage *storage.UserStorage
+	Storage storage.UserStorage
 }
 
 func initOauthConfig() {
