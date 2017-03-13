@@ -10,7 +10,7 @@ import (
 )
 
 // SetupRouter ...
-func SetupRouter(userStorage *storage.UserStorage, mailSender utils.EmailSender) *gin.Engine {
+func SetupRouter(userStorage storage.UserStorage, mailSender utils.EmailSender) *gin.Engine {
 	router := gin.Default()
 	router.Use(middlewares.CORSMiddleware())
 
