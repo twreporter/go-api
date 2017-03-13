@@ -15,8 +15,8 @@ import (
 // UserStorage this is an interface defines methods for users, reporter_accounts and o_auth_accounts tables
 type UserStorage interface {
 	InsertUserByOAuth(models.OAuthAccount) models.User
-	GetOAuthData(sql.NullString) models.OAuthAccount
-	GetUserDataByOAuth(models.OAuthAccount) models.User
+	GetOAuthData(sql.NullString, string) models.OAuthAccount
+	GetUserDataByOAuth(models.OAuthAccount) (models.User, error)
 	UpdateOAuthData(models.OAuthAccount) models.OAuthAccount
 	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
 	GetReporterAccountData(string) (*models.ReporterAccount, error)
