@@ -23,7 +23,7 @@ var oauthConf *oauth2.Config
 
 // Facebook ...
 type Facebook struct {
-	Storage *storage.UserStorage
+	Storage storage.UserStorage
 }
 
 func initOauthConfig() {

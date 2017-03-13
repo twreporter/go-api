@@ -12,18 +12,31 @@ import (
 	"twreporter.org/go-api/utils"
 )
 
-// NewUserStorage initializes the user storage
-func NewUserStorage(db *gorm.DB) *UserStorage {
-	return &UserStorage{db}
+// UserStorage this is an interface defines methods for users, reporter_accounts and o_auth_accounts tables
+type UserStorage interface {
+	InsertUserByOAuth(models.OAuthAccount) models.User
+	GetOAuthData(sql.NullString) models.OAuthAccount
+	GetUserDataByOAuth(models.OAuthAccount) models.User
+	UpdateOAuthData(models.OAuthAccount) models.OAuthAccount
+	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
+	GetReporterAccountData(string) (*models.ReporterAccount, error)
+	GetUserDataByReporterAccount(*models.ReporterAccount) (*models.User, error)
+	UpdateReporterAccountPassword(*models.ReporterAccount, string) (*models.ReporterAccount, error)
+	UpdateReporterAccountActive(*models.ReporterAccount, bool) (*models.ReporterAccount, error)
 }
 
-// UserStorage stores all users
-type UserStorage struct {
+// NewGormUserStorage this initializes the user storage
+func NewGormUserStorage(db *gorm.DB) UserStorage {
+	return &gormUserStorage{db}
+}
+
+// gormUserStorage this implements UserStorage interface
+type gormUserStorage struct {
 	db *gorm.DB
 }
 
 // InsertUserByOAuth insert a new user into db after the oath loginin
-func (s UserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
+func (s *gormUserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
 	log.Info("Inserting user data")
 	user := models.User{
 		OAuthAccounts:    []models.OAuthAccount{omodel},
@@ -39,7 +52,7 @@ func (s UserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
-func (s UserStorage) GetOAuthData(aid sql.NullString, aType string) models.OAuthAccount {
+func (s *gormUserStorage) GetOAuthData(aid sql.NullString, aType string) models.OAuthAccount {
 	log.Info("Getting the matching OAuth data", aid)
 	oac := models.OAuthAccount{}
 	s.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).First(&oac)
@@ -47,7 +60,7 @@ func (s UserStorage) GetOAuthData(aid sql.NullString, aType string) models.OAuth
 }
 
 // GetUserDataByOAuth gets the corresponding user data by using the OAuth information
-func (s UserStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User, error) {
+func (s *gormUserStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User, error) {
 	log.Info("Getting the matching User data")
 	matO := s.GetOAuthData(oac.AId, oac.Type)
 	user := models.User{}
@@ -56,7 +69,7 @@ func (s UserStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User, e
 }
 
 // UpdateOAuthData updates the corresponding OAuth by using the OAuth information
-func (s UserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAccount {
+func (s *gormUserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAccount {
 	log.Info("Getting the matching OAuth data", newData.AId)
 	matO := s.GetOAuthData(newData.AId, newData.Type)
 	matO.Email = newData.Email
@@ -70,7 +83,7 @@ func (s UserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAc
 }
 
 // InsertUserByReporterAccount insert a new user into db after the sign up
-func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
+func (s *gormUserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
 	log.WithFields(log.Fields{
 		"account":       raModel.Account,
 		"password":      raModel.Password,
@@ -87,7 +100,7 @@ func (s UserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount)
 }
 
 // GetReporterAccountData get the corresponding Reporter account by comparing email and password
-func (s UserStorage) GetReporterAccountData(email string) (*models.ReporterAccount, error) {
+func (s *gormUserStorage) GetReporterAccountData(email string) (*models.ReporterAccount, error) {
 	log.WithFields(log.Fields{
 		"email": email,
 	}).Info("Getting the matching Reporter account data")
@@ -98,22 +111,22 @@ func (s UserStorage) GetReporterAccountData(email string) (*models.ReporterAccou
 }
 
 // GetUserDataByReporterAccount get user data from user table by providing its reporter account data
-func (s UserStorage) GetUserDataByReporterAccount(ra *models.ReporterAccount) *models.User {
+func (s *gormUserStorage) GetUserDataByReporterAccount(ra *models.ReporterAccount) (*models.User, error) {
 	log.Info("Getting the matching User data by reporter account")
 	user := models.User{}
-	s.db.Model(ra).Related(&user)
-	return &user
+	err := s.db.Model(ra).Related(&user).Error
+	return &user, err
 }
 
 // UpdateReporterAccountPassword update password for a reporter account
-func (s UserStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password string) (*models.ReporterAccount, error) {
+func (s *gormUserStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password string) (*models.ReporterAccount, error) {
 	ra.Password = password
 	err := s.db.Save(ra).Error
 	return ra, err
 }
 
 // UpdateReporterAccountActive update password for a reporter account
-func (s UserStorage) UpdateReporterAccountActive(ra *models.ReporterAccount, active bool) (*models.ReporterAccount, error) {
+func (s *gormUserStorage) UpdateReporterAccountActive(ra *models.ReporterAccount, active bool) (*models.ReporterAccount, error) {
 	ra.Active = active
 	err := s.db.Save(ra).Error
 	return ra, err
