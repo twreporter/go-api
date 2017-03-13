@@ -32,7 +32,7 @@ type LoginJSON struct {
 
 // AccountController ...
 type AccountController struct {
-	Storage *storage.UserStorage
+	Storage storage.UserStorage
 }
 
 // generateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
@@ -144,7 +144,12 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 		}).Info("Password Info ")
 
 		if encryptedPassword == account.Password {
-			user := ac.Storage.GetUserDataByReporterAccount(account)
+			user, err := ac.Storage.GetUserDataByReporterAccount(account)
+			if err != nil {
+				log.Error("controllers.account.active.get_user_data_by_reporter_account_error \n", err.Error())
+				c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
+			}
+
 			jwt := utils.RetrieveToken(user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
 			c.JSON(200, gin.H{"status": "You are logged in", "jwt": jwt})
 		} else {
@@ -269,7 +274,12 @@ func (ac AccountController) Activate(c *gin.Context) {
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		}
 
-		user := ac.Storage.GetUserDataByReporterAccount(ra)
+		user, err := ac.Storage.GetUserDataByReporterAccount(ra)
+		if err != nil {
+			log.Error("controllers.account.active.get_user_data_by_reporter_account_error \n", err.Error())
+			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
+		}
+
 		jwt := utils.RetrieveToken(user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
 		c.JSON(200, gin.H{"status": "Account is activated", "account": email, "jwt": jwt})
 		return

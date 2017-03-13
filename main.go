@@ -45,7 +45,7 @@ func main() {
 
 	// set up data storage
 	// userStorage := storage.NewUserStorage(db)
-	userStorage := storage.NewUserStorage(db)
+	userStorage := storage.NewGormUserStorage(db)
 
 	mailSender := utils.NewSMTPEmailSender(utils.Cfg.EmailSettings)
 
