@@ -97,8 +97,10 @@ func (o Google) Authenticate(c *gin.Context) {
 		o.Storage.UpdateOAuthData(remoteOauth)
 	}
 
-	c.Writer.Write([]byte(utils.RetrieveToken(matchUser.Privilege,
-		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)))
+	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
+		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
+
+	c.Writer.Write([]byte(token))
 
 	log.Info("parseResponseBody: %s\n", fstring)
 }

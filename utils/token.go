@@ -3,17 +3,16 @@ package utils
 import (
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
-)
+	"twreporter.org/go-api/models"
 
-var (
-	mySigningKey = []byte(Cfg.AppSettings.Token)
+	log "github.com/Sirupsen/logrus"
 )
 
 // RetrieveToken ...
-func RetrieveToken(privilege int, firstName string, lastName string, email string) string {
+func RetrieveToken(userID uint, privilege int, firstName string, lastName string, email string) (string, error) {
 	log.WithFields(log.Fields{
+		"ID":        userID,
 		"privilege": privilege,
 		"firstName": firstName,
 		"lastName":  lastName,
@@ -27,6 +26,7 @@ func RetrieveToken(privilege int, firstName string, lastName string, email strin
 	claims := token.Claims.(jwt.MapClaims)
 
 	// set token claims
+	claims["userID"] = userID
 	claims["privilege"] = privilege
 	claims["firstName"] = firstName
 	claims["lastName"] = lastName
@@ -34,7 +34,11 @@ func RetrieveToken(privilege int, firstName string, lastName string, email strin
 	claims["exp"] = time.Now().Add(time.Hour * Cfg.AppSettings.Expiration).Unix()
 
 	/* Sign the token with our secret */
-	tokenString, _ := token.SignedString(mySigningKey)
+	tokenString, err := token.SignedString([]byte(Cfg.AppSettings.Token))
 
-	return tokenString
+	if err != nil {
+		return "", models.NewAppError("RetrieveToken", "utils.token.retrieve_token", err.Error(), 500)
+	}
+
+	return tokenString, nil
 }
