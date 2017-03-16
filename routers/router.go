@@ -43,9 +43,9 @@ func SetupRouter(userStorage storage.UserStorage, bookmarkStorage storage.Bookma
 
 		// handle bookmarks of users
 		bc := controllers.BookmarkController{bookmarkStorage, userStorage}
-		v1.GET("/users/:userID/bookmarks", bc.ListBookmarkByUser)
-		v1.POST("/users/:userID/bookmarks/", bc.CreateBookmarkByUser)
-		v1.DELETE("/users/:userID/bookmarks/:bookmarkID", bc.DeleteBookmarkByUser)
+		v1.GET("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.ListBookmarkByUser)
+		v1.POST("/users/:userID/bookmarks/", middlewares.ValidateUserID(), bc.CreateBookmarkByUser)
+		v1.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.ValidateUserID(), bc.DeleteBookmarkByUser)
 	}
 
 	return router
