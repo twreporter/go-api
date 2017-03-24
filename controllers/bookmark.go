@@ -24,22 +24,24 @@ type bookmarkJSON struct {
 }
 
 func getPropsFromPOSTBody(c *gin.Context) (models.Bookmark, error) {
+	var err error
 	var form bookmarkForm
 	var json bookmarkJSON
 
-	// Request Header
-	// Content-Type: x-www-form-urlencoded
-	formErr := c.Bind(&form)
+	contentType := c.ContentType()
 
-	// Content-Type: application-json
-	jsonErr := c.Bind(&json)
-
-	if formErr == nil || jsonErr == nil {
-		if formErr == nil {
-			return models.Bookmark{Href: form.Href, Title: form.Title, Desc: utils.ToNullString(form.Desc), Thumbnail: utils.ToNullString(form.Thumbnail)}, nil
+	if contentType == "application/json" {
+		err = c.Bind(&json)
+		if err != nil {
+			return models.Bookmark{}, err
 		}
-
 		return models.Bookmark{Href: json.Href, Title: json.Title, Desc: utils.ToNullString(json.Desc), Thumbnail: utils.ToNullString(json.Thumbnail)}, nil
+	} else if contentType == "x-www-form-urlencoded" {
+		err = c.Bind(&form)
+		if err != nil {
+			return models.Bookmark{}, err
+		}
+		return models.Bookmark{Href: form.Href, Title: form.Title, Desc: utils.ToNullString(form.Desc), Thumbnail: utils.ToNullString(form.Thumbnail)}, nil
 	}
 
 	return models.Bookmark{}, models.NewAppError("getPropsFromPOSTBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 500)

@@ -16,7 +16,7 @@ var Cfg *models.Config = &models.Config{}
 var CfgFileName string
 
 // LoadConfig it will load config file
-func LoadConfig(fileName string) *models.AppError {
+func LoadConfig(fileName string) error {
 
 	file, err := os.Open(fileName)
 	if err != nil {

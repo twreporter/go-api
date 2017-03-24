@@ -75,28 +75,24 @@ func generateEncryptedPassword(password []byte) (string, error) {
 
 // getEmailAndPasswordFromPOSTBody get email and password value from the POST body
 func getEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
-	var email string
+	var err error
 	var form LoginForm
 	var json LoginJSON
-	var password []byte
 
-	// Request Header
-	// Content-Type: x-www-form-urlencoded
-	formErr := c.Bind(&form)
+	contentType := c.ContentType()
 
-	// Content-Type: application-json
-	jsonErr := c.Bind(&json)
-
-	if formErr == nil || jsonErr == nil {
-		if formErr == nil {
-			email = form.Email
-			password = []byte(form.Password)
-		} else {
-			email = json.Email
-			password = []byte(json.Password)
+	if contentType == "application/json" {
+		err = c.Bind(&json)
+		if err != nil {
+			return "", nil, err
 		}
-
-		return email, password, nil
+		return json.Email, []byte(json.Password), nil
+	} else if contentType == "x-www-form-urlencoded" {
+		err = c.Bind(&form)
+		if err != nil {
+			return "", nil, err
+		}
+		return form.Email, []byte(form.Password), nil
 	}
 
 	return "", nil, models.NewAppError("getEmailAndPasswordFromPOSTBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 500)
@@ -173,7 +169,7 @@ func (ac AccountController) Signup(c *gin.Context, mailSender utils.EmailSender)
 	var ra *models.ReporterAccount
 
 	email, password, err = getEmailAndPasswordFromPOSTBody(c)
-	log.Info("email", email, " password ", password)
+	log.Info("email ", email, " password ", password)
 
 	if err != nil {
 		log.Error(err.Error())
@@ -215,6 +211,7 @@ func (ac AccountController) Signup(c *gin.Context, mailSender utils.EmailSender)
 		if _, err = ac.Storage.UpdateReporterAccountPassword(ra, encryptedPassword); err != nil {
 			log.Error("controllers.account.sign_up.update_db_error \n", err.Error())
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
+			return
 		}
 
 		go func() {
