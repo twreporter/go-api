@@ -88,13 +88,15 @@ type FacebookSettings struct {
 	Statestr string
 }
 
+// GoogleSettings could be defined in configs/config.json
 type GoogleSettings struct {
-	Id       string
+	ID       string
 	Secret   string
-	Url      string
+	URL      string
 	Statestr string
 }
 
+// OauthSettings this contains FacebookSettings and GoogleSettings
 type OauthSettings struct {
 	FacebookSettings FacebookSettings
 	GoogleSettings   GoogleSettings

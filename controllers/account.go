@@ -150,7 +150,12 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 				c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 			}
 
-			jwt := utils.RetrieveToken(user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
+			jwt, err := utils.RetrieveToken(user.ID, user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
+			if err != nil {
+				c.JSON(500, gin.H{"status": "Internal Server Error", "error": err.Error()})
+				return
+			}
+
 			c.JSON(200, gin.H{"status": "You are logged in", "jwt": jwt})
 		} else {
 			c.JSON(401, gin.H{"status": "Invalid password"})
@@ -280,7 +285,11 @@ func (ac AccountController) Activate(c *gin.Context) {
 			c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		}
 
-		jwt := utils.RetrieveToken(user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
+		jwt, err := utils.RetrieveToken(user.ID, user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
+		if err != nil {
+			c.JSON(500, gin.H{"status": "Internal Server Error", "error": err.Error()})
+			return
+		}
 		c.JSON(200, gin.H{"status": "Account is activated", "account": email, "jwt": jwt})
 		return
 	}

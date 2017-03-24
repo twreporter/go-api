@@ -11,7 +11,7 @@ import (
 )
 
 // SetupRouter ...
-func SetupRouter(userStorage storage.UserStorage, mailSender utils.EmailSender) *gin.Engine {
+func SetupRouter(userStorage storage.UserStorage, bookmarkStorage storage.BookmarkStorage, mailSender utils.EmailSender) *gin.Engine {
 	router := gin.Default()
 	router.Use(middlewares.CORSMiddleware())
 
@@ -40,6 +40,12 @@ func SetupRouter(userStorage storage.UserStorage, mailSender utils.EmailSender) 
 			account.Signup(c, mailSender)
 		})
 		v1.GET("/activate", account.Activate)
+
+		// handle bookmarks of users
+		bc := controllers.BookmarkController{bookmarkStorage, userStorage}
+		v1.GET("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.ListBookmarkByUser)
+		v1.POST("/users/:userID/bookmarks/", middlewares.ValidateUserID(), bc.CreateBookmarkByUser)
+		v1.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.ValidateUserID(), bc.DeleteBookmarkByUser)
 	}
 
 	return router

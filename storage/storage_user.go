@@ -14,13 +14,19 @@ import (
 
 // UserStorage this is an interface defines methods for users, reporter_accounts and o_auth_accounts tables
 type UserStorage interface {
-	InsertUserByOAuth(models.OAuthAccount) models.User
+	// get
+	GetUserByID(userID string) (models.User, error)
 	GetOAuthData(sql.NullString, string) models.OAuthAccount
 	GetUserDataByOAuth(models.OAuthAccount) (models.User, error)
-	UpdateOAuthData(models.OAuthAccount) models.OAuthAccount
-	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
 	GetReporterAccountData(string) (*models.ReporterAccount, error)
 	GetUserDataByReporterAccount(*models.ReporterAccount) (*models.User, error)
+
+	// create
+	InsertUserByOAuth(models.OAuthAccount) models.User
+	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
+
+	// update
+	UpdateOAuthData(models.OAuthAccount) models.OAuthAccount
 	UpdateReporterAccountPassword(*models.ReporterAccount, string) (*models.ReporterAccount, error)
 	UpdateReporterAccountActive(*models.ReporterAccount, bool) (*models.ReporterAccount, error)
 }
@@ -35,20 +41,13 @@ type gormUserStorage struct {
 	db *gorm.DB
 }
 
-// InsertUserByOAuth insert a new user into db after the oath loginin
-func (s *gormUserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
-	log.Info("Inserting user data")
-	user := models.User{
-		OAuthAccounts:    []models.OAuthAccount{omodel},
-		Email:            omodel.Email,
-		FirstName:        omodel.FirstName,
-		LastName:         omodel.LastName,
-		Gender:           omodel.Gender,
-		Privilege:        constants.PrivilegeRegistered,
-		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
-	}
-	s.db.Create(&user)
-	return user
+// GetUserByID gets the user by its ID
+func (s *gormUserStorage) GetUserByID(userID string) (models.User, error) {
+	user := models.User{}
+
+	// SELECT * FROM users WHERE ID = $userID
+	err := s.db.First(&user, "id = ?", userID).Error
+	return user, err
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
@@ -65,37 +64,6 @@ func (s *gormUserStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.Us
 	matO := s.GetOAuthData(oac.AId, oac.Type)
 	user := models.User{}
 	err := s.db.Model(&matO).Related(&user).Error
-	return user, err
-}
-
-// UpdateOAuthData updates the corresponding OAuth by using the OAuth information
-func (s *gormUserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAccount {
-	log.Info("Getting the matching OAuth data", newData.AId)
-	matO := s.GetOAuthData(newData.AId, newData.Type)
-	matO.Email = newData.Email
-	matO.Name = newData.Name
-	matO.FirstName = newData.FirstName
-	matO.LastName = newData.LastName
-	matO.Gender = newData.Gender
-	matO.Picture = newData.Picture
-	s.db.Save(&matO)
-	return matO
-}
-
-// InsertUserByReporterAccount insert a new user into db after the sign up
-func (s *gormUserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
-	log.WithFields(log.Fields{
-		"account":       raModel.Account,
-		"password":      raModel.Password,
-		"Active":        raModel.Active,
-		"ActivateToken": raModel.ActivateToken,
-	}).Info("Inserting user data")
-	user := models.User{
-		ReporterAccount:  raModel,
-		Email:            utils.ToNullString(raModel.Account),
-		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
-	}
-	err := s.db.Create(&user).Error
 	return user, err
 }
 
@@ -116,6 +84,53 @@ func (s *gormUserStorage) GetUserDataByReporterAccount(ra *models.ReporterAccoun
 	user := models.User{}
 	err := s.db.Model(ra).Related(&user).Error
 	return &user, err
+}
+
+// InsertUserByOAuth insert a new user into db after the oath loginin
+func (s *gormUserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
+	log.Info("Inserting user data")
+	user := models.User{
+		OAuthAccounts:    []models.OAuthAccount{omodel},
+		Email:            omodel.Email,
+		FirstName:        omodel.FirstName,
+		LastName:         omodel.LastName,
+		Gender:           omodel.Gender,
+		Privilege:        constants.PrivilegeRegistered,
+		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
+	}
+	s.db.Create(&user)
+	return user
+}
+
+// InsertUserByReporterAccount insert a new user into db after the sign up
+func (s *gormUserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
+	log.WithFields(log.Fields{
+		"account":       raModel.Account,
+		"password":      raModel.Password,
+		"Active":        raModel.Active,
+		"ActivateToken": raModel.ActivateToken,
+	}).Info("Inserting user data")
+	user := models.User{
+		ReporterAccount:  raModel,
+		Email:            utils.ToNullString(raModel.Account),
+		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
+	}
+	err := s.db.Create(&user).Error
+	return user, err
+}
+
+// UpdateOAuthData updates the corresponding OAuth by using the OAuth information
+func (s *gormUserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAccount {
+	log.Info("Getting the matching OAuth data", newData.AId)
+	matO := s.GetOAuthData(newData.AId, newData.Type)
+	matO.Email = newData.Email
+	matO.Name = newData.Name
+	matO.FirstName = newData.FirstName
+	matO.LastName = newData.LastName
+	matO.Gender = newData.Gender
+	matO.Picture = newData.Picture
+	s.db.Save(&matO)
+	return matO
 }
 
 // UpdateReporterAccountPassword update password for a reporter account

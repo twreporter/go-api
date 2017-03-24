@@ -50,11 +50,12 @@ func main() {
 	// set up data storage
 	// userStorage := storage.NewUserStorage(db)
 	userStorage := storage.NewGormUserStorage(db)
+	bookmarkStorage := storage.NewGormBookmarkStorage(db)
 
 	mailSender := utils.NewSMTPEmailSender(utils.Cfg.EmailSettings)
 
 	// set up the router
-	router := routers.SetupRouter(userStorage, mailSender)
+	router := routers.SetupRouter(userStorage, bookmarkStorage, mailSender)
 
 	router.Use(secureFunc)
 

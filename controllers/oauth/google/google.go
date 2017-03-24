@@ -27,9 +27,9 @@ type Google struct {
 func initOauthConfig() {
 	if oauthConf == nil {
 		oauthConf = &oauth2.Config{
-			ClientID:     utils.Cfg.OauthSettings.GoogleSettings.Id,
+			ClientID:     utils.Cfg.OauthSettings.GoogleSettings.ID,
 			ClientSecret: utils.Cfg.OauthSettings.GoogleSettings.Secret,
-			RedirectURL:  utils.Cfg.OauthSettings.GoogleSettings.Url,
+			RedirectURL:  utils.Cfg.OauthSettings.GoogleSettings.URL,
 			Scopes: []string{
 				"profile", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
 				"email",
@@ -97,8 +97,10 @@ func (o Google) Authenticate(c *gin.Context) {
 		o.Storage.UpdateOAuthData(remoteOauth)
 	}
 
-	c.Writer.Write([]byte(utils.RetrieveToken(matchUser.Privilege,
-		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)))
+	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
+		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
+
+	c.Writer.Write([]byte(token))
 
 	log.Info("parseResponseBody: %s\n", fstring)
 }
