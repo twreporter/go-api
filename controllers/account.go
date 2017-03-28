@@ -87,7 +87,7 @@ func getEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
 			return "", nil, err
 		}
 		return json.Email, []byte(json.Password), nil
-	} else if contentType == "x-www-form-urlencoded" {
+	} else if contentType == "application/x-www-form-urlencoded" {
 		err = c.Bind(&form)
 		if err != nil {
 			return "", nil, err
@@ -95,7 +95,7 @@ func getEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
 		return form.Email, []byte(form.Password), nil
 	}
 
-	return "", nil, models.NewAppError("getEmailAndPasswordFromPOSTBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 500)
+	return "", nil, models.NewAppError("getEmailAndPasswordFromPOSTBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 400)
 }
 
 // Authenticate authenticate a reporter account
@@ -152,7 +152,9 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 				return
 			}
 
-			c.JSON(200, gin.H{"status": "You are logged in", "jwt": jwt})
+			c.JSON(200, gin.H{"status": "You are logged in",
+				"id": user.ID, "privilege": user.Privilege, "firstname": user.FirstName.String,
+				"lastname": user.LastName.String, "email": user.Email.String, "jwt": jwt})
 		} else {
 			c.JSON(401, gin.H{"status": "Invalid password"})
 		}
@@ -287,7 +289,9 @@ func (ac AccountController) Activate(c *gin.Context) {
 			c.JSON(500, gin.H{"status": "Internal Server Error", "error": err.Error()})
 			return
 		}
-		c.JSON(200, gin.H{"status": "Account is activated", "account": email, "jwt": jwt})
+		c.JSON(200, gin.H{"status": "Account is activated",
+			"id": user.ID, "privilege": user.Privilege, "firstname": user.FirstName.String,
+			"lastname": user.LastName.String, "email": user.Email.String, "jwt": jwt})
 		return
 	}
 
