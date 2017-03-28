@@ -26,22 +26,32 @@ type Facebook struct {
 	Storage storage.UserStorage
 }
 
-func initOauthConfig() {
+func initOauthConfig(location string) {
+	if location == "" {
+		location = "https://www.twreporter.org"
+	}
+
+	location = url.QueryEscape(location)
+	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?location=" + location
+
 	if oauthConf == nil {
 		oauthConf = &oauth2.Config{
 			ClientID:     utils.Cfg.OauthSettings.FacebookSettings.ID,
 			ClientSecret: utils.Cfg.OauthSettings.FacebookSettings.Secret,
-			RedirectURL:  utils.Cfg.OauthSettings.FacebookSettings.URL,
+			RedirectURL:  redirectURL,
 			Scopes:       []string{"public_profile", "email"},
 			Endpoint:     facebook.Endpoint,
 		}
+	} else {
+		oauthConf.RedirectURL = redirectURL
 	}
 }
 
 // BeginAuth redirects user to the Facebook Authentication
 func (o Facebook) BeginAuth(c *gin.Context) {
-	initOauthConfig()
 
+	location := c.Query("location")
+	initOauthConfig(location)
 	URL, err := url.Parse(oauthConf.Endpoint.AuthURL)
 	if err != nil {
 		log.Error("Parse: ", err)
@@ -59,7 +69,8 @@ func (o Facebook) BeginAuth(c *gin.Context) {
 
 // Authenticate requests the user profile from Facebook
 func (o Facebook) Authenticate(c *gin.Context) {
-	log.Info("controllers.oauth.google.authenticate. OAuth type: ", constants.Facebook)
+	log.Info("controllers.oauth.facebook.authenticate. OAuth type: ", constants.Facebook)
+	location := c.Query("location")
 
 	// get user data from Facebook
 	fstring, err := getRemoteUserData(c.Request, c.Writer)
@@ -107,9 +118,17 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
 		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
 
-	c.Writer.Write([]byte(token))
-
-	log.Info("parseResponseBody: %s\n", fstring)
+	u, err := url.Parse(location)
+	if err != nil {
+		log.Error("controllers.oauth.facebook.authenticate_parse_location_error", err.Error())
+		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
+		return
+	}
+	parameters := url.Values{}
+	parameters.Add("token", token)
+	u.RawQuery = parameters.Encode()
+	url := u.String()
+	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // getRemoteUserData fetched user data from Facebook
