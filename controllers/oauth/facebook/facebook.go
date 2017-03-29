@@ -26,13 +26,17 @@ type Facebook struct {
 	Storage storage.UserStorage
 }
 
-func initOauthConfig(location string) {
+func initOauthConfig(location string, domain string) {
 	if location == "" {
-		location = "https://www.twreporter.org"
+		location = "http://www.twreporter.org/"
+	}
+
+	if domain == "" {
+		domain = "twreporter.org"
 	}
 
 	location = url.QueryEscape(location)
-	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?location=" + location
+	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?location=" + location + "&domain=" + domain
 
 	if oauthConf == nil {
 		oauthConf = &oauth2.Config{
@@ -51,7 +55,8 @@ func initOauthConfig(location string) {
 func (o Facebook) BeginAuth(c *gin.Context) {
 
 	location := c.Query("location")
-	initOauthConfig(location)
+	domain := c.Query("domain")
+	initOauthConfig(location, domain)
 	URL, err := url.Parse(oauthConf.Endpoint.AuthURL)
 	if err != nil {
 		log.Error("Parse: ", err)
@@ -71,6 +76,7 @@ func (o Facebook) BeginAuth(c *gin.Context) {
 func (o Facebook) Authenticate(c *gin.Context) {
 	log.Info("controllers.oauth.facebook.authenticate. OAuth type: ", constants.Facebook)
 	location := c.Query("location")
+	domain := c.Query("domain")
 
 	// get user data from Facebook
 	fstring, err := getRemoteUserData(c.Request, c.Writer)
@@ -118,17 +124,27 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
 		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
 
-	u, err := url.Parse(location)
 	if err != nil {
 		log.Error("controllers.oauth.facebook.authenticate_parse_location_error", err.Error())
 		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		return
 	}
-	parameters := url.Values{}
-	parameters.Add("token", token)
+
+	u, err := url.Parse(location)
+	var secure bool
+	secure = false
+
+	if u.Scheme == "https" {
+		secure = true
+	}
+
+	parameters := u.Query()
+	parameters.Add("login", "facebook")
 	u.RawQuery = parameters.Encode()
-	url := u.String()
-	c.Redirect(http.StatusTemporaryRedirect, url)
+	location = u.String()
+
+	c.SetCookie("token", token, 100, u.Path, domain, secure, true)
+	c.Redirect(http.StatusTemporaryRedirect, location)
 }
 
 // getRemoteUserData fetched user data from Facebook
