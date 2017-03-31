@@ -102,6 +102,14 @@ type OauthSettings struct {
 	GoogleSettings   GoogleSettings
 }
 
+// ConsumerSettings describes who uses this api
+type ConsumerSettings struct {
+	Domain   string
+	Protocal string
+	Host     string
+	Port     string
+}
+
 // EncryptSettings could be defined in configs/config.json
 type EncryptSettings struct {
 	Salt string
@@ -109,11 +117,12 @@ type EncryptSettings struct {
 
 // Config contains all the other configs
 type Config struct {
-	AppSettings     AppSettings
-	EmailSettings   EmailSettings
-	DBSettings      DBSettings
-	OauthSettings   OauthSettings
-	EncryptSettings EncryptSettings
+	AppSettings      AppSettings
+	EmailSettings    EmailSettings
+	DBSettings       DBSettings
+	OauthSettings    OauthSettings
+	ConsumerSettings ConsumerSettings
+	EncryptSettings  EncryptSettings
 }
 
 // SetDefaults could set default value in the Config struct

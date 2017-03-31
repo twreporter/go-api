@@ -3,6 +3,7 @@ package google
 import (
 	"io/ioutil"
 	"net/http"
+	"net/url"
 
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
@@ -24,12 +25,24 @@ type Google struct {
 	Storage storage.UserStorage
 }
 
-func initOauthConfig() {
+func initOauthConfig(location string, domain string) {
+	consumerSettings := utils.Cfg.ConsumerSettings
+	if location == "" {
+		location = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
+	}
+
+	if domain == "" {
+		domain = consumerSettings.Domain
+	}
+
+	location = url.QueryEscape(location)
+	redirectURL := utils.Cfg.OauthSettings.GoogleSettings.URL + "?location=" + location + "&domain=" + domain
+
 	if oauthConf == nil {
 		oauthConf = &oauth2.Config{
 			ClientID:     utils.Cfg.OauthSettings.GoogleSettings.ID,
 			ClientSecret: utils.Cfg.OauthSettings.GoogleSettings.Secret,
-			RedirectURL:  utils.Cfg.OauthSettings.GoogleSettings.URL,
+			RedirectURL:  redirectURL,
 			Scopes: []string{
 				"profile", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
 				"email",
@@ -37,22 +50,27 @@ func initOauthConfig() {
 			},
 			Endpoint: google.Endpoint,
 		}
+	} else {
+		oauthConf.RedirectURL = redirectURL
 	}
 }
 
 // BeginAuth redirects user to the Google Authentication
 func (o Google) BeginAuth(c *gin.Context) {
-	initOauthConfig()
-
+	location := c.Query("location")
+	domain := c.Query("domain")
+	initOauthConfig(location, domain)
 	url := oauthConf.AuthCodeURL(utils.Cfg.OauthSettings.GoogleSettings.Statestr)
 	log.Info("BeginAuth")
-	http.Redirect(c.Writer, c.Request, url, http.StatusTemporaryRedirect)
+	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // Authenticate requests the user profile from Google
 func (o Google) Authenticate(c *gin.Context) {
 
 	log.Info("controllers.oauth.google.authenticate. OAuth type: ", constants.Google)
+	location := c.Query("location")
+	domain := c.Query("domain")
 
 	// get user data from Google
 	fstring, err := getRemoteUserData(c.Request, c.Writer)
@@ -100,9 +118,27 @@ func (o Google) Authenticate(c *gin.Context) {
 	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
 		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
 
-	c.Writer.Write([]byte(token))
+	if err != nil {
+		log.Error("controllers.oauth.google.authenticate_parse_location_error", err.Error())
+		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
+		return
+	}
 
-	log.Info("parseResponseBody: %s\n", fstring)
+	u, err := url.Parse(location)
+	var secure bool
+	secure = false
+
+	if u.Scheme == "https" {
+		secure = true
+	}
+
+	parameters := u.Query()
+	parameters.Add("login", "google")
+	u.RawQuery = parameters.Encode()
+	location = u.String()
+
+	c.SetCookie("token", token, 100, u.Path, domain, secure, true)
+	c.Redirect(http.StatusTemporaryRedirect, location)
 }
 
 // getRemoteUserData fetched user data from Google

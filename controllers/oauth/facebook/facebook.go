@@ -27,12 +27,13 @@ type Facebook struct {
 }
 
 func initOauthConfig(location string, domain string) {
+	consumerSettings := utils.Cfg.ConsumerSettings
 	if location == "" {
-		location = "http://www.twreporter.org/"
+		location = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
 	}
 
 	if domain == "" {
-		domain = "twreporter.org"
+		domain = consumerSettings.Domain
 	}
 
 	location = url.QueryEscape(location)
