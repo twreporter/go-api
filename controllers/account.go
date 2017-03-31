@@ -37,7 +37,7 @@ type AccountController struct {
 
 // generateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
 func generateActivateMailBody(mailAddress, activeToken string) string {
-	href := fmt.Sprintf("%s/%s/activate?email=%s&token=%s", utils.Cfg.AppSettings.Path, utils.Cfg.AppSettings.Version, mailAddress, activeToken)
+	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s", utils.Cfg.ConsumerSettings.Protocal, utils.Cfg.ConsumerSettings.Host, utils.Cfg.ConsumerSettings.Port, mailAddress, activeToken)
 
 	// TBD make the activate mail more beautiful and informative
 	return fmt.Sprintf("<a href=\"%s\" target=\"_blank\">Activate Your Account</a>", href)
