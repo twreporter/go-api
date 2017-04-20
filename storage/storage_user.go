@@ -16,7 +16,7 @@ import (
 type UserStorage interface {
 	// get
 	GetUserByID(userID string) (models.User, error)
-	GetOAuthData(sql.NullString, string) models.OAuthAccount
+	GetOAuthData(sql.NullString, string) (models.OAuthAccount, error)
 	GetUserDataByOAuth(models.OAuthAccount) (models.User, error)
 	GetReporterAccountData(string) (*models.ReporterAccount, error)
 	GetUserDataByReporterAccount(*models.ReporterAccount) (*models.User, error)
@@ -26,7 +26,7 @@ type UserStorage interface {
 	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
 
 	// update
-	UpdateOAuthData(models.OAuthAccount) models.OAuthAccount
+	UpdateOAuthData(models.OAuthAccount) (models.OAuthAccount, error)
 	UpdateReporterAccountPassword(*models.ReporterAccount, string) (*models.ReporterAccount, error)
 	UpdateReporterAccountActive(*models.ReporterAccount, bool) (*models.ReporterAccount, error)
 }
@@ -51,19 +51,31 @@ func (s *gormUserStorage) GetUserByID(userID string) (models.User, error) {
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
-func (s *gormUserStorage) GetOAuthData(aid sql.NullString, aType string) models.OAuthAccount {
+func (s *gormUserStorage) GetOAuthData(aid sql.NullString, aType string) (models.OAuthAccount, error) {
 	log.Info("Getting the matching OAuth data", aid)
 	oac := models.OAuthAccount{}
-	s.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).First(&oac)
-	return oac
+	err := s.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).Last(&oac).Error
+	if err != nil {
+		log.Error("stroage.stroge_user.get_oauth_data.select_record_error:", err)
+	}
+	return oac, err
 }
 
 // GetUserDataByOAuth gets the corresponding user data by using the OAuth information
 func (s *gormUserStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User, error) {
 	log.Info("Getting the matching User data")
-	matO := s.GetOAuthData(oac.AId, oac.Type)
+
 	user := models.User{}
-	err := s.db.Model(&matO).Related(&user).Error
+
+	matO, err := s.GetOAuthData(oac.AId, oac.Type)
+	if err != nil {
+		return user, err
+	}
+
+	err = s.db.Model(&matO).Related(&user).Error
+	if err != nil {
+		log.Error("stroage.storage_user.get_user_data_by_oauth.select_record_error: ", err)
+	}
 	return user, err
 }
 
@@ -120,9 +132,12 @@ func (s *gormUserStorage) InsertUserByReporterAccount(raModel models.ReporterAcc
 }
 
 // UpdateOAuthData updates the corresponding OAuth by using the OAuth information
-func (s *gormUserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OAuthAccount {
+func (s *gormUserStorage) UpdateOAuthData(newData models.OAuthAccount) (models.OAuthAccount, error) {
 	log.Info("Getting the matching OAuth data", newData.AId)
-	matO := s.GetOAuthData(newData.AId, newData.Type)
+	matO, err := s.GetOAuthData(newData.AId, newData.Type)
+	if err != nil {
+		return matO, err
+	}
 	matO.Email = newData.Email
 	matO.Name = newData.Name
 	matO.FirstName = newData.FirstName
@@ -130,7 +145,8 @@ func (s *gormUserStorage) UpdateOAuthData(newData models.OAuthAccount) models.OA
 	matO.Gender = newData.Gender
 	matO.Picture = newData.Picture
 	s.db.Save(&matO)
-	return matO
+
+	return matO, err
 }
 
 // UpdateReporterAccountPassword update password for a reporter account
