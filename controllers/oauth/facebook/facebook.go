@@ -1,6 +1,7 @@
 package facebook
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -144,7 +145,10 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	u.RawQuery = parameters.Encode()
 	location = u.String()
 
-	c.SetCookie("token", token, 100, u.Path, domain, secure, true)
+	authJson := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
+	authResp, _ := json.Marshal(authJson)
+
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, location)
 }
 
