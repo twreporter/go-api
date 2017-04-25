@@ -83,11 +83,8 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	// get user data from Facebook
 	fstring, err := getRemoteUserData(c.Request, c.Writer)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":      "unauthorized",
-			"type":        constants.Facebook,
-			"description": "Cannot get user data from Facebook.",
-		})
+		c.Writer.Header().Set("x-login-error", err.Error())
+		c.Redirect(http.StatusTemporaryRedirect, location)
 		return
 	}
 
@@ -156,13 +153,11 @@ func (o Facebook) Authenticate(c *gin.Context) {
 func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
 	oauthStateString := utils.Cfg.OauthSettings.FacebookSettings.Statestr
-	loginPath := utils.Cfg.AppSettings.Path + "/login"
 
 	// get Facebook OAuth Token
 	state := r.FormValue("state")
 	if state != oauthStateString {
 		log.Warnf("controllers.oauth.facebook.getRemoteUserData. invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
-		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return "", models.NewAppError("OAuth state", "controllers.oauth.facebook", "Invalid oauth state", 500)
 	}
 	code := r.FormValue("code")
@@ -170,7 +165,6 @@ func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 	token, err := oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Warnf("controllers.oauth.facebook.getRemoteUserData. oauthConf.Exchange() failed with '%s'\n", err)
-		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return "", models.NewAppError("Code exchange failed", "controllers.oauth.facebook", err.Error(), 500)
 	}
 
@@ -179,7 +173,6 @@ func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 		url.QueryEscape(token.AccessToken))
 	if err != nil {
 		log.Warnf("controllers.oauth.facebook.getRemoteUserData. Cannot get user info using Facebook API: %s\n", err)
-		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return "", models.NewAppError("Cannot get user info using Facebook API", "controllers.oauth.facebook", err.Error(), 500)
 	}
 	defer resp.Body.Close()
@@ -187,7 +180,6 @@ func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 	response, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Warnf("controllers.oauth.facebook.getRemoteUserData. Error parsing Facebook user data: %s\n", err)
-		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return "", models.NewAppError("Error parsing Facebook user data", "controllers.oauth.facebook", err.Error(), 500)
 	}
 
