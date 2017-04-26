@@ -80,10 +80,23 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	location := c.Query("location")
 	domain := c.Query("domain")
 
+	u, err := url.Parse(location)
+	var secure bool
+	secure = false
+
+	if u.Scheme == "https" {
+		secure = true
+	}
+
+	parameters := u.Query()
+	parameters.Add("login", "facebook")
+
 	// get user data from Facebook
 	fstring, err := getRemoteUserData(c.Request, c.Writer)
 	if err != nil {
-		c.Writer.Header().Set("x-login-error", err.Error())
+		parameters.Add("error", err.Error())
+		u.RawQuery = parameters.Encode()
+		location = u.String()
 		c.Redirect(http.StatusTemporaryRedirect, location)
 		return
 	}
@@ -129,16 +142,6 @@ func (o Facebook) Authenticate(c *gin.Context) {
 		return
 	}
 
-	u, err := url.Parse(location)
-	var secure bool
-	secure = false
-
-	if u.Scheme == "https" {
-		secure = true
-	}
-
-	parameters := u.Query()
-	parameters.Add("login", "facebook")
 	u.RawQuery = parameters.Encode()
 	location = u.String()
 
