@@ -1,7 +1,9 @@
 package main
 
 import (
+	"go/build"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,8 +18,12 @@ import (
 
 func main() {
 
+	p, _ := build.Default.Import("twreporter.org/go-api", "", build.FindOnly)
+
+	fname := filepath.Join(p.Dir, "configs/config.json")
+
 	// Load config file
-	err := utils.LoadConfig("configs/config.json")
+	err := utils.LoadConfig(fname)
 	if err != nil {
 		log.Fatal("main.load_config.fatal_error: ", err.Error())
 	}
