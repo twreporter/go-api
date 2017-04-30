@@ -127,7 +127,7 @@ func (o Facebook) Authenticate(c *gin.Context) {
 			"AId":  remoteOauth.AId,
 			"Name": remoteOauth.Name,
 		}).Info("controllers.oauth.facebook.authenticate. Create OAuth User")
-		o.Storage.InsertUserByOAuth(remoteOauth)
+		matchUser = o.Storage.InsertUserByOAuth(remoteOauth)
 	} else {
 		// update existing OAuth data
 		o.Storage.UpdateOAuthData(remoteOauth)
