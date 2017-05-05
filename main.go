@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/unrolled/secure"
+	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/routers"
-	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
@@ -53,16 +53,10 @@ func main() {
 	db, _ := utils.InitDB()
 	defer db.Close()
 
-	// set up data storage
-	// userStorage := storage.NewUserStorage(db)
-	userStorage := storage.NewGormUserStorage(db)
-	bookmarkStorage := storage.NewGormBookmarkStorage(db)
-
-	mailSender := utils.NewSMTPEmailSender(utils.Cfg.EmailSettings)
+	cf := controllers.NewControllerFactory(db)
 
 	// set up the router
-	router := routers.SetupRouter(userStorage, bookmarkStorage, mailSender)
-
+	router := routers.SetupRouter(cf)
 	router.Use(secureFunc)
 
 	s := &http.Server{

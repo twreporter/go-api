@@ -35,6 +35,19 @@ type AccountController struct {
 	Storage storage.UserStorage
 }
 
+// SetRoute is the method of Controller interface
+func (ac AccountController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
+	mailSender := utils.NewSMTPEmailSender(utils.Cfg.EmailSettings)
+
+	group.POST("/login", ac.Authenticate)
+	group.POST("/signup", func(c *gin.Context) {
+		ac.Signup(c, mailSender)
+	})
+	group.GET("/activate", ac.Activate)
+
+	return group
+}
+
 // generateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
 func generateActivateMailBody(mailAddress, activeToken string) string {
 	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s", utils.Cfg.ConsumerSettings.Protocal, utils.Cfg.ConsumerSettings.Host, utils.Cfg.ConsumerSettings.Port, mailAddress, activeToken)

@@ -12,7 +12,7 @@ import (
 
 // EmailSender is an interface to define methods
 type EmailSender interface {
-	Send(to, subject, body string) *models.AppError
+	Send(to, subject, body string) error
 }
 
 // NewSMTPEmailSender ...
@@ -26,7 +26,7 @@ type smtpEmailSender struct {
 }
 
 // Implements EmailSender interface
-func (sender *smtpEmailSender) Send(to, subject, body string) *models.AppError {
+func (sender *smtpEmailSender) Send(to, subject, body string) error {
 	emailSettings := sender.conf
 
 	if len(emailSettings.SMTPServer) == 0 {
