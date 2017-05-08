@@ -10,7 +10,7 @@ import (
 )
 
 // Cfg it is used to store the data of config file
-var Cfg *models.Config = &models.Config{}
+var Cfg = &models.Config{}
 
 // CfgFileName it is filename of config file
 var CfgFileName string

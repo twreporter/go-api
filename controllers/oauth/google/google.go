@@ -25,6 +25,12 @@ type Google struct {
 	Storage storage.UserStorage
 }
 
+func (gc Google) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
+	group.GET("/auth/google", gc.BeginAuth)
+	group.GET("/auth/google/callback", gc.Authenticate)
+	return group
+}
+
 func initOauthConfig(location string, domain string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if location == "" {

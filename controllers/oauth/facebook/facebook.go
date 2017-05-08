@@ -27,6 +27,12 @@ type Facebook struct {
 	Storage storage.UserStorage
 }
 
+func (fc Facebook) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
+	group.GET("/auth/facebook", fc.BeginAuth)
+	group.GET("/auth/facebook/callback", fc.Authenticate)
+	return group
+}
+
 func initOauthConfig(location string, domain string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if location == "" {

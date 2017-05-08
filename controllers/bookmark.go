@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -51,6 +52,15 @@ func getPropsFromPOSTBody(c *gin.Context) (models.Bookmark, error) {
 type BookmarkController struct {
 	BookmarkStorage storage.BookmarkStorage
 	UserStorage     storage.UserStorage
+}
+
+// SetRoute is the method of Controller interface
+func (bc BookmarkController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
+	// handle bookmarks of users
+	group.GET("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.ListBookmarkByUser)
+	group.POST("/users/:userID/bookmarks/", middlewares.ValidateUserID(), bc.CreateBookmarkByUser)
+	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.ValidateUserID(), bc.DeleteBookmarkByUser)
+	return group
 }
 
 // ListBookmarkByUser given userID this func will list all the bookmarks belongs to the user
