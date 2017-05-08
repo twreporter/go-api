@@ -48,46 +48,8 @@ func (ac AccountController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	return group
 }
 
-// generateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
-func generateActivateMailBody(mailAddress, activeToken string) string {
-	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s", utils.Cfg.ConsumerSettings.Protocal, utils.Cfg.ConsumerSettings.Host, utils.Cfg.ConsumerSettings.Port, mailAddress, activeToken)
-
-	// TBD make the activate mail more beautiful and informative
-	return fmt.Sprintf("<a href=\"%s\" target=\"_blank\">Activate Your Account</a>", href)
-}
-
-// generateRandomBytes returns securely generated random bytes.
-// It will return an error if the system's secure random
-// number generator fails to function correctly, in which
-// case the caller should not continue.
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	// Note that err == nil only if we read len(b) bytes.
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
-}
-
-// generateRandomString returns a URL-safe, base64 encoded
-// securely generated random string.
-func generateRandomString(s int) (string, error) {
-	b, err := generateRandomBytes(s)
-	return base64.URLEncoding.EncodeToString(b), err
-}
-
-// generateEncryptedPassword returns encryptedly
-// securely generated string.
-func generateEncryptedPassword(password []byte) (string, error) {
-	salt := []byte(utils.Cfg.EncryptSettings.Salt)
-	key, err := scrypt.Key(password, salt, 16384, 8, 1, 32)
-	return fmt.Sprintf("%x", key), err
-}
-
-// getEmailAndPasswordFromPOSTBody get email and password value from the POST body
-func getEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
+// parsePostBody get email and password value from the POST body
+func parsePostBody(c *gin.Context) (string, []byte, error) {
 	var err error
 	var form LoginForm
 	var json LoginJSON
@@ -108,7 +70,7 @@ func getEmailAndPasswordFromPOSTBody(c *gin.Context) (string, []byte, error) {
 		return form.Email, []byte(form.Password), nil
 	}
 
-	return "", nil, models.NewAppError("getEmailAndPasswordFromPOSTBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 400)
+	return "", nil, models.NewAppError("parsePostBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 400)
 }
 
 // Authenticate authenticate a reporter account
@@ -119,7 +81,7 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 	var password []byte
 	var encryptedPassword string
 
-	email, password, err = getEmailAndPasswordFromPOSTBody(c)
+	email, password, err = parsePostBody(c)
 
 	if err != nil {
 		log.Error(err.Error())
@@ -127,7 +89,7 @@ func (ac AccountController) Authenticate(c *gin.Context) {
 		return
 	}
 
-	encryptedPassword, err = generateEncryptedPassword(password)
+	encryptedPassword, err = utils.GenerateEncryptedPassword(password)
 
 	if err != nil {
 		log.Error("controllers.account.authenticate.generate_encrypted_password_error \n", err.Error())
@@ -183,7 +145,7 @@ func (ac AccountController) Signup(c *gin.Context, mailSender utils.EmailSender)
 	var password []byte
 	var ra *models.ReporterAccount
 
-	email, password, err = getEmailAndPasswordFromPOSTBody(c)
+	email, password, err = parsePostBody(c)
 	log.Info("email ", email, " password ", password)
 
 	if err != nil {
@@ -200,7 +162,7 @@ func (ac AccountController) Signup(c *gin.Context, mailSender utils.EmailSender)
 		return
 	}
 
-	encryptedPassword, err = generateEncryptedPassword(password)
+	encryptedPassword, err = utils.GenerateEncryptedPassword(password)
 	if err != nil {
 		log.Error("controllers.account.sign_up.generate_encrypted_password_error \n", err.Error())
 		c.JSON(500, gin.H{"status": "Internal server error"})
@@ -231,7 +193,7 @@ func (ac AccountController) Signup(c *gin.Context, mailSender utils.EmailSender)
 
 		go func() {
 			// re-send the activation email
-			if err1 := mailSender.Send(email, activateMailSubject, generateActivateMailBody(email, ra.ActivateToken)); err1 != nil {
+			if err1 := mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, ra.ActivateToken)); err1 != nil {
 				log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
 			}
 		}()
@@ -241,7 +203,7 @@ func (ac AccountController) Signup(c *gin.Context, mailSender utils.EmailSender)
 	}
 
 	// generate active token
-	activeToken, err = generateRandomString(8)
+	activeToken, err = utils.GenerateRandomString(8)
 
 	if err != nil {
 		log.Error("controllers.account.sign_up.generate_active_token_error \n", err.Error())
@@ -264,7 +226,7 @@ func (ac AccountController) Signup(c *gin.Context, mailSender utils.EmailSender)
 	}
 
 	go func() {
-		if err1 := mailSender.Send(email, activateMailSubject, generateActivateMailBody(email, activeToken)); err1 != nil {
+		if err1 := mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, activeToken)); err1 != nil {
 			log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
 		}
 	}()
