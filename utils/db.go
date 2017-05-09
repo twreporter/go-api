@@ -22,7 +22,7 @@ func InitDB() (*gorm.DB, error) {
 	}
 
 	// automatically migrate the schema, to keep them update to date.
-	db.AutoMigrate(&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{})
+	db.AutoMigrate(&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{})
 
 	return db, nil
 }

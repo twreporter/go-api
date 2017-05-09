@@ -7,5 +7,5 @@ type AuthenticatedResponse struct {
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
 	Email     string `json:"eamil"`
-	Jwt       string `json:jwt`
+	Jwt       string `json:"jwt"`
 }

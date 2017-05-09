@@ -1,11 +1,7 @@
 package controllers
 
 import (
-	"crypto/rand"
-	"encoding/base64"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/scrypt"
 	"net/mail"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"

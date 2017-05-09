@@ -7,8 +7,6 @@ import (
 	"twreporter.org/go-api/controllers/oauth/facebook"
 	"twreporter.org/go-api/controllers/oauth/google"
 	"twreporter.org/go-api/storage"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 // Controller ...
@@ -33,7 +31,7 @@ func (cf *ControllerFactory) SetController(cn string, c Controller) {
 
 // SetRoute set route by calling the correspoding controllers.
 func (cf *ControllerFactory) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	for k, v := range cf.controllers {
+	for _, v := range cf.controllers {
 		group = v.SetRoute(group)
 	}
 	return group
@@ -44,12 +42,14 @@ func NewControllerFactory(db *gorm.DB) *ControllerFactory {
 	// set up data storage
 	userStorage := storage.NewGormUserStorage(db)
 	bookmarkStorage := storage.NewGormBookmarkStorage(db)
+	registrationStorage := storage.NewGormRegistrationStorage(db)
 
 	// init controllers
 	fc := facebook.Facebook{Storage: userStorage}
 	gc := google.Google{Storage: userStorage}
 	ac := AccountController{Storage: userStorage}
 	bc := BookmarkController{BookmarkStorage: bookmarkStorage, UserStorage: userStorage}
+	rc := RegistrationController{Storage: registrationStorage}
 
 	cf := &ControllerFactory{
 		controllers: make(map[string]Controller),
@@ -58,6 +58,7 @@ func NewControllerFactory(db *gorm.DB) *ControllerFactory {
 	cf.SetController(constants.GoogleController, gc)
 	cf.SetController(constants.AccountController, ac)
 	cf.SetController(constants.BookmarkController, bc)
+	cf.SetController(constants.RegistrationController, rc)
 
 	return cf
 }
