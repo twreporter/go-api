@@ -11,6 +11,7 @@ type Registration struct {
 	DeletedAt     *time.Time
 	Email         string `gorm:"primary_key"`
 	Service       string `gorm:"primary_key"`
+	UID           uint
 	Active        bool   `gorm:"default:0"`
 	ActivateToken string `gorm:"size:20"`
 }
@@ -19,6 +20,7 @@ type Registration struct {
 type RegistrationJSON struct {
 	Email         string `json:"email" binding:"required"`
 	Service       string `json:"service"`
+	UID           uint   `json:"uid"`
 	Active        bool   `json:"active"`
 	ActivateToken string `json:"active_token"`
 }

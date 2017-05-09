@@ -76,6 +76,8 @@ func (rc RegistrationController) Register(c *gin.Context) {
 	registration.ActivateToken = ""
 
 	c.JSON(http.StatusCreated, gin.H{"status": "ok", "record": registration})
+
+	// TODO Send activation email
 }
 
 // Deregister recieves http DELETE request and delete the registration recode in the storage
@@ -105,7 +107,7 @@ func (rc RegistrationController) GetRegisteredUser(c *gin.Context) {
 
 	if err != nil && err.Error() == utils.ErrRecordNotFound.Error() {
 		log.Error("controllers.registration.get_registered_user.error_to_get: ", err.Error())
-		c.JSON(http.StatusNotFound, gin.H{"status": "Email not found", "error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"status": "Resource not found", "error": err.Error()})
 		return
 	} else if err != nil {
 		log.Error("controllers.registration.get_registered_user.error_to_get: ", err.Error())
@@ -184,6 +186,7 @@ func (rc RegistrationController) Activate(c *gin.Context) {
 		} else {
 			q := u.Query()
 			q.Set("error", "Activate token is not correct")
+			q.Set("error_code", strconv.Itoa(http.StatusForbidden))
 			u.RawQuery = q.Encode()
 			c.Redirect(http.StatusTemporaryRedirect, u.String())
 			return

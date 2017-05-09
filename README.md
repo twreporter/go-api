@@ -34,3 +34,130 @@ go build
 ```
 $ go test $(glide novendor)             # run go test over all directories of the project except the vendor directory
 ```
+
+## RESTful API
+`go-api` is a RESTful API built by golang.
+
+It provides several RESTful web services, including
+- User login/logout/signup
+- Create/Read/Update/Delete bookmarks of a user
+- Create/Read/Update/Delete registration
+
+### Create a registration
+- URL: `/v1/registration/:service/`
+  * example: `/v1/registration/news_letter/`
+- Content-Type of Header: `application/json`
+- Method: `POST`
+- Data Params:
+```
+{
+  "email": "nickhsine@twreporter.org"
+}
+```
+- Response: 
+  * **Code:** 201 <br />
+    **Content:**
+    ```
+    {
+      "record": {
+        "CreatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "UpdatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "DeletedAt": null,
+        "Email": "nickhsine@twreporter.org",
+        "Service": "news_letter",
+        "Active": false,
+        "ActivateToken": ""
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 400 <br />
+  **Content:** `{"status": "Bad request", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read a registration
+- URL: `/v1/registration/:service/:email`
+  * example: `/v1/registration/news_letter/nickhsine%40twreporter.org`
+- Method: `GET`
+- Response: 
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "record": {
+        "CreatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "UpdatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "DeletedAt": null,
+        "Email": "nickhsine@twreporter.org",
+        "Service": "news_letter",
+        "Active": false,
+        "ActivateToken": ""
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 404 <br />
+  **Content:** `{"status": "Resource not found", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read registrations
+- URL: `/v1/registration/:service`
+  * example: `/v1/registration/news_letter`
+- Method: `GET`
+- URL param: 
+  * Optional: 
+    `
+    offset=[integer] 
+    limit=[integer]
+    order_by=[string]
+		active_code=[integer]
+    `
+  * example: 
+    `?offset=10&limit=10&order=updated_at&active_code=2`
+- Response: 
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "record": {
+        "CreatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "UpdatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "DeletedAt": null,
+        "Email": "nickhsine@twreporter.org",
+        "Service": "news_letter",
+        "Active": false,
+        "ActivateToken": ""
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 400 <br />
+  **Content:** `{"status": "Bad request", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Delete a registration
+- URL: `/v1/registration/:service/:email`
+  * example: `/v1/registration/news_letter/nickhsine%40twreporter.org`
+- Method: `DELETE`
+- Response: 
+  * **Code:** 204 <br />
+  * **Code:** 404 <br />
+  **Content:** `{"status": "Resource not found", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Activate(Update) a registration
+After register a service such as news_letter, the system will send a email to the user for activating the registration.<br />
+The email will contain a link like `go-api.twreporter.org/v1/activation/news_letter/nickhsine%40twreporter.org?activateToken=${here_goes_the_token}`.<br />
+When user clicks the link, the registration will be activated.
+
+- URL: `/v1/activation/:service/:userEmail`
+	* example: `/v1/registration/news_letter/nickhsine%40twreporter.org`
+- Method: `GET`
+- Response:
+	* **Code: ** 307 <br /> 
+	Redirect to the front-end website. If the activation fails, the redirect url will have error URL param.<br />
+	For example https://www.twreporter.org/?error=Account+token+is+not+correct&error_code=403
