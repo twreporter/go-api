@@ -23,14 +23,14 @@ type RegistrationController struct {
 func (rc RegistrationController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 
 	// TODO add middleware to check the request from twreporter.org domain
-	group.POST("/registration/:service/", rc.Register)
+	group.POST("/registrations/:service/", rc.Register)
 
 	// TODO add middleware to check the email to delete is the email of the user sending the request
-	group.DELETE("/registration/:service/:userEmail", rc.Deregister)
+	group.DELETE("/registrations/:service/:userEmail", rc.Deregister)
 
 	// TODO add middleware to check the request from twreporter.org domain
-	group.GET("/registration/:service/:userEmail", rc.GetRegisteredUser)
-	group.GET("/registration/:service", rc.GetRegisteredUsers)
+	group.GET("/registrations/:service/:userEmail", rc.GetRegisteredUser)
+	group.GET("/registrations/:service", rc.GetRegisteredUsers)
 	//
 
 	group.GET("/activation/:service/:userEmail", rc.Activate)
@@ -133,17 +133,21 @@ func (rc RegistrationController) GetRegisteredUsers(c *gin.Context) {
 
 	limit, err = strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		limit = 10
+		limit = constants.DefaultLimit
 	}
 	offset, err = strconv.Atoi(c.Query("offset"))
 	if err != nil {
-		offset = 0
+		offset = constants.DefaultOffset
 	}
 	activeCode, err = strconv.Atoi(c.Query("active_code"))
 	if err != nil {
-		activeCode = 2
+		activeCode = constants.DefaultActiveCode
 	}
 	orderBy := c.Query("order_by")
+
+	if orderBy == "" {
+		orderBy = constants.DefaultOrderBy
+	}
 
 	count, err = rc.Storage.GetRegistrationsAmountByService(service, activeCode)
 	registrations, err = rc.Storage.GetRegistrationsByService(service, offset, limit, orderBy, activeCode)

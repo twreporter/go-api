@@ -6,7 +6,16 @@ const (
 	AccountController      = "account_controller"
 	BookmarkController     = "bookmark_controller"
 	RegistrationController = "registration_controller"
-	RegistrationTable      = "registrations"
-	Activate               = "activate"
-	NewsLetter             = "news_letter"
+	ServiceController      = "service_controller"
+
+	RegistrationTable = "registrations"
+
+	DefaultOrderBy        = "updated_at desc"
+	DefaultLimit      int = 0
+	DefaultOffset     int = 0
+	DefaultActiveCode int = 2
+
+	NewsLetter = "news_letter"
+
+	Activate = "activate"
 )

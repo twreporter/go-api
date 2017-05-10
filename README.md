@@ -41,7 +41,116 @@ $ go test $(glide novendor)             # run go test over all directories of th
 It provides several RESTful web services, including
 - User login/logout/signup
 - Create/Read/Update/Delete bookmarks of a user
-- Create/Read/Update/Delete registration
+- Create/Read/Update/Delete registration(s)
+- Create/Read/Update/Delete service(s)
+
+### Create a service
+- URL: `/v1/services/`
+- Content-Type of Header: `application/json`
+- Method: `POST`
+- Data Params:
+```
+{
+  "name": "news_letter"
+}
+```
+- Response: 
+  * **Code:** 201 <br />
+    **Content:**
+    ```
+    {
+      "record": {
+        "ID": 1,
+        "CreatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "UpdatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "DeletedAt": null,
+        "Name": "news_letter"
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 400 <br />
+  **Content:** `{"status": "Bad request", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read a service
+- URL: `/v1/services/:id`
+- Method: `GET`
+- Response: 
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "record": {
+        "ID": 1,
+        "CreatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "UpdatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "DeletedAt": null,
+        "Name": "news_letter"
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 404 <br />
+  **Content:** `{"status": "Resource not found", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Update a service
+Update a service or create a service if not existed
+- URL: `/v1/services/:id`
+- Method: `PUT`
+- Response: 
+- Data Params:
+```
+{
+  "name": "news_letter"
+}
+```
+- Response: 
+  * **Code:** 200<br />
+    **Content:**
+    ```
+    {
+      "record": {
+        "ID": 1,
+        "CreatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "UpdatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "DeletedAt": null,
+        "Name": "news_letter"
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 201<br />
+    **Content:**
+    ```
+    {
+      "record": {
+        "ID": 1,
+        "CreatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "UpdatedAt": "2017-05-09T11:42:50.084994666+08:00",
+        "DeletedAt": null,
+        "Name": "news_letter"
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 400 <br />
+  **Content:** `{"status": "Bad request", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Delete a service
+- URL: `/v1/services/:id`
+- Method: `DELETE`
+- Response: 
+  * **Code:** 204 <br />
+  * **Code:** 404 <br />
+  **Content:** `{"status": "Resource not found", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
 ### Create a registration
 - URL: `/v1/registration/:service/`

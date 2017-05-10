@@ -43,6 +43,7 @@ func NewControllerFactory(db *gorm.DB) *ControllerFactory {
 	userStorage := storage.NewGormUserStorage(db)
 	bookmarkStorage := storage.NewGormBookmarkStorage(db)
 	registrationStorage := storage.NewGormRegistrationStorage(db)
+	serviceStorage := storage.NewGormServiceStorage(db)
 
 	// init controllers
 	fc := facebook.Facebook{Storage: userStorage}
@@ -50,6 +51,7 @@ func NewControllerFactory(db *gorm.DB) *ControllerFactory {
 	ac := AccountController{Storage: userStorage}
 	bc := BookmarkController{BookmarkStorage: bookmarkStorage, UserStorage: userStorage}
 	rc := RegistrationController{Storage: registrationStorage}
+	sc := ServiceController{Storage: serviceStorage}
 
 	cf := &ControllerFactory{
 		controllers: make(map[string]Controller),
@@ -59,6 +61,7 @@ func NewControllerFactory(db *gorm.DB) *ControllerFactory {
 	cf.SetController(constants.AccountController, ac)
 	cf.SetController(constants.BookmarkController, bc)
 	cf.SetController(constants.RegistrationController, rc)
+	cf.SetController(constants.ServiceController, sc)
 
 	return cf
 }

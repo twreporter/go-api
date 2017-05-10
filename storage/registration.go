@@ -1,9 +1,13 @@
 package storage
 
 import (
+	"net/http"
+
 	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // RegistrationStorage this is an interface defines methods for users and bookmarks tables
@@ -34,68 +38,85 @@ type gormRegistrationStorage struct {
 }
 
 func (g *gormRegistrationStorage) GetRegistration(email, service string) (models.Registration, error) {
-	var nlr models.Registration
-	err := g.db.First(&nlr, "email = ? AND service = ?", email, service).Error
-	return nlr, err
+	// var svc models.Service
+	var reg models.Registration
+
+	// SELECT * FROM `registrations`  WHERE `registrations`.deleted_at IS NULL AND ((email = ${email}))
+	// SELECT * FROM `services`  WHERE `services`.deleted_at IS NULL AND (name = ${service})
+	err := g.db.Where("email = ?", email).Preload("Service", "name = ?", service).Find(&reg).Error
+
+	return reg, err
 }
 
 func (g *gormRegistrationStorage) GetRegistrationsByService(service string, offset, limit int, orderBy string, activeCode int) ([]models.Registration, error) {
-	var nlrs []models.Registration
+	var regs []models.Registration
 
 	where := getActiveWhereCondition(activeCode)
-	where.Service = service
-	err := g.db.Where(&where).Offset(offset).Limit(limit).Order(orderBy).Find(&nlrs).Error
-	return nlrs, err
+
+	// SELECT * FROM `registrations`  WHERE `registrations`.deleted_at IS NULL ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}
+	// SELECT * FROM `services`  WHERE `services`.deleted_at IS NULL AND (name = ${service})
+	err := g.db.Preload("Service", "name = ?", service).Where(where).Offset(offset).Limit(limit).Order(orderBy).Find(&regs).Error
+	return regs, err
 }
 
 func (g *gormRegistrationStorage) GetRegistrationsAmountByService(service string, activeCode int) (uint, error) {
 	var count uint
 
 	where := getActiveWhereCondition(activeCode)
-	where.Service = service
-	err := g.db.Table(constants.RegistrationTable).Where(&where).Count(&count).Error
+
+	// SELECT count(*) FROM `registrations`  WHERE (`active` = ${activeCode})
+	// SELECT * FROM `services`  WHERE `services`.deleted_at IS NULL AND (name = ${service})
+	err := g.db.Table(constants.RegistrationTable).Preload("Service", "name = ?", service).Where(where).Count(&count).Error
 	return count, err
 }
 
 // CreateRegistration this func will create a registration
 func (g *gormRegistrationStorage) CreateRegistration(json models.RegistrationJSON) (models.Registration, error) {
 	var err error
+	var svc models.Service
 
-	registration := models.Registration{
+	err = g.db.First(&svc, "name = ?", json.Service).Error
+
+	if err != nil {
+		return models.Registration{}, models.NewAppError("CreateRegistration",
+			"models.registration.create_registration.error_to_get_service", err.Error(), http.StatusInternalServerError)
+	}
+
+	reg := models.Registration{
+		Service:       svc,
 		Email:         json.Email,
-		Service:       json.Service,
 		Active:        false,
 		ActivateToken: json.ActivateToken,
 	}
 
-	err = g.db.Create(&registration).Error
+	err = g.db.Create(&reg).Error
 
-	return registration, err
+	return reg, err
 }
 
 // UpdateRegistration this func will update the record in the stroage
 func (g *gormRegistrationStorage) UpdateRegistration(json models.RegistrationJSON) (models.Registration, error) {
-	var registration models.Registration
-	var err error
+	var reg models.Registration
 
-	err = g.db.First(&registration, "email = ? AND service = ?", json.Email, json.Service).Error
+	// SELECT * FROM `registrations`  WHERE `registrations`.deleted_at IS NULL AND ((email = ${email}))
+	// SELECT * FROM `services`  WHERE `services`.deleted_at IS NULL AND (name = ${service})
+	err := g.db.Where("email = ?", json.Email).Preload("Service", "name = ?", json.Service).Find(&reg).Error
 
-	if err != nil {
-		return registration, err
-	}
+	reg.Email = json.Email
+	reg.Active = json.Active
+	reg.ActivateToken = json.ActivateToken
 
-	registration.Email = json.Email
-	registration.Service = json.Service
-	registration.Active = json.Active
-	registration.ActivateToken = json.ActivateToken
-
-	err = g.db.Save(&registration).Error
-	return registration, err
+	err = g.db.Save(&reg).Error
+	return reg, err
 }
 
 // DeleteRegistration this func will delete the record in the stroage
 func (g *gormRegistrationStorage) DeleteRegistration(email, service string) error {
-	err := g.db.Where("email = ? AND service = ?", email, service).Delete(&models.Registration{}).Error
+	var svc models.Service
+
+	g.db.Find(&svc, "name = ?", service)
+
+	err := g.db.Where("email = ? AND service_id = ?", email, svc.ID).Delete(&models.Registration{}).Error
 	return err
 }
 
@@ -103,18 +124,14 @@ func (g *gormRegistrationStorage) DeleteRegistration(email, service string) erro
 // 0 means active=false,
 // 1 means active=true,
 // 2 means active=false || active=true
-func getActiveWhereCondition(activeCode int) models.Registration {
-	var where models.Registration
+func getActiveWhereCondition(activeCode int) string {
+	var where string
 	if activeCode == 2 {
-		where = models.Registration{}
+		where = ""
 	} else if activeCode == 1 {
-		where = models.Registration{
-			Active: true,
-		}
+		where = "active = 1"
 	} else {
-		where = models.Registration{
-			Active: false,
-		}
+		where = "active = 0"
 	}
 
 	return where

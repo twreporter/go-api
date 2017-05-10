@@ -9,8 +9,9 @@ type Registration struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DeletedAt     *time.Time
-	Email         string `gorm:"primary_key"`
-	Service       string `gorm:"primary_key"`
+	Service       Service
+	ServiceID     uint   `gorm:"primary_key"`
+	Email         string `gorm:"primary_key;size:100"`
 	UID           uint
 	Active        bool   `gorm:"default:0"`
 	ActivateToken string `gorm:"size:20"`
