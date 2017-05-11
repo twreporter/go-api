@@ -153,8 +153,8 @@ Update a service or create a service if not existed
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
 ### Create a registration
-- URL: `/v1/registration/:service/`
-  * example: `/v1/registration/news_letter/`
+- URL: `/v1/registrations/:service/`
+  * example: `/v1/registrations/news_letter/`
 - Content-Type of Header: `application/json`
 - Method: `POST`
 - Data Params:
@@ -186,8 +186,8 @@ Update a service or create a service if not existed
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
 ### Read a registration
-- URL: `/v1/registration/:service/:email`
-  * example: `/v1/registration/news_letter/nickhsine%40twreporter.org`
+- URL: `/v1/registrations/:service/:email`
+  * example: `/v1/registrations/news_letter/nickhsine%40twreporter.org`
 - Method: `GET`
 - Response: 
   * **Code:** 200 <br />
@@ -212,8 +212,8 @@ Update a service or create a service if not existed
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
 ### Read registrations
-- URL: `/v1/registration/:service`
-  * example: `/v1/registration/news_letter`
+- URL: `/v1/registrations/:service`
+  * example: `/v1/registrations/news_letter`
 - Method: `GET`
 - URL param: 
   * Optional: 
@@ -248,8 +248,8 @@ Update a service or create a service if not existed
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
 ### Delete a registration
-- URL: `/v1/registration/:service/:email`
-  * example: `/v1/registration/news_letter/nickhsine%40twreporter.org`
+- URL: `/v1/registrations/:service/:email`
+  * example: `/v1/registrations/news_letter/nickhsine%40twreporter.org`
 - Method: `DELETE`
 - Response: 
   * **Code:** 204 <br />
@@ -264,7 +264,7 @@ The email will contain a link like `go-api.twreporter.org/v1/activation/news_let
 When user clicks the link, the registration will be activated.
 
 - URL: `/v1/activation/:service/:userEmail`
-	* example: `/v1/registration/news_letter/nickhsine%40twreporter.org`
+	* example: `/v1/registrations/news_letter/nickhsine%40twreporter.org`
 - Method: `GET`
 - Response:
 	* **Code: ** 307 <br /> 
