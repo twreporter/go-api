@@ -6,8 +6,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 // RegistrationStorage this is an interface defines methods for users and bookmarks tables
