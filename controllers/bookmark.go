@@ -58,7 +58,7 @@ type BookmarkController struct {
 func (bc BookmarkController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	// handle bookmarks of users
 	group.GET("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.ListBookmarkByUser)
-	group.POST("/users/:userID/bookmarks/", middlewares.ValidateUserID(), bc.CreateBookmarkByUser)
+	group.POST("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.CreateBookmarkByUser)
 	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.ValidateUserID(), bc.DeleteBookmarkByUser)
 	return group
 }

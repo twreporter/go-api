@@ -21,7 +21,7 @@ type ServiceController struct {
 func (sc ServiceController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 
 	// TODO add middleware to check permission
-	group.POST("/services/", sc.Create)
+	group.POST("/services", sc.Create)
 
 	// TODO add middleware to check permission
 	group.DELETE("/services/:id", sc.Delete)
