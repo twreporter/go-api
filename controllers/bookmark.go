@@ -10,44 +10,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-type bookmarkForm struct {
-	Href      string `form:"href" binding:"required"`
-	Title     string `form:"title" binding:"required"`
-	Desc      string `form:"desc"`
-	Thumbnail string `form:"thumbnail"`
-}
-
-type bookmarkJSON struct {
-	Href      string `json:"href" binding:"required"`
-	Title     string `json:"title" binding:"required"`
-	Desc      string `json:"desc"`
-	Thumbnail string `json:"thumbnail"`
-}
-
-func getPropsFromPOSTBody(c *gin.Context) (models.Bookmark, error) {
-	var err error
-	var form bookmarkForm
-	var json bookmarkJSON
-
-	contentType := c.ContentType()
-
-	if contentType == "application/json" {
-		err = c.Bind(&json)
-		if err != nil {
-			return models.Bookmark{}, err
-		}
-		return models.Bookmark{Href: json.Href, Title: json.Title, Desc: utils.ToNullString(json.Desc), Thumbnail: utils.ToNullString(json.Thumbnail)}, nil
-	} else if contentType == "x-www-form-urlencoded" {
-		err = c.Bind(&form)
-		if err != nil {
-			return models.Bookmark{}, err
-		}
-		return models.Bookmark{Href: form.Href, Title: form.Title, Desc: utils.ToNullString(form.Desc), Thumbnail: utils.ToNullString(form.Thumbnail)}, nil
-	}
-
-	return models.Bookmark{}, models.NewAppError("getPropsFromPOSTBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 500)
-}
-
 // BookmarkController this struct contains two stroages which have those methods to inteact with DB
 type BookmarkController struct {
 	BookmarkStorage storage.BookmarkStorage
@@ -134,7 +96,7 @@ func (bc BookmarkController) CreateBookmarkByUser(c *gin.Context) {
 		return
 	}
 
-	bookmark, errToParseBody := getPropsFromPOSTBody(c)
+	bookmark, errToParseBody := bc.parseBody(c)
 	if errToParseBody != nil {
 		log.Error("controllers.bookmark.create_bookmark.error_to_parse_post_body: ", errToParseBody.Error())
 		c.JSON(400, gin.H{"status": "Bad request", "error": errToParseBody.Error()})
@@ -150,4 +112,28 @@ func (bc BookmarkController) CreateBookmarkByUser(c *gin.Context) {
 	}
 
 	c.JSON(201, gin.H{"status": "ok"})
+}
+
+func (bc BookmarkController) parseBody(c *gin.Context) (models.Bookmark, error) {
+	var err error
+	var form models.BookmarkForm
+	var json models.BookmarkJSON
+
+	contentType := c.ContentType()
+
+	if contentType == "application/json" {
+		err = c.Bind(&json)
+		if err != nil {
+			return models.Bookmark{}, err
+		}
+		return models.Bookmark{Href: json.Href, Title: json.Title, Desc: utils.ToNullString(json.Desc), Thumbnail: utils.ToNullString(json.Thumbnail)}, nil
+	} else if contentType == "x-www-form-urlencoded" {
+		err = c.Bind(&form)
+		if err != nil {
+			return models.Bookmark{}, err
+		}
+		return models.Bookmark{Href: form.Href, Title: form.Title, Desc: utils.ToNullString(form.Desc), Thumbnail: utils.ToNullString(form.Thumbnail)}, nil
+	}
+
+	return models.Bookmark{}, models.NewAppError("parseBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 500)
 }
