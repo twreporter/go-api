@@ -23,7 +23,7 @@ type RegistrationController struct {
 func (rc RegistrationController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 
 	// TODO add middleware to check the request from twreporter.org domain
-	group.POST("/registrations/:service/", rc.Register)
+	group.POST("/registrations/:service", rc.Register)
 
 	// TODO add middleware to check the email to delete is the email of the user sending the request
 	group.DELETE("/registrations/:service/:userEmail", rc.Deregister)

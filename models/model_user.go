@@ -16,7 +16,7 @@ type User struct {
 	DeletedAt        *time.Time
 	OAuthAccounts    []OAuthAccount  `gorm:"ForeignKey:UserID"` // a user has multiple oauth accounts //
 	ReporterAccount  ReporterAccount `gorm:"ForeignKey:UserID"`
-	Bookmarks        []Bookmark      `gorm:"many2many:user_bookmarks;"`
+	Bookmarks        []Bookmark      `gorm:"many2many:users_bookmarks;"`
 	Email            sql.NullString  `gorm:"size:100"`
 	FirstName        sql.NullString  `gorm:"size:50"`
 	LastName         sql.NullString  `gorm:"size:50"`
