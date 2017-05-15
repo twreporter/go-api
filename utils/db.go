@@ -3,26 +3,32 @@ package utils
 import (
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/jinzhu/gorm"
-	"twreporter.org/go-api/models"
+	"gopkg.in/matryer/try.v1"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // InitDB initiates the database connection
-func InitDB() (*gorm.DB, error) {
-	// WORKAROUND -- let process sleep to wait for cloud sql proxy.
-	time.Sleep(time.Duration(5) * time.Second)
+func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
+	var db *gorm.DB
+	err := try.Do(func(attempt int) (bool, error) {
+		var err error
 
-	// connect to MySQL database
-	db, err := gorm.Open("mysql", Cfg.DBSettings.User+":"+Cfg.DBSettings.Password+"@tcp("+Cfg.DBSettings.Address+":"+Cfg.DBSettings.Port+")/"+Cfg.DBSettings.Name+"?parseTime=true")
+		// connect to MySQL database
+		db, err = gorm.Open("mysql", Cfg.DBSettings.User+":"+Cfg.DBSettings.Password+"@tcp("+Cfg.DBSettings.Address+":"+Cfg.DBSettings.Port+")/"+Cfg.DBSettings.Name+"?parseTime=true")
+
+		if err != nil {
+			time.Sleep(time.Duration(retryMaxDelay) * time.Second)
+		}
+
+		return attempt < attempts, err
+	})
 
 	if err != nil {
 		log.Error("Please check the MySQL database connection: ", err.Error())
 		return nil, err
 	}
-
-	// automatically migrate the schema, to keep them update to date.
-	db.AutoMigrate(&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{})
 
 	return db, nil
 }

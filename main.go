@@ -50,7 +50,7 @@ func main() {
 	}()
 
 	// set up database connection
-	db, _ := utils.InitDB()
+	db, _ := utils.InitDB(10, 5)
 	defer db.Close()
 
 	cf := controllers.NewControllerFactory(db)
