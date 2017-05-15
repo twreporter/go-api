@@ -29,9 +29,10 @@ import:
   subpackages:
   - compute/metadata
 - package: google.golang.org/grpc
-  version: ^1.0.5
+  version: 1.2.1
 - package: golang.org/x/net
   version: release-branch.go1.7
   subpackages:
   - http2
   - context
+- package: gopkg.in/matryer/try.v1
