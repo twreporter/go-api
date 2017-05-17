@@ -19,31 +19,29 @@ type BookmarkController struct {
 // SetRoute is the method of Controller interface
 func (bc BookmarkController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	// handle bookmarks of users
-	group.GET("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.ListBookmarkByUser)
+	group.GET("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.ListBookmarksByUser)
 	group.POST("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.CreateBookmarkByUser)
 	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.ValidateUserID(), bc.DeleteBookmarkByUser)
 	return group
 }
 
-// ListBookmarkByUser given userID this func will list all the bookmarks belongs to the user
-func (bc BookmarkController) ListBookmarkByUser(c *gin.Context) {
+// ListBookmarksByUser given userID this func will list all the bookmarks belongs to the user
+func (bc BookmarkController) ListBookmarksByUser(c *gin.Context) {
 	// get userID according to the url param
 	userID := c.Param("userID")
 	user, errToGetUser := bc.UserStorage.GetUserByID(userID)
 
 	if errToGetUser != nil {
-		log.Error("controllers.bookmark.list_bookmark.error_to_get_user: ", errToGetUser.Error())
+		log.Error("controllers.bookmark.list_bookmarks_by_user.error_to_get_user: ", errToGetUser.Error())
 		c.JSON(404, gin.H{"status": "User " + userID + " is not available.", "error": errToGetUser.Error()})
 		return
 	}
 
-	log.Info("user:", user)
-
 	bookmarks, errToGetBookmark := bc.BookmarkStorage.GetBookmarkByUser(user)
 
 	if errToGetBookmark != nil {
-		log.Error("controllers.bookmark.list_bookmark.error_to_get_bookmarks: ", errToGetBookmark.Error())
-		c.JSON(404, gin.H{"status": "Bookmarks belonging to user " + userID + " is not available", "error": errToGetBookmark.Error()})
+		log.Error("controllers.bookmark.list_bookmarks_by_user.error_to_get_bookmarks: ", errToGetBookmark.Error())
+		c.JSON(500, gin.H{"status": "Internal server error", "error": errToGetBookmark.Error()})
 		return
 	}
 
@@ -57,7 +55,7 @@ func (bc BookmarkController) DeleteBookmarkByUser(c *gin.Context) {
 	bookmark, errToGetBookmark := bc.BookmarkStorage.GetBookmarkByID(bookmarkID)
 
 	if errToGetBookmark != nil {
-		log.Error("controllers.bookmark.delete_bookmark.error_to_get_bookmark: ", errToGetBookmark.Error())
+		log.Error("controllers.bookmark.delete_bookmark_by_user.error_to_get_bookmark: ", errToGetBookmark.Error())
 		c.JSON(404, gin.H{"status": "Bookmark with id " + bookmarkID + " is not available", "error": errToGetBookmark.Error()})
 		return
 	}
@@ -66,7 +64,7 @@ func (bc BookmarkController) DeleteBookmarkByUser(c *gin.Context) {
 	user, errToGetUser := bc.UserStorage.GetUserByID(userID)
 
 	if errToGetUser != nil {
-		log.Error("controllers.bookmark.delete_bookmark.error_to_get_user: ", errToGetUser.Error())
+		log.Error("controllers.bookmark.delete_bookmark_by_user.error_to_get_user: ", errToGetUser.Error())
 		c.JSON(404, gin.H{"status": "User " + userID + " is not available", "error": errToGetUser.Error()})
 		return
 	}
@@ -74,8 +72,8 @@ func (bc BookmarkController) DeleteBookmarkByUser(c *gin.Context) {
 	errToDeleteBookmark := bc.BookmarkStorage.DeleteBookmarkByUser(user, bookmark)
 
 	if errToDeleteBookmark != nil {
-		log.Error("controllers.bookmark.delete_bookmark.error_to_delete: ", errToDeleteBookmark.Error())
-		c.JSON(404, gin.H{"status": "Bookmark belongs to user " + userID + " is not available", "error": errToDeleteBookmark.Error()})
+		log.Error("controllers.bookmark.delete_bookmark_by_user.error_to_delete: ", errToDeleteBookmark.Error())
+		c.JSON(500, gin.H{"status": "Internal server error", "error": errToDeleteBookmark.Error()})
 		return
 	}
 
