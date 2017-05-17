@@ -6,7 +6,6 @@ import (
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/context"
 	"twreporter.org/go-api/utils"
 )
 
@@ -34,7 +33,7 @@ func ValidateUserID() gin.HandlerFunc {
 			c.AbortWithStatus(401)
 			return
 		}
-		user := context.Get(c.Request, "user")
+		user := c.Request.Context().Value("user")
 		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["userID"]
 		userID := c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
