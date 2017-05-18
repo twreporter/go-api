@@ -1,5 +1,23 @@
 # TWReporter's Golang Backend API
 
+## Functional Test
+### Prerequisite
+* Make sure the environment you run the test has a running mysql server
+* Execute the following commands in mysql.
+```
+CREATE USER 'gorm'@'localhost' IDENTIFIED BY 'gorm';
+CREATE DATABASE gorm;
+GRANT ALL ON gorm.* TO 'gorm'@'localhost';
+```
+
+### How To Run Tests
+```
+go test $(glide novendor)
+
+// or print logs
+go test -v $(glide novendor)
+```
+
 ## Configurations
 
 #### MySQL connection

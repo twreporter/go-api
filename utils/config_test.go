@@ -1,8 +1,10 @@
 package utils
 
 import (
-	"path/filepath"
+	"strings"
 	"testing"
+
+	"path/filepath"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -11,7 +13,7 @@ func TestOpenFileError(t *testing.T) {
 	// given a non-existed file name
 	err := LoadConfig("mocks/confi.json")
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Message, "utils.config.load_conifg.open_file: ")
+	assert.True(t, strings.Contains(err.Error(), "utils.config.load_conifg.open_file: "))
 }
 
 func TestDecodeFileContentError(t *testing.T) {
@@ -19,7 +21,7 @@ func TestDecodeFileContentError(t *testing.T) {
 	absFilepath, _ := filepath.Abs("mocks/mal-form-config.json")
 	err := LoadConfig(absFilepath)
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Message, "utils.config.load_config.decode_json: ")
+	assert.True(t, strings.Contains(err.Error(), "utils.config.load_config.decode_json: "))
 }
 
 func TestLoadConfigSuccess(t *testing.T) {
