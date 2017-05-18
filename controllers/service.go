@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -20,17 +21,10 @@ type ServiceController struct {
 // SetRoute set the route path and corresponding handlers
 func (sc ServiceController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 
-	// TODO add middleware to check permission
-	group.POST("/services", sc.Create)
-
-	// TODO add middleware to check permission
-	group.DELETE("/services/:id", sc.Delete)
-
-	// TODO add middleware to check permission
-	group.PUT("/services/:id", sc.Update)
-
-	// TODO add middleware to check permission
-	group.GET("/services/:id", sc.Read)
+	group.POST("/services", middlewares.CheckJWT(), middlewares.ValidateAdminUsers(), sc.Create)
+	group.DELETE("/services/:id", middlewares.CheckJWT(), middlewares.ValidateAdminUsers(), sc.Delete)
+	group.PUT("/services/:id", middlewares.CheckJWT(), middlewares.ValidateAdminUsers(), sc.Update)
+	group.GET("/services/:id", middlewares.CheckJWT(), sc.Read)
 
 	return group
 }
