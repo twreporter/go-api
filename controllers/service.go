@@ -14,7 +14,7 @@ import (
 
 // ServiceController defines the routes and methods to handle the requests
 type ServiceController struct {
-	Storage storage.ServiceStorage
+	Storage storage.MembershipStorage
 }
 
 // SetRoute set the route path and corresponding handlers

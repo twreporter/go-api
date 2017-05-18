@@ -33,7 +33,7 @@ type BookmarkJSON struct {
 
 type Response struct {
 	Status    string         `json:"status"`
-	Bookmarks []BookmarkJSON `json:"bookmarks"`
+	Bookmarks []BookmarkJSON `json:"records"`
 }
 
 func generateJWT(user models.User) (jwt string) {
@@ -42,7 +42,7 @@ func generateJWT(user models.User) (jwt string) {
 }
 
 func getUser(userId string) (user models.User) {
-	as := storage.NewGormUserStorage(DB)
+	as := storage.NewMembershipStorage(DB)
 	user, _ = as.GetUserByID(userId)
 	return
 }
@@ -73,10 +73,11 @@ func TestAuthorization(t *testing.T) {
 	assert.Equal(t, resp.Code, 200)
 }
 
-func TestCreateBookmarkByUser(t *testing.T) {
+func TestCreateABookmarkOfAUser(t *testing.T) {
 	var badBookmarkJSON = `{"href":"www.twreporter.org/a/a-mock-article","title":"mock title","desc": "mock desc","thumbnail":"www.twreporter.org/images/}`
 
 	var bookmarkJSON = `{"href":"www.twreporter.org/a/a-mock-article","title":"mock title","desc": "mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+	var bookmarkJSON2 = `{"href":"www.twreporter.org/a/another-mock-article","title":"another mock title","desc": "another mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
 
 	var path = fmt.Sprintf("/v1/users/%v/bookmarks", DefaultID)
 	var jwt = generateJWT(getUser(DefaultID))
@@ -88,9 +89,17 @@ func TestCreateBookmarkByUser(t *testing.T) {
 	resp := httptest.NewRecorder()
 	Engine.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, 201)
+
+	// add another bookmark
+	req = RequestWithBody("POST", path, bookmarkJSON2)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", jwt))
+	resp = httptest.NewRecorder()
+	Engine.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, 201)
 	/** END - Add bookmark successfully **/
 
-	/** START - Fail to ddd bookmark **/
+	/** START - Fail to add bookmark **/
 	// malformed JSON
 	req = RequestWithBody("POST", path, badBookmarkJSON)
 	req.Header.Add("Content-Type", "application/json")
@@ -111,7 +120,7 @@ func TestCreateBookmarkByUser(t *testing.T) {
 	/** END - Fail to add bookmark **/
 }
 
-func TestListBookmarkByUser(t *testing.T) {
+func TestGetBookmarksOfAUser(t *testing.T) {
 	var bookmarkJSON = `{"href":"www.twreporter.org/a/a-mock-article","title":"mock title","desc": "mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
 	var path = fmt.Sprintf("/v1/users/%v/bookmarks", DefaultID2)
 	var jwt = generateJWT(getUser(DefaultID2))
@@ -137,6 +146,8 @@ func TestListBookmarkByUser(t *testing.T) {
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", jwt))
 	resp = httptest.NewRecorder()
 	Engine.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, 200)
+
 	body, _ := ioutil.ReadAll(resp.Result().Body)
 
 	res := Response{}
@@ -144,7 +155,6 @@ func TestListBookmarkByUser(t *testing.T) {
 
 	assert.Equal(t, res.Bookmarks[0].ID, 1)
 	assert.Equal(t, res.Bookmarks[0].Href, "www.twreporter.org/a/a-mock-article")
-	assert.Equal(t, resp.Code, 200)
 	/** END - List bookmarks successfully **/
 
 	/** START - Fail to list bookmark **/

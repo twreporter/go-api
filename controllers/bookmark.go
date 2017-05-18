@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
@@ -12,104 +14,84 @@ import (
 
 // BookmarkController this struct contains two stroages which have those methods to inteact with DB
 type BookmarkController struct {
-	BookmarkStorage storage.BookmarkStorage
-	UserStorage     storage.UserStorage
+	Storage storage.MembershipStorage
 }
 
 // SetRoute is the method of Controller interface
 func (bc BookmarkController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	// handle bookmarks of users
-	group.GET("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.ListBookmarksByUser)
-	group.POST("/users/:userID/bookmarks", middlewares.ValidateUserID(), bc.CreateBookmarkByUser)
-	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.ValidateUserID(), bc.DeleteBookmarkByUser)
+	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), bc.GetBookmarksOfAUser)
+	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), bc.CreateABookmarkOfAUser)
+	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), bc.DeleteABookmarkOfAUser)
 	return group
 }
 
-// ListBookmarksByUser given userID this func will list all the bookmarks belongs to the user
-func (bc BookmarkController) ListBookmarksByUser(c *gin.Context) {
+// GetBookmarksOfAUser given userID this func will list all the bookmarks belongs to the user
+func (bc BookmarkController) GetBookmarksOfAUser(c *gin.Context) {
+	var err error
+	var bookmarks []models.Bookmark
+
 	// get userID according to the url param
 	userID := c.Param("userID")
-	user, errToGetUser := bc.UserStorage.GetUserByID(userID)
+	bookmarks, err = bc.Storage.GetBookmarksOfAUser(userID)
 
-	if errToGetUser != nil {
-		log.Error("controllers.bookmark.list_bookmarks_by_user.error_to_get_user: ", errToGetUser.Error())
-		c.JSON(404, gin.H{"status": "User " + userID + " is not available.", "error": errToGetUser.Error()})
+	if err != nil && err.Error() == utils.ErrRecordNotFound.Error() {
+		c.JSON(http.StatusNotFound, gin.H{"status": "User not found", "error": err.Error()})
+		return
+	} else if err != nil {
+		log.Error("controllers.bookmark.get_bookmarks_of_a_user.error_to_get_bookmarks: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
 		return
 	}
 
-	bookmarks, errToGetBookmark := bc.BookmarkStorage.GetBookmarkByUser(user)
-
-	if errToGetBookmark != nil {
-		log.Error("controllers.bookmark.list_bookmarks_by_user.error_to_get_bookmarks: ", errToGetBookmark.Error())
-		c.JSON(500, gin.H{"status": "Internal server error", "error": errToGetBookmark.Error()})
-		return
-	}
-
-	c.JSON(200, gin.H{"status": "ok", "bookmarks": bookmarks})
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": bookmarks})
 }
 
-// DeleteBookmarkByUser given userID and bookmarkHref, this func will remove the relationship between user and bookmark
-func (bc BookmarkController) DeleteBookmarkByUser(c *gin.Context) {
+// DeleteABookmarkOfAUser given userID and bookmarkHref, this func will remove the relationship between user and bookmark
+func (bc BookmarkController) DeleteABookmarkOfAUser(c *gin.Context) {
 	bookmarkID := c.Param("bookmarkID")
-
-	bookmark, errToGetBookmark := bc.BookmarkStorage.GetBookmarkByID(bookmarkID)
-
-	if errToGetBookmark != nil {
-		log.Error("controllers.bookmark.delete_bookmark_by_user.error_to_get_bookmark: ", errToGetBookmark.Error())
-		c.JSON(404, gin.H{"status": "Bookmark with id " + bookmarkID + " is not available", "error": errToGetBookmark.Error()})
-		return
-	}
-
 	userID := c.Param("userID")
-	user, errToGetUser := bc.UserStorage.GetUserByID(userID)
 
-	if errToGetUser != nil {
-		log.Error("controllers.bookmark.delete_bookmark_by_user.error_to_get_user: ", errToGetUser.Error())
-		c.JSON(404, gin.H{"status": "User " + userID + " is not available", "error": errToGetUser.Error()})
+	err := bc.Storage.DeleteABookmarkOfAUser(userID, bookmarkID)
+
+	if err != nil && err.Error() == utils.ErrRecordNotFound.Error() {
+		c.JSON(http.StatusNotFound, gin.H{"status": "User not found", "error": err.Error()})
+		return
+	} else if err != nil {
+		log.Error("controllers.bookmark.delete_a_bookmark_of_a_user.error_to_delete_bookmark: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
 		return
 	}
 
-	errToDeleteBookmark := bc.BookmarkStorage.DeleteBookmarkByUser(user, bookmark)
-
-	if errToDeleteBookmark != nil {
-		log.Error("controllers.bookmark.delete_bookmark_by_user.error_to_delete: ", errToDeleteBookmark.Error())
-		c.JSON(500, gin.H{"status": "Internal server error", "error": errToDeleteBookmark.Error()})
-		return
-	}
-
-	c.Data(204, gin.MIMEHTML, nil)
+	c.Data(http.StatusNoContent, gin.MIMEHTML, nil)
 }
 
-// CreateBookmarkByUser given userID and bookmark POST body, this func will try to create bookmark record in the bookmarks table,
+// CreateABookmarkOfAUser given userID and bookmark POST body, this func will try to create bookmark record in the bookmarks table,
 // and build the relationship between bookmark and user
-func (bc BookmarkController) CreateBookmarkByUser(c *gin.Context) {
+func (bc BookmarkController) CreateABookmarkOfAUser(c *gin.Context) {
 	var bookmark models.Bookmark
+	var err error
 
 	userID := c.Param("userID")
-	user, errToGetUser := bc.UserStorage.GetUserByID(userID)
-
-	if errToGetUser != nil {
-		log.Error("controllers.bookmark.create_bookmark.error_to_get_user: ", errToGetUser.Error())
-		c.JSON(404, gin.H{"status": "User " + userID + " is not available", "error": errToGetUser.Error()})
+	bookmark, err = bc.parseBody(c)
+	if err != nil {
+		log.Error("controllers.bookmark.create_bookmark.error_to_parse_post_body: ", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Bad request", "error": err.Error()})
 		return
 	}
 
-	bookmark, errToParseBody := bc.parseBody(c)
-	if errToParseBody != nil {
-		log.Error("controllers.bookmark.create_bookmark.error_to_parse_post_body: ", errToParseBody.Error())
-		c.JSON(400, gin.H{"status": "Bad request", "error": errToParseBody.Error()})
+	err = bc.Storage.CreateABookmarkOfAUser(userID, bookmark)
+
+	if err != nil && err.Error() == utils.ErrRecordNotFound.Error() {
+		c.JSON(http.StatusNotFound, gin.H{"status": "User not found", "error": err.Error()})
+		return
+	} else if err != nil {
+		log.Error("controllers.bookmark.create_bookmark_of_a_user.error_to_create_bookmark: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
 		return
 	}
 
-	errToCreateBookmark := bc.BookmarkStorage.CreateBookmarkByUser(user, bookmark)
-
-	if errToCreateBookmark != nil {
-		log.Error("controllers.bookmark.create_bookmark.error_to_create_bookmark: ", errToCreateBookmark.Error())
-		c.JSON(500, gin.H{"status": "Internal server error", "error": errToCreateBookmark.Error()})
-		return
-	}
-
-	c.JSON(201, gin.H{"status": "ok"})
+	c.JSON(http.StatusCreated, gin.H{"status": "ok"})
 }
 
 func (bc BookmarkController) parseBody(c *gin.Context) (models.Bookmark, error) {
@@ -133,5 +115,5 @@ func (bc BookmarkController) parseBody(c *gin.Context) (models.Bookmark, error) 
 		return models.Bookmark{Href: form.Href, Title: form.Title, Desc: utils.ToNullString(form.Desc), Thumbnail: utils.ToNullString(form.Thumbnail)}, nil
 	}
 
-	return models.Bookmark{}, models.NewAppError("parseBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", 500)
+	return models.Bookmark{}, models.NewAppError("parseBody", "controllers.account.parse_post_body", "POST body is neither JSON nor x-www-form-urlencoded", http.StatusBadRequest)
 }

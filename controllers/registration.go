@@ -16,7 +16,7 @@ import (
 
 // RegistrationController defines the routes and methods to handle the requests
 type RegistrationController struct {
-	Storage storage.RegistrationStorage
+	Storage storage.MembershipStorage
 }
 
 // SetRoute set the route path and corresponding handlers

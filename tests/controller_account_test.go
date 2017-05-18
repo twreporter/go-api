@@ -63,7 +63,7 @@ func TestSignupAndActivate(t *testing.T) {
 	// END - test signup endpoint //
 
 	// START - test activate endpoint //
-	as := storage.NewGormUserStorage(DB)
+	as := storage.NewMembershipStorage(DB)
 	user, _ := as.GetReporterAccountData(email)
 
 	// test activate

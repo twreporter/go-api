@@ -34,9 +34,9 @@ func OpenTestConnection() (db *gorm.DB, err error) {
 	}
 	db, err = gorm.Open("mysql", fmt.Sprintf("gorm:gorm@%v/gorm?charset=utf8&parseTime=True", dbhost))
 
-	// if os.Getenv("DEBUG") == "true" {
-	db.LogMode(true)
-	//	}
+	if os.Getenv("DEBUG") == "true" {
+		db.LogMode(true)
+	}
 
 	db.DB().SetMaxIdleConns(10)
 
@@ -59,7 +59,7 @@ func RunMigration(db *gorm.DB) {
 
 func SetDefaultRecords(db *gorm.DB) {
 	// Set an active reporter account
-	as := storage.NewGormUserStorage(db)
+	as := storage.NewMembershipStorage(db)
 
 	key, _ := scrypt.Key([]byte(DefaultPassword), []byte(""), 16384, 8, 1, 32)
 

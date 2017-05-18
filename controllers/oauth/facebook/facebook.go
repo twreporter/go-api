@@ -24,7 +24,7 @@ var oauthConf *oauth2.Config
 
 // Facebook ...
 type Facebook struct {
-	Storage storage.UserStorage
+	Storage storage.MembershipStorage
 }
 
 func (fc Facebook) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {

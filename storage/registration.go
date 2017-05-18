@@ -3,39 +3,12 @@ package storage
 import (
 	"net/http"
 
-	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
 )
 
-// RegistrationStorage this is an interface defines methods for users and bookmarks tables
-type RegistrationStorage interface {
-	// create
-	CreateRegistration(models.RegistrationJSON) (models.Registration, error)
-
-	// read
-	GetRegistration(string, string) (models.Registration, error)
-	GetRegistrationsByService(string, int, int, string, int) ([]models.Registration, error)
-	GetRegistrationsAmountByService(string, int) (uint, error)
-
-	// update
-	UpdateRegistration(models.RegistrationJSON) (models.Registration, error)
-
-	// delete
-	DeleteRegistration(string, string) error
-}
-
-// NewGormRegistrationStorage this initializes the user storage
-func NewGormRegistrationStorage(db *gorm.DB) RegistrationStorage {
-	return &gormRegistrationStorage{db}
-}
-
-// gormRegistrationStorage this implements UserStorage interface
-type gormRegistrationStorage struct {
-	db *gorm.DB
-}
-
-func (g *gormRegistrationStorage) GetRegistration(email, service string) (models.Registration, error) {
+// GetRegistration ...
+func (g *GormMembershipStorage) GetRegistration(email, service string) (models.Registration, error) {
 	// var svc models.Service
 	var reg models.Registration
 
@@ -46,7 +19,8 @@ func (g *gormRegistrationStorage) GetRegistration(email, service string) (models
 	return reg, err
 }
 
-func (g *gormRegistrationStorage) GetRegistrationsByService(service string, offset, limit int, orderBy string, activeCode int) ([]models.Registration, error) {
+// GetRegistrationsByService ...
+func (g *GormMembershipStorage) GetRegistrationsByService(service string, offset, limit int, orderBy string, activeCode int) ([]models.Registration, error) {
 	var regs []models.Registration
 
 	where := getActiveWhereCondition(activeCode)
@@ -57,7 +31,8 @@ func (g *gormRegistrationStorage) GetRegistrationsByService(service string, offs
 	return regs, err
 }
 
-func (g *gormRegistrationStorage) GetRegistrationsAmountByService(service string, activeCode int) (uint, error) {
+// GetRegistrationsAmountByService ...
+func (g *GormMembershipStorage) GetRegistrationsAmountByService(service string, activeCode int) (uint, error) {
 	var count uint
 
 	where := getActiveWhereCondition(activeCode)
@@ -69,7 +44,7 @@ func (g *gormRegistrationStorage) GetRegistrationsAmountByService(service string
 }
 
 // CreateRegistration this func will create a registration
-func (g *gormRegistrationStorage) CreateRegistration(json models.RegistrationJSON) (models.Registration, error) {
+func (g *GormMembershipStorage) CreateRegistration(json models.RegistrationJSON) (models.Registration, error) {
 	var err error
 	var svc models.Service
 
@@ -93,7 +68,7 @@ func (g *gormRegistrationStorage) CreateRegistration(json models.RegistrationJSO
 }
 
 // UpdateRegistration this func will update the record in the stroage
-func (g *gormRegistrationStorage) UpdateRegistration(json models.RegistrationJSON) (models.Registration, error) {
+func (g *GormMembershipStorage) UpdateRegistration(json models.RegistrationJSON) (models.Registration, error) {
 	var reg models.Registration
 
 	// SELECT * FROM `registrations`  WHERE `registrations`.deleted_at IS NULL AND ((email = ${email}))
@@ -109,7 +84,7 @@ func (g *gormRegistrationStorage) UpdateRegistration(json models.RegistrationJSO
 }
 
 // DeleteRegistration this func will delete the record in the stroage
-func (g *gormRegistrationStorage) DeleteRegistration(email, service string) error {
+func (g *GormMembershipStorage) DeleteRegistration(email, service string) error {
 	var svc models.Service
 
 	g.db.Find(&svc, "name = ?", service)
