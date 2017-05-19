@@ -3,8 +3,9 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
 
+	"github.com/go-sql-driver/mysql"
+	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -14,23 +15,16 @@ import (
 
 // ServiceController defines the routes and methods to handle the requests
 type ServiceController struct {
-	Storage storage.ServiceStorage
+	Storage storage.MembershipStorage
 }
 
 // SetRoute set the route path and corresponding handlers
 func (sc ServiceController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 
-	// TODO add middleware to check permission
-	group.POST("/services", sc.Create)
-
-	// TODO add middleware to check permission
-	group.DELETE("/services/:id", sc.Delete)
-
-	// TODO add middleware to check permission
-	group.PUT("/services/:id", sc.Update)
-
-	// TODO add middleware to check permission
-	group.GET("/services/:id", sc.Read)
+	group.POST("/services", middlewares.CheckJWT(), middlewares.ValidateAdminUsers(), sc.Create)
+	group.DELETE("/services/:name", middlewares.CheckJWT(), middlewares.ValidateAdminUsers(), sc.Delete)
+	group.PUT("/services/:name", middlewares.CheckJWT(), middlewares.ValidateAdminUsers(), sc.Update)
+	group.GET("/services/:name", middlewares.CheckJWT(), sc.Read)
 
 	return group
 }
@@ -49,25 +43,24 @@ func (sc ServiceController) Create(c *gin.Context) {
 	}
 
 	service, err = sc.Storage.CreateService(postBody)
-	if err != nil {
+	if err != nil && err.(*mysql.MySQLError).Number == utils.ErrDuplicateEntry {
+		c.JSON(http.StatusConflict, gin.H{"status": "Service is already existed", "error": err.Error()})
+		return
+	} else if err != nil {
 		log.Error("controllers.service.register.error_to_create_service: ", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"status": "ok", "record": service})
-
-	// TODO Send activation email
 }
 
 // Delete recieves http DELETE request and delete the service record in the storage
 func (sc ServiceController) Delete(c *gin.Context) {
-	var err error
-	var id string
 
-	id = c.Param("id")
+	name := c.Param("name")
 
-	err = sc.Storage.DeleteService(id)
+	err := sc.Storage.DeleteService(name)
 	if err != nil {
 		log.Error("controllers.service.delete.error_to_delete_service: ", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
@@ -80,9 +73,9 @@ func (sc ServiceController) Delete(c *gin.Context) {
 // Read recieves http GET request and get the service record in the storage
 func (sc ServiceController) Read(c *gin.Context) {
 
-	id := c.Param("id")
+	name := c.Param("name")
 
-	svc, err := sc.Storage.GetService(id)
+	svc, err := sc.Storage.GetService(name)
 
 	if err != nil && err.Error() == utils.ErrRecordNotFound.Error() {
 		log.Error("controllers.service.get_service.error_to_get: ", err.Error())
@@ -100,12 +93,11 @@ func (sc ServiceController) Read(c *gin.Context) {
 
 // Update recieves http PUT request and update/create the service record in the storage
 func (sc ServiceController) Update(c *gin.Context) {
-	var idInt int
 	var err error
 	var postBody models.ServiceJSON
 	var service models.Service
 
-	id := c.Param("id")
+	name := c.Param("name")
 
 	postBody, err = sc.parsePOSTBody(c)
 	if err != nil {
@@ -114,16 +106,9 @@ func (sc ServiceController) Update(c *gin.Context) {
 		return
 	}
 
-	service, err = sc.Storage.UpdateService(id, postBody)
-	if err != nil && err.Error() == utils.ErrRecordNotFound.Error() {
-		idInt, err = strconv.Atoi(id)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
-			return
-		}
-		postBody.ID = uint(idInt)
-		service, err = sc.Storage.CreateService(postBody)
-		c.JSON(http.StatusCreated, gin.H{"status": "ok", "record": service})
+	service, err = sc.Storage.UpdateService(name, postBody)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
 		return
 	}
 

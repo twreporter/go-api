@@ -16,7 +16,7 @@ import (
 
 // RegistrationController defines the routes and methods to handle the requests
 type RegistrationController struct {
-	Storage storage.RegistrationStorage
+	Storage storage.MembershipStorage
 }
 
 // SetRoute set the route path and corresponding handlers
@@ -106,8 +106,8 @@ func (rc RegistrationController) GetRegisteredUser(c *gin.Context) {
 	reg, err := rc.Storage.GetRegistration(email, service)
 
 	if err != nil && err.Error() == utils.ErrRecordNotFound.Error() {
-		log.Error("controllers.registration.get_registered_user.error_to_get: ", err.Error())
-		c.JSON(http.StatusNotFound, gin.H{"status": "Resource not found", "error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"status": "Resource not found",
+			"error": err.Error()})
 		return
 	} else if err != nil {
 		log.Error("controllers.registration.get_registered_user.error_to_get: ", err.Error())
@@ -152,7 +152,11 @@ func (rc RegistrationController) GetRegisteredUsers(c *gin.Context) {
 	count, err = rc.Storage.GetRegistrationsAmountByService(service, activeCode)
 	registrations, err = rc.Storage.GetRegistrationsByService(service, offset, limit, orderBy, activeCode)
 
-	if err != nil {
+	if err != nil && err.Error() == utils.ErrRecordNotFound.Error() {
+		c.JSON(http.StatusNotFound, gin.H{"status": "Resource not found",
+			"error": err.Error()})
+		return
+	} else if err != nil {
 		log.Error("controllers.registration.get_registered_users.error_to_get_registrations_from_storage: ", err.Error())
 		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
 		return

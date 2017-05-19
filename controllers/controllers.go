@@ -40,18 +40,15 @@ func (cf *ControllerFactory) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 // NewControllerFactory ...
 func NewControllerFactory(db *gorm.DB) *ControllerFactory {
 	// set up data storage
-	userStorage := storage.NewGormUserStorage(db)
-	bookmarkStorage := storage.NewGormBookmarkStorage(db)
-	registrationStorage := storage.NewGormRegistrationStorage(db)
-	serviceStorage := storage.NewGormServiceStorage(db)
+	s := storage.NewMembershipStorage(db)
 
 	// init controllers
-	fc := facebook.Facebook{Storage: userStorage}
-	gc := google.Google{Storage: userStorage}
-	ac := AccountController{Storage: userStorage}
-	bc := BookmarkController{BookmarkStorage: bookmarkStorage, UserStorage: userStorage}
-	rc := RegistrationController{Storage: registrationStorage}
-	sc := ServiceController{Storage: serviceStorage}
+	fc := facebook.Facebook{Storage: s}
+	gc := google.Google{Storage: s}
+	ac := AccountController{Storage: s}
+	bc := BookmarkController{Storage: s}
+	rc := RegistrationController{Storage: s}
+	sc := ServiceController{Storage: s}
 
 	cf := &ControllerFactory{
 		controllers: make(map[string]Controller),

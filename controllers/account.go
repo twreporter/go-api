@@ -28,7 +28,7 @@ type LoginJSON struct {
 
 // AccountController ...
 type AccountController struct {
-	Storage storage.UserStorage
+	Storage storage.MembershipStorage
 }
 
 // SetRoute is the method of Controller interface

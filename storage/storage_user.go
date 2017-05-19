@@ -6,43 +6,13 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/utils"
 )
 
-// UserStorage this is an interface defines methods for users, reporter_accounts and o_auth_accounts tables
-type UserStorage interface {
-	// get
-	GetUserByID(userID string) (models.User, error)
-	GetOAuthData(sql.NullString, string) (models.OAuthAccount, error)
-	GetUserDataByOAuth(models.OAuthAccount) (models.User, error)
-	GetReporterAccountData(string) (*models.ReporterAccount, error)
-	GetUserDataByReporterAccount(*models.ReporterAccount) (*models.User, error)
-
-	// create
-	InsertUserByOAuth(models.OAuthAccount) models.User
-	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
-
-	// update
-	UpdateOAuthData(models.OAuthAccount) (models.OAuthAccount, error)
-	UpdateReporterAccountPassword(*models.ReporterAccount, string) (*models.ReporterAccount, error)
-	UpdateReporterAccountActive(*models.ReporterAccount, bool) (*models.ReporterAccount, error)
-}
-
-// NewGormUserStorage this initializes the user storage
-func NewGormUserStorage(db *gorm.DB) UserStorage {
-	return &gormUserStorage{db}
-}
-
-// gormUserStorage this implements UserStorage interface
-type gormUserStorage struct {
-	db *gorm.DB
-}
-
 // GetUserByID gets the user by its ID
-func (s *gormUserStorage) GetUserByID(userID string) (models.User, error) {
+func (s *GormMembershipStorage) GetUserByID(userID string) (models.User, error) {
 	user := models.User{}
 
 	// SELECT * FROM users WHERE ID = $userID
@@ -51,7 +21,7 @@ func (s *gormUserStorage) GetUserByID(userID string) (models.User, error) {
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
-func (s *gormUserStorage) GetOAuthData(aid sql.NullString, aType string) (models.OAuthAccount, error) {
+func (s *GormMembershipStorage) GetOAuthData(aid sql.NullString, aType string) (models.OAuthAccount, error) {
 	log.Info("Getting the matching OAuth data", aid)
 	oac := models.OAuthAccount{}
 	err := s.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).Last(&oac).Error
@@ -62,7 +32,7 @@ func (s *gormUserStorage) GetOAuthData(aid sql.NullString, aType string) (models
 }
 
 // GetUserDataByOAuth gets the corresponding user data by using the OAuth information
-func (s *gormUserStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User, error) {
+func (s *GormMembershipStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User, error) {
 	log.Info("Getting the matching User data")
 
 	user := models.User{}
@@ -80,7 +50,7 @@ func (s *gormUserStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.Us
 }
 
 // GetReporterAccountData get the corresponding Reporter account by comparing email and password
-func (s *gormUserStorage) GetReporterAccountData(email string) (*models.ReporterAccount, error) {
+func (s *GormMembershipStorage) GetReporterAccountData(email string) (*models.ReporterAccount, error) {
 	log.WithFields(log.Fields{
 		"email": email,
 	}).Info("Getting the matching Reporter account data")
@@ -91,7 +61,7 @@ func (s *gormUserStorage) GetReporterAccountData(email string) (*models.Reporter
 }
 
 // GetUserDataByReporterAccount get user data from user table by providing its reporter account data
-func (s *gormUserStorage) GetUserDataByReporterAccount(ra *models.ReporterAccount) (*models.User, error) {
+func (s *GormMembershipStorage) GetUserDataByReporterAccount(ra *models.ReporterAccount) (*models.User, error) {
 	log.Info("Getting the matching User data by reporter account")
 	user := models.User{}
 	err := s.db.Model(ra).Related(&user).Error
@@ -99,7 +69,7 @@ func (s *gormUserStorage) GetUserDataByReporterAccount(ra *models.ReporterAccoun
 }
 
 // InsertUserByOAuth insert a new user into db after the oath loginin
-func (s *gormUserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
+func (s *GormMembershipStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
 	log.Info("Inserting user data")
 	user := models.User{
 		OAuthAccounts:    []models.OAuthAccount{omodel},
@@ -115,7 +85,7 @@ func (s *gormUserStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.U
 }
 
 // InsertUserByReporterAccount insert a new user into db after the sign up
-func (s *gormUserStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
+func (s *GormMembershipStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
 	log.WithFields(log.Fields{
 		"account":       raModel.Account,
 		"password":      raModel.Password,
@@ -132,7 +102,7 @@ func (s *gormUserStorage) InsertUserByReporterAccount(raModel models.ReporterAcc
 }
 
 // UpdateOAuthData updates the corresponding OAuth by using the OAuth information
-func (s *gormUserStorage) UpdateOAuthData(newData models.OAuthAccount) (models.OAuthAccount, error) {
+func (s *GormMembershipStorage) UpdateOAuthData(newData models.OAuthAccount) (models.OAuthAccount, error) {
 	log.Info("Getting the matching OAuth data", newData.AId)
 	matO, err := s.GetOAuthData(newData.AId, newData.Type)
 	if err != nil {
@@ -150,14 +120,14 @@ func (s *gormUserStorage) UpdateOAuthData(newData models.OAuthAccount) (models.O
 }
 
 // UpdateReporterAccountPassword update password for a reporter account
-func (s *gormUserStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password string) (*models.ReporterAccount, error) {
+func (s *GormMembershipStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password string) (*models.ReporterAccount, error) {
 	ra.Password = password
 	err := s.db.Save(ra).Error
 	return ra, err
 }
 
 // UpdateReporterAccountActive update password for a reporter account
-func (s *gormUserStorage) UpdateReporterAccountActive(ra *models.ReporterAccount, active bool) (*models.ReporterAccount, error) {
+func (s *GormMembershipStorage) UpdateReporterAccountActive(ra *models.ReporterAccount, active bool) (*models.ReporterAccount, error) {
 	ra.Active = active
 	err := s.db.Save(ra).Error
 	return ra, err
