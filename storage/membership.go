@@ -30,7 +30,6 @@ type MembershipStorage interface {
 
 	/** Service methods **/
 	GetService(string) (models.Service, error)
-	GetServiceByName(string) (models.Service, error)
 	CreateService(models.ServiceJSON) (models.Service, error)
 	UpdateService(string, models.ServiceJSON) (models.Service, error)
 	DeleteService(string) error

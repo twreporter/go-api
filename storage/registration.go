@@ -10,7 +10,7 @@ func (g *GormMembershipStorage) GetRegistration(email, service string) (models.R
 	// var svc models.Service
 	var reg models.Registration
 
-	svc, err := g.GetServiceByName(service)
+	svc, err := g.GetService(service)
 	if err != nil {
 		return models.Registration{}, err
 	}
@@ -24,7 +24,7 @@ func (g *GormMembershipStorage) GetRegistration(email, service string) (models.R
 func (g *GormMembershipStorage) GetRegistrationsByService(service string, offset, limit int, orderBy string, activeCode int) ([]models.Registration, error) {
 	var regs []models.Registration
 
-	svc, err := g.GetServiceByName(service)
+	svc, err := g.GetService(service)
 	if err != nil {
 		return []models.Registration{}, err
 	}
@@ -39,7 +39,7 @@ func (g *GormMembershipStorage) GetRegistrationsByService(service string, offset
 func (g *GormMembershipStorage) GetRegistrationsAmountByService(service string, activeCode int) (uint, error) {
 	var count uint
 
-	svc, err := g.GetServiceByName(service)
+	svc, err := g.GetService(service)
 	if err != nil {
 		return 0, err
 	}
@@ -53,7 +53,7 @@ func (g *GormMembershipStorage) GetRegistrationsAmountByService(service string, 
 // CreateRegistration this func will create a registration
 func (g *GormMembershipStorage) CreateRegistration(json models.RegistrationJSON) (models.Registration, error) {
 
-	svc, err := g.GetServiceByName(json.Service)
+	svc, err := g.GetService(json.Service)
 	if err != nil {
 		return models.Registration{}, err
 	}
@@ -75,7 +75,7 @@ func (g *GormMembershipStorage) CreateRegistration(json models.RegistrationJSON)
 func (g *GormMembershipStorage) UpdateRegistration(json models.RegistrationJSON) (models.Registration, error) {
 	var reg models.Registration
 
-	svc, err := g.GetServiceByName(json.Service)
+	svc, err := g.GetService(json.Service)
 	if err != nil {
 		return models.Registration{}, err
 	}
@@ -94,7 +94,7 @@ func (g *GormMembershipStorage) UpdateRegistration(json models.RegistrationJSON)
 func (g *GormMembershipStorage) DeleteRegistration(email, service string) error {
 	var svc models.Service
 
-	svc, err := g.GetServiceByName(service)
+	svc, err := g.GetService(service)
 	if err != nil {
 		return err
 	}

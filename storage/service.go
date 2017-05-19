@@ -5,14 +5,7 @@ import (
 )
 
 // GetService ...
-func (g *GormMembershipStorage) GetService(id string) (models.Service, error) {
-	var s models.Service
-	err := g.db.First(&s, "id = ?", id).Error
-	return s, err
-}
-
-// GetServiceByName ...
-func (g *GormMembershipStorage) GetServiceByName(name string) (models.Service, error) {
+func (g *GormMembershipStorage) GetService(name string) (models.Service, error) {
 	var s models.Service
 	err := g.db.First(&s, "name = ?", name).Error
 	return s, err
@@ -32,23 +25,24 @@ func (g *GormMembershipStorage) CreateService(json models.ServiceJSON) (models.S
 }
 
 // UpdateService this func will update the record in the stroage
-func (g *GormMembershipStorage) UpdateService(id string, json models.ServiceJSON) (models.Service, error) {
+func (g *GormMembershipStorage) UpdateService(name string, json models.ServiceJSON) (models.Service, error) {
 	var s models.Service
 	var err error
 
-	err = g.db.First(&s, "id = ?", id).Error
-
+	err = g.db.Where("name = ?", name).FirstOrCreate(&s).Error
 	if err != nil {
 		return s, err
 	}
 
 	s.Name = json.Name
+
 	err = g.db.Save(&s).Error
+
 	return s, err
 }
 
 // DeleteService this func will delete the record in the stroage
-func (g *GormMembershipStorage) DeleteService(id string) error {
-	err := g.db.Where("id = ?", id).Delete(&models.Service{}).Error
+func (g *GormMembershipStorage) DeleteService(name string) error {
+	err := g.db.Where("name = ?", name).Delete(&models.Service{}).Error
 	return err
 }
