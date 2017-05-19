@@ -7,15 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
-	"twreporter.org/go-api/controllers"
-)
-
-var (
-	Engine *gin.Engine
-	DB     *gorm.DB
 )
 
 func TestPing(t *testing.T) {
@@ -33,21 +25,12 @@ func TestMain(m *testing.M) {
 	}
 
 	// Set up database, including drop existing tables and create tables
-	RunMigration(DB)
+	RunMigration()
 
 	// Set up default records in tables
-	SetDefaultRecords(DB)
+	SetDefaultRecords()
 
-	cf := controllers.NewControllerFactory(DB)
-
-	Engine = gin.Default()
-	routerGroup := Engine.Group("/v1")
-	{
-		menuitems := new(controllers.MenuItemsController)
-		routerGroup.GET("/ping", menuitems.Retrieve)
-	}
-
-	routerGroup = cf.SetRoute(routerGroup)
+	SetupGinServer()
 
 	retCode := m.Run()
 	os.Exit(retCode)
