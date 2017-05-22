@@ -90,7 +90,8 @@ func (g *GormMembershipStorage) DeleteABookmarkOfAUser(userID, bookmarkID string
 		return g.NewStorageError(err, "DeleteABookmarkOfAUser", "storage.bookmark.error_to_get_bookmark")
 	}
 
-	err = g.db.Model(&user).Association(bookmarksStr).Delete(bookmark).Error
+	// The reason why here find before delete is to make sure it will return error if record is not found
+	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmark).Delete(bookmark).Error
 	if err != nil {
 		return g.NewStorageError(err, "DeleteABookmarkOfAUser", "storage.bookmark.error_to_delete_user_bookmark_relationship")
 	}

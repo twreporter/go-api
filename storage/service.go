@@ -54,9 +54,8 @@ func (g *GormMembershipStorage) UpdateService(name string, json models.ServiceJS
 
 // DeleteService this func will delete the record in the stroage
 func (g *GormMembershipStorage) DeleteService(name string) error {
-	err := g.db.Where("name = ?", name).Delete(&models.Service{}).Error
-	if err != nil {
-		return g.NewStorageError(err, "DeleteService", "storage.service.delete_svc")
+	if g.db.Where("name = ?", name).Delete(&models.Service{}).RowsAffected == 0 {
+		return g.NewStorageError(ErrRecordNotFound, "DeleteService", "storage.service.delete_svc")
 	}
-	return err
+	return nil
 }

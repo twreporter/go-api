@@ -16,7 +16,7 @@ func (g *GormMembershipStorage) GetRegistration(email, service string) (models.R
 
 	svc, err := g.GetService(service)
 	if err != nil {
-		return reg, g.NewStorageError(err, funcName, fmt.Sprintf("%v.error_to_get_svc: ", message))
+		return reg, err
 	}
 
 	err = g.db.Preload("Service", "id = ?", svc.ID).Where("email = ? AND service_id = ?", email, svc.ID).Find(&reg).Error
@@ -35,7 +35,7 @@ func (g *GormMembershipStorage) GetRegistrationsByService(service string, offset
 
 	svc, err := g.GetService(service)
 	if err != nil {
-		return regs, g.NewStorageError(err, funcName, fmt.Sprintf("%v.err_to_get_svc: ", message))
+		return regs, err
 	}
 
 	where := getActiveWhereCondition(activeCode)
@@ -56,7 +56,7 @@ func (g *GormMembershipStorage) GetRegistrationsAmountByService(service string, 
 
 	svc, err := g.GetService(service)
 	if err != nil {
-		return 0, g.NewStorageError(err, funcName, fmt.Sprintf("%v.err_to_get_svc: ", message))
+		return 0, err
 	}
 
 	where := getActiveWhereCondition(activeCode)
@@ -78,7 +78,7 @@ func (g *GormMembershipStorage) CreateRegistration(service string, json models.R
 
 	svc, err := g.GetService(service)
 	if err != nil {
-		return reg, g.NewStorageError(err, funcName, fmt.Sprintf("%v.error_to_get_svc", message))
+		return reg, err
 	}
 
 	if json.UserID != "" {
@@ -115,7 +115,7 @@ func (g *GormMembershipStorage) UpdateRegistration(service string, json models.R
 
 	svc, err := g.GetService(service)
 	if err != nil {
-		return reg, g.NewStorageError(err, funcName, fmt.Sprintf("%v.error_to_get_svc", message))
+		return reg, err
 	}
 
 	err = g.db.Where("service_id = ? AND email = ?", svc.ID, json.Email).FirstOrCreate(&reg).Error
@@ -143,12 +143,11 @@ func (g *GormMembershipStorage) DeleteRegistration(email, service string) error 
 
 	svc, err := g.GetService(service)
 	if err != nil {
-		return g.NewStorageError(err, funcName, fmt.Sprintf("%v.error_to_get_svc", message))
+		return err
 	}
 
-	err = g.db.Where("email = ? AND service_id = ?", email, svc.ID).Delete(&models.Registration{}).Error
-	if err != nil {
-		return g.NewStorageError(err, funcName, fmt.Sprintf("%v.error_to_delete", message))
+	if g.db.Where("email = ? AND service_id = ?", email, svc.ID).Delete(models.Registration{}).RowsAffected == 0 {
+		return g.NewStorageError(ErrRecordNotFound, funcName, fmt.Sprintf("%v.error_to_delete", message))
 	}
 
 	return err
