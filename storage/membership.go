@@ -59,7 +59,14 @@ type GormMembershipStorage struct {
 }
 
 // NewStorageError ...
-func (g *GormMembershipStorage) NewStorageError(err error, where string, message string) error {
+func (g *GormMembershipStorage) NewStorageError(err error, where string, message string) (returnErr error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("Recovered in NewStorageError", r)
+			returnErr = models.NewAppError(where, "Internal server error", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusInternalServerError)
+		}
+	}()
+
 	if err != nil && err.Error() == ErrRecordNotFound.Error() {
 		return models.NewAppError(where, "Record not found", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusNotFound)
 	} else if err != nil && err.(*mysql.MySQLError).Number == ErrDuplicateEntry {
