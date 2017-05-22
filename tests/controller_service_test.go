@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -26,63 +25,49 @@ type ServiceResponse struct {
 }
 
 func TestServiceAuthorization(t *testing.T) {
+	var resp *httptest.ResponseRecorder
+
 	// ===== START - Fail to pass Authorization ===== //
 	// email(of DefaultID2) is not in the admin white list
-	req := RequestWithBody("POST", "/v1/services", "")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID2))))
-	resp := httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("POST", "/v1/services", "", "", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID2))))
 	assert.Equal(t, resp.Code, 401)
 
 	// without Authorization header
-	req, _ = http.NewRequest("GET", "/v1/services/1", nil)
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("GET", "/v1/services/1", "", "", "")
 	assert.Equal(t, resp.Code, 401)
 	// ===== END - Fail to pass Authorization ===== //
 
 	// Pass Authorization
-	req = RequestWithBody("POST", "/v1/services", `{"name":"test_service"}`)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("POST", "/v1/services", `{"name":"test_service"}`,
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 201)
 }
 
 func TestCreateAService(t *testing.T) {
+	var resp *httptest.ResponseRecorder
+
 	// Wrong JSON POST body
-	req := RequestWithBody("POST", "/v1/services", "")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("POST", "/v1/services", "",
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 400)
 
 	// Success to create
-	req = RequestWithBody("POST", "/v1/services", `{"name":"test_service_1"}`)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("POST", "/v1/services", `{"name":"test_service_1"}`,
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 201)
 
 	// Fail to create the existing service
-	req = RequestWithBody("POST", "/v1/services", `{"name":"test_service_1"}`)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("POST", "/v1/services", `{"name":"test_service_1"}`,
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 409)
 }
 
 func TestDeleteAService(t *testing.T) {
+	var resp *httptest.ResponseRecorder
+
 	// Create a service to delete
-	req := RequestWithBody("POST", "/v1/services", `{"name":"test_service_3"}`)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("POST", "/v1/services", `{"name":"test_service_3"}`,
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 
 	// Get the new one service's name
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -91,29 +76,27 @@ func TestDeleteAService(t *testing.T) {
 	name := res.Service.Name
 
 	// Delete the service successfully
-	req, _ = http.NewRequest("DELETE", fmt.Sprintf("/v1/services/%v", name), nil)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("DELETE", fmt.Sprintf("/v1/services/%v", name), "",
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 204)
+
+	// Delete the service again
+	resp = ServeHTTP("DELETE", fmt.Sprintf("/v1/services/%v", name), "",
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
+	assert.Equal(t, resp.Code, 404)
 }
 
 func TestReadAService(t *testing.T) {
+	var resp *httptest.ResponseRecorder
+
 	// Fail to read service due to service not existed
-	req, _ := http.NewRequest("GET", "/v1/services/service_not_existed", nil)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("GET", "/v1/services/service_not_existed", "",
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 404)
 
 	// Read successfully
-	req, _ = http.NewRequest("GET", "/v1/services/default_service", nil)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("GET", "/v1/services/default_service", "",
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 200)
 
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -124,36 +107,26 @@ func TestReadAService(t *testing.T) {
 }
 
 func TestUpdateAService(t *testing.T) {
+	var resp *httptest.ResponseRecorder
+
 	// Create a service if service is not existed
-	req := RequestWithBody("PUT", "/v1/services/service_to_update", `{"name":"service_to_update"}`)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("PUT", "/v1/services/service_to_update", `{"name":"service_to_update"}`,
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 200)
 
 	// Update the existing service
-	req = RequestWithBody("PUT", "/v1/services/service_to_update", `{"name":"updated_service"}`)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("PUT", "/v1/services/service_to_update", `{"name":"updated_service"}`,
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 200)
 
 	// Cannot read the old service
-	req, _ = http.NewRequest("GET", "/v1/services/service_to_update", nil)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("GET", "/v1/services/service_to_update", "",
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 404)
 
 	// Read successfully
-	req, _ = http.NewRequest("GET", "/v1/services/updated_service", nil)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
-	req.Header.Add("Content-Type", "application/json")
-	resp = httptest.NewRecorder()
-	Engine.ServeHTTP(resp, req)
+	resp = ServeHTTP("GET", "/v1/services/updated_service", "",
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID))))
 	assert.Equal(t, resp.Code, 200)
 
 }

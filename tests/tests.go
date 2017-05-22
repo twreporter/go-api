@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golang.org/x/crypto/scrypt"
 	"net/http"
+	"net/http/httptest"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -115,5 +116,24 @@ func GenerateJWT(user models.User) (jwt string) {
 func GetUser(userId string) (user models.User) {
 	as := storage.NewMembershipStorage(DB)
 	user, _ = as.GetUserByID(userId)
+	return
+}
+
+func ServeHTTP(method, path, body, contentType, authorization string) (resp *httptest.ResponseRecorder) {
+	var req *http.Request
+
+	req = RequestWithBody(method, path, body)
+
+	if contentType != "" {
+		req.Header.Add("Content-Type", contentType)
+	}
+
+	if authorization != "" {
+		req.Header.Add("Authorization", authorization)
+	}
+
+	resp = httptest.NewRecorder()
+	Engine.ServeHTTP(resp, req)
+
 	return
 }
