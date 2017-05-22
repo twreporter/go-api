@@ -8,36 +8,11 @@ import (
 
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 )
 
-// RegistrationController defines the routes and methods to handle the requests
-type RegistrationController struct {
-	Storage storage.MembershipStorage
-}
-
-// SetRoute set the route path and corresponding handlers
-func (rc RegistrationController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-
-	// TODO add middleware to check the request from twreporter.org domain
-	group.POST("/registrations/:service", rc.Register)
-
-	// TODO add middleware to check the email to delete is the email of the user sending the request
-	group.DELETE("/registrations/:service/:userEmail", rc.Deregister)
-
-	// TODO add middleware to check the request from twreporter.org domain
-	group.GET("/registrations/:service/:userEmail", rc.GetRegisteredUser)
-	group.GET("/registrations/:service", rc.GetRegisteredUsers)
-	//
-
-	group.GET("/activation/:service/:userEmail", rc.Activate)
-
-	return group
-}
-
 // Register recieves http POST requests and create the registration record in the storage
-func (rc RegistrationController) Register(c *gin.Context) {
+func (mc *MembershipController) Register(c *gin.Context) {
 	var err error
 	var appErr models.AppError
 	var postBody models.RegistrationJSON
@@ -45,7 +20,7 @@ func (rc RegistrationController) Register(c *gin.Context) {
 	var service string
 	var activeToken string
 
-	postBody, err = rc.parsePOSTBody(c)
+	postBody, err = mc.parseRegPOSTBody(c)
 	if err != nil {
 		appErr = err.(models.AppError)
 		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
@@ -63,7 +38,7 @@ func (rc RegistrationController) Register(c *gin.Context) {
 
 	postBody.ActivateToken = activeToken
 
-	registration, err = rc.Storage.CreateRegistration(service, postBody)
+	registration, err = mc.Storage.CreateRegistration(service, postBody)
 	if err != nil {
 		appErr = err.(models.AppError)
 		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message,
@@ -79,7 +54,7 @@ func (rc RegistrationController) Register(c *gin.Context) {
 }
 
 // Deregister recieves http DELETE request and delete the registration recode in the storage
-func (rc RegistrationController) Deregister(c *gin.Context) {
+func (mc *MembershipController) Deregister(c *gin.Context) {
 	var err error
 	var userEmail, service string
 	var appErr models.AppError
@@ -87,7 +62,7 @@ func (rc RegistrationController) Deregister(c *gin.Context) {
 	userEmail = c.Param("userEmail")
 	service = c.Param("service")
 
-	err = rc.Storage.DeleteRegistration(userEmail, service)
+	err = mc.Storage.DeleteRegistration(userEmail, service)
 	if err != nil {
 		appErr = err.(models.AppError)
 		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
@@ -98,13 +73,13 @@ func (rc RegistrationController) Deregister(c *gin.Context) {
 }
 
 // GetRegisteredUser recieves http GET request and get the registration record from the storage
-func (rc RegistrationController) GetRegisteredUser(c *gin.Context) {
+func (mc *MembershipController) GetRegisteredUser(c *gin.Context) {
 	var appErr models.AppError
 
 	email := c.Param("userEmail")
 	service := c.Param("service")
 
-	reg, err := rc.Storage.GetRegistration(email, service)
+	reg, err := mc.Storage.GetRegistration(email, service)
 
 	if err != nil {
 		appErr = err.(models.AppError)
@@ -120,7 +95,7 @@ func (rc RegistrationController) GetRegisteredUser(c *gin.Context) {
 }
 
 // GetRegisteredUsers recieves the http GET request which may contain limit, offset, order_by and active_code params, and get regitration records from the storage
-func (rc RegistrationController) GetRegisteredUsers(c *gin.Context) {
+func (mc *MembershipController) GetRegisteredUsers(c *gin.Context) {
 	var appErr models.AppError
 	var registrations []models.Registration
 	var limit, offset, activeCode int
@@ -147,8 +122,8 @@ func (rc RegistrationController) GetRegisteredUsers(c *gin.Context) {
 		orderBy = constants.DefaultOrderBy
 	}
 
-	count, err = rc.Storage.GetRegistrationsAmountByService(service, activeCode)
-	registrations, err = rc.Storage.GetRegistrationsByService(service, offset, limit, orderBy, activeCode)
+	count, err = mc.Storage.GetRegistrationsAmountByService(service, activeCode)
+	registrations, err = mc.Storage.GetRegistrationsByService(service, offset, limit, orderBy, activeCode)
 
 	if err != nil {
 		appErr = err.(models.AppError)
@@ -165,8 +140,8 @@ func (rc RegistrationController) GetRegisteredUsers(c *gin.Context) {
 	c.JSON(200, gin.H{"status": "ok", "count": count, "records": registrations})
 }
 
-// Activate recieves http GET request, and make the registration record active
-func (rc RegistrationController) Activate(c *gin.Context) {
+// ActivateRegistration recieves http GET request, and make the registration record active
+func (mc *MembershipController) ActivateRegistration(c *gin.Context) {
 	email := c.Param("userEmail")
 	service := c.Param("service")
 	token := c.Query("activeToken")
@@ -177,11 +152,11 @@ func (rc RegistrationController) Activate(c *gin.Context) {
 		Path:   constants.Activate,
 	}
 
-	reg, err := rc.Storage.GetRegistration(email, service)
+	reg, err := mc.Storage.GetRegistration(email, service)
 
 	if err == nil {
 		if reg.ActivateToken == token {
-			_, err = rc.Storage.UpdateRegistration(service, models.RegistrationJSON{Email: email, Active: true, ActivateToken: token})
+			_, err = mc.Storage.UpdateRegistration(service, models.RegistrationJSON{Email: email, Active: true, ActivateToken: token})
 			if err == nil {
 				c.Redirect(http.StatusTemporaryRedirect, u.String())
 				return
@@ -204,7 +179,7 @@ func (rc RegistrationController) Activate(c *gin.Context) {
 
 }
 
-func (rc RegistrationController) parsePOSTBody(c *gin.Context) (models.RegistrationJSON, error) {
+func (mc *MembershipController) parseRegPOSTBody(c *gin.Context) (models.RegistrationJSON, error) {
 	var err error
 	var json models.RegistrationJSON
 
