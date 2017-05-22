@@ -23,6 +23,8 @@ var (
 	DefaultID2       = "2"
 	DefaultAccount2  = "turtle@twreporter.org"
 	DefaultPassword2 = "1111"
+	DefaultService   = "default_service"
+	DefaultToken     = "default_token"
 	Engine           *gin.Engine
 	DB               *gorm.DB
 )
@@ -65,7 +67,7 @@ func RunMigration() {
 
 func SetDefaultRecords() {
 	// Set an active reporter account
-	as := storage.NewMembershipStorage(DB)
+	ms := storage.NewMembershipStorage(DB)
 
 	key, _ := scrypt.Key([]byte(DefaultPassword), []byte(""), 16384, 8, 1, 32)
 
@@ -75,7 +77,7 @@ func SetDefaultRecords() {
 		Active:        true,
 		ActivateToken: "",
 	}
-	_, _ = as.InsertUserByReporterAccount(ra)
+	_, _ = ms.InsertUserByReporterAccount(ra)
 
 	key, _ = scrypt.Key([]byte(DefaultPassword2), []byte(""), 16384, 8, 1, 32)
 
@@ -85,9 +87,11 @@ func SetDefaultRecords() {
 		Active:        true,
 		ActivateToken: "",
 	}
-	_, _ = as.InsertUserByReporterAccount(ra)
+	_, _ = ms.InsertUserByReporterAccount(ra)
 
-	as.CreateService(models.ServiceJSON{Name: "default_service", ID: 1})
+	ms.CreateService(models.ServiceJSON{Name: DefaultService})
+
+	ms.CreateRegistration(DefaultService, models.RegistrationJSON{Email: DefaultAccount, ActivateToken: DefaultToken})
 }
 
 func SetupGinServer() {
