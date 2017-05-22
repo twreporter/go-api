@@ -80,13 +80,13 @@ func (mc *MembershipController) parseBookmarkPOSTBody(c *gin.Context) (models.Bo
 	if contentType == "application/json" {
 		err = c.Bind(&json)
 		if err != nil {
-			return models.Bookmark{}, err
+			return models.Bookmark{}, models.NewAppError("parseBookmarkPOSTBody", "Bad request", "POST body is not a JSON", http.StatusBadRequest)
 		}
 		return models.Bookmark{Href: json.Href, Title: json.Title, Desc: utils.ToNullString(json.Desc), Thumbnail: utils.ToNullString(json.Thumbnail)}, nil
 	} else if contentType == "x-www-form-urlencoded" {
 		err = c.Bind(&form)
 		if err != nil {
-			return models.Bookmark{}, err
+			return models.Bookmark{}, models.NewAppError("parseBookmarkPOSTBody", "Bad request", "POST body is not a x-www-form-urlencoded form", http.StatusBadRequest)
 		}
 		return models.Bookmark{Href: form.Href, Title: form.Title, Desc: utils.ToNullString(form.Desc), Thumbnail: utils.ToNullString(form.Thumbnail)}, nil
 	}
