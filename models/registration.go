@@ -13,7 +13,7 @@ type Registration struct {
 	ServiceID     uint   `gorm:"primary_key" json:"service_id"`
 	Email         string `gorm:"primary_key;size:100" json:"email"`
 	User          User
-	UserID        uint   `gorm: "default:0" json:"user_id"`
+	UserID        uint   `gorm:"default:0" json:"user_id"`
 	Active        bool   `gorm:"default:0" json:"active"`
 	ActivateToken string `gorm:"size:20" json:"active_token"`
 }

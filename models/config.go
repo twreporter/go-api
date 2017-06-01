@@ -80,6 +80,11 @@ type DBSettings struct {
 	Port     string
 }
 
+// MongoDBSettings ...
+type MongoDBSettings struct {
+	URL string
+}
+
 // FacebookSettings could be defined in configs/config.json
 type FacebookSettings struct {
 	ID       string
@@ -120,6 +125,7 @@ type Config struct {
 	AppSettings      AppSettings
 	EmailSettings    EmailSettings
 	DBSettings       DBSettings
+	MongoDBSettings  MongoDBSettings
 	OauthSettings    OauthSettings
 	ConsumerSettings ConsumerSettings
 	EncryptSettings  EncryptSettings

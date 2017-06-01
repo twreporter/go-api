@@ -36,3 +36,4 @@ import:
   - http2
   - context
 - package: gopkg.in/matryer/try.v1
+- package: gopkg.in/mgo.v2

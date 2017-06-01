@@ -13,6 +13,7 @@ type Service struct {
 	Name      string     `gorm:"size:100;unique_index;not null" json:"name"`
 }
 
+// ServiceJSON ...
 type ServiceJSON struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name" binding:"required"`
