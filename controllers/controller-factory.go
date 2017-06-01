@@ -43,22 +43,16 @@ func NewControllerFactory(db *gorm.DB) *ControllerFactory {
 	s := storage.NewMembershipStorage(db)
 
 	// init controllers
-	fc := facebook.Facebook{Storage: s}
-	gc := google.Google{Storage: s}
-	ac := AccountController{Storage: s}
-	bc := BookmarkController{Storage: s}
-	rc := RegistrationController{Storage: s}
-	sc := ServiceController{Storage: s}
+	mc := NewMembershipController(s)
+	fc := facebook.Facebook{s}
+	gc := google.Google{s}
 
 	cf := &ControllerFactory{
 		controllers: make(map[string]Controller),
 	}
+	cf.SetController(constants.MembershipController, mc)
 	cf.SetController(constants.FacebookController, fc)
 	cf.SetController(constants.GoogleController, gc)
-	cf.SetController(constants.AccountController, ac)
-	cf.SetController(constants.BookmarkController, bc)
-	cf.SetController(constants.RegistrationController, rc)
-	cf.SetController(constants.ServiceController, sc)
 
 	return cf
 }

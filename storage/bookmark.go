@@ -12,6 +12,10 @@ var (
 func (g *GormMembershipStorage) GetABookmarkByHref(href string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
 	err := g.db.First(&bookmark, "href = ?", href).Error
+	if err != nil {
+		return bookmark, g.NewStorageError(err, "GetABookmarkByHref", "storage.bookmark.error_to_get")
+	}
+
 	return bookmark, err
 }
 
@@ -19,6 +23,10 @@ func (g *GormMembershipStorage) GetABookmarkByHref(href string) (models.Bookmark
 func (g *GormMembershipStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
 	err := g.db.First(&bookmark, "id = ?", id).Error
+	if err != nil {
+		return bookmark, g.NewStorageError(err, "GetABookmarkByID", "storage.bookmark.error_to_get")
+	}
+
 	return bookmark, err
 }
 
@@ -31,10 +39,14 @@ func (g *GormMembershipStorage) GetBookmarksOfAUser(id string) ([]models.Bookmar
 	user, err = g.GetUserByID(id)
 
 	if err != nil {
-		return []models.Bookmark{}, err
+		return bookmarks, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
 	}
 
 	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmarks).Error
+	if err != nil {
+		return bookmarks, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_bookmarks")
+	}
+
 	return bookmarks, err
 }
 
@@ -45,17 +57,20 @@ func (g *GormMembershipStorage) CreateABookmarkOfAUser(userID string, bookmark m
 	user, err := g.GetUserByID(userID)
 
 	if err != nil {
-		return err
+		return g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_get_user")
 	}
 
 	// get first matched record, or create a new one
 	err = g.db.Where(bookmark).FirstOrCreate(&_bookmark).Error
-
 	if err != nil {
-		return err
+		return g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_create_bookmark")
 	}
 
 	err = g.db.Model(&user).Association(bookmarksStr).Append(_bookmark).Error
+	if err != nil {
+		return g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_create_user_bookmark_relationship")
+	}
+
 	return err
 }
 
@@ -67,14 +82,19 @@ func (g *GormMembershipStorage) DeleteABookmarkOfAUser(userID, bookmarkID string
 
 	user, err = g.GetUserByID(userID)
 	if err != nil {
-		return err
+		return g.NewStorageError(err, "DeleteABookmarkOfAUser", "storage.bookmark.error_to_get_user")
 	}
 
 	bookmark, err = g.GetABookmarkByID(bookmarkID)
 	if err != nil {
-		return err
+		return g.NewStorageError(err, "DeleteABookmarkOfAUser", "storage.bookmark.error_to_get_bookmark")
 	}
 
-	err = g.db.Model(&user).Association(bookmarksStr).Delete(bookmark).Error
+	// The reason why here find before delete is to make sure it will return error if record is not found
+	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmark).Delete(bookmark).Error
+	if err != nil {
+		return g.NewStorageError(err, "DeleteABookmarkOfAUser", "storage.bookmark.error_to_delete_user_bookmark_relationship")
+	}
+
 	return err
 }

@@ -1,12 +1,9 @@
 package constants
 
 const (
-	GoogleController       = "google_controller"
-	FacebookController     = "facebook_controller"
-	AccountController      = "account_controller"
-	BookmarkController     = "bookmark_controller"
-	RegistrationController = "registration_controller"
-	ServiceController      = "service_controller"
+	MembershipController = "membership_controller"
+	FacebookController   = "facebook_controller"
+	GoogleController     = "google_controller"
 
 	RegistrationTable = "registrations"
 

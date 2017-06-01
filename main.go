@@ -51,6 +51,7 @@ func main() {
 
 	// set up database connection
 	db, _ := utils.InitDB(10, 5)
+	db.LogMode(true)
 	defer db.Close()
 
 	cf := controllers.NewControllerFactory(db)
