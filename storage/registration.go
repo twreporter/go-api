@@ -8,7 +8,7 @@ import (
 )
 
 // GetRegistration ...
-func (g *GormMembershipStorage) GetRegistration(email, service string) (models.Registration, error) {
+func (g *GormStorage) GetRegistration(email, service string) (models.Registration, error) {
 	// var svc models.Service
 	var reg models.Registration
 	var funcName = "GetRegistration"
@@ -28,7 +28,7 @@ func (g *GormMembershipStorage) GetRegistration(email, service string) (models.R
 }
 
 // GetRegistrationsByService ...
-func (g *GormMembershipStorage) GetRegistrationsByService(service string, offset, limit int, orderBy string, activeCode int) ([]models.Registration, error) {
+func (g *GormStorage) GetRegistrationsByService(service string, offset, limit int, orderBy string, activeCode int) ([]models.Registration, error) {
 	var regs []models.Registration
 	var funcName = "GetRegistrationsByService"
 	var message = "storage.registration.get_regs_by_svc"
@@ -49,7 +49,7 @@ func (g *GormMembershipStorage) GetRegistrationsByService(service string, offset
 }
 
 // GetRegistrationsAmountByService ...
-func (g *GormMembershipStorage) GetRegistrationsAmountByService(service string, activeCode int) (uint, error) {
+func (g *GormStorage) GetRegistrationsAmountByService(service string, activeCode int) (uint, error) {
 	var count uint
 	var funcName = "GetRegistrationsAmountByService"
 	var message = "storage.registration.get_regs_amount_by_svc"
@@ -70,7 +70,7 @@ func (g *GormMembershipStorage) GetRegistrationsAmountByService(service string, 
 }
 
 // CreateRegistration this func will create a registration
-func (g *GormMembershipStorage) CreateRegistration(service string, json models.RegistrationJSON) (models.Registration, error) {
+func (g *GormStorage) CreateRegistration(service string, json models.RegistrationJSON) (models.Registration, error) {
 	var user models.User
 	var reg models.Registration
 	var funcName = "CreateRegistration"
@@ -108,7 +108,7 @@ func (g *GormMembershipStorage) CreateRegistration(service string, json models.R
 }
 
 // UpdateRegistration this func will update the record in the stroage
-func (g *GormMembershipStorage) UpdateRegistration(service string, json models.RegistrationJSON) (models.Registration, error) {
+func (g *GormStorage) UpdateRegistration(service string, json models.RegistrationJSON) (models.Registration, error) {
 	var reg models.Registration
 	var funcName = "UpdateRegistration"
 	var message = "storage.registration.update_reg"
@@ -136,7 +136,7 @@ func (g *GormMembershipStorage) UpdateRegistration(service string, json models.R
 }
 
 // DeleteRegistration this func will delete the record in the stroage
-func (g *GormMembershipStorage) DeleteRegistration(email, service string) error {
+func (g *GormStorage) DeleteRegistration(email, service string) error {
 	var svc models.Service
 	var funcName = "DeleteRegistration"
 	var message = "storage.registration.delete_reg"

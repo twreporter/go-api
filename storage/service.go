@@ -5,7 +5,7 @@ import (
 )
 
 // GetService ...
-func (g *GormMembershipStorage) GetService(name string) (models.Service, error) {
+func (g *GormStorage) GetService(name string) (models.Service, error) {
 	var s models.Service
 
 	err := g.db.First(&s, "name = ?", name).Error
@@ -17,7 +17,7 @@ func (g *GormMembershipStorage) GetService(name string) (models.Service, error) 
 }
 
 // CreateService this func will create a service record
-func (g *GormMembershipStorage) CreateService(json models.ServiceJSON) (models.Service, error) {
+func (g *GormStorage) CreateService(json models.ServiceJSON) (models.Service, error) {
 	var err error
 
 	service := models.Service{
@@ -33,7 +33,7 @@ func (g *GormMembershipStorage) CreateService(json models.ServiceJSON) (models.S
 }
 
 // UpdateService this func will update the record in the stroage
-func (g *GormMembershipStorage) UpdateService(name string, json models.ServiceJSON) (models.Service, error) {
+func (g *GormStorage) UpdateService(name string, json models.ServiceJSON) (models.Service, error) {
 	var s models.Service
 	var err error
 
@@ -53,7 +53,7 @@ func (g *GormMembershipStorage) UpdateService(name string, json models.ServiceJS
 }
 
 // DeleteService this func will delete the record in the stroage
-func (g *GormMembershipStorage) DeleteService(name string) error {
+func (g *GormStorage) DeleteService(name string) error {
 	if g.db.Where("name = ?", name).Delete(&models.Service{}).RowsAffected == 0 {
 		return g.NewStorageError(ErrRecordNotFound, "DeleteService", "storage.service.delete_svc")
 	}
