@@ -1,5 +1,5 @@
-hash: e18f6668e35d85f6d8bdb94bc2b9bb674b48439c0268ec23d12cae68783becb8
-updated: 2017-05-15T14:14:22.451455571+08:00
+hash: 7b309404f78cef1219474779b9630e6d0880ce6c57918df1d48ca35bd4f64e03
+updated: 2017-05-24T15:41:34.833702186+08:00
 imports:
 - name: cloud.google.com/go
   version: 2e6a95edb1071d750f6d7db777bf66cd2997af6c
@@ -23,8 +23,6 @@ imports:
   - proto
 - name: github.com/googleapis/gax-go
   version: 9af46dd5a1713e8b5cd71106287eba3cefdde50b
-- name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/jinzhu/configor
   version: b7df2005e02e9226447139012db968eda90a4b91
 - name: github.com/jinzhu/gorm
@@ -108,6 +106,8 @@ imports:
   version: c193cecd124b5cc722d7ee5538e945bdb3348435
 - name: gopkg.in/matryer/try.v1
   version: 312d2599e12e89ca89b52a09597394f449235d80
+- name: gopkg.in/mgo.v2
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:

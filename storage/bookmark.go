@@ -9,7 +9,7 @@ var (
 )
 
 // GetABookmarkByHref ...
-func (g *GormMembershipStorage) GetABookmarkByHref(href string) (models.Bookmark, error) {
+func (g *GormStorage) GetABookmarkByHref(href string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
 	err := g.db.First(&bookmark, "href = ?", href).Error
 	if err != nil {
@@ -20,7 +20,7 @@ func (g *GormMembershipStorage) GetABookmarkByHref(href string) (models.Bookmark
 }
 
 // GetABookmarkByID ...
-func (g *GormMembershipStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
+func (g *GormStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
 	err := g.db.First(&bookmark, "id = ?", id).Error
 	if err != nil {
@@ -31,7 +31,7 @@ func (g *GormMembershipStorage) GetABookmarkByID(id string) (models.Bookmark, er
 }
 
 // GetBookmarksOfAUser lists bookmarks of the user
-func (g *GormMembershipStorage) GetBookmarksOfAUser(id string) ([]models.Bookmark, error) {
+func (g *GormStorage) GetBookmarksOfAUser(id string) ([]models.Bookmark, error) {
 	var bookmarks []models.Bookmark
 	var user models.User
 	var err error
@@ -51,7 +51,7 @@ func (g *GormMembershipStorage) GetBookmarksOfAUser(id string) ([]models.Bookmar
 }
 
 // CreateABookmarkOfAUser this func will create a bookmark and build the relationship between the bookmark and the user
-func (g *GormMembershipStorage) CreateABookmarkOfAUser(userID string, bookmark models.Bookmark) error {
+func (g *GormStorage) CreateABookmarkOfAUser(userID string, bookmark models.Bookmark) error {
 	var _bookmark models.Bookmark
 
 	user, err := g.GetUserByID(userID)
@@ -75,7 +75,7 @@ func (g *GormMembershipStorage) CreateABookmarkOfAUser(userID string, bookmark m
 }
 
 // DeleteABookmarkOfAUser this func will delete the relationship between the user and the bookmark
-func (g *GormMembershipStorage) DeleteABookmarkOfAUser(userID, bookmarkID string) error {
+func (g *GormStorage) DeleteABookmarkOfAUser(userID, bookmarkID string) error {
 	var err error
 	var bookmark models.Bookmark
 	var user models.User

@@ -2,6 +2,7 @@ package constants
 
 const (
 	MembershipController = "membership_controller"
+	NewsController       = "news_controller"
 	FacebookController   = "facebook_controller"
 	GoogleController     = "google_controller"
 

@@ -2,14 +2,10 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
-	"net/http"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"gopkg.in/mgo.v2"
 	"twreporter.org/go-api/models"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 // MembershipStorage ...
@@ -50,25 +46,25 @@ type MembershipStorage interface {
 
 // NewMembershipStorage initializes the storage
 func NewMembershipStorage(db *gorm.DB) MembershipStorage {
-	return &GormMembershipStorage{db}
+	return &GormStorage{db}
 }
 
-// GormMembershipStorage implements MembershipStorage interface
-type GormMembershipStorage struct {
+// GormStorage implements MembershipStorage interface
+type GormStorage struct {
 	db *gorm.DB
 }
 
-// NewStorageError ...
-func (g *GormMembershipStorage) NewStorageError(err error, where string, message string) (returnErr error) {
-	errStruct, ok := err.(*mysql.MySQLError)
+type NewsStorage interface {
+	GetMetaOfPosts(string, int, int, []string) ([]models.PostMeta, error)
+	// GetTopics(string) (models.PostMeta, error)
+}
 
-	if err != nil && err.Error() == ErrRecordNotFound.Error() {
-		return models.NewAppError(where, "Record not found", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusNotFound)
-	} else if ok && errStruct.Number == ErrDuplicateEntry {
-		return models.NewAppError(where, "Record is already existed", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusConflict)
-	} else if err != nil {
-		log.Error(err.Error())
-		return models.NewAppError(where, "Internal server error", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusInternalServerError)
-	}
-	return nil
+// NewMembershipStorage initializes the storage
+func NewNewsStorage(db *mgo.Session) NewsStorage {
+	return &MongoStorage{db}
+}
+
+// MongoStorage implements NewsStorage interface
+type MongoStorage struct {
+	db *mgo.Session
 }

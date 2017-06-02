@@ -5,6 +5,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"gopkg.in/matryer/try.v1"
+	"gopkg.in/mgo.v2"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -31,4 +32,14 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+func InitMongoDB() (*mgo.Session, error) {
+	session, err := mgo.Dial(Cfg.MongoDBSettings.URL)
+	if err != nil {
+		log.Error("Establishing a new session to the mongo occurs error: ", err.Error())
+		return nil, err
+	}
+
+	return session, nil
 }
