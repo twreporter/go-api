@@ -8,29 +8,40 @@ import (
 	"twreporter.org/go-api/models"
 )
 
+// GetQueryParam ...
+func (nc *NewsController) GetQueryParam(c *gin.Context) (qs string, limit int, offset int, sort string, full bool) {
+	qs = c.Query("where")
+	_limit := c.Query("limit")
+	_offset := c.Query("offset")
+	_full := c.Query("full")
+	sort = c.Query("sort")
+
+	limit, _ = strconv.Atoi(_limit)
+	offset, _ = strconv.Atoi(_offset)
+	full, _ = strconv.ParseBool(_full)
+	return
+}
+
 // GetPosts receive HTTP GET method request, and return the posts.
-// `query`, `limit` and `offset` are the url query params,
+// `query`, `limit`, `offset` and `sort` are the url query params,
 // which define the rule we retrieve posts from storage.
 func (nc *NewsController) GetPosts(c *gin.Context) {
 	var metaOfPosts []models.PostMeta
 	var err error
 
-	qs := c.Query("where")
-	limit := c.Query("limit")
-	offset := c.Query("offset")
-	full := c.Query("full")
+	qs, limit, offset, sort, full := nc.GetQueryParam(c)
 
-	_limit, _ := strconv.Atoi(limit)
-	_offset, _ := strconv.Atoi(offset)
-	_full, _ := strconv.ParseBool(full)
-
-	if _limit == 0 {
-		_limit = 10
+	if limit == 0 {
+		limit = 10
 	}
 
-	if _full {
+	if sort == "" {
+		sort = "-publishedDate"
+	}
+
+	if full {
 	} else {
-		metaOfPosts, err = nc.Storage.GetMetaOfPosts(qs, _limit, _offset, []string{"hero_image", "categories", "tags", "topic", "og_image"})
+		metaOfPosts, err = nc.Storage.GetMetaOfPosts(qs, limit, offset, sort, []string{"hero_image", "categories", "tags", "topic", "og_image"})
 		if err != nil {
 			appErr := err.(models.AppError)
 			c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
