@@ -10,7 +10,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-// InitDB initiates the database connection
+// InitDB initiates the MySQL database connection
 func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 	var db *gorm.DB
 	err := try.Do(func(attempt int) (bool, error) {
@@ -34,6 +34,7 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 	return db, nil
 }
 
+// InitMongoDB initiates the Mongo DB connection
 func InitMongoDB() (*mgo.Session, error) {
 	session, err := mgo.Dial(Cfg.MongoDBSettings.URL)
 	if err != nil {

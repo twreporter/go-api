@@ -17,6 +17,15 @@ func NewNewsController(s storage.NewsStorage) Controller {
 	return &NewsController{s}
 }
 
+// Close is the method of Controller interface
+func (nc *NewsController) Close() error {
+	err := nc.Storage.Close()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // SetRoute is the method of Controller interface
 func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	// endpoints for posts
@@ -37,6 +46,15 @@ func NewMembershipController(s storage.MembershipStorage) Controller {
 // MembershipController ...
 type MembershipController struct {
 	Storage storage.MembershipStorage
+}
+
+// Close is the method of Controller interface
+func (mc *MembershipController) Close() error {
+	err := mc.Storage.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // SetRoute is the method of Controller interface

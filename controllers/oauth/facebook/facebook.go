@@ -33,6 +33,10 @@ func (fc Facebook) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	return group
 }
 
+func (fc Facebook) Close() error {
+	return nil
+}
+
 func initOauthConfig(location string, domain string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if location == "" {

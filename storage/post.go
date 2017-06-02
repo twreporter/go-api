@@ -10,9 +10,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-// GetPosts is type-specific functions to implement the method defined in the NewsStorage.
+// GetMetaOfPosts is a type-specific functions implementing the method defined in the NewsStorage.
 // It parses query string into bson and finds the posts according to that bson.
-func (g *MongoStorage) GetMetaOfPosts(qs string, limit int, offset int, embedded []string) ([]models.PostMeta, error) {
+func (m *MongoStorage) GetMetaOfPosts(qs string, limit int, offset int, embedded []string) ([]models.PostMeta, error) {
 	var q models.MongoQuery
 	var posts []models.PostMeta
 
@@ -23,54 +23,55 @@ func (g *MongoStorage) GetMetaOfPosts(qs string, limit int, offset int, embedded
 		log.Info("Parse query param occurs error: ", err.Error())
 	}
 
-	err = g.db.DB("plate").C("posts").Find(q).Limit(limit).Skip(offset).All(&posts)
+	err = m.db.DB("plate").C("posts").Find(q).Limit(limit).Skip(offset).All(&posts)
 
 	for index, post := range posts {
 		if post.HeroImage != nil && post.HeroImage != "" {
-			post = g.GetPostEmbeddedAsset(post, embedded)
+			post = m.GetPostEmbeddedAsset(post, embedded)
 			posts[index] = post
 		}
 	}
 
 	if err != nil {
-		return posts, g.NewStorageError(err, "GetPosts", "storage.posts.get_posts")
+		return posts, m.NewStorageError(err, "GetPosts", "storage.posts.get_posts")
 	}
 
 	return posts, nil
 }
 
-func (g *MongoStorage) GetPostEmbeddedAsset(post models.PostMeta, embedded []string) models.PostMeta {
+// GetPostEmbeddedAsset ...
+func (m *MongoStorage) GetPostEmbeddedAsset(post models.PostMeta, embedded []string) models.PostMeta {
 	if embedded != nil {
 		for _, ele := range embedded {
 			switch ele {
 			case "hero_image":
-				heroImage, err := g.GetImage(post.HeroImage)
+				heroImage, err := m.GetImage(post.HeroImage)
 				if err == nil {
 					post.HeroImage = heroImage
 				}
 				break
 			case "og_image":
-				image, err := g.GetImage(post.OgImage)
+				image, err := m.GetImage(post.OgImage)
 				if err == nil {
 					post.OgImage = image
 				}
 				break
 			case "categories":
-				categories, _ := g.GetCategories(post.Categories)
+				categories, _ := m.GetCategories(post.Categories)
 				post.Categories = make([]interface{}, len(categories))
 				for i, v := range categories {
 					post.Categories[i] = v
 				}
 				break
 			case "tags":
-				tags, _ := g.GetTags(post.Tags)
+				tags, _ := m.GetTags(post.Tags)
 				post.Tags = make([]interface{}, len(tags))
 				for i, v := range tags {
 					post.Tags[i] = v
 				}
 				break
 			case "topic":
-				topic, err := g.GetTopicMeta(post.Topic)
+				topic, err := m.GetTopicMeta(post.Topic)
 				if err == nil {
 					post.Topic = topic
 				}
@@ -83,7 +84,8 @@ func (g *MongoStorage) GetPostEmbeddedAsset(post models.PostMeta, embedded []str
 	return post
 }
 
-func (g *MongoStorage) GetCategories(ids []interface{}) ([]models.Category, error) {
+// GetCategories ...
+func (m *MongoStorage) GetCategories(ids []interface{}) ([]models.Category, error) {
 	var cats []models.Category
 
 	if ids == nil {
@@ -96,15 +98,16 @@ func (g *MongoStorage) GetCategories(ids []interface{}) ([]models.Category, erro
 		},
 	}
 
-	err := g.db.DB("plate").C("postcategories").Find(query).All(&cats)
+	err := m.db.DB("plate").C("postcategories").Find(query).All(&cats)
 	if err != nil {
-		return nil, g.NewStorageError(err, "GetCategories", "storage.posts.get_categories")
+		return nil, m.NewStorageError(err, "GetCategories", "storage.posts.get_categories")
 	}
 
 	return cats, nil
 }
 
-func (g *MongoStorage) GetTags(ids []interface{}) ([]models.Tag, error) {
+// GetTags ...
+func (m *MongoStorage) GetTags(ids []interface{}) ([]models.Tag, error) {
 	var tags []models.Tag
 
 	if ids == nil {
@@ -117,24 +120,25 @@ func (g *MongoStorage) GetTags(ids []interface{}) ([]models.Tag, error) {
 		},
 	}
 
-	err := g.db.DB("plate").C("tags").Find(query).All(&tags)
+	err := m.db.DB("plate").C("tags").Find(query).All(&tags)
 	if err != nil {
-		return nil, g.NewStorageError(err, "GetCategories", "storage.posts.get_tags")
+		return nil, m.NewStorageError(err, "GetCategories", "storage.posts.get_tags")
 	}
 
 	return tags, nil
 }
 
-func (g *MongoStorage) GetTopicMeta(id interface{}) (models.TopicMeta, error) {
+// GetTopicMeta ...
+func (m *MongoStorage) GetTopicMeta(id interface{}) (models.TopicMeta, error) {
 	var tm models.TopicMeta
 
 	if id == nil || id == "" {
 		return tm, models.NewAppError("GetTopicMeta", "storage.posts.get_meta_of_topic.id_not_provided", "Resource not found", http.StatusNotFound)
 	}
 
-	err := g.db.DB("plate").C("topics").FindId(id).One(&tm)
+	err := m.db.DB("plate").C("topics").FindId(id).One(&tm)
 	if err != nil {
-		return tm, g.NewStorageError(err, "GetTopicMeta", "storage.posts.get_meta_of_topic.error")
+		return tm, m.NewStorageError(err, "GetTopicMeta", "storage.posts.get_meta_of_topic.error")
 	}
 
 	return tm, nil
@@ -145,16 +149,17 @@ func (g *MongoStorage) GetVideo(id interface{}) (models.Video,error) {
 }
 */
 
-func (g *MongoStorage) GetImage(id interface{}) (models.Image, error) {
+// GetImage ...
+func (m *MongoStorage) GetImage(id interface{}) (models.Image, error) {
 	var mgoImg models.MongoImage
 
 	if id == nil || id == "" {
 		return models.Image{}, models.NewAppError("GetImage", "storage.posts.get_image.id_not_provided", "Resource not found", http.StatusNotFound)
 	}
 
-	err := g.db.DB("plate").C("images").FindId(id).One(&mgoImg)
+	err := m.db.DB("plate").C("images").FindId(id).One(&mgoImg)
 	if err != nil {
-		return models.Image{}, g.NewStorageError(err, "GetImage", "storage.posts.get_image.error")
+		return models.Image{}, m.NewStorageError(err, "GetImage", "storage.posts.get_image.error")
 	}
 
 	return mgoImg.ToImage(), nil

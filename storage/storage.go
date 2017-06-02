@@ -8,8 +8,13 @@ import (
 	"twreporter.org/go-api/models"
 )
 
-// MembershipStorage ...
+// MembershipStorage defines the methods we need to implement,
+// in order to fulfill the functionalities a membership system needs.
+// Such as, let user signup, login w/o oauth, CRUD bookmarks, CRUD registrations.
 type MembershipStorage interface {
+	/** Close DB Connection **/
+	Close() error
+
 	/** User methods **/
 	GetUserByID(string) (models.User, error)
 	GetOAuthData(sql.NullString, string) (models.OAuthAccount, error)
@@ -44,8 +49,8 @@ type MembershipStorage interface {
 	DeleteRegistration(string, string) error
 }
 
-// NewMembershipStorage initializes the storage
-func NewMembershipStorage(db *gorm.DB) MembershipStorage {
+// NewGormStorage initializes the storage connected to MySQL database by gorm library
+func NewGormStorage(db *gorm.DB) *GormStorage {
 	return &GormStorage{db}
 }
 
@@ -54,17 +59,38 @@ type GormStorage struct {
 	db *gorm.DB
 }
 
+// Close quits the DB connection gracefully
+func (gs *GormStorage) Close() error {
+	err := gs.db.Close()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// NewsStorage defines the methods we need to implement,
+// in order to provide the news resource to twreporter main site.
 type NewsStorage interface {
+	/** Close DB Connection **/
+	Close() error
+
+	/** Posts methods **/
 	GetMetaOfPosts(string, int, int, []string) ([]models.PostMeta, error)
 	// GetTopics(string) (models.PostMeta, error)
 }
 
-// NewMembershipStorage initializes the storage
-func NewNewsStorage(db *mgo.Session) NewsStorage {
+// NewMongoStorage initializes the storage connected to Mongo database
+func NewMongoStorage(db *mgo.Session) *MongoStorage {
 	return &MongoStorage{db}
 }
 
-// MongoStorage implements NewsStorage interface
+// MongoStorage implements `NewsStorage`
 type MongoStorage struct {
 	db *mgo.Session
+}
+
+// Close quits the DB connection gracefully
+func (ms *MongoStorage) Close() error {
+	ms.db.Close()
+	return nil
 }
