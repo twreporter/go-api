@@ -8,27 +8,27 @@ import (
 
 // ImageAsset ...
 type ImageAsset struct {
-	Height uint   `json:"height"`
-	Width  uint   `json:"width"`
-	URL    string `json:"url"`
+	Height uint   `json:"height,omitempty"`
+	Width  uint   `json:"width,omitempty"`
+	URL    string `json:"url,omitempty"`
 }
 type ResizedTargets struct {
-	Mobile  ImageAsset `json:"mobile"`
-	Tiny    ImageAsset `json:"tiny"`
-	Desktop ImageAsset `json:"desktop"`
-	Tablet  ImageAsset `json:"tablet"`
+	Mobile  ImageAsset `json:"mobile,omitempty"`
+	Tiny    ImageAsset `json:"tiny,omitempty"`
+	Desktop ImageAsset `json:"desktop,omitempty"`
+	Tablet  ImageAsset `json:"tablet,omitempty"`
 }
 
 // Image ...
 type Image struct {
-	ID             bson.ObjectId  `json:"id" bson:"_id"`
-	Description    string         `json:"description"`
-	Copyright      string         `json:"copyright"`
-	Height         uint           `json:"height"`
-	Filetype       string         `json:"filetype"`
-	Width          uint           `json:"width"`
-	URL            string         `json:"url"`
-	ResizedTargets ResizedTargets `json:"resized_targets"`
+	ID             bson.ObjectId  `json:"id,omitempty" bson:"_id,omitempty"`
+	Description    string         `json:"description,omitempty"`
+	Copyright      string         `json:"copyright,omitempty"`
+	Height         uint           `json:"height,omitempty"`
+	Filetype       string         `json:"filetype,omitempty"`
+	Width          uint           `json:"width,omitempty"`
+	URL            string         `json:"url,omitempty"`
+	ResizedTargets ResizedTargets `json:"resized_targets,omitempty"`
 }
 
 type MongoImage struct {
@@ -56,6 +56,10 @@ func (mi *MongoImage) ToImage() (img Image) {
 	return
 }
 
+// Video TBD
+type Video struct {
+}
+
 // Brief ...
 type Brief struct {
 	HTML    string   `json:"html"`
@@ -77,23 +81,27 @@ type Tag struct {
 
 // PostMeta ...
 type PostMeta struct {
-	ID            bson.ObjectId `bson:"_id" json:"id"`
-	Slug          string        `json:"slug"`
-	Name          string        `json:"name"`
-	Subtitle      string        `json:"subtitle"`
-	State         string        `json:"state"`
-	HeroImage     interface{}   `bson:"heroImage" json:"hero_image"`
-	Brief         `json:"brief"`
-	Categories    []interface{} `bson:"categories" json:"categories"`
-	Style         string        `json:"style"`
-	Bookmark      string        `json:"bookmark"`
-	Copyright     string        `json:"copyright"`
-	Tags          []interface{} `json:"tags"`
-	OgDescription string        `bson:"og_description" json:"og_description"`
-	OgImage       interface{}   `bson:"og_image" json:"og_image"`
-	IsFeatured    bool          `bson:"isFeatured" json:"is_featured"`
-	PublishedDate time.Time     `bson:"publishedDate" json:"published_date"`
-	Topic         interface{}   `bson:"topics,omitempty" json:"topic"`
+	ID               bson.ObjectId   `bson:"_id" json:"id"`
+	Slug             string          `json:"slug"`
+	Name             string          `json:"name"`
+	Subtitle         string          `json:"subtitle"`
+	State            string          `json:"state"`
+	HeroImage        *Image          `bson:"-" json:"hero_image,omitempty"`
+	HeroImageOrigin  bson.ObjectId   `bson:"heroImage" json:"-"`
+	Brief            *Brief          `json:"brief,omitempty"`
+	Categories       []Category      `bson:"-" json:"categories,omitempty"`
+	CategoriesOrigin []bson.ObjectId `bson:"categories,omitempty" json:"-"`
+	Style            string          `json:"style"`
+	Copyright        string          `json:"copyright"`
+	Tags             []Tag           `bson:"-" json:"tags,omitempty"`
+	TagsOrigin       []bson.ObjectId `bson:"tags,omitempty" json:"-"`
+	OgDescription    string          `json:"og_description"`
+	OgImage          *Image          `bson:"-" json:"og_image,omitempty"`
+	OgImageOrigin    bson.ObjectId   `bson:"og_image" json;"-"`
+	IsFeatured       bool            `bson:"isFeatured" json:"is_featured"`
+	PublishedDate    time.Time       `bson:"publishedDate" json:"published_date"`
+	Topic            *TopicMeta      `bson:"-" json:"topic,omitempty"`
+	TopicOrigin      bson.ObjectId   `bson:"topics" json:"-"`
 }
 
 /*

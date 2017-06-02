@@ -12,7 +12,7 @@ import (
 
 // GetMetaOfPosts is a type-specific functions implementing the method defined in the NewsStorage.
 // It parses query string into bson and finds the posts according to that bson.
-func (m *MongoStorage) GetMetaOfPosts(qs string, limit int, offset int, embedded []string) ([]models.PostMeta, error) {
+func (m *MongoStorage) GetMetaOfPosts(qs string, limit int, offset int, sort string, embedded []string) ([]models.PostMeta, error) {
 	var q models.MongoQuery
 	var posts []models.PostMeta
 
@@ -23,13 +23,11 @@ func (m *MongoStorage) GetMetaOfPosts(qs string, limit int, offset int, embedded
 		log.Info("Parse query param occurs error: ", err.Error())
 	}
 
-	err = m.db.DB("plate").C("posts").Find(q).Limit(limit).Skip(offset).All(&posts)
+	err = m.db.DB("plate").C("posts").Find(q).Limit(limit).Skip(offset).Sort(sort).All(&posts)
 
 	for index, post := range posts {
-		if post.HeroImage != nil && post.HeroImage != "" {
-			post = m.GetPostEmbeddedAsset(post, embedded)
-			posts[index] = post
-		}
+		post = m.GetPostEmbeddedAsset(post, embedded)
+		posts[index] = post
 	}
 
 	if err != nil {
@@ -45,35 +43,35 @@ func (m *MongoStorage) GetPostEmbeddedAsset(post models.PostMeta, embedded []str
 		for _, ele := range embedded {
 			switch ele {
 			case "hero_image":
-				heroImage, err := m.GetImage(post.HeroImage)
+				img, err := m.GetImage(post.HeroImageOrigin)
 				if err == nil {
-					post.HeroImage = heroImage
+					post.HeroImage = &img
 				}
 				break
 			case "og_image":
-				image, err := m.GetImage(post.OgImage)
+				img, err := m.GetImage(post.OgImageOrigin)
 				if err == nil {
-					post.OgImage = image
+					post.OgImage = &img
 				}
 				break
 			case "categories":
-				categories, _ := m.GetCategories(post.Categories)
-				post.Categories = make([]interface{}, len(categories))
+				categories, _ := m.GetCategories(post.CategoriesOrigin)
+				post.Categories = make([]models.Category, len(categories))
 				for i, v := range categories {
 					post.Categories[i] = v
 				}
 				break
 			case "tags":
-				tags, _ := m.GetTags(post.Tags)
-				post.Tags = make([]interface{}, len(tags))
+				tags, _ := m.GetTags(post.TagsOrigin)
+				post.Tags = make([]models.Tag, len(tags))
 				for i, v := range tags {
 					post.Tags[i] = v
 				}
 				break
 			case "topic":
-				topic, err := m.GetTopicMeta(post.Topic)
+				topic, err := m.GetTopicMeta(post.TopicOrigin)
 				if err == nil {
-					post.Topic = topic
+					post.Topic = &topic
 				}
 				break
 			default:
@@ -85,7 +83,7 @@ func (m *MongoStorage) GetPostEmbeddedAsset(post models.PostMeta, embedded []str
 }
 
 // GetCategories ...
-func (m *MongoStorage) GetCategories(ids []interface{}) ([]models.Category, error) {
+func (m *MongoStorage) GetCategories(ids []bson.ObjectId) ([]models.Category, error) {
 	var cats []models.Category
 
 	if ids == nil {
@@ -107,7 +105,7 @@ func (m *MongoStorage) GetCategories(ids []interface{}) ([]models.Category, erro
 }
 
 // GetTags ...
-func (m *MongoStorage) GetTags(ids []interface{}) ([]models.Tag, error) {
+func (m *MongoStorage) GetTags(ids []bson.ObjectId) ([]models.Tag, error) {
 	var tags []models.Tag
 
 	if ids == nil {
@@ -129,10 +127,10 @@ func (m *MongoStorage) GetTags(ids []interface{}) ([]models.Tag, error) {
 }
 
 // GetTopicMeta ...
-func (m *MongoStorage) GetTopicMeta(id interface{}) (models.TopicMeta, error) {
+func (m *MongoStorage) GetTopicMeta(id bson.ObjectId) (models.TopicMeta, error) {
 	var tm models.TopicMeta
 
-	if id == nil || id == "" {
+	if id == "" {
 		return tm, models.NewAppError("GetTopicMeta", "storage.posts.get_meta_of_topic.id_not_provided", "Resource not found", http.StatusNotFound)
 	}
 
@@ -150,10 +148,10 @@ func (g *MongoStorage) GetVideo(id interface{}) (models.Video,error) {
 */
 
 // GetImage ...
-func (m *MongoStorage) GetImage(id interface{}) (models.Image, error) {
+func (m *MongoStorage) GetImage(id bson.ObjectId) (models.Image, error) {
 	var mgoImg models.MongoImage
 
-	if id == nil || id == "" {
+	if id == "" {
 		return models.Image{}, models.NewAppError("GetImage", "storage.posts.get_image.id_not_provided", "Resource not found", http.StatusNotFound)
 	}
 
