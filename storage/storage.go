@@ -5,7 +5,10 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/utils"
+	//log "github.com/Sirupsen/logrus"
 )
 
 // MembershipStorage defines the methods we need to implement,
@@ -75,7 +78,7 @@ type NewsStorage interface {
 	Close() error
 
 	/** Posts methods **/
-	GetMetaOfPosts(string, int, int, string, []string) ([]models.PostMeta, error)
+	GetMetaOfPosts(string, int, int, string) ([]models.PostMeta, error)
 	// GetTopics(string) (models.PostMeta, error)
 }
 
@@ -92,5 +95,43 @@ type MongoStorage struct {
 // Close quits the DB connection gracefully
 func (ms *MongoStorage) Close() error {
 	ms.db.Close()
+	return nil
+}
+
+func (m *MongoStorage) GetDocuments(qs interface{}, limit int, offset int, sort string, collection string, documents interface{}) error {
+	var err error
+	var q models.MongoQuery
+
+	_qs, ok := qs.(string)
+
+	if ok {
+		err = models.GetQuery(_qs, &q)
+
+		if err != nil {
+			return m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_documents.parse_query_error")
+		}
+
+		qs = q
+	}
+
+	err = m.db.DB(utils.Cfg.MongoDBSettings.DBName).C(collection).Find(qs).Limit(limit).Skip(offset).Sort(sort).All(documents)
+
+	if err != nil {
+		return m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_documents_error")
+	}
+
+	return nil
+}
+
+func (m *MongoStorage) GetDocument(id bson.ObjectId, collection string, doc interface{}) error {
+	if id == "" {
+		return m.NewStorageError(ErrMgoNotFound, "GetTopicMeta", "storage.mongo_storage.get_document.id_not_provided")
+	}
+
+	err := m.db.DB(utils.Cfg.MongoDBSettings.DBName).C(collection).FindId(id).One(doc)
+
+	if err != nil {
+		return m.NewStorageError(err, "GetDocument", "storage.mongo_storage.get_document.error")
+	}
 	return nil
 }

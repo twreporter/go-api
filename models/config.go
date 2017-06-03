@@ -82,7 +82,8 @@ type DBSettings struct {
 
 // MongoDBSettings ...
 type MongoDBSettings struct {
-	URL string
+	URL    string
+	DBName string
 }
 
 // FacebookSettings could be defined in configs/config.json

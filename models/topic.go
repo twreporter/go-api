@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// TopicMeta ...
 type TopicMeta struct {
 	ID            bson.ObjectId `bson:"_id" json:"id"`
 	Slug          string        `json:"slug"`
@@ -20,6 +21,7 @@ type TopicMeta struct {
 	OgDescription string        `json:"og_description"`
 }
 
+// Topic ...
 type Topic struct {
 	ID                         bson.ObjectId   `json:"id" bson:"_id"`
 	Slug                       string          `json:"slug"`

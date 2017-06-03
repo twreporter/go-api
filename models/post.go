@@ -6,77 +6,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// ImageAsset ...
-type ImageAsset struct {
-	Height uint   `json:"height,omitempty"`
-	Width  uint   `json:"width,omitempty"`
-	URL    string `json:"url,omitempty"`
-}
-type ResizedTargets struct {
-	Mobile  ImageAsset `json:"mobile,omitempty"`
-	Tiny    ImageAsset `json:"tiny,omitempty"`
-	Desktop ImageAsset `json:"desktop,omitempty"`
-	Tablet  ImageAsset `json:"tablet,omitempty"`
-}
-
-// Image ...
-type Image struct {
-	ID             bson.ObjectId  `json:"id,omitempty" bson:"_id,omitempty"`
-	Description    string         `json:"description,omitempty"`
-	Copyright      string         `json:"copyright,omitempty"`
-	Height         uint           `json:"height,omitempty"`
-	Filetype       string         `json:"filetype,omitempty"`
-	Width          uint           `json:"width,omitempty"`
-	URL            string         `json:"url,omitempty"`
-	ResizedTargets ResizedTargets `json:"resized_targets,omitempty"`
-}
-
-type MongoImage struct {
-	ID          bson.ObjectId `json:"id" bson:"_id"`
-	Description string
-	Copyright   string
-	Image       struct {
-		Height         uint
-		Filetype       string `bson:"filetype"`
-		Width          uint
-		URL            string
-		ResizedTargets ResizedTargets `bson:"resizedTargets" json:"resized_targets"`
-	}
-}
-
-func (mi *MongoImage) ToImage() (img Image) {
-	img.ID = mi.ID
-	img.Description = mi.Description
-	img.Copyright = mi.Copyright
-	img.Height = mi.Image.Height
-	img.Width = mi.Image.Width
-	img.Filetype = mi.Image.Filetype
-	img.URL = mi.Image.URL
-	img.ResizedTargets = mi.Image.ResizedTargets
-	return
-}
-
-// Video TBD
-type Video struct {
-}
-
 // Brief ...
 type Brief struct {
 	HTML    string   `json:"html"`
 	APIData []bson.M `bson:"apiData" json:"api_data"`
-}
-
-// Category ...
-type Category struct {
-	ID        bson.ObjectId `bson:"_id" json:"id"`
-	SortOrder uint          `json:"sort_order"`
-	Name      string        `json:"name"`
-}
-
-// Tag ...
-type Tag struct {
-	ID   bson.ObjectId `bson:"_id" json:"id"`
-	Name string        `json:"name"`
 }
 
 // PostMeta ...
@@ -97,11 +30,11 @@ type PostMeta struct {
 	TagsOrigin       []bson.ObjectId `bson:"tags,omitempty" json:"-"`
 	OgDescription    string          `json:"og_description"`
 	OgImage          *Image          `bson:"-" json:"og_image,omitempty"`
-	OgImageOrigin    bson.ObjectId   `bson:"og_image" json;"-"`
+	OgImageOrigin    bson.ObjectId   `bson:"og_image" json:"-"`
 	IsFeatured       bool            `bson:"isFeatured" json:"is_featured"`
 	PublishedDate    time.Time       `bson:"publishedDate" json:"published_date"`
-	Topic            *TopicMeta      `bson:"-" json:"topic,omitempty"`
-	TopicOrigin      bson.ObjectId   `bson:"topics" json:"-"`
+	TopicMeta        *TopicMeta      `bson:"-" json:"topic,omitempty"`
+	TopicMetaOrigin  bson.ObjectId   `bson:"topics" json:"-"`
 }
 
 /*
