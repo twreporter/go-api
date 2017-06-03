@@ -6,9 +6,12 @@ import (
 
 // GetMetaOfPosts is a type-specific functions implementing the method defined in the NewsStorage.
 // It parses query string into bson and finds the posts according to that bson.
-func (m *MongoStorage) GetMetaOfPosts(qs string, limit int, offset int, sort string) ([]models.PostMeta, error) {
+func (m *MongoStorage) GetMetaOfPosts(qs interface{}, limit int, offset int, sort string, embedded []string) ([]models.PostMeta, error) {
 	var posts []models.PostMeta
-	var embedded = []string{"hero_image", "categories", "tags", "topic_meta", "og_image"}
+
+	if embedded == nil {
+		embedded = []string{"hero_image", "categories", "tags", "topic_meta", "og_image"}
+	}
 
 	err := m.GetDocuments(qs, limit, offset, sort, "posts", &posts)
 
@@ -16,7 +19,7 @@ func (m *MongoStorage) GetMetaOfPosts(qs string, limit int, offset int, sort str
 		return posts, err
 	}
 
-	for index, _ := range posts {
+	for index := range posts {
 		m.GetEmbeddedAsset(&posts[index], embedded)
 	}
 

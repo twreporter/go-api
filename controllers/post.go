@@ -30,7 +30,7 @@ func (nc *NewsController) GetPosts(c *gin.Context) {
 
 	if full {
 	} else {
-		metaOfPosts, err = nc.Storage.GetMetaOfPosts(qs, limit, offset, sort)
+		metaOfPosts, err = nc.Storage.GetMetaOfPosts(qs, limit, offset, sort, nil)
 		if err != nil {
 			appErr := err.(models.AppError)
 			c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})

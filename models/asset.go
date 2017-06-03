@@ -113,21 +113,20 @@ type NewsEntity interface {
 	GetOgImageOrigin() bson.ObjectId
 	GetCategoriesOrigin() []bson.ObjectId
 	GetTagsOrigin() []bson.ObjectId
-	GetTopicMetaOrigin() bson.ObjectId
 	GetTopicOrigin() bson.ObjectId
 	GetLeadingImagePortraitOrigin() bson.ObjectId
 	GetLeadingVideoOrigin() bson.ObjectId
+	GetRelatedsOrigin() []bson.ObjectId
 }
 
-// SetEmbeddedAsset - `PostMeta` implements this method to become a `NewsEntity`
-func (pm *PostMeta) SetEmbeddedAsset(key string, asset interface{}) {
+func __setEmbeddedAsset(strt interface{}, key string, asset interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Warnf("Set field %v into PostMeta occurs error", key)
 		}
 	}()
 	// pointer to struct - addressable
-	ps := reflect.ValueOf(pm)
+	ps := reflect.ValueOf(strt)
 	// struct
 	s := ps.Elem()
 	if s.Kind() == reflect.Struct {
@@ -143,6 +142,11 @@ func (pm *PostMeta) SetEmbeddedAsset(key string, asset interface{}) {
 			}
 		}
 	}
+}
+
+// SetEmbeddedAsset - `PostMeta` implements this method to become a `NewsEntity`
+func (pm *PostMeta) SetEmbeddedAsset(key string, asset interface{}) {
+	__setEmbeddedAsset(pm, key, asset)
 }
 
 // GetHeroImageOrigin ...
@@ -170,14 +174,9 @@ func (pm *PostMeta) GetTagsOrigin() []bson.ObjectId {
 	return pm.TagsOrigin
 }
 
-// GetTopicMetaOrigin ...
-func (pm *PostMeta) GetTopicMetaOrigin() bson.ObjectId {
-	return pm.TopicMetaOrigin
-}
-
 // GetTopicOrigin ...
 func (pm *PostMeta) GetTopicOrigin() bson.ObjectId {
-	return ""
+	return pm.TopicOrigin
 }
 
 // GetLeadingImagePortraitOrigin ...
@@ -190,30 +189,14 @@ func (pm *PostMeta) GetLeadingVideoOrigin() bson.ObjectId {
 	return ""
 }
 
+// GetRelatedsOrigin ...
+func (pm *PostMeta) GetRelatedsOrigin() []bson.ObjectId {
+	return nil
+}
+
 // SetEmbeddedAsset - `Topic` implements this method to become a `NewsEntity`
 func (t *Topic) SetEmbeddedAsset(key string, asset interface{}) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Warnf("Set field %v into PostMeta occurs error", key)
-		}
-	}()
-	// pointer to struct - addressable
-	ps := reflect.ValueOf(t)
-	// struct
-	s := ps.Elem()
-	if s.Kind() == reflect.Struct {
-		// exported field
-		f := s.FieldByName(key)
-		if f.IsValid() {
-			// A Value can be changed only if it is
-			// addressable and was not obtained by
-			// the use of unexported struct fields.
-			if f.CanSet() {
-				// change value of N
-				f.Set(reflect.ValueOf(asset))
-			}
-		}
-	}
+	__setEmbeddedAsset(t, key, asset)
 }
 
 // GetHeroImageOrigin ...
@@ -241,11 +224,6 @@ func (t *Topic) GetTagsOrigin() []bson.ObjectId {
 	return nil
 }
 
-// GetTopicMetaOrigin ...
-func (t *Topic) GetTopicMetaOrigin() bson.ObjectId {
-	return ""
-}
-
 // GetTopicOrigin ...
 func (t *Topic) GetTopicOrigin() bson.ObjectId {
 	return ""
@@ -259,4 +237,9 @@ func (t *Topic) GetLeadingImagePortraitOrigin() bson.ObjectId {
 // GetLeadingVideoOrigin ...
 func (t *Topic) GetLeadingVideoOrigin() bson.ObjectId {
 	return t.LeadingVideoOrigin
+}
+
+// GetRelatedsOrigin ...
+func (t *Topic) GetRelatedsOrigin() []bson.ObjectId {
+	return t.RelatedsOrigin
 }

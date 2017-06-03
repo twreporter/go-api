@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"net/http"
 
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/models"
@@ -10,7 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-// GetPostEmbeddedAsset ...
+// GetEmbeddedAsset ...
 func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []string) {
 	if embedded != nil {
 		for _, ele := range embedded {
@@ -31,6 +30,12 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				img, err := m.GetImage(entity.GetLeadingImagePortraitOrigin())
 				if err == nil {
 					entity.SetEmbeddedAsset("LeadingImagePortrait", &img)
+				}
+				break
+			case "leading_video":
+				video, err := m.GetVideo(entity.GetLeadingVideoOrigin())
+				if err == nil {
+					entity.SetEmbeddedAsset("LeadingVideo", &video)
 				}
 				break
 			case "og_image":
@@ -55,11 +60,17 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				}
 				entity.SetEmbeddedAsset("Tags", _tags)
 				break
-			case "topic_meta":
-				var t models.TopicMeta
-				err := m.GetDocument(entity.GetTopicMetaOrigin(), "topics", &t)
+			case "relateds_meta":
+				ids := entity.GetRelatedsOrigin()
+				relateds, err := m.GetRelatedsMeta(ids)
 				if err == nil {
-					entity.SetEmbeddedAsset("TopicMeta", &t)
+					entity.SetEmbeddedAsset("Relateds", relateds)
+				}
+				break
+			case "topic_meta":
+				t, err := m.GetTopicMeta(entity.GetTopicOrigin())
+				if err == nil {
+					entity.SetEmbeddedAsset("Topic", &t)
 				}
 				break
 			default:
@@ -68,6 +79,38 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 		}
 	}
 	return
+}
+
+func (m *MongoStorage) GetTopicMeta(id bson.ObjectId) (models.Topic, error) {
+	query := bson.M{
+		"_id": id,
+	}
+
+	topics, err := m.GetTopics(query, 0, 0, "-publishedDate", []string{"leading_image", "og_image"})
+
+	if err != nil {
+		return models.Topic{}, err
+	}
+
+	return topics[0], nil
+}
+
+// GetRelatedsMeta ...
+func (m *MongoStorage) GetRelatedsMeta(ids []bson.ObjectId) ([]models.PostMeta, error) {
+
+	query := bson.M{
+		"_id": bson.M{
+			"$in": ids,
+		},
+	}
+
+	posts, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", []string{"hero_image", "og_image"})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }
 
 // GetCategories ...
@@ -116,16 +159,14 @@ func (m *MongoStorage) GetTags(ids []bson.ObjectId) ([]models.Tag, error) {
 	return tags, nil
 }
 
+// GetVideo ...
 func (m *MongoStorage) GetVideo(id bson.ObjectId) (models.Video, error) {
 	var mgoVideo models.MongoVideo
 
-	if id == "" {
-		return models.Video{}, models.NewAppError("GetVideo", "storage.posts.get_video.id_not_provided", "Resource not found", http.StatusNotFound)
-	}
+	err := m.GetDocument(id, "videos", &mgoVideo)
 
-	err := m.db.DB("plate").C("videos").FindId(id).One(&mgoVideo)
 	if err != nil {
-		return models.Video{}, m.NewStorageError(err, "GetVideo", "storage.posts.get_video.error")
+		return models.Video{}, err
 	}
 
 	return mgoVideo.ToVideo(), nil
@@ -138,7 +179,6 @@ func (m *MongoStorage) GetImage(id bson.ObjectId) (models.Image, error) {
 	err := m.GetDocument(id, "images", &mgoImg)
 
 	if err != nil {
-		log.Info("err:", err.Error())
 		return models.Image{}, err
 	}
 
