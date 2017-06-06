@@ -58,9 +58,125 @@ $ go test $(glide novendor)             # run go test over all directories of th
 
 It provides several RESTful web services, including
 - User login/logout/signup
+- Read posts
+- Read topics
+- Read the combination of sections of index page
 - Create/Read/Update/Delete bookmarks of a user
 - Create/Read/Update/Delete registration(s)
 - Create/Read/Update/Delete service(s)
+
+### Read posts
+- URL: `/v1/posts`
+- Method: `GET`
+- URL param:
+  * Optional:
+  `
+  where=[string]
+  offset=[integer]
+  limit=[integer]
+  sort=[string] 
+  full=[boolean]
+  `
+  * Explain:
+  `offset`: the number you want to skip
+  `limit`: the number you want server to return
+  `sort`: the field to sort by in the returned records
+  `full`: if true, each record in the returued records will have all the embedded assets
+
+  * example:
+  `?where={"tags":{"$in":"57bab17eab5c6c0f00db77d1"}}&offset=10&limit=10&sort=-publishedDate&full=true` <br />
+  this example will get 10 full records tagged by 57bab17eab5c6c0f00db77d1 and sorted by publishedDate ascendingly.
+
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": [{
+        // post data structure goes here
+      }],
+        "status": "ok"
+    }
+    ```
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read topics
+- URL: `/v1/topics`
+- Method: `GET`
+- URL param:
+  * Optional:
+  `
+  where=[string]
+  offset=[integer]
+  limit=[integer]
+  sort=[string] 
+  full=[boolean]
+  `
+  * Explain:
+  `offset`: the number you want to skip
+  `limit`: the number you want server to return
+  `sort`: the field to sort by in the returned records
+  `full`: if true, each record in the returued records will have all the embedded assets
+
+  * example:
+  `?where={"slug":"far-sea-fishing-investigative-report"}&full=true` <br />
+  this example will get 1 full topic.
+
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": [{
+        // topic goes here
+      }],
+        "status": "ok"
+    }
+    ```
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read content of index page in the first screen
+- URL: `/v1/index_page`
+- Method: `GET`
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": {
+        "latest": [{
+          // post goes here
+        }, {
+          // post goes here
+        }, {
+          // post goes here
+        }, ... ], 
+        "editor_picks": [{
+          // post goes here
+        }, {
+          // post goes here
+        }, {
+          // post goes here
+        }, ... ],
+        "latest_topic": [{
+          // topic goes here
+        }],
+        "reviews": [{
+          // post goes here
+        }, {
+          // post goes here
+        }, {
+          // post goes here
+        }, ... ]
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
 
 ### Create a service
 - URL: `/v1/services/`
