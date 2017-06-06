@@ -21,19 +21,19 @@ type Controller interface {
 
 // ControllerFactory ...
 type ControllerFactory struct {
-	controllers map[string]Controller
+	Controllers map[string]Controller
 }
 
 // GetController ...
 func (cf *ControllerFactory) GetController(cn string) Controller {
-	return cf.controllers[cn]
+	return cf.Controllers[cn]
 }
 
 // GetControllers returns an array of controllers
 func (cf *ControllerFactory) GetControllers() []Controller {
 	var cons []Controller
 
-	for _, con := range cf.controllers {
+	for _, con := range cf.Controllers {
 		cons = append(cons, con)
 	}
 	return cons
@@ -41,7 +41,7 @@ func (cf *ControllerFactory) GetControllers() []Controller {
 
 // SetController ...
 func (cf *ControllerFactory) SetController(cn string, c Controller) {
-	cf.controllers[cn] = c
+	cf.Controllers[cn] = c
 }
 
 // Close this func releases the resource appropriately
@@ -58,7 +58,7 @@ func (cf *ControllerFactory) Close() error {
 
 // SetRoute set route by calling the correspoding controllers.
 func (cf *ControllerFactory) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	for _, v := range cf.controllers {
+	for _, v := range cf.Controllers {
 		group = v.SetRoute(group)
 	}
 	return group
@@ -90,7 +90,7 @@ func NewControllerFactory() (*ControllerFactory, error) {
 	nc := NewNewsController(ms)
 
 	cf := &ControllerFactory{
-		controllers: make(map[string]Controller),
+		Controllers: make(map[string]Controller),
 	}
 	cf.SetController(constants.MembershipController, mc)
 	cf.SetController(constants.FacebookController, fc)

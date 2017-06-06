@@ -10,7 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/controllers"
+	"twreporter.org/go-api/controllers/oauth/facebook"
+	"twreporter.org/go-api/controllers/oauth/google"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -67,7 +70,7 @@ func RunMigration() {
 
 func SetDefaultRecords() {
 	// Set an active reporter account
-	ms := storage.NewMembershipStorage(DB)
+	ms := storage.NewGormStorage(DB)
 
 	key, _ := scrypt.Key([]byte(DefaultPassword), []byte(""), 16384, 8, 1, 32)
 
@@ -95,7 +98,20 @@ func SetDefaultRecords() {
 }
 
 func SetupGinServer() {
-	cf := controllers.NewControllerFactory(DB)
+	// set up data storage
+	gs := storage.NewGormStorage(DB)
+
+	// init controllers
+	mc := controllers.NewMembershipController(gs)
+	fc := facebook.Facebook{Storage: gs}
+	gc := google.Google{Storage: gs}
+
+	cf := &controllers.ControllerFactory{
+		Controllers: make(map[string]controllers.Controller),
+	}
+	cf.SetController(constants.MembershipController, mc)
+	cf.SetController(constants.FacebookController, fc)
+	cf.SetController(constants.GoogleController, gc)
 
 	Engine = gin.Default()
 	routerGroup := Engine.Group("/v1")
@@ -118,7 +134,7 @@ func GenerateJWT(user models.User) (jwt string) {
 }
 
 func GetUser(userId string) (user models.User) {
-	as := storage.NewMembershipStorage(DB)
+	as := storage.NewGormStorage(DB)
 	user, _ = as.GetUserByID(userId)
 	return
 }
