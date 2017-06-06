@@ -15,27 +15,35 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 		for _, ele := range embedded {
 			switch ele {
 			case "hero_image":
-				img, err := m.GetImage(entity.GetHeroImageOrigin())
-				if err == nil {
-					entity.SetEmbeddedAsset("HeroImage", &img)
+				if id := entity.GetHeroImageOrigin(); id != "" {
+					img, err := m.GetImage(id)
+					if err == nil {
+						entity.SetEmbeddedAsset("HeroImage", &img)
+					}
 				}
 				break
 			case "leading_image":
-				img, err := m.GetImage(entity.GetLeadingImageOrigin())
-				if err == nil {
-					entity.SetEmbeddedAsset("LeadingImage", &img)
+				if id := entity.GetLeadingImageOrigin(); id != "" {
+					img, err := m.GetImage(id)
+					if err == nil {
+						entity.SetEmbeddedAsset("LeadingImage", &img)
+					}
 				}
 				break
 			case "leading_image_portrait":
-				img, err := m.GetImage(entity.GetLeadingImagePortraitOrigin())
-				if err == nil {
-					entity.SetEmbeddedAsset("LeadingImagePortrait", &img)
+				if id := entity.GetLeadingImagePortraitOrigin(); id != "" {
+					img, err := m.GetImage(id)
+					if err == nil {
+						entity.SetEmbeddedAsset("LeadingImagePortrait", &img)
+					}
 				}
 				break
 			case "leading_video":
-				video, err := m.GetVideo(entity.GetLeadingVideoOrigin())
-				if err == nil {
-					entity.SetEmbeddedAsset("LeadingVideo", &video)
+				if id := entity.GetLeadingImagePortraitOrigin(); id != "" {
+					video, err := m.GetVideo(id)
+					if err == nil {
+						entity.SetEmbeddedAsset("LeadingVideo", &video)
+					}
 				}
 				break
 			case "og_image":
@@ -68,9 +76,11 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				}
 				break
 			case "topic_meta":
-				t, err := m.GetTopicMeta(entity.GetTopicOrigin())
-				if err == nil {
-					entity.SetEmbeddedAsset("Topic", &t)
+				if id := entity.GetTopicOrigin(); id != "" {
+					t, err := m.GetTopicMeta(id)
+					if err == nil {
+						entity.SetEmbeddedAsset("Topic", &t)
+					}
 				}
 				break
 			default:
@@ -82,6 +92,7 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 }
 
 func (m *MongoStorage) GetTopicMeta(id bson.ObjectId) (models.Topic, error) {
+
 	query := bson.M{
 		"_id": id,
 	}

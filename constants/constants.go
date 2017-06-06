@@ -16,4 +16,14 @@ const (
 	NewsLetter = "news_letter"
 
 	Activate = "activate"
+
+	// index page sections //
+	LastestSection     = "latest"
+	EditorPicksSection = "editor_picks"
+	LatestTopicSection = "latest_topic"
+	TopicsSection      = "topics"
+	ReviewsSection     = "reviews"
+	PhotoSection       = "photos"
+	CategoriesSection  = "categories_posts"
+	InfographicSection = "infographics"
 )

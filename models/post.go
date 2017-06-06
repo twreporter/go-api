@@ -34,7 +34,7 @@ type PostMeta struct {
 	IsFeatured       bool            `bson:"isFeatured" json:"is_featured"`
 	PublishedDate    time.Time       `bson:"publishedDate" json:"published_date"`
 	Topic            *Topic          `bson:"-" json:"topic,omitempty"`
-	TopicOrigin      bson.ObjectId   `bson:"topics" json:"-"`
+	TopicOrigin      bson.ObjectId   `bson:"topics,omitempty" json:"-"`
 }
 
 /*
