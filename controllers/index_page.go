@@ -41,7 +41,7 @@ func (nc *NewsController) __GetIndexPageContent(part IndexPageQueryStruct) (inte
 // It will return the first fourth sections including
 // latest, editor picks, latest topic and reviews.
 func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
-	var ch chan map[string]interface{} = make(chan map[string]interface{}, 1)
+	var ch chan map[string]interface{} = make(chan map[string]interface{})
 	var rtn = make(map[string]interface{})
 
 	var parts = map[string]IndexPageQueryStruct{
