@@ -10,17 +10,17 @@ import (
 
 // ImageAsset ...
 type ImageAsset struct {
-	Height uint   `json:"height,omitempty"`
-	Width  uint   `json:"width,omitempty"`
-	URL    string `json:"url,omitempty"`
+	Height uint   `bson:"height" json:"height"`
+	Width  uint   `bson:"width" json:"width"`
+	URL    string `bson:"url" json:"url"`
 }
 
 // ResizedTargets ...
 type ResizedTargets struct {
-	Mobile  ImageAsset `json:"mobile,omitempty"`
-	Tiny    ImageAsset `json:"tiny,omitempty"`
-	Desktop ImageAsset `json:"desktop,omitempty"`
-	Tablet  ImageAsset `json:"tablet,omitempty"`
+	Mobile  ImageAsset `bson:"mobile" json:"mobile"`
+	Tiny    ImageAsset `bson:"tiny" json:"tiny"`
+	Desktop ImageAsset `bson:"desktop" json:"desktop"`
+	Tablet  ImageAsset `bson:"tablet" json:"tablet"`
 }
 
 // Image is used to return in response
@@ -36,19 +36,19 @@ type Image struct {
 }
 
 type MongoImageAsset struct {
-	Height         uint
-	Filetype       string `json:"filetype"`
-	Width          uint
-	URL            string
+	Height         uint           `bson:"height" json:"height"`
+	Filetype       string         `bson:""filetype json:"filetype"`
+	Width          uint           `bson:"width" json:"width"`
+	URL            string         `bson:"url" json:"url"`
 	ResizedTargets ResizedTargets `bson:"resizedTargets" json:"resized_targets"`
 }
 
 // MongoImage is the data structure  returned by Mongo DB
 type MongoImage struct {
-	ID          bson.ObjectId `json:"id" bson:"_id"`
-	Description string
-	Copyright   string
-	Image       MongoImageAsset
+	ID          bson.ObjectId   `bson:"_id"`
+	Description string          `bson:"description"`
+	Copyright   string          `bson:"copyright"`
+	Image       MongoImageAsset `bson:"image"`
 }
 
 // ToImage transforms MongoImage to Image
@@ -65,25 +65,25 @@ func (mi *MongoImage) ToImage() (img Image) {
 }
 
 type MongoVideoAsset struct {
-	Filetype string `json:"filetype"`
-	Size     uint
-	URL      string
+	Filetype string `bson:"filetype"`
+	Size     uint   `bson:"size"`
+	URL      string `bson:"url"`
 }
 
 // MongoVideo is the data structure returned by Mongo DB
 type MongoVideo struct {
-	ID    bson.ObjectId `json:"id" bson:"_id"`
-	Title string
-	Video MongoVideoAsset
+	ID    bson.ObjectId   `bson:"_id"`
+	Title string          `bson:"title"`
+	Video MongoVideoAsset `bson:"video"`
 }
 
 // Video is used to return in response
 type Video struct {
 	ID       bson.ObjectId `json:"id" bson:"_id"`
-	Title    string
-	Filetype string `json:"filetype"`
-	Size     uint
-	URL      string
+	Title    string        `json:"title"`
+	Filetype string        `json:"filetype"`
+	Size     uint          `json:"size"`
+	URL      string        `json:"url"`
 }
 
 // ToVideo Transform MongoVideo to Video
@@ -99,14 +99,14 @@ func (mv *MongoVideo) ToVideo() (video Video) {
 // Category ...
 type Category struct {
 	ID        bson.ObjectId `bson:"_id" json:"id"`
-	SortOrder uint          `json:"sort_order"`
-	Name      string        `json:"name"`
+	SortOrder uint          `bson:"sort_order" json:"sort_order"`
+	Name      string        `bson:"name" json:"name"`
 }
 
 // Tag ...
 type Tag struct {
 	ID   bson.ObjectId `bson:"_id" json:"id"`
-	Name string        `json:"name"`
+	Name string        `bson:"name" json:"name"`
 }
 
 // NewsEntity defines the method of structs such `Topic`, `PostMeta` ...etc

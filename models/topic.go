@@ -6,25 +6,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// TopicMeta ...
-type TopicMeta struct {
-	ID                 bson.ObjectId `bson:"_id" json:"id"`
-	Slug               string        `json:"slug"`
-	Name               string        `json:"name"`
-	TopicName          string        `json:"topic_name"`
-	Title              string        `json:"title"`
-	Subtitle           string        `json:"subtitle"`
-	Headline           string        `json:"headline"`
-	PublishedDate      time.Time     `bson:"publishedDate" json:"published_date"`
-	Description        string        `json:"description"`
-	LeadingImage       *Image        `bson:"-" json:"leading_image,omitempty"`
-	LeadingImageOrigin bson.ObjectId `bson:"leading_image,omitempty" json:"-"`
-	OgTitle            string        `json:"og_title"`
-	OgDescription      string        `json:"og_description"`
-	OgImage            *Image        `bson:"-" json:"og_image,omitempty"`
-	OgImageOrigin      bson.ObjectId `bson:"og_image,omitempty" json:"-"`
-}
-
 // Topic ...
 type Topic struct {
 	ID                         bson.ObjectId   `json:"id" bson:"_id"`

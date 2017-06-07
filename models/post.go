@@ -15,20 +15,20 @@ type Brief struct {
 // PostMeta ...
 type PostMeta struct {
 	ID               bson.ObjectId   `bson:"_id" json:"id"`
-	Slug             string          `json:"slug"`
-	Name             string          `json:"name"`
-	Subtitle         string          `json:"subtitle"`
-	State            string          `json:"state"`
+	Slug             string          `bson:"slug" json:"slug"`
+	Name             string          `bson:"name" json:"name"`
+	Subtitle         string          `bson:"subtitle" json:"subtitle"`
+	State            string          `bson:"state" json:"state"`
 	HeroImage        *Image          `bson:"-" json:"hero_image,omitempty"`
 	HeroImageOrigin  bson.ObjectId   `bson:"heroImage" json:"-"`
-	Brief            *Brief          `json:"brief,omitempty"`
+	Brief            *Brief          `bson:"brief,omitempty" json:"brief,omitempty"`
 	Categories       []Category      `bson:"-" json:"categories,omitempty"`
 	CategoriesOrigin []bson.ObjectId `bson:"categories,omitempty" json:"-"`
-	Style            string          `json:"style"`
-	Copyright        string          `json:"copyright"`
+	Style            string          `bson:"style" json:"style"`
+	Copyright        string          `bson:"copyright" json:"copyright"`
 	Tags             []Tag           `bson:"-" json:"tags,omitempty"`
 	TagsOrigin       []bson.ObjectId `bson:"tags,omitempty" json:"-"`
-	OgDescription    string          `json:"og_description"`
+	OgDescription    string          `bson:"og_description" json:"og_description"`
 	OgImage          *Image          `bson:"-" json:"og_image,omitempty"`
 	OgImageOrigin    bson.ObjectId   `bson:"og_image" json:"-"`
 	IsFeatured       bool            `bson:"isFeatured" json:"is_featured"`
