@@ -17,6 +17,7 @@ type PostMeta struct {
 	ID               bson.ObjectId   `bson:"_id" json:"id"`
 	Slug             string          `bson:"slug" json:"slug"`
 	Name             string          `bson:"name" json:"name"`
+	Title            string          `bson:"title" json:"title"`
 	Subtitle         string          `bson:"subtitle" json:"subtitle"`
 	State            string          `bson:"state" json:"state"`
 	HeroImage        *Image          `bson:"-" json:"hero_image,omitempty"`
