@@ -2,8 +2,8 @@
 
 ## Functional Test
 ### Prerequisite
-* Make sure the environment you run the test has a running mysql server
-* Execute the following commands in mysql.
+* Make sure the environment you run the test has a running `MySQL` server and `MongoDB` server
+* Execute the following commands after logining into MySQL server. 
 ```
 CREATE USER 'gorm'@'localhost' IDENTIFIED BY 'gorm';
 CREATE DATABASE gorm;
