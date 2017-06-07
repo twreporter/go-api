@@ -31,6 +31,10 @@ func (gc Google) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	return group
 }
 
+func (gc Google) Close() error {
+	return nil
+}
+
 func initOauthConfig(location string, domain string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if location == "" {

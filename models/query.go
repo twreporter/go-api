@@ -18,6 +18,7 @@ type Query interface {
 	UnmarshalQueryString(string) error
 }
 
+// MongoQueryComparison ...
 type MongoQueryComparison struct {
 	In []bson.ObjectId `json:"in" bson:"$in,omitempty"`
 }
@@ -37,6 +38,9 @@ func (query *MongoQuery) UnmarshalQueryString(qs string) error {
 	if err := bson.UnmarshalJSON([]byte(qs), &query); err != nil {
 		return err
 	}
+
+	// TBD use environment setting to define state
+	query.State = "published"
 	return nil
 }
 

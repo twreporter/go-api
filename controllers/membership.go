@@ -7,28 +7,6 @@ import (
 	"twreporter.org/go-api/utils"
 )
 
-// NewsController has methods to handle requests which wants posts, topics ... etc news resource.
-type NewsController struct {
-	Storage storage.NewsStorage
-}
-
-// NewNewsController ...
-func NewNewsController(s storage.NewsStorage) Controller {
-	return &NewsController{s}
-}
-
-// SetRoute is the method of Controller interface
-func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	// endpoints for posts
-	group.GET("/posts", nc.GetPosts)
-	// group.GET("/posts/:slug", nc.GetPost)
-
-	// endpoints for topics
-	// group.GET("/topics", nc.GetTopics)
-	// group.GET("/topics/:topic", nc.GetTopic)
-	return group
-}
-
 // NewMembershipController ...
 func NewMembershipController(s storage.MembershipStorage) Controller {
 	return &MembershipController{s}
@@ -37,6 +15,15 @@ func NewMembershipController(s storage.MembershipStorage) Controller {
 // MembershipController ...
 type MembershipController struct {
 	Storage storage.MembershipStorage
+}
+
+// Close is the method of Controller interface
+func (mc *MembershipController) Close() error {
+	err := mc.Storage.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // SetRoute is the method of Controller interface

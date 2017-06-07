@@ -6,40 +6,31 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type TopicMeta struct {
-	ID            bson.ObjectId `bson:"_id" json:"id"`
-	Name          string        `json:"name"`
-	TopicName     string        `json:"topic_name"`
-	Title         string        `json:"title"`
-	Subtitle      string        `json:"subtitle"`
-	Headline      string        `json:"headline"`
-	PublishedDate time.Time     `bson:"publishedDate" json:"published_date"`
-	Description   string        `json:"description"`
-	OgTitle       string        `bson:"og_title" json:"og_title"`
-	OgDescription string        `bson:"og_description" json:"og_description"`
-}
-
-/*
+// Topic ...
 type Topic struct {
-	ID                   bson.ObjectId `json:"id" bson:"_id"`
-	Slug                 string        `json:"slug"`
-	TopicName            string        `json:"topic_name"`
-	Title                string        `json:"title"`
-	TitlePosition        string        `json:"title_position"`
-	Subtitle             string        `json:"subtitle"`
-	Headline             string        `json:"headline"`
-	State                string        `json:"state"`
-	PublishedDate        time.Time     `json:"published_date"`
-	Description          Brief         `json:"description"`
-	TeamDescription      Brief         `json:"team_description"`
-	Relateds             []PostMeta    `json:"relateds"`
-	RelatedsFormat       string        `json:"relateds_format"`
-	RelatedsBackground   string        `json:"relateds_background"`
-	LeadingImage         Image         `json:"leading_image"`
-	LeadingImagePortrait Image         `json:"leading_image_portrait"`
-	LeadingVideo         Video         `json:"leading_video"`
-	OgTitle              string        `json:"og_title"`
-	OgDescription        string        `json:"og_description"`
-	OgImage              Image         `json:"og_image"`
+	ID                         bson.ObjectId   `json:"id" bson:"_id"`
+	Slug                       string          `json:"slug"`
+	TopicName                  string          `bson:"topic_name" json:"topic_name"`
+	Title                      string          `bson:"title" json:"title"`
+	TitlePosition              string          `bson:"title_position", json:"title_position"`
+	Subtitle                   string          `bson:"subtitle" json:"subtitle"`
+	Headline                   string          `bson:"headline" json:"headline"`
+	State                      string          `bson:"state" json:"state"`
+	PublishedDate              time.Time       `bson:"publishedDate" json:"published_date"`
+	Description                Brief           `bson:"description,omitempty" json:"description,omitempty"`
+	TeamDescription            Brief           `bson:"team_description,omitempty" json:"team_description,omitempty"`
+	Relateds                   []PostMeta      `bson:"-" json:",omitempty"`
+	RelatedsOrigin             []bson.ObjectId `bson:"relateds,omitempty" json:"-"`
+	RelatedsFormat             string          `bson:"relateds_format" json:"relateds_format"`
+	RelatedsBackground         string          `bson:"relateds_background" json:"relateds_background"`
+	LeadingImage               *Image          `bson:"-" json:"leading_image,omitempty"`
+	LeadingImageOrigin         bson.ObjectId   `bson:"leading_image,omitempty" json:"-"`
+	LeadingImagePortrait       *Image          `bson:"-" json:"leading_image_portrait,omitempty"`
+	LeadingImagePortraitOrigin bson.ObjectId   `bson:"leading_image_portrait,omitempty" json:"-"`
+	LeadingVideo               *Video          `bson:"-" json:"leading_video,omitempty"`
+	LeadingVideoOrigin         bson.ObjectId   `bson:"leading_video,omitempty" json:"-"`
+	OgTitle                    string          `bson:"og_title" json:"og_title"`
+	OgDescription              string          `bson:"og_description" json:"og_description"`
+	OgImage                    *Image          `bson:"-" json:"og_image,omitempty"`
+	OgImageOrigin              bson.ObjectId   `bson:"og_image,omitempty" json:"-"`
 }
-*/
