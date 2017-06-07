@@ -35,18 +35,20 @@ type Image struct {
 	ResizedTargets ResizedTargets `json:"resized_targets,omitempty"`
 }
 
+type MongoImageAsset struct {
+	Height         uint
+	Filetype       string `json:"filetype"`
+	Width          uint
+	URL            string
+	ResizedTargets ResizedTargets `bson:"resizedTargets" json:"resized_targets"`
+}
+
 // MongoImage is the data structure  returned by Mongo DB
 type MongoImage struct {
 	ID          bson.ObjectId `json:"id" bson:"_id"`
 	Description string
 	Copyright   string
-	Image       struct {
-		Height         uint
-		Filetype       string `json:"filetype"`
-		Width          uint
-		URL            string
-		ResizedTargets ResizedTargets `bson:"resizedTargets" json:"resized_targets"`
-	}
+	Image       MongoImageAsset
 }
 
 // ToImage transforms MongoImage to Image
@@ -62,15 +64,17 @@ func (mi *MongoImage) ToImage() (img Image) {
 	return
 }
 
+type MongoVideoAsset struct {
+	Filetype string `json:"filetype"`
+	Size     uint
+	URL      string
+}
+
 // MongoVideo is the data structure returned by Mongo DB
 type MongoVideo struct {
 	ID    bson.ObjectId `json:"id" bson:"_id"`
 	Title string
-	Video struct {
-		Filetype string `json:"filetype"`
-		Size     uint
-		URL      string
-	}
+	Video MongoVideoAsset
 }
 
 // Video is used to return in response
