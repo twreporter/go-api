@@ -39,7 +39,7 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				}
 				break
 			case "leading_video":
-				if id := entity.GetLeadingImagePortraitOrigin(); id != "" {
+				if id := entity.GetLeadingVideoOrigin(); id != "" {
 					video, err := m.GetVideo(id)
 					if err == nil {
 						entity.SetEmbeddedAsset("LeadingVideo", &video)

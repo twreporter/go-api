@@ -205,6 +205,7 @@ func SetMgoDefaultRecords() {
 		Slug:               "mock-topic-slug",
 		TopicName:          "mock topic slug",
 		Title:              "mock title",
+		State:              "published",
 		RelatedsOrigin:     []bson.ObjectId{PostID1, PostID2},
 		LeadingImageOrigin: ImgID1,
 		LeadingVideoOrigin: VideoID,
