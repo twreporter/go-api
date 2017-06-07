@@ -20,10 +20,14 @@ func TestPing(t *testing.T) {
 func TestMain(m *testing.M) {
 	var err error
 	// Create DB connections
-	if DB, err = OpenTestConnection(); err != nil {
+	if DB, err = OpenGormConnection(); err != nil {
 		panic(fmt.Sprintf("No error should happen when connecting to test database, but got err=%+v", err))
 	}
 
+	// Create Mongo DB connections
+	if MgoDB, err = OpenMgoConnection(); err != nil {
+		panic(fmt.Sprintf("No error should happen when connecting to mongo database, but got err=%+v", err))
+	}
 	// Set up database, including drop existing tables and create tables
 	RunMigration()
 
