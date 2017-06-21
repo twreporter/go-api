@@ -19,7 +19,7 @@ type Topic struct {
 	PublishedDate              time.Time       `bson:"publishedDate" json:"published_date"`
 	Description                Brief           `bson:"description,omitempty" json:"description,omitempty"`
 	TeamDescription            Brief           `bson:"team_description,omitempty" json:"team_description,omitempty"`
-	Relateds                   []PostMeta      `bson:"-" json:",omitempty"`
+	Relateds                   []PostMeta      `bson:"-" json:"relateds,omitempty"`
 	RelatedsOrigin             []bson.ObjectId `bson:"relateds,omitempty" json:"-"`
 	RelatedsFormat             string          `bson:"relateds_format" json:"relateds_format"`
 	RelatedsBackground         string          `bson:"relateds_background" json:"relateds_background"`
