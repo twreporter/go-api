@@ -13,6 +13,7 @@ import (
 // `query`, `limit`, `offset`, `sort` and `full` are the url query params,
 // which define the rule we retrieve posts from storage.
 func (nc *NewsController) GetPosts(c *gin.Context) {
+	var total int
 	var posts []models.Post
 	var err error
 
@@ -31,9 +32,9 @@ func (nc *NewsController) GetPosts(c *gin.Context) {
 	}
 
 	if full {
-		posts, err = nc.Storage.GetFullPosts(qs, limit, offset, sort, nil)
+		posts, total, err = nc.Storage.GetFullPosts(qs, limit, offset, sort, nil)
 	} else {
-		posts, err = nc.Storage.GetMetaOfPosts(qs, limit, offset, sort, nil)
+		posts, total, err = nc.Storage.GetMetaOfPosts(qs, limit, offset, sort, nil)
 	}
 
 	if err != nil {
@@ -42,7 +43,11 @@ func (nc *NewsController) GetPosts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": posts})
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": posts, "meta": models.MetaOfResponse{
+		Total:  total,
+		Offset: offset,
+		Limit:  limit,
+	}})
 }
 
 // GetAPost receive HTTP GET method request, and return the certain post.
@@ -58,9 +63,9 @@ func (nc *NewsController) GetAPost(c *gin.Context) {
 	}
 
 	if full {
-		posts, err = nc.Storage.GetFullPosts(qs, 1, 0, "-publishedDate", nil)
+		posts, _, err = nc.Storage.GetFullPosts(qs, 1, 0, "-publishedDate", nil)
 	} else {
-		posts, err = nc.Storage.GetMetaOfPosts(qs, 1, 0, "-publishedDate", nil)
+		posts, _, err = nc.Storage.GetMetaOfPosts(qs, 1, 0, "-publishedDate", nil)
 	}
 
 	if err != nil {

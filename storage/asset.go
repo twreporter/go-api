@@ -116,7 +116,7 @@ func (m *MongoStorage) GetTopicMeta(id bson.ObjectId) (models.Topic, error) {
 		"_id": id,
 	}
 
-	topics, err := m.GetTopics(query, 0, 0, "-publishedDate", []string{"leading_image", "og_image"})
+	topics, _, err := m.GetTopics(query, 0, 0, "-publishedDate", []string{"leading_image", "og_image"})
 
 	if err != nil {
 		return models.Topic{}, err
@@ -134,7 +134,7 @@ func (m *MongoStorage) GetRelatedsMeta(ids []bson.ObjectId) ([]models.Post, erro
 		},
 	}
 
-	posts, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", []string{"hero_image", "og_image"})
+	posts, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", []string{"hero_image", "og_image"})
 
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (m *MongoStorage) GetCategories(ids []bson.ObjectId) ([]models.Category, er
 		},
 	}
 
-	err := m.GetDocuments(query, 0, 0, "_id", "postcategories", &cats)
+	_, err := m.GetDocuments(query, 0, 0, "_id", "postcategories", &cats)
 
 	if err != nil {
 		return nil, m.NewStorageError(err, "GetCategories", "storage.posts.get_categories")
@@ -180,7 +180,7 @@ func (m *MongoStorage) GetTags(ids []bson.ObjectId) ([]models.Tag, error) {
 		},
 	}
 
-	err := m.GetDocuments(query, 0, 0, "_id", "tags", &tags)
+	_, err := m.GetDocuments(query, 0, 0, "_id", "tags", &tags)
 
 	if err != nil {
 		return nil, m.NewStorageError(err, "GetCategories", "storage.posts.get_tags")
@@ -228,7 +228,7 @@ func (m *MongoStorage) GetAuthors(ids []bson.ObjectId) ([]models.Author, error) 
 		},
 	}
 
-	err := m.GetDocuments(query, 0, 0, "_id", "contacts", &authors)
+	_, err := m.GetDocuments(query, 0, 0, "_id", "contacts", &authors)
 
 	if err != nil {
 		return authors, err

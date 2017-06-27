@@ -24,9 +24,9 @@ func (nc *NewsController) __GetIndexPageContent(part IndexPageQueryStruct) (inte
 	var entities interface{}
 	var err error
 	if part.ResourceType == "topics" {
-		entities, err = nc.Storage.GetTopics(part.MongoQuery, part.Limit, part.Offset, part.Sort, part.Embedded)
+		entities, _, err = nc.Storage.GetTopics(part.MongoQuery, part.Limit, part.Offset, part.Sort, part.Embedded)
 	} else {
-		entities, err = nc.Storage.GetMetaOfPosts(part.MongoQuery, part.Limit, part.Offset, part.Sort, part.Embedded)
+		entities, _, err = nc.Storage.GetMetaOfPosts(part.MongoQuery, part.Limit, part.Offset, part.Sort, part.Embedded)
 	}
 
 	if err != nil {

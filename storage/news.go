@@ -15,9 +15,9 @@ type NewsStorage interface {
 	Close() error
 
 	/** Posts methods **/
-	GetMetaOfPosts(interface{}, int, int, string, []string) ([]models.Post, error)
-	GetFullPosts(interface{}, int, int, string, []string) ([]models.Post, error)
-	GetTopics(interface{}, int, int, string, []string) ([]models.Topic, error)
+	GetMetaOfPosts(interface{}, int, int, string, []string) ([]models.Post, int, error)
+	GetFullPosts(interface{}, int, int, string, []string) ([]models.Post, int, error)
+	GetTopics(interface{}, int, int, string, []string) ([]models.Topic, int, error)
 }
 
 // NewMongoStorage initializes the storage connected to Mongo database
@@ -37,8 +37,7 @@ func (m *MongoStorage) Close() error {
 }
 
 // GetDocuments ...
-func (m *MongoStorage) GetDocuments(qs interface{}, limit int, offset int, sort string, collection string, documents interface{}) error {
-	var err error
+func (m *MongoStorage) GetDocuments(qs interface{}, limit int, offset int, sort string, collection string, documents interface{}) (count int, err error) {
 	var q models.MongoQuery
 
 	_qs, ok := qs.(string)
@@ -47,7 +46,7 @@ func (m *MongoStorage) GetDocuments(qs interface{}, limit int, offset int, sort 
 		err = models.GetQuery(_qs, &q)
 
 		if err != nil {
-			return m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_documents.parse_query_error")
+			return 0, m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_documents.parse_query_error")
 		}
 
 		qs = q
@@ -56,10 +55,16 @@ func (m *MongoStorage) GetDocuments(qs interface{}, limit int, offset int, sort 
 	err = m.db.DB(utils.Cfg.MongoDBSettings.DBName).C(collection).Find(qs).Limit(limit).Skip(offset).Sort(sort).All(documents)
 
 	if err != nil {
-		return m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_documents_error")
+		return 0, m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_documents_error")
 	}
 
-	return nil
+	count, err = m.db.DB(utils.Cfg.MongoDBSettings.DBName).C(collection).Find(qs).Count()
+
+	if err != nil {
+		return 0, m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_total_count_of_documents")
+	}
+
+	return count, nil
 }
 
 // GetDocument ...

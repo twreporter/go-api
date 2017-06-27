@@ -11,6 +11,7 @@ import (
 // `query`, `limit`, `offset` and `sort` are the url query params,
 // which define the rule we retrieve topics from storage.
 func (nc *NewsController) GetTopics(c *gin.Context) {
+	var total int
 	var topics []models.Topic
 	var err error
 
@@ -29,9 +30,9 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 	}
 
 	if full {
-		topics, err = nc.Storage.GetTopics(qs, limit, offset, sort, nil)
+		topics, total, err = nc.Storage.GetTopics(qs, limit, offset, sort, nil)
 	} else {
-		topics, err = nc.Storage.GetTopics(qs, limit, offset, sort, []string{"leading_image", "og_image"})
+		topics, total, err = nc.Storage.GetTopics(qs, limit, offset, sort, []string{"leading_image", "og_image"})
 	}
 
 	if err != nil {
@@ -40,7 +41,11 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": topics})
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{
+		Total:  total,
+		Offset: offset,
+		Limit:  limit,
+	}})
 	return
 
 }
