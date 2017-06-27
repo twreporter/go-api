@@ -15,71 +15,90 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 		for _, ele := range embedded {
 			switch ele {
 			case "hero_image":
-				if id := entity.GetHeroImageOrigin(); id != "" {
-					img, err := m.GetImage(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("HeroImage", &img)
+				if ids := entity.GetEmbeddedAsset("HeroImageOrigin"); ids != nil {
+					if ids[0] != "" {
+						img, err := m.GetImage(ids[0])
+						if err == nil {
+							entity.SetEmbeddedAsset("HeroImage", &img)
+						}
 					}
 				}
 				break
 			case "leading_image":
-				if id := entity.GetLeadingImageOrigin(); id != "" {
-					img, err := m.GetImage(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("LeadingImage", &img)
+				if ids := entity.GetEmbeddedAsset("LeadingImageOrigin"); ids != nil {
+					if ids[0] != "" {
+						img, err := m.GetImage(ids[0])
+						if err == nil {
+							entity.SetEmbeddedAsset("LeadingImage", &img)
+						}
 					}
 				}
 				break
 			case "leading_image_portrait":
-				if id := entity.GetLeadingImagePortraitOrigin(); id != "" {
-					img, err := m.GetImage(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("LeadingImagePortrait", &img)
+				if ids := entity.GetEmbeddedAsset("LeadingImagePortraitOrigin"); ids != nil {
+					if ids[0] != "" {
+						img, err := m.GetImage(ids[0])
+						if err == nil {
+							entity.SetEmbeddedAsset("LeadingImagePortrait", &img)
+						}
 					}
 				}
 				break
 			case "leading_video":
-				if id := entity.GetLeadingVideoOrigin(); id != "" {
-					video, err := m.GetVideo(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("LeadingVideo", &video)
+				if ids := entity.GetEmbeddedAsset("LeadingVideoOrigin"); ids != nil {
+					if ids[0] != "" {
+						video, err := m.GetVideo(ids[0])
+						if err == nil {
+							entity.SetEmbeddedAsset("LeadingVideo", &video)
+						}
 					}
 				}
 				break
 			case "og_image":
-				img, err := m.GetImage(entity.GetOgImageOrigin())
-				if err == nil {
-					entity.SetEmbeddedAsset("OgImage", &img)
+				if ids := entity.GetEmbeddedAsset("OgImageOrigin"); ids != nil {
+					if ids[0] != "" {
+						img, err := m.GetImage(ids[0])
+						if err == nil {
+							entity.SetEmbeddedAsset("OgImage", &img)
+						}
+					}
 				}
 				break
 			case "categories":
-				categories, _ := m.GetCategories(entity.GetCategoriesOrigin())
-				_categories := make([]models.Category, len(categories))
-				for i, v := range categories {
-					_categories[i] = v
+				if ids := entity.GetEmbeddedAsset("CategoriesOrigin"); ids != nil {
+					categories, _ := m.GetCategories(ids)
+					_categories := make([]models.Category, len(categories))
+					for i, v := range categories {
+						_categories[i] = v
+					}
+					entity.SetEmbeddedAsset("Categories", _categories)
 				}
-				entity.SetEmbeddedAsset("Categories", _categories)
 				break
 			case "tags":
-				tags, _ := m.GetTags(entity.GetTagsOrigin())
-				_tags := make([]models.Tag, len(tags))
-				for i, v := range tags {
-					_tags[i] = v
+				if ids := entity.GetEmbeddedAsset("TagsOrigin"); ids != nil {
+					tags, _ := m.GetTags(ids)
+					_tags := make([]models.Tag, len(tags))
+					for i, v := range tags {
+						_tags[i] = v
+					}
+					entity.SetEmbeddedAsset("Tags", _tags)
 				}
-				entity.SetEmbeddedAsset("Tags", _tags)
 				break
 			case "relateds_meta":
-				ids := entity.GetRelatedsOrigin()
-				relateds, err := m.GetRelatedsMeta(ids)
-				if err == nil {
-					entity.SetEmbeddedAsset("Relateds", relateds)
+				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
+					relateds, err := m.GetRelatedsMeta(ids)
+					if err == nil {
+						entity.SetEmbeddedAsset("Relateds", relateds)
+					}
 				}
 				break
 			case "topic_meta":
-				if id := entity.GetTopicOrigin(); id != "" {
-					t, err := m.GetTopicMeta(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("Topic", &t)
+				if ids := entity.GetEmbeddedAsset("TopicOrigin"); ids != nil {
+					if ids[0] != "" {
+						t, err := m.GetTopicMeta(ids[0])
+						if err == nil {
+							entity.SetEmbeddedAsset("Topic", &t)
+						}
 					}
 				}
 				break
@@ -107,7 +126,7 @@ func (m *MongoStorage) GetTopicMeta(id bson.ObjectId) (models.Topic, error) {
 }
 
 // GetRelatedsMeta ...
-func (m *MongoStorage) GetRelatedsMeta(ids []bson.ObjectId) ([]models.PostMeta, error) {
+func (m *MongoStorage) GetRelatedsMeta(ids []bson.ObjectId) ([]models.Post, error) {
 
 	query := bson.M{
 		"_id": bson.M{

@@ -15,7 +15,7 @@ type NewsStorage interface {
 	Close() error
 
 	/** Posts methods **/
-	GetMetaOfPosts(interface{}, int, int, string, []string) ([]models.PostMeta, error)
+	GetMetaOfPosts(interface{}, int, int, string, []string) ([]models.Post, error)
 	GetTopics(interface{}, int, int, string, []string) ([]models.Topic, error)
 }
 

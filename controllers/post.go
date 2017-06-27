@@ -11,7 +11,7 @@ import (
 // `query`, `limit`, `offset` and `sort` are the url query params,
 // which define the rule we retrieve posts from storage.
 func (nc *NewsController) GetPosts(c *gin.Context) {
-	var metaOfPosts []models.PostMeta
+	var metaOfPosts []models.Post
 	var err error
 
 	qs, limit, offset, sort, full := nc.GetQueryParam(c)

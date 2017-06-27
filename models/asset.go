@@ -109,24 +109,16 @@ type Tag struct {
 	Name string        `bson:"name" json:"name"`
 }
 
-// NewsEntity defines the method of structs such `Topic`, `PostMeta` ...etc
+// NewsEntity defines the method of structs such `Topic`, `Post` ...etc
 type NewsEntity interface {
 	SetEmbeddedAsset(string, interface{})
-	GetHeroImageOrigin() bson.ObjectId
-	GetLeadingImageOrigin() bson.ObjectId
-	GetOgImageOrigin() bson.ObjectId
-	GetCategoriesOrigin() []bson.ObjectId
-	GetTagsOrigin() []bson.ObjectId
-	GetTopicOrigin() bson.ObjectId
-	GetLeadingImagePortraitOrigin() bson.ObjectId
-	GetLeadingVideoOrigin() bson.ObjectId
-	GetRelatedsOrigin() []bson.ObjectId
+	GetEmbeddedAsset(string) []bson.ObjectId
 }
 
 func __setEmbeddedAsset(strt interface{}, key string, asset interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Warnf("Set field %v into PostMeta occurs error", key)
+			log.Warnf("Set field %v into Post occurs error", key)
 		}
 	}()
 	// pointer to struct - addressable
@@ -148,54 +140,36 @@ func __setEmbeddedAsset(strt interface{}, key string, asset interface{}) {
 	}
 }
 
-// SetEmbeddedAsset - `PostMeta` implements this method to become a `NewsEntity`
-func (pm *PostMeta) SetEmbeddedAsset(key string, asset interface{}) {
+// SetEmbeddedAsset - `Post` implements this method to become a `NewsEntity`
+func (pm *Post) SetEmbeddedAsset(key string, asset interface{}) {
 	__setEmbeddedAsset(pm, key, asset)
 }
 
-// GetHeroImageOrigin ...
-func (pm *PostMeta) GetHeroImageOrigin() bson.ObjectId {
-	return pm.HeroImageOrigin
-}
-
-// GetLeadingImageOrigin ...
-func (pm *PostMeta) GetLeadingImageOrigin() bson.ObjectId {
-	return ""
-}
-
-// GetOgImageOrigin ...
-func (pm *PostMeta) GetOgImageOrigin() bson.ObjectId {
-	return pm.OgImageOrigin
-}
-
-// GetCategoriesOrigin ...
-func (pm *PostMeta) GetCategoriesOrigin() []bson.ObjectId {
-	return pm.CategoriesOrigin
-}
-
-// GetTagsOrigin ...
-func (pm *PostMeta) GetTagsOrigin() []bson.ObjectId {
-	return pm.TagsOrigin
-}
-
-// GetTopicOrigin ...
-func (pm *PostMeta) GetTopicOrigin() bson.ObjectId {
-	return pm.TopicOrigin
-}
-
-// GetLeadingImagePortraitOrigin ...
-func (pm *PostMeta) GetLeadingImagePortraitOrigin() bson.ObjectId {
-	return ""
-}
-
-// GetLeadingVideoOrigin ...
-func (pm *PostMeta) GetLeadingVideoOrigin() bson.ObjectId {
-	return ""
-}
-
-// GetRelatedsOrigin ...
-func (pm *PostMeta) GetRelatedsOrigin() []bson.ObjectId {
-	return nil
+// GetEmbeddedAsset - `Post` implements this method to become a `NewsEntity`
+func (pm *Post) GetEmbeddedAsset(key string) []bson.ObjectId {
+	var rtn []bson.ObjectId
+	switch key {
+	case "HeroImageOrigin":
+		return append(rtn, pm.HeroImageOrigin)
+	case "LeadingImageOrigin":
+		return nil
+	case "CategoriesOrigin":
+		return pm.CategoriesOrigin
+	case "TagsOrigin":
+		return pm.TagsOrigin
+	case "OgImageOrigin":
+		return append(rtn, pm.OgImageOrigin)
+	case "LeadingVideoOrigin":
+		return append(rtn, pm.LeadingVideoOrigin)
+	case "LeadingImagePortraitOrigin":
+		return nil
+	case "TopicOrigin":
+		return append(rtn, pm.TopicOrigin)
+	case "RelatedsOrigin":
+		return pm.RelatedsOrigin
+	default:
+		return nil
+	}
 }
 
 // SetEmbeddedAsset - `Topic` implements this method to become a `NewsEntity`
@@ -203,47 +177,29 @@ func (t *Topic) SetEmbeddedAsset(key string, asset interface{}) {
 	__setEmbeddedAsset(t, key, asset)
 }
 
-// GetHeroImageOrigin ...
-func (t *Topic) GetHeroImageOrigin() bson.ObjectId {
-	return ""
-}
-
-// GetLeadingImageOrigin ...
-func (t *Topic) GetLeadingImageOrigin() bson.ObjectId {
-	return t.LeadingImageOrigin
-}
-
-// GetOgImageOrigin ...
-func (t *Topic) GetOgImageOrigin() bson.ObjectId {
-	return t.OgImageOrigin
-}
-
-// GetCategoriesOrigin ...
-func (t *Topic) GetCategoriesOrigin() []bson.ObjectId {
-	return nil
-}
-
-// GetTagsOrigin ...
-func (t *Topic) GetTagsOrigin() []bson.ObjectId {
-	return nil
-}
-
-// GetTopicOrigin ...
-func (t *Topic) GetTopicOrigin() bson.ObjectId {
-	return ""
-}
-
-// GetLeadingImagePortraitOrigin ...
-func (t *Topic) GetLeadingImagePortraitOrigin() bson.ObjectId {
-	return t.LeadingImagePortraitOrigin
-}
-
-// GetLeadingVideoOrigin ...
-func (t *Topic) GetLeadingVideoOrigin() bson.ObjectId {
-	return t.LeadingVideoOrigin
-}
-
-// GetRelatedsOrigin ...
-func (t *Topic) GetRelatedsOrigin() []bson.ObjectId {
-	return t.RelatedsOrigin
+// GetEmbeddedAsset - `Topic` implements this method to become a `NewsEntity`
+func (t *Topic) GetEmbeddedAsset(key string) []bson.ObjectId {
+	var rtn []bson.ObjectId
+	switch key {
+	case "HeroImageOrigin":
+		return nil
+	case "LeadingImageOrigin":
+		return append(rtn, t.LeadingImageOrigin)
+	case "CategoriesOrigin":
+		return nil
+	case "TagsOrigin":
+		return nil
+	case "OgImageOrigin":
+		return append(rtn, t.OgImageOrigin)
+	case "LeadingVideoOrigin":
+		return append(rtn, t.LeadingVideoOrigin)
+	case "LeadingImagePortraitOrigin":
+		return append(rtn, t.LeadingImagePortraitOrigin)
+	case "TopicOrigin":
+		return nil
+	case "RelatedsOrigin":
+		return t.RelatedsOrigin
+	default:
+		return nil
+	}
 }
