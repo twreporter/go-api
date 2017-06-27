@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/models"
@@ -9,57 +10,56 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+func (m *MongoStorage) _StringToPscalCase(str string) (pscalCase string) {
+	isToUpper := true
+	for _, runeValue := range str {
+		if isToUpper {
+			pscalCase += strings.ToUpper(string(runeValue))
+			isToUpper = false
+		} else {
+			if runeValue == '_' {
+				isToUpper = true
+			} else {
+				pscalCase += string(runeValue)
+			}
+		}
+	}
+	return
+}
+
 // GetEmbeddedAsset ...
 func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []string) {
 	if embedded != nil {
 		for _, ele := range embedded {
 			switch ele {
-			case "hero_image":
-				if ids := entity.GetEmbeddedAsset("HeroImageOrigin"); ids != nil {
-					if ids[0] != "" {
-						img, err := m.GetImage(ids[0])
+			case "writters", "photographers", "designers", "engineers":
+				assetName := m._StringToPscalCase(ele)
+				if ids := entity.GetEmbeddedAsset(assetName + "Origin"); ids != nil {
+					if len(ids) > 0 {
+						authors, err := m.GetAuthors(ids)
 						if err == nil {
-							entity.SetEmbeddedAsset("HeroImage", &img)
+							entity.SetEmbeddedAsset(assetName, authors)
 						}
 					}
 				}
 				break
-			case "leading_image":
-				if ids := entity.GetEmbeddedAsset("LeadingImageOrigin"); ids != nil {
-					if ids[0] != "" {
+			case "hero_image", "leading_image", "leading_image_portrait", "og_image":
+				assetName := m._StringToPscalCase(ele)
+				if ids := entity.GetEmbeddedAsset(assetName + "Origin"); ids != nil {
+					if len(ids) > 0 {
 						img, err := m.GetImage(ids[0])
 						if err == nil {
-							entity.SetEmbeddedAsset("LeadingImage", &img)
-						}
-					}
-				}
-				break
-			case "leading_image_portrait":
-				if ids := entity.GetEmbeddedAsset("LeadingImagePortraitOrigin"); ids != nil {
-					if ids[0] != "" {
-						img, err := m.GetImage(ids[0])
-						if err == nil {
-							entity.SetEmbeddedAsset("LeadingImagePortrait", &img)
+							entity.SetEmbeddedAsset(assetName, &img)
 						}
 					}
 				}
 				break
 			case "leading_video":
 				if ids := entity.GetEmbeddedAsset("LeadingVideoOrigin"); ids != nil {
-					if ids[0] != "" {
+					if len(ids) > 0 {
 						video, err := m.GetVideo(ids[0])
 						if err == nil {
 							entity.SetEmbeddedAsset("LeadingVideo", &video)
-						}
-					}
-				}
-				break
-			case "og_image":
-				if ids := entity.GetEmbeddedAsset("OgImageOrigin"); ids != nil {
-					if ids[0] != "" {
-						img, err := m.GetImage(ids[0])
-						if err == nil {
-							entity.SetEmbeddedAsset("OgImage", &img)
 						}
 					}
 				}
@@ -94,7 +94,7 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				break
 			case "topic_meta":
 				if ids := entity.GetEmbeddedAsset("TopicOrigin"); ids != nil {
-					if ids[0] != "" {
+					if len(ids) > 0 {
 						t, err := m.GetTopicMeta(ids[0])
 						if err == nil {
 							entity.SetEmbeddedAsset("Topic", &t)
@@ -213,4 +213,26 @@ func (m *MongoStorage) GetImage(id bson.ObjectId) (models.Image, error) {
 	}
 
 	return mgoImg.ToImage(), nil
+}
+
+func (m *MongoStorage) GetAuthors(ids []bson.ObjectId) ([]models.Author, error) {
+	var authors []models.Author
+
+	if ids == nil {
+		return authors, nil
+	}
+
+	query := bson.M{
+		"_id": bson.M{
+			"$in": ids,
+		},
+	}
+
+	err := m.GetDocuments(query, 0, 0, "_id", "contacts", &authors)
+
+	if err != nil {
+		return authors, err
+	}
+
+	return authors, nil
 }

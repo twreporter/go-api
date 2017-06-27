@@ -16,6 +16,7 @@ type NewsStorage interface {
 
 	/** Posts methods **/
 	GetMetaOfPosts(interface{}, int, int, string, []string) ([]models.Post, error)
+	GetFullPosts(interface{}, int, int, string, []string) ([]models.Post, error)
 	GetTopics(interface{}, int, int, string, []string) ([]models.Topic, error)
 }
 

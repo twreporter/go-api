@@ -96,6 +96,11 @@ func (mv *MongoVideo) ToVideo() (video Video) {
 	return
 }
 
+type Author struct {
+	ID   bson.ObjectId `bson:"_id" json:"id"`
+	Name string        `bson:"name" json:"name"`
+}
+
 // Category ...
 type Category struct {
 	ID        bson.ObjectId `bson:"_id" json:"id"`
@@ -149,8 +154,19 @@ func (pm *Post) SetEmbeddedAsset(key string, asset interface{}) {
 func (pm *Post) GetEmbeddedAsset(key string) []bson.ObjectId {
 	var rtn []bson.ObjectId
 	switch key {
+	case "WrittersOrigin":
+		return pm.WrittersOrigin
+	case "PhotographersOrigin":
+		return pm.PhotographersOrigin
+	case "DesignersOrigin":
+		return pm.DesignersOrigin
+	case "EngineersOrigin":
+		return pm.EngineersOrigin
 	case "HeroImageOrigin":
-		return append(rtn, pm.HeroImageOrigin)
+		if pm.HeroImageOrigin != "" {
+			return append(rtn, pm.HeroImageOrigin)
+		}
+		return nil
 	case "LeadingImageOrigin":
 		return nil
 	case "CategoriesOrigin":
@@ -158,13 +174,22 @@ func (pm *Post) GetEmbeddedAsset(key string) []bson.ObjectId {
 	case "TagsOrigin":
 		return pm.TagsOrigin
 	case "OgImageOrigin":
-		return append(rtn, pm.OgImageOrigin)
+		if pm.OgImageOrigin != "" {
+			return append(rtn, pm.OgImageOrigin)
+		}
+		return nil
 	case "LeadingVideoOrigin":
-		return append(rtn, pm.LeadingVideoOrigin)
+		if pm.LeadingVideoOrigin != "" {
+			return append(rtn, pm.LeadingVideoOrigin)
+		}
+		return nil
 	case "LeadingImagePortraitOrigin":
 		return nil
 	case "TopicOrigin":
-		return append(rtn, pm.TopicOrigin)
+		if pm.TopicOrigin != "" {
+			return append(rtn, pm.TopicOrigin)
+		}
+		return nil
 	case "RelatedsOrigin":
 		return pm.RelatedsOrigin
 	default:
@@ -181,20 +206,40 @@ func (t *Topic) SetEmbeddedAsset(key string, asset interface{}) {
 func (t *Topic) GetEmbeddedAsset(key string) []bson.ObjectId {
 	var rtn []bson.ObjectId
 	switch key {
+	case "WrittersOrigin":
+		return nil
+	case "PhotographersOrigin":
+		return nil
+	case "DesignersOrigin":
+		return nil
+	case "EngineersOrigin":
+		return nil
 	case "HeroImageOrigin":
 		return nil
 	case "LeadingImageOrigin":
-		return append(rtn, t.LeadingImageOrigin)
+		if t.LeadingImageOrigin != "" {
+			return append(rtn, t.LeadingImageOrigin)
+		}
+		return nil
 	case "CategoriesOrigin":
 		return nil
 	case "TagsOrigin":
 		return nil
 	case "OgImageOrigin":
-		return append(rtn, t.OgImageOrigin)
+		if t.OgImageOrigin != "" {
+			return append(rtn, t.OgImageOrigin)
+		}
+		return nil
 	case "LeadingVideoOrigin":
-		return append(rtn, t.LeadingVideoOrigin)
+		if t.LeadingVideoOrigin != "" {
+			return append(rtn, t.LeadingVideoOrigin)
+		}
+		return nil
 	case "LeadingImagePortraitOrigin":
-		return append(rtn, t.LeadingImagePortraitOrigin)
+		if t.LeadingImagePortraitOrigin != "" {
+			return append(rtn, t.LeadingImagePortraitOrigin)
+		}
+		return nil
 	case "TopicOrigin":
 		return nil
 	case "RelatedsOrigin":

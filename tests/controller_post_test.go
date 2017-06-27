@@ -13,8 +13,44 @@ import (
 )
 
 type PostsResponse struct {
-	Status  string            `json:"status"`
-	Records []models.PostMeta `json:"records"`
+	Status  string        `json:"status"`
+	Records []models.Post `json:"records"`
+}
+
+type PostResponse struct {
+	Status string      `json:"status"`
+	Record models.Post `json:"record"`
+}
+
+func TestGetAPost(t *testing.T) {
+	// Post Not Found //
+	resp := ServeHTTP("GET", "/v1/posts/post-not-found", "",
+		"", "")
+	assert.Equal(t, resp.Code, 404)
+	// Post Not Found //
+
+	// Get a post without full url param //
+	resp = ServeHTTP("GET", "/v1/posts/"+MockSlug1, "",
+		"", "")
+	assert.Equal(t, resp.Code, 200)
+	body, _ := ioutil.ReadAll(resp.Result().Body)
+	res := PostResponse{}
+	json.Unmarshal(body, &res)
+	assert.Equal(t, res.Record.ID, PostID1)
+	assert.Equal(t, len(res.Record.Relateds), 0)
+	// Get a post without full url param //
+
+	// Get a post with full url param //
+	resp = ServeHTTP("GET", "/v1/posts/"+MockSlug1+"?full=true", "",
+		"", "")
+	assert.Equal(t, resp.Code, 200)
+	body, _ = ioutil.ReadAll(resp.Result().Body)
+	res = PostResponse{}
+	json.Unmarshal(body, &res)
+	assert.Equal(t, res.Record.ID, PostID1)
+	assert.Equal(t, len(res.Record.Relateds), 1)
+	assert.Equal(t, res.Record.Relateds[0].ID, PostID2)
+	// Get a post with full url param //
 }
 
 func TestGetPosts(t *testing.T) {

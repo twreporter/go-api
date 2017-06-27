@@ -45,7 +45,7 @@ func (nc *NewsController) GetQueryParam(c *gin.Context) (qs string, limit int, o
 func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	// endpoints for posts
 	group.GET("/posts", nc.GetPosts)
-	// group.GET("/posts/:slug", nc.GetPost)
+	group.GET("/posts/:slug", nc.GetAPost)
 
 	// endpoints for topics
 	group.GET("/topics", nc.GetTopics)

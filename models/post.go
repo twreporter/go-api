@@ -12,10 +12,6 @@ type ContentBody struct {
 	APIData []bson.M `bson:"apiData" json:"api_data"`
 }
 
-type Author struct {
-	ID bson.ObjectId `bson:"_id" json:"id"`
-}
-
 // Post ...
 type Post struct {
 	ID                  bson.ObjectId   `bson:"_id" json:"id"`
@@ -49,7 +45,7 @@ type Post struct {
 	DesignersOrigin     []bson.ObjectId `bson:"designers,omitempty" json:"-"`
 	Engineers           []Author        `bson:"-" json:"engineers,omitempty"`
 	EngineersOrigin     []bson.ObjectId `bson:"engineers,omitempty" json:"-"`
-	ExtendByline        string          `bson:'extend_byline' json:"extend_byline"`
+	ExtendByline        string          `bson:"extend_byline" json:"extend_byline"`
 	LeadingVideo        *Video          `bson:"-" json:"leading_video,omitempty"`
 	LeadingVideoOrigin  bson.ObjectId   `bson:"leading_video,omitempty" json:"-"`
 	Content             *ContentBody    `bson:"content,omitempty" json:"content,omitempty"`
