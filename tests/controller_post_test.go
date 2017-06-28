@@ -12,6 +12,12 @@ import (
 	"twreporter.org/go-api/models"
 )
 
+/*
+The whole testing mongodb is set by ./test.go
+You should check #SetMgoDefaultRecords function,
+if you want to know more about the data set in the testing mongodb
+*/
+
 type PostsResponse struct {
 	Status  string        `json:"status"`
 	Records []models.Post `json:"records"`
@@ -30,7 +36,7 @@ func TestGetAPost(t *testing.T) {
 	// Post Not Found //
 
 	// Get a post without full url param //
-	resp = ServeHTTP("GET", "/v1/posts/"+MockSlug1, "",
+	resp = ServeHTTP("GET", "/v1/posts/"+MockPostSlug1, "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -41,7 +47,7 @@ func TestGetAPost(t *testing.T) {
 	// Get a post without full url param //
 
 	// Get a post with full url param //
-	resp = ServeHTTP("GET", "/v1/posts/"+MockSlug1+"?full=true", "",
+	resp = ServeHTTP("GET", "/v1/posts/"+MockPostSlug1+"?full=true", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)

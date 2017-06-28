@@ -49,7 +49,7 @@ func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 
 	// endpoints for topics
 	group.GET("/topics", nc.GetTopics)
-	// group.GET("/topics/:topic", nc.GetTopic)
+	group.GET("/topics/:slug", nc.GetATopic)
 
 	group.GET("/index_page", nc.GetIndexPageContents)
 	return group

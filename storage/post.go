@@ -24,7 +24,7 @@ func (m *MongoStorage) _GetPosts(qs interface{}, limit int, offset int, sort str
 // It finds the posts according to query string and only return the metadata of posts.
 func (m *MongoStorage) GetMetaOfPosts(qs interface{}, limit int, offset int, sort string, embedded []string) ([]models.Post, int, error) {
 	if embedded == nil {
-		embedded = []string{"hero_image", "categories", "tags", "topic_meta", "og_image"}
+		embedded = []string{"hero_image", "categories", "tags", "topic", "og_image"}
 	}
 
 	posts, total, err := m._GetPosts(qs, limit, offset, sort, embedded)
@@ -45,7 +45,7 @@ func (m *MongoStorage) GetMetaOfPosts(qs interface{}, limit int, offset int, sor
 // It finds the posts according to query string.
 func (m *MongoStorage) GetFullPosts(qs interface{}, limit int, offset int, sort string, embedded []string) ([]models.Post, int, error) {
 	if embedded == nil {
-		embedded = []string{"hero_image", "leading_video", "categories", "tags", "topic_meta", "og_image", "writters", "photographers", "designers", "engineers", "relateds_meta"}
+		embedded = []string{"hero_image", "leading_video", "categories", "tags", "topic", "og_image", "writters", "photographers", "designers", "engineers", "relateds"}
 	}
 
 	return m._GetPosts(qs, limit, offset, sort, embedded)

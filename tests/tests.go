@@ -57,7 +57,8 @@ var (
 	TagCol           models.Tag
 	CatCol           models.Category
 	TopicCol         models.Topic
-	MockSlug1        = "mock-post-slug-1"
+	MockPostSlug1    = "mock-post-slug-1"
+	MockTopicSlug    = "mock-topic-slug"
 )
 
 func OpenGormConnection() (db *gorm.DB, err error) {
@@ -189,7 +190,7 @@ func SetMgoDefaultRecords() {
 
 	PostCol1 = models.Post{
 		ID:               PostID1,
-		Slug:             MockSlug1,
+		Slug:             MockPostSlug1,
 		Name:             "mock post slug 1",
 		Style:            "article",
 		State:            "published",
@@ -204,7 +205,7 @@ func SetMgoDefaultRecords() {
 
 	TopicCol = models.Topic{
 		ID:                 TopicID,
-		Slug:               "mock-topic-slug",
+		Slug:               MockTopicSlug,
 		TopicName:          "mock topic slug",
 		Title:              "mock title",
 		State:              "published",

@@ -1,11 +1,11 @@
 package storage
 
 import (
+	// log "github.com/Sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/utils"
-	//log "github.com/Sirupsen/logrus"
 )
 
 // NewsStorage defines the methods we need to implement,
@@ -17,7 +17,8 @@ type NewsStorage interface {
 	/** Posts methods **/
 	GetMetaOfPosts(interface{}, int, int, string, []string) ([]models.Post, int, error)
 	GetFullPosts(interface{}, int, int, string, []string) ([]models.Post, int, error)
-	GetTopics(interface{}, int, int, string, []string) ([]models.Topic, int, error)
+	GetMetaOfTopics(interface{}, int, int, string, []string) ([]models.Topic, int, error)
+	GetFullTopics(interface{}, int, int, string, []string) ([]models.Topic, int, error)
 }
 
 // NewMongoStorage initializes the storage connected to Mongo database

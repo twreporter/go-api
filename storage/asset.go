@@ -84,20 +84,32 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 					entity.SetEmbeddedAsset("Tags", _tags)
 				}
 				break
-			case "relateds_meta":
+			case "relateds":
 				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
-					relateds, err := m.GetRelatedsMeta(ids)
+					query := bson.M{
+						"_id": bson.M{
+							"$in": ids,
+						},
+					}
+
+					relateds, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", nil)
+
 					if err == nil {
 						entity.SetEmbeddedAsset("Relateds", relateds)
 					}
 				}
 				break
-			case "topic_meta":
+			case "topic":
 				if ids := entity.GetEmbeddedAsset("TopicOrigin"); ids != nil {
 					if len(ids) > 0 {
-						t, err := m.GetTopicMeta(ids[0])
+						query := bson.M{
+							"_id": ids[0],
+						}
+
+						topics, _, err := m.GetMetaOfTopics(query, 0, 0, "-publishedDate", nil)
+
 						if err == nil {
-							entity.SetEmbeddedAsset("Topic", &t)
+							entity.SetEmbeddedAsset("Topic", &topics[0])
 						}
 					}
 				}
@@ -108,39 +120,6 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 		}
 	}
 	return
-}
-
-func (m *MongoStorage) GetTopicMeta(id bson.ObjectId) (models.Topic, error) {
-
-	query := bson.M{
-		"_id": id,
-	}
-
-	topics, _, err := m.GetTopics(query, 0, 0, "-publishedDate", []string{"leading_image", "og_image"})
-
-	if err != nil {
-		return models.Topic{}, err
-	}
-
-	return topics[0], nil
-}
-
-// GetRelatedsMeta ...
-func (m *MongoStorage) GetRelatedsMeta(ids []bson.ObjectId) ([]models.Post, error) {
-
-	query := bson.M{
-		"_id": bson.M{
-			"$in": ids,
-		},
-	}
-
-	posts, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", []string{"hero_image", "og_image"})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return posts, nil
 }
 
 // GetCategories ...
