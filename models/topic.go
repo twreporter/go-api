@@ -33,4 +33,5 @@ type Topic struct {
 	OgDescription              string          `bson:"og_description" json:"og_description"`
 	OgImage                    *Image          `bson:"-" json:"og_image,omitempty"`
 	OgImageOrigin              bson.ObjectId   `bson:"og_image,omitempty" json:"-"`
+	Full                       bool            `bson:"-" json:"full"`
 }

@@ -45,6 +45,7 @@ func TestGetATopic(t *testing.T) {
 	assert.Equal(t, len(res.Record.Relateds), 0)
 	assert.Equal(t, res.Record.LeadingImage.ID, ImgID1)
 	assert.Equal(t, res.Record.OgImage.ID, ImgID1)
+	assert.Equal(t, res.Record.Full, false)
 	// Get a post without full url param //
 
 	// Get a post with full url param //
@@ -61,6 +62,7 @@ func TestGetATopic(t *testing.T) {
 	assert.Equal(t, res.Record.LeadingImage.ID, ImgID1)
 	assert.Equal(t, res.Record.LeadingVideo.ID, VideoID)
 	assert.Equal(t, res.Record.OgImage.ID, ImgID1)
+	assert.Equal(t, res.Record.Full, true)
 	// Get a post with full url param //
 }
 

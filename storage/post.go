@@ -5,7 +5,7 @@ import (
 )
 
 // _GetPosts finds the posts according to query string and also get the embedded assets
-func (m *MongoStorage) _GetPosts(qs interface{}, limit int, offset int, sort string, embedded []string) ([]models.Post, int, error) {
+func (m *MongoStorage) _GetPosts(qs interface{}, limit int, offset int, sort string, embedded []string, isFull bool) ([]models.Post, int, error) {
 	var posts []models.Post
 	total, err := m.GetDocuments(qs, limit, offset, sort, "posts", &posts)
 
@@ -15,6 +15,11 @@ func (m *MongoStorage) _GetPosts(qs interface{}, limit int, offset int, sort str
 
 	for index := range posts {
 		m.GetEmbeddedAsset(&posts[index], embedded)
+		if isFull == false {
+			posts[index].Content = nil
+		}
+
+		posts[index].Full = isFull
 	}
 
 	return posts, total, nil
@@ -27,18 +32,7 @@ func (m *MongoStorage) GetMetaOfPosts(qs interface{}, limit int, offset int, sor
 		embedded = []string{"hero_image", "categories", "tags", "topic", "og_image"}
 	}
 
-	posts, total, err := m._GetPosts(qs, limit, offset, sort, embedded)
-
-	if err != nil {
-		return posts, 0, err
-	}
-
-	// remove content because of size
-	for index := range posts {
-		posts[index].Content = nil
-	}
-
-	return posts, total, nil
+	return m._GetPosts(qs, limit, offset, sort, embedded, false)
 }
 
 // GetFullPosts is a type-specific functions implementing the method defined in the NewsStorage.
@@ -48,5 +42,5 @@ func (m *MongoStorage) GetFullPosts(qs interface{}, limit int, offset int, sort 
 		embedded = []string{"hero_image", "leading_video", "categories", "tags", "topic", "og_image", "writters", "photographers", "designers", "engineers", "relateds"}
 	}
 
-	return m._GetPosts(qs, limit, offset, sort, embedded)
+	return m._GetPosts(qs, limit, offset, sort, embedded, true)
 }

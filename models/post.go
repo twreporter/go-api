@@ -51,4 +51,5 @@ type Post struct {
 	Content             *ContentBody    `bson:"content,omitempty" json:"content,omitempty"`
 	Relateds            []Post          `bson:"-" json:"relateds,omitempty"`
 	RelatedsOrigin      []bson.ObjectId `bson:"relateds,omitempty" json:"-"`
+	Full                bool            `bson:"-" json:"full"`
 }

@@ -44,6 +44,7 @@ func TestGetAPost(t *testing.T) {
 	json.Unmarshal(body, &res)
 	assert.Equal(t, res.Record.ID, PostID1)
 	assert.Equal(t, len(res.Record.Relateds), 0)
+	assert.Equal(t, res.Record.Full, false)
 	// Get a post without full url param //
 
 	// Get a post with full url param //
@@ -56,6 +57,7 @@ func TestGetAPost(t *testing.T) {
 	assert.Equal(t, res.Record.ID, PostID1)
 	assert.Equal(t, len(res.Record.Relateds), 1)
 	assert.Equal(t, res.Record.Relateds[0].ID, PostID2)
+	assert.Equal(t, res.Record.Full, true)
 	// Get a post with full url param //
 }
 
@@ -82,6 +84,7 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, post.Tags[0].ID, TagID)
 	assert.Equal(t, post.Categories[0].ID, CatID)
 	assert.Equal(t, post.IsFeatured, false)
+	assert.Equal(t, post.Full, false)
 
 	post = res.Records[1]
 	assert.Equal(t, post.ID, PostCol1.ID)
@@ -91,6 +94,7 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, len(post.Categories), 1)
 	assert.Equal(t, post.Categories[0].ID, CatID)
 	assert.Equal(t, post.IsFeatured, true)
+	assert.Equal(t, post.Full, false)
 	// End -- Get all the posts //
 
 	// Start -- Get posts with isFeature=true //
