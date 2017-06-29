@@ -22,6 +22,7 @@ type Post struct {
 	State               string          `bson:"state" json:"state"`
 	HeroImage           *Image          `bson:"-" json:"hero_image,omitempty"`
 	HeroImageOrigin     bson.ObjectId   `bson:"heroImage" json:"-"`
+	HeroImageSize       string          `bson:"heroImageSize" json:"hero_image_size"`
 	Brief               *ContentBody    `bson:"brief,omitempty" json:"brief,omitempty"`
 	Categories          []Category      `bson:"-" json:"categories,omitempty"`
 	CategoriesOrigin    []bson.ObjectId `bson:"categories,omitempty" json:"-"`
