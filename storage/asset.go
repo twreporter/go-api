@@ -114,6 +114,21 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 					}
 				}
 				break
+			case "topic_full":
+				if ids := entity.GetEmbeddedAsset("TopicOrigin"); ids != nil {
+					if len(ids) > 0 {
+						query := bson.M{
+							"_id": ids[0],
+						}
+
+						topics, _, err := m.GetFullTopics(query, 0, 0, "-publishedDate", nil)
+
+						if err == nil {
+							entity.SetEmbeddedAsset("Topic", &topics[0])
+						}
+					}
+				}
+				break
 			default:
 				log.Info(fmt.Sprintf("Embedded element (%v) is not supported: ", ele))
 			}
