@@ -17,9 +17,9 @@ type Topic struct {
 	Headline                   string          `bson:"headline" json:"headline"`
 	State                      string          `bson:"state" json:"state"`
 	PublishedDate              time.Time       `bson:"publishedDate" json:"published_date"`
-	Description                Brief           `bson:"description,omitempty" json:"description,omitempty"`
-	TeamDescription            Brief           `bson:"team_description,omitempty" json:"team_description,omitempty"`
-	Relateds                   []PostMeta      `bson:"-" json:"relateds,omitempty"`
+	Description                *ContentBody    `bson:"description,omitempty" json:"description,omitempty"`
+	TeamDescription            *ContentBody    `bson:"team_description,omitempty" json:"team_description,omitempty"`
+	Relateds                   []Post          `bson:"-" json:"relateds,omitempty"`
 	RelatedsOrigin             []bson.ObjectId `bson:"relateds,omitempty" json:"-"`
 	RelatedsFormat             string          `bson:"relateds_format" json:"relateds_format"`
 	RelatedsBackground         string          `bson:"relateds_background" json:"relateds_background"`
@@ -33,4 +33,5 @@ type Topic struct {
 	OgDescription              string          `bson:"og_description" json:"og_description"`
 	OgImage                    *Image          `bson:"-" json:"og_image,omitempty"`
 	OgImageOrigin              bson.ObjectId   `bson:"og_image,omitempty" json:"-"`
+	Full                       bool            `bson:"-" json:"full"`
 }

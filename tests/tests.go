@@ -52,11 +52,13 @@ var (
 	ImgCol1          models.MongoImage
 	ImgCol2          models.MongoImage
 	VideoCol         models.MongoVideo
-	PostCol1         models.PostMeta
-	PostCol2         models.PostMeta
+	PostCol1         models.Post
+	PostCol2         models.Post
 	TagCol           models.Tag
 	CatCol           models.Category
 	TopicCol         models.Topic
+	MockPostSlug1    = "mock-post-slug-1"
+	MockTopicSlug    = "mock-topic-slug"
 )
 
 func OpenGormConnection() (db *gorm.DB, err error) {
@@ -186,9 +188,9 @@ func SetMgoDefaultRecords() {
 		Name: "mock postcategory",
 	}
 
-	PostCol1 = models.PostMeta{
+	PostCol1 = models.Post{
 		ID:               PostID1,
-		Slug:             "mock-post-slug-1",
+		Slug:             MockPostSlug1,
 		Name:             "mock post slug 1",
 		Style:            "article",
 		State:            "published",
@@ -198,11 +200,12 @@ func SetMgoDefaultRecords() {
 		OgImageOrigin:    ImgID1,
 		IsFeatured:       true,
 		TopicOrigin:      TopicID,
+		RelatedsOrigin:   []bson.ObjectId{PostID2},
 	}
 
 	TopicCol = models.Topic{
 		ID:                 TopicID,
-		Slug:               "mock-topic-slug",
+		Slug:               MockTopicSlug,
 		TopicName:          "mock topic slug",
 		Title:              "mock title",
 		State:              "published",

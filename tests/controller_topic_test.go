@@ -11,9 +11,59 @@ import (
 	"twreporter.org/go-api/models"
 )
 
+/*
+The whole testing mongodb is set by ./test.go
+You should check #SetMgoDefaultRecords function,
+if you want to know more about the data set in the testing mongodb
+*/
+
 type TopicsResponse struct {
 	Status  string         `json:"status"`
 	Records []models.Topic `json:"records"`
+}
+
+type TopicResponse struct {
+	Status string       `json:"status"`
+	Record models.Topic `json:"record"`
+}
+
+func TestGetATopic(t *testing.T) {
+	// Post Not Found //
+	resp := ServeHTTP("GET", "/v1/topics/post-not-found", "",
+		"", "")
+	assert.Equal(t, resp.Code, 404)
+	// Post Not Found //
+
+	// Get a post without full url param //
+	resp = ServeHTTP("GET", "/v1/topics/"+MockTopicSlug, "",
+		"", "")
+	assert.Equal(t, resp.Code, 200)
+	body, _ := ioutil.ReadAll(resp.Result().Body)
+	res := TopicResponse{}
+	json.Unmarshal(body, &res)
+	assert.Equal(t, res.Record.ID, TopicID)
+	assert.Equal(t, len(res.Record.Relateds), 0)
+	assert.Equal(t, res.Record.LeadingImage.ID, ImgID1)
+	assert.Equal(t, res.Record.OgImage.ID, ImgID1)
+	assert.Equal(t, res.Record.Full, false)
+	// Get a post without full url param //
+
+	// Get a post with full url param //
+	resp = ServeHTTP("GET", "/v1/topics/"+MockTopicSlug+"?full=true", "",
+		"", "")
+	assert.Equal(t, resp.Code, 200)
+	body, _ = ioutil.ReadAll(resp.Result().Body)
+	res = TopicResponse{}
+	json.Unmarshal(body, &res)
+	assert.Equal(t, res.Record.ID, TopicID)
+	assert.Equal(t, len(res.Record.Relateds), 2)
+	assert.Equal(t, res.Record.Relateds[0].ID, PostID2)
+	assert.Equal(t, res.Record.Relateds[1].ID, PostID1)
+	assert.Equal(t, res.Record.LeadingImage.ID, ImgID1)
+	assert.Equal(t, res.Record.LeadingVideo.ID, VideoID)
+	assert.Equal(t, res.Record.OgImage.ID, ImgID1)
+	assert.Equal(t, res.Record.Full, true)
+	// Get a post with full url param //
 }
 
 func TestGetTopics(t *testing.T) {

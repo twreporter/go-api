@@ -12,9 +12,53 @@ import (
 	"twreporter.org/go-api/models"
 )
 
+/*
+The whole testing mongodb is set by ./test.go
+You should check #SetMgoDefaultRecords function,
+if you want to know more about the data set in the testing mongodb
+*/
+
 type PostsResponse struct {
-	Status  string            `json:"status"`
-	Records []models.PostMeta `json:"records"`
+	Status  string        `json:"status"`
+	Records []models.Post `json:"records"`
+}
+
+type PostResponse struct {
+	Status string      `json:"status"`
+	Record models.Post `json:"record"`
+}
+
+func TestGetAPost(t *testing.T) {
+	// Post Not Found //
+	resp := ServeHTTP("GET", "/v1/posts/post-not-found", "",
+		"", "")
+	assert.Equal(t, resp.Code, 404)
+	// Post Not Found //
+
+	// Get a post without full url param //
+	resp = ServeHTTP("GET", "/v1/posts/"+MockPostSlug1, "",
+		"", "")
+	assert.Equal(t, resp.Code, 200)
+	body, _ := ioutil.ReadAll(resp.Result().Body)
+	res := PostResponse{}
+	json.Unmarshal(body, &res)
+	assert.Equal(t, res.Record.ID, PostID1)
+	assert.Equal(t, len(res.Record.Relateds), 0)
+	assert.Equal(t, res.Record.Full, false)
+	// Get a post without full url param //
+
+	// Get a post with full url param //
+	resp = ServeHTTP("GET", "/v1/posts/"+MockPostSlug1+"?full=true", "",
+		"", "")
+	assert.Equal(t, resp.Code, 200)
+	body, _ = ioutil.ReadAll(resp.Result().Body)
+	res = PostResponse{}
+	json.Unmarshal(body, &res)
+	assert.Equal(t, res.Record.ID, PostID1)
+	assert.Equal(t, len(res.Record.Relateds), 1)
+	assert.Equal(t, res.Record.Relateds[0].ID, PostID2)
+	assert.Equal(t, res.Record.Full, true)
+	// Get a post with full url param //
 }
 
 func TestGetPosts(t *testing.T) {
@@ -40,6 +84,7 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, post.Tags[0].ID, TagID)
 	assert.Equal(t, post.Categories[0].ID, CatID)
 	assert.Equal(t, post.IsFeatured, false)
+	assert.Equal(t, post.Full, false)
 
 	post = res.Records[1]
 	assert.Equal(t, post.ID, PostCol1.ID)
@@ -49,6 +94,7 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, len(post.Categories), 1)
 	assert.Equal(t, post.Categories[0].ID, CatID)
 	assert.Equal(t, post.IsFeatured, true)
+	assert.Equal(t, post.Full, false)
 	// End -- Get all the posts //
 
 	// Start -- Get posts with isFeature=true //

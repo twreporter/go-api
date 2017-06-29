@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/models"
@@ -9,77 +10,107 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+func (m *MongoStorage) _StringToPscalCase(str string) (pscalCase string) {
+	isToUpper := true
+	for _, runeValue := range str {
+		if isToUpper {
+			pscalCase += strings.ToUpper(string(runeValue))
+			isToUpper = false
+		} else {
+			if runeValue == '_' {
+				isToUpper = true
+			} else {
+				pscalCase += string(runeValue)
+			}
+		}
+	}
+	return
+}
+
 // GetEmbeddedAsset ...
 func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []string) {
 	if embedded != nil {
 		for _, ele := range embedded {
 			switch ele {
-			case "hero_image":
-				if id := entity.GetHeroImageOrigin(); id != "" {
-					img, err := m.GetImage(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("HeroImage", &img)
+			case "writters", "photographers", "designers", "engineers":
+				assetName := m._StringToPscalCase(ele)
+				if ids := entity.GetEmbeddedAsset(assetName + "Origin"); ids != nil {
+					if len(ids) > 0 {
+						authors, err := m.GetAuthors(ids)
+						if err == nil {
+							entity.SetEmbeddedAsset(assetName, authors)
+						}
 					}
 				}
 				break
-			case "leading_image":
-				if id := entity.GetLeadingImageOrigin(); id != "" {
-					img, err := m.GetImage(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("LeadingImage", &img)
-					}
-				}
-				break
-			case "leading_image_portrait":
-				if id := entity.GetLeadingImagePortraitOrigin(); id != "" {
-					img, err := m.GetImage(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("LeadingImagePortrait", &img)
+			case "hero_image", "leading_image", "leading_image_portrait", "og_image":
+				assetName := m._StringToPscalCase(ele)
+				if ids := entity.GetEmbeddedAsset(assetName + "Origin"); ids != nil {
+					if len(ids) > 0 {
+						img, err := m.GetImage(ids[0])
+						if err == nil {
+							entity.SetEmbeddedAsset(assetName, &img)
+						}
 					}
 				}
 				break
 			case "leading_video":
-				if id := entity.GetLeadingVideoOrigin(); id != "" {
-					video, err := m.GetVideo(id)
-					if err == nil {
-						entity.SetEmbeddedAsset("LeadingVideo", &video)
+				if ids := entity.GetEmbeddedAsset("LeadingVideoOrigin"); ids != nil {
+					if len(ids) > 0 {
+						video, err := m.GetVideo(ids[0])
+						if err == nil {
+							entity.SetEmbeddedAsset("LeadingVideo", &video)
+						}
 					}
 				}
 				break
-			case "og_image":
-				img, err := m.GetImage(entity.GetOgImageOrigin())
-				if err == nil {
-					entity.SetEmbeddedAsset("OgImage", &img)
-				}
-				break
 			case "categories":
-				categories, _ := m.GetCategories(entity.GetCategoriesOrigin())
-				_categories := make([]models.Category, len(categories))
-				for i, v := range categories {
-					_categories[i] = v
+				if ids := entity.GetEmbeddedAsset("CategoriesOrigin"); ids != nil {
+					categories, _ := m.GetCategories(ids)
+					_categories := make([]models.Category, len(categories))
+					for i, v := range categories {
+						_categories[i] = v
+					}
+					entity.SetEmbeddedAsset("Categories", _categories)
 				}
-				entity.SetEmbeddedAsset("Categories", _categories)
 				break
 			case "tags":
-				tags, _ := m.GetTags(entity.GetTagsOrigin())
-				_tags := make([]models.Tag, len(tags))
-				for i, v := range tags {
-					_tags[i] = v
-				}
-				entity.SetEmbeddedAsset("Tags", _tags)
-				break
-			case "relateds_meta":
-				ids := entity.GetRelatedsOrigin()
-				relateds, err := m.GetRelatedsMeta(ids)
-				if err == nil {
-					entity.SetEmbeddedAsset("Relateds", relateds)
+				if ids := entity.GetEmbeddedAsset("TagsOrigin"); ids != nil {
+					tags, _ := m.GetTags(ids)
+					_tags := make([]models.Tag, len(tags))
+					for i, v := range tags {
+						_tags[i] = v
+					}
+					entity.SetEmbeddedAsset("Tags", _tags)
 				}
 				break
-			case "topic_meta":
-				if id := entity.GetTopicOrigin(); id != "" {
-					t, err := m.GetTopicMeta(id)
+			case "relateds":
+				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
+					query := bson.M{
+						"_id": bson.M{
+							"$in": ids,
+						},
+					}
+
+					relateds, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", nil)
+
 					if err == nil {
-						entity.SetEmbeddedAsset("Topic", &t)
+						entity.SetEmbeddedAsset("Relateds", relateds)
+					}
+				}
+				break
+			case "topic":
+				if ids := entity.GetEmbeddedAsset("TopicOrigin"); ids != nil {
+					if len(ids) > 0 {
+						query := bson.M{
+							"_id": ids[0],
+						}
+
+						topics, _, err := m.GetMetaOfTopics(query, 0, 0, "-publishedDate", nil)
+
+						if err == nil {
+							entity.SetEmbeddedAsset("Topic", &topics[0])
+						}
 					}
 				}
 				break
@@ -89,39 +120,6 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 		}
 	}
 	return
-}
-
-func (m *MongoStorage) GetTopicMeta(id bson.ObjectId) (models.Topic, error) {
-
-	query := bson.M{
-		"_id": id,
-	}
-
-	topics, err := m.GetTopics(query, 0, 0, "-publishedDate", []string{"leading_image", "og_image"})
-
-	if err != nil {
-		return models.Topic{}, err
-	}
-
-	return topics[0], nil
-}
-
-// GetRelatedsMeta ...
-func (m *MongoStorage) GetRelatedsMeta(ids []bson.ObjectId) ([]models.PostMeta, error) {
-
-	query := bson.M{
-		"_id": bson.M{
-			"$in": ids,
-		},
-	}
-
-	posts, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", []string{"hero_image", "og_image"})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return posts, nil
 }
 
 // GetCategories ...
@@ -138,7 +136,7 @@ func (m *MongoStorage) GetCategories(ids []bson.ObjectId) ([]models.Category, er
 		},
 	}
 
-	err := m.GetDocuments(query, 0, 0, "_id", "postcategories", &cats)
+	_, err := m.GetDocuments(query, 0, 0, "_id", "postcategories", &cats)
 
 	if err != nil {
 		return nil, m.NewStorageError(err, "GetCategories", "storage.posts.get_categories")
@@ -161,7 +159,7 @@ func (m *MongoStorage) GetTags(ids []bson.ObjectId) ([]models.Tag, error) {
 		},
 	}
 
-	err := m.GetDocuments(query, 0, 0, "_id", "tags", &tags)
+	_, err := m.GetDocuments(query, 0, 0, "_id", "tags", &tags)
 
 	if err != nil {
 		return nil, m.NewStorageError(err, "GetCategories", "storage.posts.get_tags")
@@ -194,4 +192,26 @@ func (m *MongoStorage) GetImage(id bson.ObjectId) (models.Image, error) {
 	}
 
 	return mgoImg.ToImage(), nil
+}
+
+func (m *MongoStorage) GetAuthors(ids []bson.ObjectId) ([]models.Author, error) {
+	var authors []models.Author
+
+	if ids == nil {
+		return authors, nil
+	}
+
+	query := bson.M{
+		"_id": bson.M{
+			"$in": ids,
+		},
+	}
+
+	_, err := m.GetDocuments(query, 0, 0, "_id", "contacts", &authors)
+
+	if err != nil {
+		return authors, err
+	}
+
+	return authors, nil
 }
