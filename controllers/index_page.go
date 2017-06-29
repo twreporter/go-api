@@ -18,15 +18,24 @@ type IndexPageQueryStruct struct {
 	Sort         string
 	Embedded     []string
 	ResourceType string
+	Full         bool
 }
 
 func (nc *NewsController) __GetIndexPageContent(part IndexPageQueryStruct) (interface{}, error) {
 	var entities interface{}
 	var err error
 	if part.ResourceType == "topics" {
-		entities, _, err = nc.Storage.GetFullTopics(part.MongoQuery, part.Limit, part.Offset, part.Sort, nil)
+		if part.Full {
+			entities, _, err = nc.Storage.GetFullTopics(part.MongoQuery, part.Limit, part.Offset, part.Sort, nil)
+		} else {
+			entities, _, err = nc.Storage.GetMetaOfTopics(part.MongoQuery, part.Limit, part.Offset, part.Sort, nil)
+		}
 	} else {
-		entities, _, err = nc.Storage.GetMetaOfPosts(part.MongoQuery, part.Limit, part.Offset, part.Sort, nil)
+		if part.Full {
+			entities, _, err = nc.Storage.GetFullPosts(part.MongoQuery, part.Limit, part.Offset, part.Sort, nil)
+		} else {
+			entities, _, err = nc.Storage.GetMetaOfPosts(part.MongoQuery, part.Limit, part.Offset, part.Sort, nil)
+		}
 	}
 
 	if err != nil {
@@ -72,6 +81,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Offset:       0,
 			Sort:         "-publishedDate",
 			ResourceType: "topics",
+			Full:         true,
 		},
 		constants.ReviewsSection: IndexPageQueryStruct{
 			MongoQuery: models.MongoQuery{
@@ -79,6 +89,36 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 				Style: "review",
 			},
 			Limit:        4,
+			Offset:       0,
+			Sort:         "-publishedDate",
+			ResourceType: "posts",
+		},
+		constants.TopicsSection: IndexPageQueryStruct{
+			MongoQuery: models.MongoQuery{
+				State: "published",
+			},
+			Limit:        4,
+			Offset:       1,
+			Sort:         "-publishedDate",
+			ResourceType: "topics",
+			Full:         false,
+		},
+		constants.PhotoSection: IndexPageQueryStruct{
+			MongoQuery: models.MongoQuery{
+				State: "published",
+				Style: "photography",
+			},
+			Limit:        4,
+			Offset:       0,
+			Sort:         "-publishedDate",
+			ResourceType: "posts",
+		},
+		constants.InfographicSection: IndexPageQueryStruct{
+			MongoQuery: models.MongoQuery{
+				State: "published",
+				Style: "interactive",
+			},
+			Limit:        6,
 			Offset:       0,
 			Sort:         "-publishedDate",
 			ResourceType: "posts",

@@ -21,9 +21,9 @@ const (
 	LastestSection     = "latest"
 	EditorPicksSection = "editor_picks"
 	LatestTopicSection = "latest_topic"
-	TopicsSection      = "topics"
 	ReviewsSection     = "reviews"
-	PhotoSection       = "photos"
 	CategoriesSection  = "categories_posts"
+	TopicsSection      = "topics"
+	PhotoSection       = "photos"
 	InfographicSection = "infographics"
 )
