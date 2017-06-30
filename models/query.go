@@ -31,6 +31,7 @@ type MongoQuery struct {
 	IsFeatured bool                 `bson:"isFeatured,omitempty" json:"is_featured"`
 	Categories MongoQueryComparison `bson:"categories,omitempty" json:"categories"`
 	Tags       MongoQueryComparison `bson:"tags,omitempty" json:"tags"`
+	Topics     MongoQueryComparison `bson:"topics,omitempty" json:"topics"`
 }
 
 // UnmarshalQueryString is type-specific functions of MongoQuery type
