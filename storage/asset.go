@@ -85,6 +85,7 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				}
 				break
 			case "relateds":
+			case "topic_relateds":
 				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
 					query := bson.M{
 						"_id": bson.M{
@@ -92,7 +93,11 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 						},
 					}
 
-					relateds, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", nil)
+					var embedded []string
+					if ele == "topic_relateds" {
+						embedded = []string{"hero_image", "categories", "tags", "og_image"}
+					}
+					relateds, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", embedded)
 
 					if err == nil {
 						entity.SetEmbeddedAsset("Relateds", relateds)

@@ -28,7 +28,7 @@ func (m *MongoStorage) _GetTopics(qs interface{}, limit int, offset int, sort st
 // It will get full topics having ALL the corresponding assets
 func (m *MongoStorage) GetFullTopics(qs interface{}, limit int, offset int, sort string, embedded []string) ([]models.Topic, int, error) {
 	if embedded == nil {
-		embedded = []string{"relateds", "leading_image", "leading_image_portrait", "leading_video", "og_image"}
+		embedded = []string{"topic_relateds", "leading_image", "leading_image_portrait", "leading_video", "og_image"}
 	}
 
 	return m._GetTopics(qs, limit, offset, sort, embedded, true)
