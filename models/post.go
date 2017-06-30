@@ -35,8 +35,7 @@ type Post struct {
 	OgImage             *Image          `bson:"-" json:"og_image,omitempty"`
 	OgImageOrigin       bson.ObjectId   `bson:"og_image" json:"-"`
 	IsFeatured          bool            `bson:"isFeatured" json:"is_featured"`
-	PublishedDate       time.Time       `bson:"publishedDate" json:"published_date"`
-	Topic               *Topic          `bson:"-" json:"topic,omitempty"`
+	Topic               *Topic          `bson:"-" json:"topics,omitempty"`
 	TopicOrigin         bson.ObjectId   `bson:"topics,omitempty" json:"-"`
 	Writters            []Author        `bson:"-" json:"writters,omitempty"`
 	WrittersOrigin      []bson.ObjectId `bson:"writters,omitempty" json:"-"`
@@ -52,5 +51,7 @@ type Post struct {
 	Content             *ContentBody    `bson:"content,omitempty" json:"content,omitempty"`
 	Relateds            []Post          `bson:"-" json:"relateds,omitempty"`
 	RelatedsOrigin      []bson.ObjectId `bson:"relateds,omitempty" json:"-"`
+	PublishedDate       time.Time       `bson:"publishedDate" json:"published_date"`
+	UpdatedAt           time.Time       `bson:"updatedAt" json:"updated_at"`
 	Full                bool            `bson:"-" json:"full"`
 }
