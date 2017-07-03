@@ -26,4 +26,14 @@ const (
 	TopicsSection      = "topics"
 	PhotoSection       = "photos"
 	InfographicSection = "infographics"
+
+	// categories //
+	HumanRights        = "human_rights"
+	LandEnvironment    = "land_environment"
+	TransformedJustice = "transformed_justice"
+	CultureMovie       = "culture_movie"
+	PhotoAudio         = "photo_audio"
+	International      = "international"
+	Character          = "character"
+	PoliticalSociety   = "political_society"
 )

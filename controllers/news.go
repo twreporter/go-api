@@ -52,5 +52,6 @@ func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	group.GET("/topics/:slug", nc.GetATopic)
 
 	group.GET("/index_page", nc.GetIndexPageContents)
+	group.GET("/index_page_categories", nc.GetCategoriesPosts)
 	return group
 }
