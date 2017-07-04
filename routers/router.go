@@ -12,9 +12,9 @@ import (
 func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	engine := gin.Default()
 	engine.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"https://twreporter.org", "https://v2.twreporter.org",
+		AllowOrigins: []string{"https://twreporter.org", "https://dev.twreporter.org",
 			"https://www.twreporter.org", "http://twreporter.org", "http://www.twreporter.org",
-			"http://v2.twreporter.org", "http://localhost:3000"},
+			"http://dev.twreporter.org", "http://localhost:3000"},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "DELETE", "UPDATE"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Authorization", "Accept",
 			"Accept-Encoding", "Client-Security-Token", "X-Requested-With", "x-access-token"},
