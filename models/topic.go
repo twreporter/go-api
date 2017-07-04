@@ -9,10 +9,11 @@ import (
 // Topic ...
 type Topic struct {
 	ID                         bson.ObjectId   `json:"id" bson:"_id"`
-	Slug                       string          `json:"slug"`
+	Slug                       string          `bson:"slug" json:"slug"`
+	Name                       string          `bson:"name" json:"name"`
 	TopicName                  string          `bson:"topic_name" json:"topic_name"`
 	Title                      string          `bson:"title" json:"title"`
-	TitlePosition              string          `bson:"title_position", json:"title_position"`
+	TitlePosition              string          `bson:"title_position" json:"title_position"`
 	Subtitle                   string          `bson:"subtitle" json:"subtitle"`
 	Headline                   string          `bson:"headline" json:"headline"`
 	State                      string          `bson:"state" json:"state"`
