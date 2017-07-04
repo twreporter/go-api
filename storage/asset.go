@@ -84,8 +84,7 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 					entity.SetEmbeddedAsset("Tags", _tags)
 				}
 				break
-			case "relateds":
-			case "topic_relateds":
+			case "relateds", "topic_relateds":
 				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
 					query := bson.M{
 						"_id": bson.M{
