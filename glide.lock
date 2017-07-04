@@ -1,17 +1,20 @@
-hash: 7b309404f78cef1219474779b9630e6d0880ce6c57918df1d48ca35bd4f64e03
-updated: 2017-05-24T15:41:34.833702186+08:00
+hash: bf800b095520a14ecc4d10b8d709848ee7c430624e23c4c40c517c9e6d54e7b7
+updated: 2017-07-04T11:36:02.025680163+08:00
 imports:
 - name: cloud.google.com/go
-  version: 2e6a95edb1071d750f6d7db777bf66cd2997af6c
+  version: a5913b3f7deecba45e98ff33cefbac4fd204ddd7
   subpackages:
   - compute/metadata
-  - internal
 - name: github.com/auth0/go-jwt-middleware
   version: 5493cabe49f7bfa6e2ec444a09d334d90cd4e2bd
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
+- name: github.com/gin-contrib/cors
+  version: cf4846e6a636a76237a28d9286f163c132e841bc
+- name: github.com/gin-contrib/sse
+  version: 22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae
 - name: github.com/gin-gonic/gin
-  version: e2212d40c62a98b388a5eb48ecbdcf88534688ba
+  version: d459835d2b077e44f7c9b453505ee29881d5d12d
   subpackages:
   - binding
   - render
@@ -21,8 +24,6 @@ imports:
   version: 2402d76f3d41f928c7902a765dfc872356dd3aad
   subpackages:
   - proto
-- name: github.com/googleapis/gax-go
-  version: 9af46dd5a1713e8b5cd71106287eba3cefdde50b
 - name: github.com/jinzhu/configor
   version: b7df2005e02e9226447139012db968eda90a4b91
 - name: github.com/jinzhu/gorm
@@ -31,8 +32,6 @@ imports:
   - dialects/mysql
 - name: github.com/jinzhu/inflection
   version: 1c35d901db3da928c72a72d8458480cc9ade058f
-- name: github.com/manucorporat/sse
-  version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
 - name: github.com/mattn/go-isatty
   version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
 - name: github.com/Sirupsen/logrus
@@ -47,6 +46,10 @@ imports:
   version: 0623bd8fbdbf97cc62b98d15108832851a658e59
 - name: github.com/tidwall/match
   version: 173748da739a410c5b0b813b956f89ff94730b4c
+- name: github.com/ugorji/go
+  version: 5efa3251c7f7d05e5d9704a69a984ec9f1386a40
+  subpackages:
+  - codec
 - name: github.com/unrolled/secure
   version: 824e85271811af89640ea25620c67f6c2eed987e
 - name: golang.org/x/crypto
@@ -60,10 +63,6 @@ imports:
   - context
   - context/ctxhttp
   - http2
-  - http2/hpack
-  - internal/timeseries
-  - lex/httplex
-  - trace
 - name: golang.org/x/oauth2
   version: ad516a297a9f2a74ecc244861b298c94bdd28b9d
   subpackages:
@@ -90,32 +89,25 @@ imports:
   - urlfetch
 - name: google.golang.org/grpc
   version: 8050b9cbc271307e5a716a9d782803d09b0d6f2d
-  subpackages:
-  - codes
-  - credentials
-  - grpclog
-  - internal
-  - keepalive
-  - metadata
-  - naming
-  - peer
-  - stats
-  - tap
-  - transport
 - name: gopkg.in/go-playground/validator.v8
   version: c193cecd124b5cc722d7ee5538e945bdb3348435
 - name: gopkg.in/matryer/try.v1
   version: 312d2599e12e89ca89b52a09597394f449235d80
 - name: gopkg.in/mgo.v2
   version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+  subpackages:
+  - bson
+  - internal/json
+  - internal/sasl
+  - internal/scram
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
-  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
   - difflib
