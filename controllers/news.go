@@ -53,5 +53,9 @@ func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 
 	group.GET("/index_page", nc.GetIndexPageContents)
 	group.GET("/index_page_categories", nc.GetCategoriesPosts)
+
+	// endpoints for search
+	group.GET("/search/authors", nc.SearchAuthors)
+	group.GET("/search/posts", nc.SearchPosts)
 	return group
 }

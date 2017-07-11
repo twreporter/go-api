@@ -109,6 +109,12 @@ type OauthSettings struct {
 	GoogleSettings   GoogleSettings
 }
 
+// AgoliaSettings ...
+type AgoliaSettings struct {
+	ApplicationID string
+	APIKey        string
+}
+
 // ConsumerSettings describes who uses this api
 type ConsumerSettings struct {
 	Domain   string
@@ -124,6 +130,7 @@ type EncryptSettings struct {
 
 // Config contains all the other configs
 type Config struct {
+	AgoliaSettings   AgoliaSettings
 	AppSettings      AppSettings
 	EmailSettings    EmailSettings
 	DBSettings       DBSettings
