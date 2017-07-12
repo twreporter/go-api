@@ -9,7 +9,8 @@ import (
 	"twreporter.org/go-api/utils"
 )
 
-func (nc *NewsController) __Search(c *gin.Context, indexName string) {
+// _Search - search records from agolia webservice
+func (nc *NewsController) _Search(c *gin.Context, indexName string) {
 	var err error
 	var hitsPerPage int
 	var page int
@@ -37,10 +38,12 @@ func (nc *NewsController) __Search(c *gin.Context, indexName string) {
 	c.JSON(http.StatusOK, res)
 }
 
+// SearchAuthors - search authors from agolia webservice
 func (nc *NewsController) SearchAuthors(c *gin.Context) {
-	nc.__Search(c, "contacts-index")
+	nc._Search(c, "contacts-index")
 }
 
+// SearchPosts - search posts of authors from agolia webservice
 func (nc *NewsController) SearchPosts(c *gin.Context) {
-	nc.__Search(c, "posts-index")
+	nc._Search(c, "posts-index")
 }
