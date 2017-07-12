@@ -1,10 +1,14 @@
-hash: bf800b095520a14ecc4d10b8d709848ee7c430624e23c4c40c517c9e6d54e7b7
-updated: 2017-07-04T11:36:02.025680163+08:00
+hash: 8cf1087561d84fe2aa35ecfb4ca6b6149cffc179958994420a65304630015508
+updated: 2017-07-11T12:52:35.253326176+08:00
 imports:
 - name: cloud.google.com/go
   version: a5913b3f7deecba45e98ff33cefbac4fd204ddd7
   subpackages:
   - compute/metadata
+- name: github.com/algolia/algoliasearch-client-go
+  version: 7b579b1f56279f85d72c444c6886c278176647fb
+  subpackages:
+  - algoliasearch
 - name: github.com/auth0/go-jwt-middleware
   version: 5493cabe49f7bfa6e2ec444a09d334d90cd4e2bd
 - name: github.com/dgrijalva/jwt-go
