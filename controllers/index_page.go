@@ -13,6 +13,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+// IndexPageQueryStruct struct for querying.
 type IndexPageQueryStruct struct {
 	MongoQuery   models.MongoQuery
 	Limit        int
@@ -23,7 +24,8 @@ type IndexPageQueryStruct struct {
 	Full         bool
 }
 
-func (nc *NewsController) __GetIndexPageContent(part IndexPageQueryStruct) (interface{}, error) {
+// _GetIndexPageContent ...
+func (nc *NewsController) _GetIndexPageContent(part IndexPageQueryStruct) (interface{}, error) {
 	var entities interface{}
 	var err error
 	if part.ResourceType == "topics" {
@@ -48,14 +50,15 @@ func (nc *NewsController) __GetIndexPageContent(part IndexPageQueryStruct) (inte
 	return entities, nil
 }
 
-func (nc *NewsController) __GetContentConcurrently(parts map[string]IndexPageQueryStruct) map[string]interface{} {
-	var ch chan map[string]interface{} = make(chan map[string]interface{})
+// _GetContentConcurrently ...
+func (nc *NewsController) _GetContentConcurrently(parts map[string]IndexPageQueryStruct) map[string]interface{} {
+	var ch = make(chan map[string]interface{})
 	var rtn = make(map[string]interface{})
 
 	for name, part := range parts {
 		// concurrently get the sections
 		go func(name string, part IndexPageQueryStruct) {
-			entities, err := nc.__GetIndexPageContent(part)
+			entities, err := nc._GetIndexPageContent(part)
 			if err == nil {
 				ch <- map[string]interface{}{name: entities}
 			}
@@ -82,7 +85,7 @@ func (nc *NewsController) __GetContentConcurrently(parts map[string]IndexPageQue
 // latest, editor picks, latest topic and reviews.
 func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 	var parts = map[string]IndexPageQueryStruct{
-		constants.LastestSection: IndexPageQueryStruct{
+		constants.LastestSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 			},
@@ -91,7 +94,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Sort:         "-publishedDate",
 			ResourceType: "posts",
 		},
-		constants.EditorPicksSection: IndexPageQueryStruct{
+		constants.EditorPicksSection: {
 			MongoQuery: models.MongoQuery{
 				State:      "published",
 				IsFeatured: true,
@@ -101,7 +104,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Sort:         "-publishedDate",
 			ResourceType: "posts",
 		},
-		constants.LatestTopicSection: IndexPageQueryStruct{
+		constants.LatestTopicSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 			},
@@ -111,7 +114,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			ResourceType: "topics",
 			Full:         true,
 		},
-		constants.ReviewsSection: IndexPageQueryStruct{
+		constants.ReviewsSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 				Style: "review",
@@ -121,7 +124,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Sort:         "-publishedDate",
 			ResourceType: "posts",
 		},
-		constants.TopicsSection: IndexPageQueryStruct{
+		constants.TopicsSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 			},
@@ -131,7 +134,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			ResourceType: "topics",
 			Full:         false,
 		},
-		constants.PhotoSection: IndexPageQueryStruct{
+		constants.PhotoSection: {
 			MongoQuery: models.MongoQuery{
 				State:      "published",
 				Style:      "photography",
@@ -142,7 +145,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Sort:         "-publishedDate",
 			ResourceType: "posts",
 		},
-		constants.InfographicSection: IndexPageQueryStruct{
+		constants.InfographicSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 				Style: "interactive",
@@ -154,14 +157,13 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 		},
 	}
 
-	rtn := nc.__GetContentConcurrently(parts)
+	rtn := nc._GetContentConcurrently(parts)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": rtn})
 }
 
-// GetIndexPageContents is specifically made for index page.
-// It will return the first fourth sections including
-// latest, editor picks, latest topic and reviews.
+// GetCategoriesPosts is specifically made for index page.
+// It will return the posts of all the categories.
 func (nc *NewsController) GetCategoriesPosts(c *gin.Context) {
 	var cats = map[string]string{
 		constants.HumanRights:        configs.HumanRightsListID,
@@ -193,7 +195,7 @@ func (nc *NewsController) GetCategoriesPosts(c *gin.Context) {
 		}
 	}
 
-	rtn := nc.__GetContentConcurrently(parts)
+	rtn := nc._GetContentConcurrently(parts)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": rtn})
 }

@@ -1,6 +1,6 @@
 # TWReporter's Golang Backend API
 
-## Functional Test
+## Testing
 ### Prerequisite
 * Make sure the environment you run the test has a running `MySQL` server and `MongoDB` server
 * Execute the following commands after logining into MySQL server. 
@@ -45,12 +45,6 @@ gin                                     # Run with live-reloading
 ```
 go build
 ./go-api
-```
-
-
-## Testing
-```
-$ go test $(glide novendor)             # run go test over all directories of the project except the vendor directory
 ```
 
 ## RESTful API
@@ -137,7 +131,7 @@ It provides several RESTful web services, including
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
-### Read content of index page in the first screen
+### Read posts of latest, editor picked, latest topic, reviews, topics, photography and infographic sections of index page 
 - URL: `/v1/index_page`
 - Method: `GET`
 - Response:
@@ -166,10 +160,67 @@ It provides several RESTful web services, including
         "reviews": [{
           // post goes here
         }, {
+        } ... ],
+        "topics": [{
+          // topic goes here
+        }, {
+          // topic goes here
+        } ... ],
+        "photos": [{
+          // post goes here
+        }], 
+        "infographics": [{
+          // post goes here
+        },{
+          // post goes here
+        }]
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read posts of character, culture_movie, human_rights, international, land_environment, photo_audio, political_society and transformed_justice categories.
+- URL: `/v1/index_page_categories`
+- Method: `GET`
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": {
+        "character": [{
           // post goes here
         }, {
           // post goes here
-        }, ... ]
+        }, ... ], 
+        "culture_movie": [{
+          // post goes here
+        }, {
+          // post goes here
+        }, ... ],
+        "human_rights": [{
+          // post goes here
+        }, ... ],
+        "international": [{
+          // post goes here
+        }, {
+        } ... ],
+        "land_environment": [{
+          // post goes here
+        }, {
+          // post goes here
+        } ... ],
+        "photo_audio": [{
+          // post goes here
+        }], 
+        "political_society": [{
+          // post goes here
+        } ... ],
+        "transformed_justice": [{
+          // post goes here
+        } ... ],
       },
         "status": "ok"
     }
