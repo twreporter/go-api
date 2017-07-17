@@ -9,7 +9,7 @@ import (
 	"twreporter.org/go-api/utils"
 )
 
-// _Search - search records from agolia webservice
+// _Search - search records from algolia webservice
 func (nc *NewsController) _Search(c *gin.Context, indexName string) {
 	var err error
 	var hitsPerPage int
@@ -21,7 +21,7 @@ func (nc *NewsController) _Search(c *gin.Context, indexName string) {
 	page, err = strconv.Atoi(c.Query("page"))
 	keywords := c.Query("keywords")
 
-	client := algoliasearch.NewClient(utils.Cfg.AgoliaSettings.ApplicationID, utils.Cfg.AgoliaSettings.APIKey)
+	client := algoliasearch.NewClient(utils.Cfg.AlgoliaSettings.ApplicationID, utils.Cfg.AlgoliaSettings.APIKey)
 	index := client.InitIndex(indexName)
 
 	res, err = index.Search(keywords, algoliasearch.Map{
@@ -38,12 +38,12 @@ func (nc *NewsController) _Search(c *gin.Context, indexName string) {
 	c.JSON(http.StatusOK, res)
 }
 
-// SearchAuthors - search authors from agolia webservice
+// SearchAuthors - search authors from algolia webservice
 func (nc *NewsController) SearchAuthors(c *gin.Context) {
 	nc._Search(c, "contacts-index")
 }
 
-// SearchPosts - search posts of authors from agolia webservice
+// SearchPosts - search posts of authors from algolia webservice
 func (nc *NewsController) SearchPosts(c *gin.Context) {
 	nc._Search(c, "posts-index")
 }
