@@ -115,7 +115,7 @@ func (mc *MembershipController) Authenticate(c *gin.Context) {
 }
 
 // Signup create/update a reporter account
-func (mc *MembershipController) Signup(c *gin.Context, mailSender utils.EmailSender) {
+func (mc *MembershipController) Signup(c *gin.Context, mailSender *utils.EmailContext) {
 	var activeToken string
 	var email string
 	var err error

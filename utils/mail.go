@@ -2,31 +2,48 @@ package utils
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"mime"
 	"net/mail"
 	"net/smtp"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 	"twreporter.org/go-api/models"
 )
 
-// EmailSender is an interface to define methods
-type EmailSender interface {
-	Send(to, subject, body string) error
+// EmailStrategy defines an interface to send emails
+type EmailStrategy interface {
+	Send(sender *EmailContext, to, subject, body string) error
 }
 
-// NewSMTPEmailSender ...
-func NewSMTPEmailSender(conf models.EmailSettings) EmailSender {
-	return &smtpEmailSender{conf, smtp.SendMail}
+// EmailContext sends emails by the provided email strategy
+type EmailContext struct {
+	conf  models.EmailSettings
+	email EmailStrategy
 }
 
-type smtpEmailSender struct {
-	conf models.EmailSettings
+// Send sends email using the given strategy
+func (s *EmailContext) Send(to, subject, body string) error {
+	return s.email.Send(s, to, subject, body)
+}
+
+// NewEmailSender ...
+func NewEmailSender(conf models.EmailSettings, email EmailStrategy) *EmailContext {
+	return &EmailContext{conf, email}
+}
+
+// NewSMTPEmailSender use smtp email sending strategy to send email
+func NewSMTPEmailSender(conf models.EmailSettings) *EmailContext {
+	return &EmailContext{conf, &SMTPEmailSender{smtp.SendMail}}
+}
+
+// SMTPEmailSender is an email sending method
+type SMTPEmailSender struct {
 	send func(string, smtp.Auth, string, []string, []byte) error
 }
 
-// Implements EmailSender interface
-func (sender *smtpEmailSender) Send(to, subject, body string) error {
+// Send sends email using the SMTP
+func (s *SMTPEmailSender) Send(sender *EmailContext, to, subject, body string) error {
 	emailSettings := sender.conf
 
 	if len(emailSettings.SMTPServer) == 0 {
@@ -49,14 +66,13 @@ func (sender *smtpEmailSender) Send(to, subject, body string) error {
 
 	message := buildMessage(fromMail.String(), toMail.String(), subject, body)
 
-	err := sender.send(addr, auth, emailSettings.SMTPUsername, []string{to}, []byte(message))
+	err := s.send(addr, auth, emailSettings.SMTPUsername, []string{to}, []byte(message))
 
 	if err != nil {
 		return models.NewAppError("Send", "utils.mail.send_mail", err.Error(), 500)
 	}
 
 	return nil
-
 }
 
 func encodeRFC2047Word(s string) string {
