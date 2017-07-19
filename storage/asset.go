@@ -86,12 +86,11 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				break
 			case "relateds", "topic_relateds":
 				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
-					query := bson.M{
-						"_id": bson.M{
-							"$in": ids,
+					query := models.MongoQuery{
+						IDs: models.MongoQueryComparison{
+							In: ids,
 						},
 					}
-
 					var embedded []string
 					if ele == "topic_relateds" {
 						embedded = []string{"hero_image", "categories", "tags", "og_image"}
@@ -106,8 +105,10 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 			case "topic":
 				if ids := entity.GetEmbeddedAsset("TopicOrigin"); ids != nil {
 					if len(ids) > 0 {
-						query := bson.M{
-							"_id": ids[0],
+						query := models.MongoQuery{
+							IDs: models.MongoQueryComparison{
+								In: ids,
+							},
 						}
 
 						topics, _, err := m.GetMetaOfTopics(query, 0, 0, "-publishedDate", nil)
@@ -121,8 +122,10 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 			case "topic_full":
 				if ids := entity.GetEmbeddedAsset("TopicOrigin"); ids != nil {
 					if len(ids) > 0 {
-						query := bson.M{
-							"_id": ids[0],
+						query := models.MongoQuery{
+							IDs: models.MongoQueryComparison{
+								In: ids,
+							},
 						}
 
 						topics, _, err := m.GetFullTopics(query, 0, 0, "-publishedDate", nil)
@@ -149,9 +152,9 @@ func (m *MongoStorage) GetCategories(ids []bson.ObjectId) ([]models.Category, er
 		return cats, nil
 	}
 
-	query := bson.M{
-		"_id": bson.M{
-			"$in": ids,
+	query := models.MongoQuery{
+		IDs: models.MongoQueryComparison{
+			In: ids,
 		},
 	}
 
@@ -172,9 +175,9 @@ func (m *MongoStorage) GetTags(ids []bson.ObjectId) ([]models.Tag, error) {
 		return tags, nil
 	}
 
-	query := bson.M{
-		"_id": bson.M{
-			"$in": ids,
+	query := models.MongoQuery{
+		IDs: models.MongoQueryComparison{
+			In: ids,
 		},
 	}
 
@@ -220,9 +223,9 @@ func (m *MongoStorage) GetAuthors(ids []bson.ObjectId) ([]models.Author, error) 
 		return authors, nil
 	}
 
-	query := bson.M{
-		"_id": bson.M{
-			"$in": ids,
+	query := models.MongoQuery{
+		IDs: models.MongoQueryComparison{
+			In: ids,
 		},
 	}
 

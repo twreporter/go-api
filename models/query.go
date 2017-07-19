@@ -25,13 +25,14 @@ type MongoQueryComparison struct {
 
 // MongoQuery implements Query interface, which stores the JSON in Query field.
 type MongoQuery struct {
-	State      string               `bson:"state,omitempty"`
-	Slug       string               `bson:"slug,omitempty"`
-	Style      string               `bson:"style,omitempty"`
+	State      string               `bson:"state,omitempty" json:"state"`
+	Slug       string               `bson:"slug,omitempty" json:"slug"`
+	Style      string               `bson:"style,omitempty" json:"style"`
 	IsFeatured bool                 `bson:"isFeatured,omitempty" json:"is_featured"`
 	Categories MongoQueryComparison `bson:"categories,omitempty" json:"categories"`
 	Tags       MongoQueryComparison `bson:"tags,omitempty" json:"tags"`
 	Topics     MongoQueryComparison `bson:"topics,omitempty" json:"topics"`
+	IDs        MongoQueryComparison `bson:"_id,omitempty" json:"ids"`
 }
 
 // UnmarshalQueryString is type-specific functions of MongoQuery type
@@ -40,8 +41,6 @@ func (query *MongoQuery) UnmarshalQueryString(qs string) error {
 		return err
 	}
 
-	// TBD use environment setting to define state
-	query.State = "published"
 	return nil
 }
 

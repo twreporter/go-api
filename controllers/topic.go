@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/models"
 )
 
@@ -17,11 +16,7 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 	var topics []models.Topic
 	var err error
 
-	qs, limit, offset, sort, full := nc.GetQueryParam(c)
-
-	if qs == "" {
-		qs = "{}"
-	}
+	mq, limit, offset, sort, full := nc.GetQueryParam(c)
 
 	if limit == 0 {
 		limit = 10
@@ -32,9 +27,9 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 	}
 
 	if full {
-		topics, total, err = nc.Storage.GetFullTopics(qs, limit, offset, sort, nil)
+		topics, total, err = nc.Storage.GetFullTopics(mq, limit, offset, sort, nil)
 	} else {
-		topics, total, err = nc.Storage.GetMetaOfTopics(qs, limit, offset, sort, nil)
+		topics, total, err = nc.Storage.GetMetaOfTopics(mq, limit, offset, sort, nil)
 	}
 
 	if err != nil {
@@ -60,14 +55,14 @@ func (nc *NewsController) GetATopic(c *gin.Context) {
 	slug := c.Param("slug")
 	full, _ := strconv.ParseBool(c.Query("full"))
 
-	qs := bson.M{
-		"slug": slug,
+	mq := models.MongoQuery{
+		Slug: slug,
 	}
 
 	if full {
-		topics, _, err = nc.Storage.GetFullTopics(qs, 1, 0, "-publishedDate", nil)
+		topics, _, err = nc.Storage.GetFullTopics(mq, 1, 0, "-publishedDate", nil)
 	} else {
-		topics, _, err = nc.Storage.GetMetaOfTopics(qs, 1, 0, "-publishedDate", nil)
+		topics, _, err = nc.Storage.GetMetaOfTopics(mq, 1, 0, "-publishedDate", nil)
 	}
 
 	if err != nil {
