@@ -2,12 +2,18 @@ package storage
 
 import (
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/utils"
 	//log "github.com/Sirupsen/logrus"
 )
 
 // _GetTopics finds the topics according to query string and also get the embedded assets
 func (m *MongoStorage) _GetTopics(mq models.MongoQuery, limit int, offset int, sort string, embedded []string, isFull bool) ([]models.Topic, int, error) {
 	var topics []models.Topic
+
+	if utils.Cfg.Environment == "production" {
+		mq.State = "published"
+	}
+
 	total, err := m.GetDocuments(mq, limit, offset, sort, "topics", &topics)
 
 	if err != nil {

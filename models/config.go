@@ -133,6 +133,7 @@ type Config struct {
 	AlgoliaSettings  AlgoliaSettings
 	AppSettings      AppSettings
 	EmailSettings    EmailSettings
+	Environment      string
 	DBSettings       DBSettings
 	MongoDBSettings  MongoDBSettings
 	OauthSettings    OauthSettings
@@ -168,6 +169,9 @@ func (o *Config) SetDefaults() {
 	}
 	if o.EmailSettings.ConnectionSecurity == "" {
 		o.EmailSettings.ConnectionSecurity = EmailSettingsDefaultConnSecurity
+	}
+	if o.Environment == "" {
+		o.Environment = "production"
 	}
 	if o.EncryptSettings.Salt == "" {
 		o.EncryptSettings.Salt = EncryptSettingsDefaultSalt

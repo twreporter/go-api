@@ -2,18 +2,16 @@ package storage
 
 import (
 	"twreporter.org/go-api/models"
-	//"twreporter.org/go-api/utils"
+	"twreporter.org/go-api/utils"
 )
 
 // _GetPosts finds the posts according to query string and also get the embedded assets
 func (m *MongoStorage) _GetPosts(mq models.MongoQuery, limit int, offset int, sort string, embedded []string, isFull bool) ([]models.Post, int, error) {
 	var posts []models.Post
 
-	/*
-		if utils.Cfg.Environment == "production" {
-			mq.State = "published"
-		}
-	*/
+	if utils.Cfg.Environment == "production" {
+		mq.State = "published"
+	}
 
 	total, err := m.GetDocuments(mq, limit, offset, sort, "posts", &posts)
 
