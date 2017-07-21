@@ -1,0 +1,121 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: thereporter/go-glide:latest
+      - image: circleci/mongo:3.2.13
+      - image: circleci/mysql:5.7
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_DATABASE: gorm
+          MYSQL_HOST: localhost
+          MYSQL_USER: gorm
+          MYSQL_ROOT_HOST: "%"
+
+    working_directory: /go/src/twreporter.org/go-api
+
+    steps:
+      - checkout
+
+      - run:
+          name: Waiting for MySQL to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+
+      - run:
+          name: Configure MySQL Database
+          command: |
+            mysql -u root --host 127.0.0.1 --port 3306 -e \
+            "CREATE USER IF NOT EXISTS 'gorm'@'%' IDENTIFIED BY 'gorm'; CREATE DATABASE IF NOT EXISTS gorm; GRANT ALL ON gorm.* TO 'gorm'@'%';"
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "glide.lock" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: glide install
+
+      - save_cache:
+          paths:
+            - vendor
+          key: v1-dependencies-{{ checksum "glide.lock" }}
+
+      # run tests!
+      - run: go test $(glide novendor)
+
+      - run:
+          name: save SHA to a file
+          command: echo $CIRCLE_SHA1 > .circle-sha
+      - save_cache:
+          key: v1-build-{{ checksum ".circle-sha" }}
+          paths:
+            - /go/src/twreporter.org/go-api
+
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Create working directory
+          command: |
+            sudo mkdir -p /go/src/twreporter.org/go-api
+            sudo chown -R circleci:root /go
+      - run:
+          name: save SHA to a file
+          command: echo $CIRCLE_SHA1 > .circle-sha
+      - restore_cache:
+          keys:
+            - v1-build-{{ checksum ".circle-sha" }}
+
+      - run:
+          name: Install kubectl
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - run:
+          name: Build, push and deploy Docker image
+          command: |
+            cd /go/src/twreporter.org/go-api
+            echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
+
+            # config.json for go-api
+            echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.json
+            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+            export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcp-key.json"
+            if [ "${CIRCLE_BRANCH}" == "feature-news-endpoints" ]; then
+              docker build -t gcr.io/coastal-run-106202/go-api:$CIRCLE_SHA1 .
+              gcloud docker -- push gcr.io/coastal-run-106202/go-api:$CIRCLE_SHA1
+              kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$CIRCLE_SHA1 --container=go-api
+            fi
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - /release-.*/
+                - feature-news-endpoints
