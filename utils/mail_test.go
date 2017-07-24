@@ -31,7 +31,7 @@ func (suite *EmailTestSuite) SetupTest() {
 
 func (suite *EmailTestSuite) TestSendMailFailure() {
 	f := mockSend(errors.New("error"))
-	ctx := NewEmailSender(settings, &SMTPEmailSender{send: f})
+	ctx := NewEmailSender(&SMTPEmailSender{conf: settings, send: f})
 	body := "Hello World"
 	err := ctx.Send("receiver@twreporter.org", "mock subject", body)
 
@@ -40,7 +40,7 @@ func (suite *EmailTestSuite) TestSendMailFailure() {
 
 func (suite *EmailTestSuite) TestSendMailSuccess() {
 	f := mockSend(nil)
-	ctx := NewEmailSender(settings, &SMTPEmailSender{send: f})
+	ctx := NewEmailSender(&SMTPEmailSender{conf: settings, send: f})
 	body := "Hello World"
 	err := ctx.Send("receiver@twreporter.org", "mock subject", body)
 

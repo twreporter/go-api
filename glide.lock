@@ -1,5 +1,5 @@
-hash: 8cf1087561d84fe2aa35ecfb4ca6b6149cffc179958994420a65304630015508
-updated: 2017-07-11T12:52:35.253326176+08:00
+hash: e01cd1be2b6be9404cc7c2e49bce97b7c2f8039e89c6400f495b4423f60ce786
+updated: 2017-07-20T16:19:40.8557862+08:00
 imports:
 - name: cloud.google.com/go
   version: a5913b3f7deecba45e98ff33cefbac4fd204ddd7
@@ -11,6 +11,33 @@ imports:
   - algoliasearch
 - name: github.com/auth0/go-jwt-middleware
   version: 5493cabe49f7bfa6e2ec444a09d334d90cd4e2bd
+- name: github.com/aws/aws-sdk-go
+  version: 8da51c33f6001c4dda06a2561c2234be4cece1ed
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/endpoints
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - internal/shareddefaults
+  - private/protocol
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/xml/xmlutil
+  - service/ses
+  - service/sts
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/gin-contrib/cors
@@ -22,6 +49,8 @@ imports:
   subpackages:
   - binding
   - render
+- name: github.com/go-ini/ini
+  version: 3d73f4b845efdf9989fffd4b4e562727744a34ba
 - name: github.com/go-sql-driver/mysql
   version: a0583e0143b1624142adab07e0e97fe106d99561
 - name: github.com/golang/protobuf
@@ -36,6 +65,8 @@ imports:
   - dialects/mysql
 - name: github.com/jinzhu/inflection
   version: 1c35d901db3da928c72a72d8458480cc9ade058f
+- name: github.com/jmespath/go-jmespath
+  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/mattn/go-isatty
   version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
 - name: github.com/Sirupsen/logrus
