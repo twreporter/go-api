@@ -1,6 +1,4 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+# go-api webservice CircleCI 2.0 configuration file
 #
 version: 2
 jobs:
@@ -90,9 +88,11 @@ jobs:
       - run:
           name: Build, push and deploy Docker image
           command: |
+            # GOOGLE_AUTH, GO_CONFIG, GOOGLE_PROJECT_ID, GOOGLE_COMPUTE_ZONE and GOOGLE_CLUSTER_NAME
+            # is defined in Environment Variables of circleci project
+
             cd /go/src/twreporter.org/go-api
             echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
-
             # config.json for go-api
             echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.json
             gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
