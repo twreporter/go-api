@@ -140,15 +140,17 @@ type EncryptSettings struct {
 
 // Config contains all the other configs
 type Config struct {
-	AlgoliaSettings    AlgoliaSettings
-	AppSettings        AppSettings
-	EmailSettings      EmailSettings
-	AmazonMailSettings AmazonMailSettings
-	DBSettings         DBSettings
-	MongoDBSettings    MongoDBSettings
-	OauthSettings      OauthSettings
-	ConsumerSettings   ConsumerSettings
-	EncryptSettings    EncryptSettings
+
+	AlgoliaSettings  AlgoliaSettings
+ 	AmazonMailSettings AmazonMailSettings
+	AppSettings      AppSettings
+	EmailSettings    EmailSettings
+	Environment      string
+	DBSettings       DBSettings
+	MongoDBSettings  MongoDBSettings
+	OauthSettings    OauthSettings
+	ConsumerSettings ConsumerSettings
+	EncryptSettings  EncryptSettings
 }
 
 // SetDefaults could set default value in the Config struct
@@ -180,8 +182,14 @@ func (o *Config) SetDefaults() {
 	if o.EmailSettings.ConnectionSecurity == "" {
 		o.EmailSettings.ConnectionSecurity = EmailSettingsDefaultConnSecurity
 	}
+
+	if o.Environment == "" {
+		o.Environment = "production"
+	}
+
 	if o.AmazonMailSettings.CharSet == "" {
 		o.AmazonMailSettings.CharSet = AmazonMailSettingsDefaultCharSet
+
 	}
 	if o.EncryptSettings.Salt == "" {
 		o.EncryptSettings.Salt = EncryptSettingsDefaultSalt

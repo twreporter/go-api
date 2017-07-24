@@ -184,6 +184,9 @@ func (pm *Post) GetEmbeddedAsset(key string) []bson.ObjectId {
 		}
 		return nil
 	case "LeadingImagePortraitOrigin":
+		if pm.LeadingImagePortraitOrigin != "" {
+			return append(rtn, pm.LeadingImagePortraitOrigin)
+		}
 		return nil
 	case "TopicOrigin":
 		if pm.TopicOrigin != "" {

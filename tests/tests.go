@@ -239,6 +239,7 @@ func SetMgoDefaultRecords() {
 	PostCol2.Style = "review"
 	PostCol2.PublishedDate = time.Now()
 	PostCol2.HeroImageOrigin = ImgID2
+	PostCol2.LeadingImagePortraitOrigin = ImgID1
 	PostCol2.OgImageOrigin = ImgID2
 	PostCol2.IsFeatured = false
 	PostCol2.TagsOrigin = []bson.ObjectId{TagID}
