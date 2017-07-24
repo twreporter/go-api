@@ -31,18 +31,18 @@ func (suite *EmailTestSuite) SetupTest() {
 
 func (suite *EmailTestSuite) TestSendMailFailure() {
 	f := mockSend(errors.New("error"))
-	sender := &smtpEmailSender{conf: settings, send: f}
+	ctx := NewEmailSender(&SMTPEmailSender{conf: settings, send: f})
 	body := "Hello World"
-	err := sender.Send("receiver@twreporter.org", "mock subject", body)
+	err := ctx.Send("receiver@twreporter.org", "mock subject", body)
 
 	assert.NotNil(suite.T(), err)
 }
 
 func (suite *EmailTestSuite) TestSendMailSuccess() {
 	f := mockSend(nil)
-	sender := &smtpEmailSender{conf: settings, send: f}
+	ctx := NewEmailSender(&SMTPEmailSender{conf: settings, send: f})
 	body := "Hello World"
-	err := sender.Send("receiver@twreporter.org", "mock subject", body)
+	err := ctx.Send("receiver@twreporter.org", "mock subject", body)
 
 	assert.Nil(suite.T(), err)
 }

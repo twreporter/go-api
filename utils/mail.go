@@ -2,32 +2,59 @@ package utils
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"mime"
 	"net/mail"
 	"net/smtp"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 	"twreporter.org/go-api/models"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ses"
 )
 
-// EmailSender is an interface to define methods
-type EmailSender interface {
+// EmailStrategy defines an interface to send emails
+type EmailStrategy interface {
 	Send(to, subject, body string) error
 }
 
-// NewSMTPEmailSender ...
-func NewSMTPEmailSender(conf models.EmailSettings) EmailSender {
-	return &smtpEmailSender{conf, smtp.SendMail}
+// EmailContext sends emails by the provided email strategy
+type EmailContext struct {
+	email EmailStrategy
 }
 
-type smtpEmailSender struct {
+// Send sends email using the given strategy
+func (s *EmailContext) Send(to, subject, body string) error {
+	return s.email.Send(to, subject, body)
+}
+
+// NewEmailSender ...
+func NewEmailSender(email EmailStrategy) *EmailContext {
+	return &EmailContext{email}
+}
+
+// NewSMTPEmailSender use smtp email sending strategy to send email
+func NewSMTPEmailSender() *EmailContext {
+	return &EmailContext{&SMTPEmailSender{conf: Cfg.EmailSettings, send: smtp.SendMail}}
+}
+
+// NewAmazonEmailSender use Amazon SES email sending strategy to send email
+func NewAmazonEmailSender() *EmailContext {
+	return &EmailContext{&AmazonMailSender{conf: Cfg.AmazonMailSettings}}
+}
+
+// SMTPEmailSender is an email sending method
+type SMTPEmailSender struct {
 	conf models.EmailSettings
 	send func(string, smtp.Auth, string, []string, []byte) error
 }
 
-// Implements EmailSender interface
-func (sender *smtpEmailSender) Send(to, subject, body string) error {
-	emailSettings := sender.conf
+// Send sends email using the SMTP
+func (s *SMTPEmailSender) Send(to, subject, body string) error {
+	emailSettings := s.conf
 
 	if len(emailSettings.SMTPServer) == 0 {
 		log.Info("utils.mail.send: SMTPServer is not set")
@@ -49,14 +76,13 @@ func (sender *smtpEmailSender) Send(to, subject, body string) error {
 
 	message := buildMessage(fromMail.String(), toMail.String(), subject, body)
 
-	err := sender.send(addr, auth, emailSettings.SMTPUsername, []string{to}, []byte(message))
+	err := s.send(addr, auth, emailSettings.SMTPUsername, []string{to}, []byte(message))
 
 	if err != nil {
 		return models.NewAppError("Send", "utils.mail.send_mail", err.Error(), 500)
 	}
 
 	return nil
-
 }
 
 func encodeRFC2047Word(s string) string {
@@ -120,4 +146,83 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 		}
 	}
 	return nil, nil
+}
+
+// AmazonMailSender is an email sending method (using Amazon SES to semd mails)
+type AmazonMailSender struct {
+	conf models.AmazonMailSettings
+}
+
+// Send sends email using the SMTP
+func (s *AmazonMailSender) Send(to, subject, body string) error {
+	emailSettings := s.conf
+
+	if len(emailSettings.Sender) == 0 {
+		log.Info("utils.mail.send: Sender is not set")
+		return nil
+	}
+
+	// Create a new session and specify an AWS Region.
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(emailSettings.AwsRegion)},
+	)
+
+	// Create an SES client in the session.
+	svc := ses.New(sess)
+
+	// Assemble the email.
+	input := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			CcAddresses: []*string{},
+			ToAddresses: []*string{
+				aws.String(to),
+			},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Html: &ses.Content{
+					Charset: aws.String(emailSettings.CharSet),
+					Data:    aws.String(body), // HTML body
+				},
+				Text: &ses.Content{
+					Charset: aws.String(emailSettings.CharSet),
+					Data:    aws.String(body), // text body, i.e., the email body for recipients with non-HTML email clients
+				},
+			},
+			Subject: &ses.Content{
+				Charset: aws.String(emailSettings.CharSet),
+				Data:    aws.String(subject),
+			},
+		},
+		Source: aws.String(emailSettings.Sender),
+	}
+
+	// Attempt to send the email.
+	result, err := svc.SendEmail(input)
+
+	log.WithFields(log.Fields{
+		"to":          to,
+		"subject":     subject,
+		"body":        body,
+		"emailConfig": emailSettings,
+		"results":     result,
+	}).Debug("utils.mail.send")
+
+	// Display error messages if they occur.
+	if err != nil {
+		ec := ""
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case ses.ErrCodeMessageRejected:
+				ec = ses.ErrCodeMessageRejected + ": "
+			case ses.ErrCodeMailFromDomainNotVerifiedException:
+				ec = ses.ErrCodeMailFromDomainNotVerifiedException + ": "
+			case ses.ErrCodeConfigurationSetDoesNotExistException:
+				ec = ses.ErrCodeConfigurationSetDoesNotExistException + ": "
+			}
+		}
+		return models.NewAppError("Send", "utils.mail.send_mail", ec+err.Error(), 500)
+	}
+
+	return nil
 }
