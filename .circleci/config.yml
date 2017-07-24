@@ -5,7 +5,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: thereporter/go-glide:latest
+      - image: thereporter/circleci-go-api:latest
       - image: circleci/mongo:3.2.13
       - image: circleci/mysql:5.7
         environment:
