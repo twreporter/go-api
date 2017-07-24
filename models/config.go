@@ -142,7 +142,7 @@ type EncryptSettings struct {
 type Config struct {
 
 	AlgoliaSettings  AlgoliaSettings
-  AmazonMailSettings AmazonMailSettings
+ 	AmazonMailSettings AmazonMailSettings
 	AppSettings      AppSettings
 	EmailSettings    EmailSettings
 	Environment      string
@@ -185,6 +185,7 @@ func (o *Config) SetDefaults() {
 
 	if o.Environment == "" {
 		o.Environment = "production"
+	}
 
 	if o.AmazonMailSettings.CharSet == "" {
 		o.AmazonMailSettings.CharSet = AmazonMailSettingsDefaultCharSet
