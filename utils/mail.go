@@ -18,7 +18,7 @@ import (
 
 // EmailStrategy defines an interface to send emails
 type EmailStrategy interface {
-	Send(sender *EmailContext, to, subject, body string) error
+	Send(to, subject, body string) error
 }
 
 // EmailContext sends emails by the provided email strategy
@@ -28,7 +28,7 @@ type EmailContext struct {
 
 // Send sends email using the given strategy
 func (s *EmailContext) Send(to, subject, body string) error {
-	return s.email.Send(s, to, subject, body)
+	return s.email.Send(to, subject, body)
 }
 
 // NewEmailSender ...
@@ -53,7 +53,7 @@ type SMTPEmailSender struct {
 }
 
 // Send sends email using the SMTP
-func (s *SMTPEmailSender) Send(sender *EmailContext, to, subject, body string) error {
+func (s *SMTPEmailSender) Send(to, subject, body string) error {
 	emailSettings := s.conf
 
 	if len(emailSettings.SMTPServer) == 0 {
@@ -154,7 +154,7 @@ type AmazonMailSender struct {
 }
 
 // Send sends email using the SMTP
-func (s *AmazonMailSender) Send(sender *EmailContext, to, subject, body string) error {
+func (s *AmazonMailSender) Send(to, subject, body string) error {
 	emailSettings := s.conf
 
 	if len(emailSettings.Sender) == 0 {
