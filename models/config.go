@@ -49,6 +49,9 @@ const (
 
 	// EncryptSettingsDefaultSalt default salt for encryption
 	EncryptSettingsDefaultSalt = "@#$%"
+
+	// AmazonMailSettingsDefaultCharSet sets the default charset
+	AmazonMailSettingsDefaultCharSet = "UTF-8"
 )
 
 // AppSettings could be defined in configs/config.json
@@ -69,6 +72,13 @@ type EmailSettings struct {
 	SMTPServerOwner    string
 	FeedbackName       string
 	FeedbackEmail      string
+}
+
+// AmazonMailSettings could be defined in configs/config.json
+type AmazonMailSettings struct {
+	Sender    string
+	AwsRegion string
+	CharSet   string
 }
 
 // DBSettings could be defined in configs/config.json
@@ -130,7 +140,9 @@ type EncryptSettings struct {
 
 // Config contains all the other configs
 type Config struct {
+
 	AlgoliaSettings  AlgoliaSettings
+  AmazonMailSettings AmazonMailSettings
 	AppSettings      AppSettings
 	EmailSettings    EmailSettings
 	Environment      string
@@ -170,8 +182,13 @@ func (o *Config) SetDefaults() {
 	if o.EmailSettings.ConnectionSecurity == "" {
 		o.EmailSettings.ConnectionSecurity = EmailSettingsDefaultConnSecurity
 	}
+
 	if o.Environment == "" {
 		o.Environment = "production"
+
+	if o.AmazonMailSettings.CharSet == "" {
+		o.AmazonMailSettings.CharSet = AmazonMailSettingsDefaultCharSet
+
 	}
 	if o.EncryptSettings.Salt == "" {
 		o.EncryptSettings.Salt = EncryptSettingsDefaultSalt

@@ -15,6 +15,11 @@
     "FeedbackName": "報導者 The Reporter",
     "FeedbackEmail": "contact@twreporter.org"
   },
+  "AmazonMailSettings": {
+    "Sender": "no-reply@twreporter.org",
+    "AwsRegion": "",
+    "CharSet": "UTF-8"
+  },
   "DBSettings": {
     "Name":     "test_membership",
     "User":     "",
