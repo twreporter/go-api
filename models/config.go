@@ -140,17 +140,16 @@ type EncryptSettings struct {
 
 // Config contains all the other configs
 type Config struct {
-
-	AlgoliaSettings  AlgoliaSettings
- 	AmazonMailSettings AmazonMailSettings
-	AppSettings      AppSettings
-	EmailSettings    EmailSettings
-	Environment      string
-	DBSettings       DBSettings
-	MongoDBSettings  MongoDBSettings
-	OauthSettings    OauthSettings
-	ConsumerSettings ConsumerSettings
-	EncryptSettings  EncryptSettings
+	AlgoliaSettings    AlgoliaSettings
+	AmazonMailSettings AmazonMailSettings
+	AppSettings        AppSettings
+	EmailSettings      EmailSettings
+	Environment        string
+	DBSettings         DBSettings
+	MongoDBSettings    MongoDBSettings
+	OauthSettings      OauthSettings
+	ConsumerSettings   ConsumerSettings
+	EncryptSettings    EncryptSettings
 }
 
 // SetDefaults could set default value in the Config struct
