@@ -113,7 +113,7 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 
 						topics, _, err := m.GetMetaOfTopics(query, 0, 0, "-publishedDate", nil)
 
-						if err == nil {
+						if err == nil && len(topics) > 0 {
 							entity.SetEmbeddedAsset("Topic", &topics[0])
 						}
 					}
@@ -130,7 +130,7 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 
 						topics, _, err := m.GetFullTopics(query, 0, 0, "-publishedDate", nil)
 
-						if err == nil {
+						if err == nil && len(topics) > 0 {
 							entity.SetEmbeddedAsset("Topic", &topics[0])
 						}
 					}
