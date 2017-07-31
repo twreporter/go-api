@@ -18,22 +18,20 @@ const (
 	Activate = "activate"
 
 	// index page sections //
-	LastestSection     = "latest"
-	EditorPicksSection = "editor_picks"
-	LatestTopicSection = "latest_topic"
-	ReviewsSection     = "reviews"
-	CategoriesSection  = "categories_posts"
-	TopicsSection      = "topics"
-	PhotoSection       = "photos"
-	InfographicSection = "infographics"
+	LastestSection     = "latest_section"
+	EditorPicksSection = "editor_picks_section"
+	LatestTopicSection = "latest_topic_section"
+	ReviewsSection     = "reviews_section"
+	CategoriesSection  = "categories_posts_section"
+	TopicsSection      = "topics_section"
+	PhotoSection       = "photos_section"
+	InfographicSection = "infographics_section"
 
-	// categories //
-	HumanRights        = "human_rights"
-	LandEnvironment    = "land_environment"
-	TransformedJustice = "transformed_justice"
-	CultureMovie       = "culture_movie"
-	PhotoAudio         = "photo_audio"
-	International      = "international"
-	Character          = "character"
-	PoliticalSociety   = "political_society"
+	// index page categories
+	HumanRightsAndSociety   = "human_rights_society"
+	EnvironmentAndEducation = "environment_education"
+	PoliticsAndEconomy      = "politics_economy"
+	CultureAndArt           = "culture_art"
+	International           = "international"
+	LivingAndMedicalCare    = "living_medical_care"
 )

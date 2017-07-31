@@ -166,14 +166,12 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 // It will return the posts of all the categories.
 func (nc *NewsController) GetCategoriesPosts(c *gin.Context) {
 	var cats = map[string]string{
-		constants.HumanRights:        configs.HumanRightsListID,
-		constants.LandEnvironment:    configs.LandEnvironmentListID,
-		constants.TransformedJustice: configs.TransformedJusticeListID,
-		constants.CultureMovie:       configs.CultureMovieListID,
-		constants.PhotoAudio:         configs.PhotoAudioListID,
-		constants.International:      configs.InternationalListID,
-		constants.Character:          configs.CharacterListID,
-		constants.PoliticalSociety:   configs.PoliticalSocietyListID,
+		constants.HumanRightsAndSociety:   configs.HumanRightsAndSocietyListID,
+		constants.EnvironmentAndEducation: configs.EnvironmentAndEducationListID,
+		constants.PoliticsAndEconomy:      configs.PoliticsAndEconomyListID,
+		constants.CultureAndArt:           configs.CultureAndArtListID,
+		constants.International:           configs.InternationalListID,
+		constants.LivingAndMedicalCare:    configs.LivingAndMedicalCareListID,
 	}
 
 	var parts = make(map[string]IndexPageQueryStruct)
