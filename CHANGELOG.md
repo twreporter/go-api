@@ -1,3 +1,6 @@
+### 1.0.4
+- Bug fix. Avoid fetching all the records if ids is an empty array instead of nil value
+
 ### 1.0.3
 - Allow any request in development environment
 - Update categories 
