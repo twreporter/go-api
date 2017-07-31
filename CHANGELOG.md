@@ -1,3 +1,7 @@
+### 1.0.3
+- Allow any request in development environment
+- Update categories 
+
 ### 1.0.2
 - Return leading_image_portrait field in post model.
 - Add AmazonSES service to send mails.
