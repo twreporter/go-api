@@ -66,39 +66,45 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				break
 			case "categories":
 				if ids := entity.GetEmbeddedAsset("CategoriesOrigin"); ids != nil {
-					categories, _ := m.GetCategories(ids)
-					_categories := make([]models.Category, len(categories))
-					for i, v := range categories {
-						_categories[i] = v
+					if len(ids) > 0 {
+						categories, _ := m.GetCategories(ids)
+						_categories := make([]models.Category, len(categories))
+						for i, v := range categories {
+							_categories[i] = v
+						}
+						entity.SetEmbeddedAsset("Categories", _categories)
 					}
-					entity.SetEmbeddedAsset("Categories", _categories)
 				}
 				break
 			case "tags":
 				if ids := entity.GetEmbeddedAsset("TagsOrigin"); ids != nil {
-					tags, _ := m.GetTags(ids)
-					_tags := make([]models.Tag, len(tags))
-					for i, v := range tags {
-						_tags[i] = v
+					if len(ids) > 0 {
+						tags, _ := m.GetTags(ids)
+						_tags := make([]models.Tag, len(tags))
+						for i, v := range tags {
+							_tags[i] = v
+						}
+						entity.SetEmbeddedAsset("Tags", _tags)
 					}
-					entity.SetEmbeddedAsset("Tags", _tags)
 				}
 				break
 			case "relateds", "topic_relateds":
 				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
-					query := models.MongoQuery{
-						IDs: models.MongoQueryComparison{
-							In: ids,
-						},
-					}
-					var embedded []string
-					if ele == "topic_relateds" {
-						embedded = []string{"hero_image", "categories", "tags", "og_image"}
-					}
-					relateds, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", embedded)
+					if len(ids) > 0 {
+						query := models.MongoQuery{
+							IDs: models.MongoQueryComparison{
+								In: ids,
+							},
+						}
+						var embedded []string
+						if ele == "topic_relateds" {
+							embedded = []string{"hero_image", "categories", "tags", "og_image"}
+						}
+						relateds, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", embedded)
 
-					if err == nil {
-						entity.SetEmbeddedAsset("Relateds", relateds)
+						if err == nil {
+							entity.SetEmbeddedAsset("Relateds", relateds)
+						}
 					}
 				}
 				break
