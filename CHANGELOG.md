@@ -1,3 +1,6 @@
+### 1.0.6
+- Add Access-Control-Allow-Origin in response header
+
 ### 1.0.5
 - Fix Typo. 
 
