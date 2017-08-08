@@ -1,3 +1,6 @@
+### 1.0.7
+- Set Access-Control-Allow-Origin: https://www.twreporter.org 
+
 ### 1.0.6
 - Add Access-Control-Allow-Origin in response header
 
