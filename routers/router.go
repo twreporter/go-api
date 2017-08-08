@@ -17,6 +17,9 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 			"https://www.twreporter.org", "http://twreporter.org", "http://www.twreporter.org",
 			"http://dev.twreporter.org"}
 		engine.Use(cors.New(config))
+		engine.Use(func(c *gin.Context) {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "http://www.twreporter.org")
+		})
 	} else {
 		// TODO: use cors.Default() after new version of github.com/gin-contrib/cors
 		engine.Use(func(c *gin.Context) {
