@@ -60,7 +60,7 @@ func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), nc.GetATopic)
 
 	group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), nc.GetIndexPageContents)
-	group.GET("/index_page_categories", middlewares.SetCacheControl("publuc,max-age=1800"), nc.GetCategoriesPosts)
+	group.GET("/index_page_categories", middlewares.SetCacheControl("public,max-age=1800"), nc.GetCategoriesPosts)
 
 	// endpoints for search
 	group.GET("/search/authors", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchAuthors)
