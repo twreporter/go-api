@@ -1,3 +1,6 @@
+### 1.0.5
+- Fix Typo. 
+
 ### 1.0.4
 - Bug fix. Avoid fetching all the records if ids is an empty array instead of nil value
 
