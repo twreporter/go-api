@@ -41,7 +41,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/gin-contrib/cors
-  version: cf4846e6a636a76237a28d9286f163c132e841bc
+  version: 567de191692713543513692ecba9f6ca08cd660a
 - name: github.com/gin-contrib/sse
   version: 22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae
 - name: github.com/gin-gonic/gin
