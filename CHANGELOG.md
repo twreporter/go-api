@@ -1,3 +1,6 @@
+### 1.0.9 
+- Hot Fix. Add hard coded  Access-Control-Allow-Origin in response header
+
 ### 1.0.8
 - Upgrade github.com/gin-contrib/cors to the latest commit to fix the cors problem
 
