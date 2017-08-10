@@ -91,7 +91,8 @@ jobs:
       - run:
           name: Build, push and deploy Docker image
           command: |
-            # GOOGLE_AUTH, GO_CONFIG, GOOGLE_PROJECT_ID, GOOGLE_COMPUTE_ZONE and GOOGLE_CLUSTER_NAME
+            # GOOGLE_AUTH, GO_CONFIG, GOOGLE_PROJECT_ID, GOOGLE_COMPUTE_ZONE,
+            # GOOGLE_STAGING_CLUSTER_NAME and GOOGLE_CLUSTER_NAME
             # is defined in Environment Variables of circleci project
 
             cd /go/src/twreporter.org/go-api
@@ -102,13 +103,19 @@ jobs:
             gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
             export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcp-key.json"
-            if [ "${CIRCLE_BRANCH}" == "feature-news-endpoints" ]; then
+            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
+              gcloud --quiet container clusters get-credentials ${GOOGLE_STAGING_CLUSTER_NAME}
               docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
               gcloud docker -- push gcr.io/coastal-run-106202/go-api:$PKG_VER
               kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$PKG_VER --container=go-api
             fi
+
+            if [ "${CIRCLE_BRANCH}" == "release" ]; then
+              gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+              kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$PKG_VER --container=go-api
+            fi
+
 
 workflows:
   version: 2
@@ -121,5 +128,5 @@ workflows:
           filters:
             branches:
               only:
-                - /release-.*/
-                - feature-news-endpoints
+                - release
+                - staging
