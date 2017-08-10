@@ -107,7 +107,7 @@ func TestActivateRegistration(t *testing.T) {
 	loc, _ := resp.Result().Location()
 	assert.Equal(t, loc.String(), "https://www.twreporter.org/activate")
 
-	ms := storage.NewMembershipStorage(DB)
+	ms := storage.NewGormStorage(DB)
 	reg, _ := ms.GetRegistration(DefaultAccount, "default_service")
 	assert.Equal(t, reg.Active, true)
 }

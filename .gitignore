@@ -8,5 +8,6 @@ build
 .DS_Store
 go-api*
 gin-bin*
-config.yml
 configs/config.json
+cloud_sql_proxy
+dump.rdb

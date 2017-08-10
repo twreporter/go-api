@@ -49,6 +49,9 @@ const (
 
 	// EncryptSettingsDefaultSalt default salt for encryption
 	EncryptSettingsDefaultSalt = "@#$%"
+
+	// AmazonMailSettingsDefaultCharSet sets the default charset
+	AmazonMailSettingsDefaultCharSet = "UTF-8"
 )
 
 // AppSettings could be defined in configs/config.json
@@ -71,6 +74,13 @@ type EmailSettings struct {
 	FeedbackEmail      string
 }
 
+// AmazonMailSettings could be defined in configs/config.json
+type AmazonMailSettings struct {
+	Sender    string
+	AwsRegion string
+	CharSet   string
+}
+
 // DBSettings could be defined in configs/config.json
 type DBSettings struct {
 	Name     string
@@ -78,6 +88,13 @@ type DBSettings struct {
 	Password string
 	Address  string
 	Port     string
+}
+
+// MongoDBSettings ...
+type MongoDBSettings struct {
+	URL     string
+	DBName  string
+	Timeout int
 }
 
 // FacebookSettings could be defined in configs/config.json
@@ -102,6 +119,12 @@ type OauthSettings struct {
 	GoogleSettings   GoogleSettings
 }
 
+// AlgoliaSettings ...
+type AlgoliaSettings struct {
+	ApplicationID string
+	APIKey        string
+}
+
 // ConsumerSettings describes who uses this api
 type ConsumerSettings struct {
 	Domain   string
@@ -117,12 +140,16 @@ type EncryptSettings struct {
 
 // Config contains all the other configs
 type Config struct {
-	AppSettings      AppSettings
-	EmailSettings    EmailSettings
-	DBSettings       DBSettings
-	OauthSettings    OauthSettings
-	ConsumerSettings ConsumerSettings
-	EncryptSettings  EncryptSettings
+	AlgoliaSettings    AlgoliaSettings
+	AmazonMailSettings AmazonMailSettings
+	AppSettings        AppSettings
+	EmailSettings      EmailSettings
+	Environment        string
+	DBSettings         DBSettings
+	MongoDBSettings    MongoDBSettings
+	OauthSettings      OauthSettings
+	ConsumerSettings   ConsumerSettings
+	EncryptSettings    EncryptSettings
 }
 
 // SetDefaults could set default value in the Config struct
@@ -153,6 +180,15 @@ func (o *Config) SetDefaults() {
 	}
 	if o.EmailSettings.ConnectionSecurity == "" {
 		o.EmailSettings.ConnectionSecurity = EmailSettingsDefaultConnSecurity
+	}
+
+	if o.Environment == "" {
+		o.Environment = "production"
+	}
+
+	if o.AmazonMailSettings.CharSet == "" {
+		o.AmazonMailSettings.CharSet = AmazonMailSettingsDefaultCharSet
+
 	}
 	if o.EncryptSettings.Salt == "" {
 		o.EncryptSettings.Salt = EncryptSettingsDefaultSalt

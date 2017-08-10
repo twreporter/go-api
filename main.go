@@ -49,12 +49,13 @@ func main() {
 		}
 	}()
 
-	// set up database connection
-	db, _ := utils.InitDB(10, 5)
-	db.LogMode(true)
-	defer db.Close()
+	cf, err := controllers.NewControllerFactory()
 
-	cf := controllers.NewControllerFactory(db)
+	if err != nil {
+		panic(err)
+	}
+
+	defer cf.Close()
 
 	// set up the router
 	router := routers.SetupRouter(cf)
@@ -63,8 +64,9 @@ func main() {
 	s := &http.Server{
 		Addr:         ":8080",
 		Handler:      router,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
 	}
 	s.ListenAndServe()
+
 }

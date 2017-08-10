@@ -36,3 +36,18 @@ import:
   - http2
   - context
 - package: gopkg.in/matryer/try.v1
+- package: gopkg.in/mgo.v2
+- package: github.com/gin-contrib/cors
+  version: ^1.2.0
+- package: github.com/gin-contrib/sse
+- package: github.com/algolia/algoliasearch-client-go
+  version: ^2.15.0
+  subpackages:
+  - algoliasearch
+- package: github.com/aws/aws-sdk-go
+  version: ^1.10.13
+  subpackages:
+  - aws/session
+  - aws
+  - service/ses
+  - aws/awserr

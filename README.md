@@ -1,9 +1,9 @@
 # TWReporter's Golang Backend API
 
-## Functional Test
+## Testing
 ### Prerequisite
-* Make sure the environment you run the test has a running mysql server
-* Execute the following commands in mysql.
+* Make sure the environment you run the test has a running `MySQL` server and `MongoDB` server
+* Execute the following commands after logining into MySQL server. 
 ```
 CREATE USER 'gorm'@'localhost' IDENTIFIED BY 'gorm';
 CREATE DATABASE gorm;
@@ -47,20 +47,263 @@ go build
 ./go-api
 ```
 
-
-## Testing
-```
-$ go test $(glide novendor)             # run go test over all directories of the project except the vendor directory
-```
-
 ## RESTful API
 `go-api` is a RESTful API built by golang.
 
 It provides several RESTful web services, including
 - User login/logout/signup
+- Read posts
+- Read topics
+- Read the combination of sections of index page
 - Create/Read/Update/Delete bookmarks of a user
 - Create/Read/Update/Delete registration(s)
 - Create/Read/Update/Delete service(s)
+
+### Read posts
+- URL: `/v1/posts`
+- Method: `GET`
+- URL param:
+  * Optional:
+  `
+  where=[string]
+  offset=[integer]
+  limit=[integer]
+  sort=[string] 
+  full=[boolean]
+  `
+  * Explain:
+  `offset`: the number you want to skip
+  `limit`: the number you want server to return
+  `sort`: the field to sort by in the returned records
+  `full`: if true, each record in the returued records will have all the embedded assets
+
+  * example:
+  `?where={"tags":{"$in":"57bab17eab5c6c0f00db77d1"}}&offset=10&limit=10&sort=-publishedDate&full=true` <br />
+  this example will get 10 full records tagged by 57bab17eab5c6c0f00db77d1 and sorted by publishedDate ascendingly.
+
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": [{
+        // post data structure goes here
+      }],
+        "status": "ok"
+    }
+    ```
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read topics
+- URL: `/v1/topics`
+- Method: `GET`
+- URL param:
+  * Optional:
+  `
+  where=[string]
+  offset=[integer]
+  limit=[integer]
+  sort=[string] 
+  full=[boolean]
+  `
+  * Explain:
+  `offset`: the number you want to skip
+  `limit`: the number you want server to return
+  `sort`: the field to sort by in the returned records
+  `full`: if true, each record in the returued records will have all the embedded assets
+
+  * example:
+  `?where={"slug":"far-sea-fishing-investigative-report"}&full=true` <br />
+  this example will get 1 full topic.
+
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": [{
+        // topic goes here
+      }],
+        "status": "ok"
+    }
+    ```
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read posts of latest, editor picked, latest topic, reviews, topics, photography and infographic sections of index page 
+- URL: `/v1/index_page`
+- Method: `GET`
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": {
+        "latest": [{
+          // post goes here
+        }, {
+          // post goes here
+        }, {
+          // post goes here
+        }, ... ], 
+        "editor_picks": [{
+          // post goes here
+        }, {
+          // post goes here
+        }, {
+          // post goes here
+        }, ... ],
+        "latest_topic": [{
+          // topic goes here
+        }],
+        "reviews": [{
+          // post goes here
+        }, {
+        } ... ],
+        "topics": [{
+          // topic goes here
+        }, {
+          // topic goes here
+        } ... ],
+        "photos": [{
+          // post goes here
+        }], 
+        "infographics": [{
+          // post goes here
+        },{
+          // post goes here
+        }]
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Read posts of character, culture_movie, human_rights, international, land_environment, photo_audio, political_society and transformed_justice categories.
+- URL: `/v1/index_page_categories`
+- Method: `GET`
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": {
+        "character": [{
+          // post goes here
+        }, {
+          // post goes here
+        }, ... ], 
+        "culture_movie": [{
+          // post goes here
+        }, {
+          // post goes here
+        }, ... ],
+        "human_rights": [{
+          // post goes here
+        }, ... ],
+        "international": [{
+          // post goes here
+        }, {
+        } ... ],
+        "land_environment": [{
+          // post goes here
+        }, {
+          // post goes here
+        } ... ],
+        "photo_audio": [{
+          // post goes here
+        }], 
+        "political_society": [{
+          // post goes here
+        } ... ],
+        "transformed_justice": [{
+          // post goes here
+        } ... ],
+      },
+        "status": "ok"
+    }
+    ```
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Get bookmarks
+- URL: `/v1/users/:userID/bookmarks`
+  * example: `/v1/users/1/bookmarks`
+- Authorization of Header: `Bearer ${JWT_TOKEN}`
+- Method: `GET`
+
+- Response: 
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "records": [{
+        "id": bookmarkID_1,
+        "created_at": "2017-05-09T11:42:50.084994666+08:00",
+        "updated_at": "2017-05-09T11:42:50.084994666+08:00",
+        "deleted_at": null,
+        "href": "https://www.twreporter.org/a/about-us-footer",
+	"title": "關於我們",
+	"desc": "《報導者》是「財團法人報導者文化基金會」成立的非營利網路媒體...",
+	"thumbnail": "https://www.twreporter.org/asset/logo-desk.svg"
+      }, ... ],
+        "status": "ok"
+    }
+    ```
+  * **Code:** 401 <br />  
+  * **Code:** 403 <br />
+  * **Code:** 404 <br />
+  **Content:** `{"status": "Record not found", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+### Create a bookmark
+- URL: /users/:userID/bookmarks
+- Authorization of Header: `Bearer ${JWT_TOKEN}`
+- Content-Type of Header: `application/json`
+- Method: `POST`
+- Data Params:
+```
+{
+   "href": "https://www.twreporter.org/a/about-us-footer",
+   "title": "關於我們",
+   "desc": "《報導者》是「財團法人報導者文化基金會」成立的非營利網路媒體...",
+   "thumbnail": "https://www.twreporter.org/asset/logo-desk.svg"
+}
+```
+
+- Response: 
+  * **Code:** 201 <br />
+    **Content:**
+    ```
+    {
+        "status": "ok"
+    }
+    ```
+  * **Code:** 400 <br />
+  * **Code:** 401 <br />
+  * **Code:** 403 <br />
+  **Content:** `{"status": "Bad request", "error": "${here_goes_error_msg}"}`
+  * **Code:** 404 <br />
+  **Content:** `{"status": "Record not found", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+  
+### Delete a bookmark
+- URL: /users/:userID/bookmarks/:bookmarkID
+- Authorization of Header: `Bearer ${JWT_TOKEN}`
+- Method: `DELETE`
+
+- Response: 
+  * **Code:** 204 <br />
+  * **Code:** 401 <br />
+  * **Code:** 403 <br />
+  * **Code:** 404 <br />
+  **Content:** `{"status": "Record not found", "error": "${here_goes_error_msg}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
 ### Create a service
 - URL: `/v1/services/`
