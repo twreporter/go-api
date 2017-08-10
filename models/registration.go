@@ -6,16 +6,16 @@ import (
 
 // Registration this is bookmakrs table description
 type Registration struct {
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	DeletedAt     *time.Time
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+	DeletedAt     *time.Time `json:"deleted_at"`
 	Service       Service
-	ServiceID     uint   `gorm:"primary_key"`
-	Email         string `gorm:"primary_key;size:100"`
+	ServiceID     uint   `gorm:"primary_key" json:"service_id"`
+	Email         string `gorm:"primary_key;size:100" json:"email"`
 	User          User
-	UserID        uint   `gorm: "default:0"`
-	Active        bool   `gorm:"default:0"`
-	ActivateToken string `gorm:"size:20"`
+	UserID        uint   `gorm:"default:0" json:"user_id"`
+	Active        bool   `gorm:"default:0" json:"active"`
+	ActivateToken string `gorm:"size:20" json:"active_token"`
 }
 
 // RegistrationJSON this is POST data in json format

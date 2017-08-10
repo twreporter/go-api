@@ -17,9 +17,19 @@ type MembershipController struct {
 	Storage storage.MembershipStorage
 }
 
+// Close is the method of Controller interface
+func (mc *MembershipController) Close() error {
+	err := mc.Storage.Close()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // SetRoute is the method of Controller interface
 func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	mailSender := utils.NewSMTPEmailSender(utils.Cfg.EmailSettings)
+	// mailSender := utils.NewSMTPEmailSender()                          // use office365 to send mails
+	mailSender := utils.NewAmazonEmailSender() // use Amazon SES to send mails
 
 	// endpoints for account
 	group.POST("/login", mc.Authenticate)

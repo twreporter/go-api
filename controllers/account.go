@@ -115,7 +115,7 @@ func (mc *MembershipController) Authenticate(c *gin.Context) {
 }
 
 // Signup create/update a reporter account
-func (mc *MembershipController) Signup(c *gin.Context, mailSender utils.EmailSender) {
+func (mc *MembershipController) Signup(c *gin.Context, mailSender *utils.EmailContext) {
 	var activeToken string
 	var email string
 	var err error
@@ -169,14 +169,15 @@ func (mc *MembershipController) Signup(c *gin.Context, mailSender utils.EmailSen
 			return
 		}
 
-		go func() {
-			// re-send the activation email
-			if err1 := mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, ra.ActivateToken)); err1 != nil {
-				log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
-			}
-		}()
+		// re-send the activation email
+		err1 := mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, ra.ActivateToken))
+		status := "Password reset and activation email resent"
+		if err1 != nil {
+			log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
+			status = "Error"
+		}
 
-		c.JSON(200, gin.H{"status": "Password reset and activation email resent"})
+		c.JSON(200, gin.H{"status": status, "email": email, "error": err1})
 		return
 	}
 
@@ -203,13 +204,14 @@ func (mc *MembershipController) Signup(c *gin.Context, mailSender utils.EmailSen
 		return
 	}
 
-	go func() {
-		if err1 := mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, activeToken)); err1 != nil {
-			log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
-		}
-	}()
+	err1 := mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, activeToken))
+	status := "Sign up successfully"
+	if err1 != nil {
+		log.Error("controllers.account.sign_up.send_mail \n", err1.Error())
+		status = "Error"
+	}
 
-	c.JSON(201, gin.H{"status": "Sign up successfully", "email": email})
+	c.JSON(201, gin.H{"status": status, "email": email, "error": err1})
 }
 
 // Activate make existed reporter account active
