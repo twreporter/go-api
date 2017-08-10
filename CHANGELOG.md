@@ -1,3 +1,6 @@
+### 1.0.8
+- Upgrade github.com/gin-contrib/cors to the latest commit to fix the cors problem
+
 ### 1.0.7
 - Set Access-Control-Allow-Origin: https://www.twreporter.org 
 
