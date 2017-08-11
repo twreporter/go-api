@@ -97,22 +97,32 @@ jobs:
 
             cd /go/src/twreporter.org/go-api
             echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
-            # config.json for go-api
-            echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.json
             export PKG_VER="$(cat .pkg-version)"
             gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcp-key.json"
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
+              # connect to staging gke
               gcloud --quiet container clusters get-credentials ${GOOGLE_STAGING_CLUSTER_NAME}
-              docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
-              gcloud docker -- push gcr.io/coastal-run-106202/go-api:$PKG_VER
-              kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$PKG_VER --container=go-api
+
+              # config.json for go-api
+              echo ${GO_STAGING_CONFIG} | base64 -i --decode > ./configs/config.json
+
+              docker build -t gcr.io/coastal-run-106202/go-api:staging-$PKG_VER .
+              gcloud docker -- push gcr.io/coastal-run-106202/go-api:staging-$PKG_VER
+              kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:staging-$PKG_VER --container=go-api
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
+              # connect to production gke
               gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+
+              # config.json for go-api
+              echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.json
+
+              docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
+              gcloud docker -- push gcr.io/coastal-run-106202/go-api:$PKG_VER
               kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$PKG_VER --container=go-api
             fi
 
