@@ -138,8 +138,13 @@ type EncryptSettings struct {
 	Salt string
 }
 
+type CorsSettings struct {
+	AllowOrigins []string
+}
+
 // Config contains all the other configs
 type Config struct {
+	CorsSettings       CorsSettings
 	AlgoliaSettings    AlgoliaSettings
 	AmazonMailSettings AmazonMailSettings
 	AppSettings        AppSettings
