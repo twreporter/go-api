@@ -1,6 +1,7 @@
 package routers
 
 import (
+	// log "github.com/Sirupsen/logrus"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/controllers"
@@ -11,18 +12,18 @@ import (
 func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	engine := gin.Default()
 
-	if utils.Cfg.Environment == "production" {
-		config := cors.DefaultConfig()
-		config.AllowOrigins = []string{"https://twreporter.org", "https://dev.twreporter.org",
-			"https://www.twreporter.org", "http://twreporter.org", "http://www.twreporter.org",
-			"http://dev.twreporter.org", "http://staging.twreporter.org", "https://staging.twreporter.org"}
+	config := cors.DefaultConfig()
+
+	if utils.Cfg.Environment != "development" {
+		if len(utils.Cfg.CorsSettings.AllowOrigins) > 0 {
+			config.AllowOrigins = utils.Cfg.CorsSettings.AllowOrigins
+		} else {
+			config.AllowOrigins = []string{"https://www.twreporter.org"}
+		}
 		engine.Use(cors.New(config))
-	} else {
-		// TODO: use cors.Default() after new version of github.com/gin-contrib/cors
-		engine.Use(func(c *gin.Context) {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		})
 	}
+
+	engine.Use(cors.New(config))
 
 	routerGroup := engine.Group("/v1")
 	{
