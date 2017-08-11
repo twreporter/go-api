@@ -20,7 +20,8 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 		} else {
 			config.AllowOrigins = []string{"https://www.twreporter.org"}
 		}
-		engine.Use(cors.New(config))
+	} else {
+		config.AllowAllOrigins = true
 	}
 
 	engine.Use(cors.New(config))
