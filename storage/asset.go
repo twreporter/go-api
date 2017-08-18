@@ -224,6 +224,7 @@ func (m *MongoStorage) GetImage(id bson.ObjectId) (models.Image, error) {
 
 func (m *MongoStorage) GetAuthors(ids []bson.ObjectId) ([]models.Author, error) {
 	var authors []models.Author
+	var orderedAuthors []models.Author
 
 	if ids == nil {
 		return authors, nil
@@ -241,5 +242,13 @@ func (m *MongoStorage) GetAuthors(ids []bson.ObjectId) ([]models.Author, error) 
 		return authors, err
 	}
 
-	return authors, nil
+	for _, id := range ids {
+		for _, author := range authors {
+			if author.ID == id {
+				orderedAuthors = append(orderedAuthors, author)
+			}
+		}
+	}
+
+	return orderedAuthors, nil
 }
