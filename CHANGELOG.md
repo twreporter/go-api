@@ -1,3 +1,6 @@
+### 1.0.11
+- Bug fix. Order authors
+
 ### 1.0.10
 - Bug Fix. Only add Cache-Control in the Response Header when Request Header contains Origin directive'
 
