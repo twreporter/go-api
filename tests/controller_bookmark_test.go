@@ -12,15 +12,15 @@ import (
 )
 
 type BookmarkJSON struct {
-	ID        int    `json:"ID"`
-	CreatedAt string `json:"CreatedAt"`
-	UpdatedAt string `json:"UpdatedAt"`
-	DeletedAt string `json:"DeletedAt"`
-	Slug      string `json:"Slug"`
-	Title     string `json:"Title"`
-	Style     string `json:"Style"`
-	External  bool   `json:"External"`
-	Desc      struct {
+	ID            int    `json:"ID"`
+	CreatedAt     string `json:"CreatedAt"`
+	UpdatedAt     string `json:"UpdatedAt"`
+	DeletedAt     string `json:"DeletedAt"`
+	Slug          string `json:"Slug"`
+	Title         string `json:"Title"`
+	HostName      string `json:"HostName"`
+	Isis_external bool   `json:"Isis_external"`
+	Desc          struct {
 		String string `json:"String"`
 		Valid  bool   `json:"Valid"`
 	} `json:"Desc"`
@@ -56,10 +56,10 @@ func TestBookmarkAuthorization(t *testing.T) {
 
 func TestCreateABookmarkOfAUser(t *testing.T) {
 	var resp *httptest.ResponseRecorder
-	var badBookmarkJSON = `{"slug":"a-mock-article","title":"mock title","style":"article","external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/}`
+	var badBookmarkJSON = `{"slug":"a-mock-article","title":"mock title","host_name":"www.twreporter.org","is_external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/}`
 
-	var bookmarkJSON = `{"slug":"a-mock-article","title":"mock title","style":"article","external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
-	var bookmarkJSON2 = `{"slug":"www.twreporter.org/a/another-mock-article","title":"another mock title","style":"article","external":false,"desc": "another mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+	var bookmarkJSON = `{"slug":"a-mock-article","title":"mock title","host_name":"www.twreporter.org","is_external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+	var bookmarkJSON2 = `{"slug":"www.twreporter.org/a/another-mock-article","title":"another mock title","host_name":"www.twreporter.org","is_external":false,"desc": "another mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
 
 	var path = fmt.Sprintf("/v1/users/%v/bookmarks", DefaultID)
 	var jwt = GenerateJWT(GetUser(DefaultID))
@@ -89,7 +89,7 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 
 func TestGetBookmarksOfAUser(t *testing.T) {
 	var resp *httptest.ResponseRecorder
-	var bookmarkJSON = `{"slug":"a-mock-article","title":"mock title","style":"article","external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+	var bookmarkJSON = `{"slug":"a-mock-article","title":"mock title","host_name":"www.twreporter.org","is_external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
 	var path = fmt.Sprintf("/v1/users/%v/bookmarks", DefaultID2)
 	var jwt = GenerateJWT(GetUser(DefaultID2))
 
