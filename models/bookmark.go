@@ -11,7 +11,7 @@ type Bookmark struct {
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `json:"deleted_at"`
-	Slug      string     `gorm:"size:512;unique_index;not null" json:"slug" form:"slug"`
+	Slug      string     `gorm:"size:100;unique_index;not null" json:"slug" form:"slug"`
 	Title     string     `gorm:"size:100;not null" json:"title" from:"title"`
 	Desc      string     `gorm:"size:250" json:"desc" form:"desc"`
 	Style     string     `gorm:"size:100" json:"style" form:"style"`
