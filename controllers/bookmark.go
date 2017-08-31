@@ -3,9 +3,9 @@ package controllers
 import (
 	"net/http"
 
+	// log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/utils"
 )
 
 // GetBookmarksOfAUser given userID this func will list all the bookmarks belongs to the user
@@ -72,24 +72,11 @@ func (mc *MembershipController) CreateABookmarkOfAUser(c *gin.Context) {
 
 func (mc *MembershipController) parseBookmarkPOSTBody(c *gin.Context) (models.Bookmark, error) {
 	var err error
-	var form models.BookmarkForm
-	var json models.BookmarkJSON
+	var bm models.Bookmark
 
-	contentType := c.ContentType()
-
-	if contentType == "application/json" {
-		err = c.Bind(&json)
-		if err != nil {
-			return models.Bookmark{}, models.NewAppError("parseBookmarkPOSTBody", "Bad request", "POST body is not a JSON", http.StatusBadRequest)
-		}
-		return models.Bookmark{Href: json.Href, Title: json.Title, Desc: utils.ToNullString(json.Desc), Thumbnail: utils.ToNullString(json.Thumbnail)}, nil
-	} else if contentType == "x-www-form-urlencoded" {
-		err = c.Bind(&form)
-		if err != nil {
-			return models.Bookmark{}, models.NewAppError("parseBookmarkPOSTBody", "Bad request", "POST body is not a x-www-form-urlencoded form", http.StatusBadRequest)
-		}
-		return models.Bookmark{Href: form.Href, Title: form.Title, Desc: utils.ToNullString(form.Desc), Thumbnail: utils.ToNullString(form.Thumbnail)}, nil
+	if err = c.Bind(&bm); err != nil {
+		return models.Bookmark{}, models.NewAppError("parseBookmarkPOSTBody", "Bad request", "POST body is neither JSON nor x-www-form-urlencoded", http.StatusBadRequest)
 	}
 
-	return models.Bookmark{}, models.NewAppError("parseBookmarkPOSTBody", "Bad request", "POST body is neither JSON nor x-www-form-urlencoded", http.StatusBadRequest)
+	return bm, nil
 }

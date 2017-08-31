@@ -1,3 +1,6 @@
+### 1.1.0
+- Update Bookmark model. Replace Href by Slug, Style and External.
+
 ### 1.0.11
 - Bug fix. Order authors
 
