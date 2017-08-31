@@ -244,10 +244,12 @@ It provides several RESTful web services, including
         "created_at": "2017-05-09T11:42:50.084994666+08:00",
         "updated_at": "2017-05-09T11:42:50.084994666+08:00",
         "deleted_at": null,
-        "href": "https://www.twreporter.org/a/about-us-footer",
-	"title": "關於我們",
-	"desc": "《報導者》是「財團法人報導者文化基金會」成立的非營利網路媒體...",
-	"thumbnail": "https://www.twreporter.org/asset/logo-desk.svg"
+        "slug": "about-us-footer",
+        "host_name": "www.twreporter.org",
+        "is_external": false,
+        "title": "關於我們",
+        "desc": "《報導者》是「財團法人報導者文化基金會」成立的非營利網路媒體...",
+        "thumbnail": "https://www.twreporter.org/asset/logo-desk.svg"
       }, ... ],
         "status": "ok"
     }
@@ -267,7 +269,9 @@ It provides several RESTful web services, including
 - Data Params:
 ```
 {
-   "href": "https://www.twreporter.org/a/about-us-footer",
+   "slug": "about-us-footer",
+   "host_name": "www.twreporter.org",
+   "is_external": false,
    "title": "關於我們",
    "desc": "《報導者》是「財團法人報導者文化基金會」成立的非營利網路媒體...",
    "thumbnail": "https://www.twreporter.org/asset/logo-desk.svg"
