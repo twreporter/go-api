@@ -1,3 +1,6 @@
+### 1.1.1
+- Fetch posts without is_feature: true in photos_section
+
 ### 1.1.0
 - Update Bookmark model. Replace Href by Slug, Style and External.
 
