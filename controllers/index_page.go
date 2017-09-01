@@ -136,9 +136,8 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 		},
 		constants.PhotoSection: {
 			MongoQuery: models.MongoQuery{
-				State:      "published",
-				Style:      "photography",
-				IsFeatured: true,
+				State: "published",
+				Style: "photography",
 			},
 			Limit:        6,
 			Offset:       0,
