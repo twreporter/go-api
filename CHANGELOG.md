@@ -1,3 +1,6 @@
+### 1.1.2
+- Update models/post.go. Add LeadingImageDescription field
+
 ### 1.1.1
 - Fetch posts without is_feature: true in photos_section
 
