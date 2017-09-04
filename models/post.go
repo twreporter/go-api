@@ -25,6 +25,7 @@ type Post struct {
 	HeroImageSize              string          `bson:"heroImageSize" json:"hero_image_size"`
 	LeadingImagePortrait       *Image          `bson:"-" json:"leading_image_portrait,omitempty"`
 	LeadingImagePortraitOrigin bson.ObjectId   `bson:"leading_image_portrait,omitempty" json:"-"`
+	LeadingImageDecription     string          `bson:"leading_image_description" json:"leading_image_description"`
 	Brief                      *ContentBody    `bson:"brief,omitempty" json:"brief,omitempty"`
 	Categories                 []Category      `bson:"-" json:"categories,omitempty"`
 	CategoriesOrigin           []bson.ObjectId `bson:"categories,omitempty" json:"-"`
