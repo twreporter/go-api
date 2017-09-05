@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	// log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
@@ -13,10 +14,21 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) {
 	var err error
 	var appErr models.AppError
 	var bookmarks []models.Bookmark
+	var total int
+
+	_limit := c.Query("limit")
+	_offset := c.Query("offset")
+
+	limit, _ := strconv.Atoi(_limit)
+	offset, _ := strconv.Atoi(_offset)
+
+	if limit == 0 {
+		limit = 10
+	}
 
 	// get userID according to the url param
 	userID := c.Param("userID")
-	bookmarks, err = mc.Storage.GetBookmarksOfAUser(userID)
+	bookmarks, total, err = mc.Storage.GetBookmarksOfAUser(userID, limit, offset)
 
 	if err != nil {
 		appErr = err.(models.AppError)
@@ -24,7 +36,11 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": bookmarks})
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": bookmarks, "meta": models.MetaOfResponse{
+		Total:  total,
+		Offset: offset,
+		Limit:  limit,
+	}})
 }
 
 // DeleteABookmarkOfAUser given userID and bookmarkHref, this func will remove the relationship between user and bookmark

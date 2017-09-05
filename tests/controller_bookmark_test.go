@@ -30,7 +30,14 @@ type BookmarkJSON struct {
 	} `json:"Thumbnail"`
 }
 
+type Meta struct {
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
+	Total  int `json:"total"`
+}
+
 type Response struct {
+	Meta      Meta           `json:"meta"`
 	Status    string         `json:"status"`
 	Bookmarks []BookmarkJSON `json:"records"`
 }
@@ -90,7 +97,7 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 func TestGetBookmarksOfAUser(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 	var bookmarkJSON = `{"slug":"a-mock-article","title":"mock title","host_name":"www.twreporter.org","is_external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
-	var path = fmt.Sprintf("/v1/users/%v/bookmarks", DefaultID2)
+	var path = fmt.Sprintf("/v1/users/%v/bookmarks?offset=0", DefaultID2)
 	var jwt = GenerateJWT(GetUser(DefaultID2))
 
 	/** START - List bookmarks successfully **/
@@ -111,6 +118,9 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 	res := Response{}
 	json.Unmarshal(body, &res)
 
+	assert.Equal(t, res.Meta.Limit, 10)
+	assert.Equal(t, res.Meta.Offset, 0)
+	assert.Equal(t, res.Meta.Total, 1)
 	assert.Equal(t, res.Bookmarks[0].ID, 1)
 	assert.Equal(t, res.Bookmarks[0].Slug, "a-mock-article")
 	/** END - List bookmarks successfully **/
