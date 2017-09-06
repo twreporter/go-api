@@ -24,6 +24,8 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 		config.AllowAllOrigins = true
 	}
 
+	config.AddAllowHeaders("Authorization")
+
 	engine.Use(cors.New(config))
 
 	routerGroup := engine.Group("/v1")

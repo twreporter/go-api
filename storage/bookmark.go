@@ -31,7 +31,7 @@ func (g *GormStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
 }
 
 // GetBookmarksOfAUser lists bookmarks of the user
-func (g *GormStorage) GetBookmarksOfAUser(id string) ([]models.Bookmark, error) {
+func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]models.Bookmark, int, error) {
 	var bookmarks []models.Bookmark
 	var user models.User
 	var err error
@@ -39,15 +39,18 @@ func (g *GormStorage) GetBookmarksOfAUser(id string) ([]models.Bookmark, error) 
 	user, err = g.GetUserByID(id)
 
 	if err != nil {
-		return bookmarks, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
+		return bookmarks, 0, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
 	}
 
-	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmarks).Error
+	err = g.db.Model(&user).Limit(limit).Offset(offset).Related(&bookmarks, bookmarksStr).Error
+
 	if err != nil {
-		return bookmarks, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_bookmarks")
+		return bookmarks, 0, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_bookmarks")
 	}
 
-	return bookmarks, err
+	total := g.db.Model(&user).Association(bookmarksStr).Count()
+
+	return bookmarks, total, err
 }
 
 // CreateABookmarkOfAUser this func will create a bookmark and build the relationship between the bookmark and the user
