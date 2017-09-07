@@ -31,6 +31,8 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	// db.LogMode(true)
+
 	return db, nil
 }
 

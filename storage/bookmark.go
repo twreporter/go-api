@@ -8,12 +8,12 @@ var (
 	bookmarksStr = "Bookmarks"
 )
 
-// GetABookmarkByHref ...
-func (g *GormStorage) GetABookmarkByHref(href string) (models.Bookmark, error) {
+// GetABookmarkBySlug ...
+func (g *GormStorage) GetABookmarkBySlug(slug string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
-	err := g.db.First(&bookmark, "href = ?", href).Error
+	err := g.db.First(&bookmark, "slug = ?", slug).Error
 	if err != nil {
-		return bookmark, g.NewStorageError(err, "GetABookmarkByHref", "storage.bookmark.error_to_get")
+		return bookmark, g.NewStorageError(err, "GetABookmarkBySlug", "storage.bookmark.error_to_get")
 	}
 
 	return bookmark, err
@@ -25,6 +25,28 @@ func (g *GormStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
 	err := g.db.First(&bookmark, "id = ?", id).Error
 	if err != nil {
 		return bookmark, g.NewStorageError(err, "GetABookmarkByID", "storage.bookmark.error_to_get")
+	}
+
+	return bookmark, err
+}
+
+// GetABookmarkOfAUser get a bookmark of a user
+func (g *GormStorage) GetABookmarkOfAUser(userID string, bookmarkSlug string) (models.Bookmark, error) {
+	var bookmarks []models.Bookmark
+	var bookmark models.Bookmark
+	var user models.User
+	var err error
+
+	user, err = g.GetUserByID(userID)
+
+	if err != nil {
+		return bookmark, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
+	}
+
+	err = g.db.Model(&user).Related(&bookmarks, bookmarksStr).First(&bookmark, "slug = ?", bookmarkSlug).Error
+
+	if err != nil {
+		return bookmark, g.NewStorageError(err, "GetABookmarkOfAUser", "storage.bookmark.error_to_get_a_bookmark_of_a_user")
 	}
 
 	return bookmark, err
