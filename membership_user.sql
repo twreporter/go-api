@@ -36,8 +36,8 @@ CREATE TABLE `bookmarks` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `slug` varchar(100) NOT NULL,
+  `host` varchar(100) NOT NULL,
   `is_external` tinyint(0) DEFAULT '0',
-  `host_name` varchar(100) DEFAULT NULL,
   `title` varchar(100) NOT NULL,
   `category` varchar(20) DEFAULT NULL,
   `authors` varchar(250) DEFAULT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE `bookmarks` (
   `desc` varchar(250) DEFAULT NULL,
   `thumbnail` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uix_bookmarks_slug` (`slug`),
+  UNIQUE KEY `uix_bookmarks_slug_host` (`slug`, `host`),
   KEY `idx_bookmarks_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

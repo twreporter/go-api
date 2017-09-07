@@ -18,7 +18,7 @@ type BookmarkJSON struct {
 	DeletedAt  string `json:"deleted_at"`
 	Slug       string `json:"slug"`
 	Title      string `json:"title"`
-	HostName   string `json:"host_name"`
+	Host       string `json:"host"`
 	IsExternal bool   `json:"is_external"`
 	Desc       string `json:"desc"`
 	Thumbnail  string `json:"thumbnail"`
@@ -40,9 +40,9 @@ type Response struct {
 	Bookmark  BookmarkJSON   `json:"record"`
 }
 
-var bookmarkJSON = `{"slug":"mock-article-1","title":"mock title 1","host_name":"www.twreporter.org","is_external":false,"desc": "mock desc 1","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
-var bookmarkJSON2 = `{"slug":"mock-article-2","title":"mock title 2","host_name":"www.twreporter.org","is_external":false,"desc": "mock desc 2","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
-var bookmarkJSON3 = `{"slug":"mock-article-3","title":"mock title 3","host_name":"www.twreporter.org","is_external":false,"desc": "mock desc 3","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+var bookmarkJSON = `{"slug":"mock-article-1","title":"mock title 1","host":"www.twreporter.org","is_external":false,"desc": "mock desc 1","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+var bookmarkJSON2 = `{"slug":"mock-article-2","title":"mock title 2","host":"www.twreporter.org","is_external":false,"desc": "mock desc 2","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+var bookmarkJSON3 = `{"slug":"mock-article-3","title":"mock title 3","host":"www.twreporter.org","is_external":false,"desc": "mock desc 3","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
 
 func TestBookmarkAuthorization(t *testing.T) {
 	var resp *httptest.ResponseRecorder
@@ -65,7 +65,7 @@ func TestBookmarkAuthorization(t *testing.T) {
 
 func TestCreateABookmarkOfAUser(t *testing.T) {
 	var resp *httptest.ResponseRecorder
-	var badBookmarkJSON = `{"slug":"bad-mock-article","title":"mock title","host_name":"www.twreporter.org","is_external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/}`
+	var badBookmarkJSON = `{"slug":"bad-mock-article","title":"mock title","host":"www.twreporter.org","is_external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/}`
 
 	var path = fmt.Sprintf("/v1/users/%v/bookmarks", DefaultID)
 	var jwt = GenerateJWT(GetUser(DefaultID))

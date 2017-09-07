@@ -26,9 +26,13 @@ func CheckJWT() gin.HandlerFunc {
 		}
 
 		user := c.Request.Context().Value("user")
-		exp := user.(*jwt.Token).Claims.(jwt.MapClaims)["exp"].(float64)
+		if user != nil {
+			exp := user.(*jwt.Token).Claims.(jwt.MapClaims)["exp"].(float64)
 
-		if int64(exp) < time.Now().Unix() {
+			if int64(exp) < time.Now().Unix() {
+				c.AbortWithStatus(401)
+			}
+		} else {
 			c.AbortWithStatus(401)
 		}
 	}
