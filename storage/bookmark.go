@@ -2,6 +2,7 @@ package storage
 
 import (
 	"twreporter.org/go-api/models"
+	// log "github.com/Sirupsen/logrus"
 )
 
 var (
@@ -31,7 +32,7 @@ func (g *GormStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
 }
 
 // GetABookmarkOfAUser get a bookmark of a user
-func (g *GormStorage) GetABookmarkOfAUser(userID string, bookmarkSlug string) (models.Bookmark, error) {
+func (g *GormStorage) GetABookmarkOfAUser(userID string, bookmarkSlug string, bookmarkHost string) (models.Bookmark, error) {
 	var bookmarks []models.Bookmark
 	var bookmark models.Bookmark
 	var user models.User
@@ -43,13 +44,19 @@ func (g *GormStorage) GetABookmarkOfAUser(userID string, bookmarkSlug string) (m
 		return bookmark, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
 	}
 
-	err = g.db.Model(&user).Related(&bookmarks, bookmarksStr).First(&bookmark, "slug = ?", bookmarkSlug).Error
+	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmarks).Error
 
 	if err != nil {
 		return bookmark, g.NewStorageError(err, "GetABookmarkOfAUser", "storage.bookmark.error_to_get_a_bookmark_of_a_user")
 	}
 
-	return bookmark, err
+	for _, ele := range bookmarks {
+		if ele.Slug == bookmarkSlug && ele.Host == bookmarkHost {
+			return ele, err
+		}
+	}
+
+	return bookmark, models.NewAppError("GetABookmarkOfAUser", "Record not found", "storage.bookmark.bookmark_is_not_registered_by_user", 404)
 }
 
 // GetBookmarksOfAUser lists bookmarks of the user

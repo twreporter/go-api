@@ -139,12 +139,19 @@ func TestGetABookmarkOfAUser(t *testing.T) {
 	/** START - Fail to get a bookmark of a user **/
 	resp := ServeHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 404)
-	/** END - Fail to get a bookmark of a user **/
 
-	/** START - get a bookmark of a user **/
 	// add a bookmark onto a user
 	_ = ServeHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", DefaultID2), bookmarkJSON3, "application/json", fmt.Sprintf("Bearer %v", jwt))
 
+	// still fail to get the bookmark of the user because of host is not provided
+	resp = ServeHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
+	assert.Equal(t, resp.Code, 404)
+
+	/** END - Fail to get a bookmark of a user **/
+
+	/** START - get a bookmark of a user **/
+	// add host param
+	path = path + "?host=www.twreporter.org"
 	// get the bookmark of the user
 	resp = ServeHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 200)
