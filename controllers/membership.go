@@ -40,6 +40,7 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 
 	// endpoints for bookmarks of users
 	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.GetBookmarksOfAUser)
+	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.GetBookmarksOfAUser)
 	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.CreateABookmarkOfAUser)
 	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.DeleteABookmarkOfAUser)
 

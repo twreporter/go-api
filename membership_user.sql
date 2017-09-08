@@ -36,13 +36,16 @@ CREATE TABLE `bookmarks` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `slug` varchar(100) NOT NULL,
+  `host` varchar(100) NOT NULL,
   `is_external` tinyint(0) DEFAULT '0',
-  `host_name` varchar(100) DEFAULT NULL,
   `title` varchar(100) NOT NULL,
+  `category` varchar(20) DEFAULT NULL,
+  `authors` varchar(250) DEFAULT NULL,
+  `pub_date` int(10) unsigned DEFAULT NULL,
   `desc` varchar(250) DEFAULT NULL,
   `thumbnail` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uix_bookmarks_slug` (`slug`),
+  UNIQUE KEY `uix_bookmarks_slug_host` (`slug`, `host`),
   KEY `idx_bookmarks_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -189,8 +192,8 @@ CREATE TABLE `users_bookmarks` (
   PRIMARY KEY (`user_id`,`bookmark_id`),
   KEY `fk_users_has_bookmarks_bookmarks1_idx` (`bookmark_id`),
   KEY `fk_users_has_bookmarks_users1_idx` (`user_id`),
-  CONSTRAINT `fk_users_has_bookmarks_bookmarks1` FOREIGN KEY (`bookmark_id`) REFERENCES `bookmarks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_users_has_bookmarks_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `fk_users_has_bookmarks_bookmarks1` FOREIGN KEY (`bookmark_id`) REFERENCES `bookmarks` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_has_bookmarks_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;

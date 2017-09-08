@@ -14,7 +14,26 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) {
 	var err error
 	var appErr models.AppError
 	var bookmarks []models.Bookmark
+	var bookmark models.Bookmark
 	var total int
+
+	// get userID according to the url param
+	userID := c.Param("userID")
+
+	// get bookmarkSlug in url param
+	bookmarkSlug := c.Param("bookmarkSlug")
+
+	if bookmarkSlug != "" {
+		bookmark, err = mc.Storage.GetABookmarkOfAUser(userID, bookmarkSlug)
+		if err != nil {
+			appErr = err.(models.AppError)
+			c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "record": bookmark})
+		return
+	}
 
 	_limit := c.Query("limit")
 	_offset := c.Query("offset")
@@ -26,8 +45,6 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) {
 		limit = 10
 	}
 
-	// get userID according to the url param
-	userID := c.Param("userID")
 	bookmarks, total, err = mc.Storage.GetBookmarksOfAUser(userID, limit, offset)
 
 	if err != nil {
