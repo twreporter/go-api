@@ -23,8 +23,11 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) {
 	// get bookmarkSlug in url param
 	bookmarkSlug := c.Param("bookmarkSlug")
 
+	// Get a specific bookmark from a user
 	if bookmarkSlug != "" {
-		bookmark, err = mc.Storage.GetABookmarkOfAUser(userID, bookmarkSlug)
+		host := c.Query("host")
+
+		bookmark, err = mc.Storage.GetABookmarkOfAUser(userID, bookmarkSlug, host)
 		if err != nil {
 			appErr = err.(models.AppError)
 			c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
