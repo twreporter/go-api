@@ -93,9 +93,17 @@ func (g *GormStorage) CreateABookmarkOfAUser(userID string, bookmark models.Book
 	}
 
 	// get first matched record, or create a new one
-	err = g.db.Where(bookmark).FirstOrCreate(&_bookmark).Error
+	err = g.db.Where("slug = ? AND host = ?", bookmark.Slug, bookmark.Host).FirstOrCreate(&_bookmark).Error
+
 	if err != nil {
 		return g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_create_bookmark")
+	}
+
+	// update the bookmark fields
+	err = g.db.Model(&_bookmark).Updates(bookmark).Error
+
+	if err != nil {
+		return g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_update_bookmark")
 	}
 
 	err = g.db.Model(&user).Association(bookmarksStr).Append(_bookmark).Error
