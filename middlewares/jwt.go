@@ -2,7 +2,9 @@ package middlewares
 
 import (
 	"fmt"
+	"time"
 
+	//log "github.com/Sirupsen/logrus"
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -20,6 +22,17 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 func CheckJWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
+			c.AbortWithStatus(401)
+		}
+
+		user := c.Request.Context().Value("user")
+		if user != nil {
+			exp := user.(*jwt.Token).Claims.(jwt.MapClaims)["exp"].(float64)
+
+			if int64(exp) < time.Now().Unix() {
+				c.AbortWithStatus(401)
+			}
+		} else {
 			c.AbortWithStatus(401)
 		}
 	}
