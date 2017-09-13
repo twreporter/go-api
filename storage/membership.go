@@ -32,7 +32,7 @@ type MembershipStorage interface {
 	GetABookmarkByID(string) (models.Bookmark, error)
 	GetABookmarkOfAUser(string, string, string) (models.Bookmark, error)
 	GetBookmarksOfAUser(string, int, int) ([]models.Bookmark, int, error)
-	CreateABookmarkOfAUser(string, models.Bookmark) error
+	CreateABookmarkOfAUser(string, models.Bookmark) (models.Bookmark, error)
 	DeleteABookmarkOfAUser(string, string) error
 
 	/** Service methods **/
