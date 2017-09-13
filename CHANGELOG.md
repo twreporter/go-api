@@ -1,7 +1,9 @@
 ### 1.1.3 
 - Add job title of authors
 - Check JWT expiration time
-- Endpoint /users/:userID/bookmarks/:bookmarkSlug to get a bookmark of a user
+- Allow DELETE method and Authorization Header
+- Add endpoint /users/:userID/bookmarks/:bookmarkSlug to get a bookmark of a user
+- Refine create/delete/get bookmark
 
 ### 1.1.2
 - Update models/post.go. Add LeadingImageDescription field
