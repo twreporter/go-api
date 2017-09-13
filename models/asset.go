@@ -97,8 +97,9 @@ func (mv *MongoVideo) ToVideo() (video Video) {
 }
 
 type Author struct {
-	ID   bson.ObjectId `bson:"_id" json:"id"`
-	Name string        `bson:"name" json:"name"`
+	ID       bson.ObjectId `bson:"_id" json:"id"`
+	JobTitle string        `bson:"job_title" json:"job_title"`
+	Name     string        `bson:"name" json:"name"`
 }
 
 // Category ...

@@ -28,10 +28,11 @@ type MembershipStorage interface {
 	UpdateReporterAccountActive(*models.ReporterAccount, bool) (*models.ReporterAccount, error)
 
 	/** Bookmark methods **/
-	GetABookmarkByHref(string) (models.Bookmark, error)
+	GetABookmarkBySlug(string) (models.Bookmark, error)
 	GetABookmarkByID(string) (models.Bookmark, error)
-	GetBookmarksOfAUser(string) ([]models.Bookmark, error)
-	CreateABookmarkOfAUser(string, models.Bookmark) error
+	GetABookmarkOfAUser(string, string, string) (models.Bookmark, error)
+	GetBookmarksOfAUser(string, int, int) ([]models.Bookmark, int, error)
+	CreateABookmarkOfAUser(string, models.Bookmark) (models.Bookmark, error)
 	DeleteABookmarkOfAUser(string, string) error
 
 	/** Service methods **/

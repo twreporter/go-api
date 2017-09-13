@@ -2,18 +2,19 @@ package storage
 
 import (
 	"twreporter.org/go-api/models"
+	// log "github.com/Sirupsen/logrus"
 )
 
 var (
 	bookmarksStr = "Bookmarks"
 )
 
-// GetABookmarkByHref ...
-func (g *GormStorage) GetABookmarkByHref(href string) (models.Bookmark, error) {
+// GetABookmarkBySlug ...
+func (g *GormStorage) GetABookmarkBySlug(slug string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
-	err := g.db.First(&bookmark, "href = ?", href).Error
+	err := g.db.First(&bookmark, "slug = ?", slug).Error
 	if err != nil {
-		return bookmark, g.NewStorageError(err, "GetABookmarkByHref", "storage.bookmark.error_to_get")
+		return bookmark, g.NewStorageError(err, "GetABookmarkBySlug", "storage.bookmark.error_to_get")
 	}
 
 	return bookmark, err
@@ -30,8 +31,36 @@ func (g *GormStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
 	return bookmark, err
 }
 
+// GetABookmarkOfAUser get a bookmark of a user
+func (g *GormStorage) GetABookmarkOfAUser(userID string, bookmarkSlug string, bookmarkHost string) (models.Bookmark, error) {
+	var bookmarks []models.Bookmark
+	var bookmark models.Bookmark
+	var user models.User
+	var err error
+
+	user, err = g.GetUserByID(userID)
+
+	if err != nil {
+		return bookmark, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
+	}
+
+	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmarks).Error
+
+	if err != nil {
+		return bookmark, g.NewStorageError(err, "GetABookmarkOfAUser", "storage.bookmark.error_to_get_a_bookmark_of_a_user")
+	}
+
+	for _, ele := range bookmarks {
+		if ele.Slug == bookmarkSlug && ele.Host == bookmarkHost {
+			return ele, err
+		}
+	}
+
+	return bookmark, models.NewAppError("GetABookmarkOfAUser", "Record not found", "storage.bookmark.bookmark_is_not_registered_by_user", 404)
+}
+
 // GetBookmarksOfAUser lists bookmarks of the user
-func (g *GormStorage) GetBookmarksOfAUser(id string) ([]models.Bookmark, error) {
+func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]models.Bookmark, int, error) {
 	var bookmarks []models.Bookmark
 	var user models.User
 	var err error
@@ -39,39 +68,50 @@ func (g *GormStorage) GetBookmarksOfAUser(id string) ([]models.Bookmark, error) 
 	user, err = g.GetUserByID(id)
 
 	if err != nil {
-		return bookmarks, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
+		return bookmarks, 0, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
 	}
 
-	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmarks).Error
+	err = g.db.Model(&user).Limit(limit).Offset(offset).Related(&bookmarks, bookmarksStr).Error
+
 	if err != nil {
-		return bookmarks, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_bookmarks")
+		return bookmarks, 0, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_bookmarks")
 	}
 
-	return bookmarks, err
+	total := g.db.Model(&user).Association(bookmarksStr).Count()
+
+	return bookmarks, total, err
 }
 
 // CreateABookmarkOfAUser this func will create a bookmark and build the relationship between the bookmark and the user
-func (g *GormStorage) CreateABookmarkOfAUser(userID string, bookmark models.Bookmark) error {
+func (g *GormStorage) CreateABookmarkOfAUser(userID string, bookmark models.Bookmark) (models.Bookmark, error) {
 	var _bookmark models.Bookmark
 
 	user, err := g.GetUserByID(userID)
 
 	if err != nil {
-		return g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_get_user")
+		return _bookmark, g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_get_user")
 	}
 
 	// get first matched record, or create a new one
-	err = g.db.Where(bookmark).FirstOrCreate(&_bookmark).Error
+	err = g.db.Where("slug = ? AND host = ?", bookmark.Slug, bookmark.Host).FirstOrCreate(&_bookmark).Error
+
 	if err != nil {
-		return g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_create_bookmark")
+		return _bookmark, g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_create_bookmark")
+	}
+
+	// update the bookmark fields
+	err = g.db.Model(&_bookmark).Updates(bookmark).Error
+
+	if err != nil {
+		return _bookmark, g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_update_bookmark")
 	}
 
 	err = g.db.Model(&user).Association(bookmarksStr).Append(_bookmark).Error
 	if err != nil {
-		return g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_create_user_bookmark_relationship")
+		return _bookmark, g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_create_user_bookmark_relationship")
 	}
 
-	return err
+	return _bookmark, err
 }
 
 // DeleteABookmarkOfAUser this func will delete the relationship between the user and the bookmark
