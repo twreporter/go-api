@@ -96,14 +96,14 @@ func (mc *MembershipController) CreateABookmarkOfAUser(c *gin.Context) {
 		return
 	}
 
-	err = mc.Storage.CreateABookmarkOfAUser(userID, bookmark)
+	bookmark, err = mc.Storage.CreateABookmarkOfAUser(userID, bookmark)
 	if err != nil {
 		appErr = err.(models.AppError)
 		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"status": "ok"})
+	c.JSON(http.StatusCreated, gin.H{"status": "ok", "record": bookmark})
 }
 
 func (mc *MembershipController) parseBookmarkPOSTBody(c *gin.Context) (models.Bookmark, error) {
