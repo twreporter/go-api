@@ -1,3 +1,6 @@
+### 1.1.4
+- Sort relateds according to the order set by editors
+
 ### 1.1.3 
 - Add job title of authors
 - Check JWT expiration time

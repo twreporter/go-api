@@ -89,6 +89,7 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				}
 				break
 			case "relateds", "topic_relateds":
+				var _relateds []models.Post
 				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
 					if len(ids) > 0 {
 						query := models.MongoQuery{
@@ -101,9 +102,16 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 							embedded = []string{"hero_image", "categories", "tags", "og_image"}
 						}
 						relateds, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", embedded)
+						for _, id := range ids {
+							for _, related := range relateds {
+								if id.Hex() == related.ID.Hex() {
+									_relateds = append(_relateds, related)
+								}
+							}
+						}
 
 						if err == nil {
-							entity.SetEmbeddedAsset("Relateds", relateds)
+							entity.SetEmbeddedAsset("Relateds", _relateds)
 						}
 					}
 				}
