@@ -101,11 +101,7 @@ func RunMigration() {
 }
 
 func RunGormMigration() {
-	for _, table := range []string{"users_bookmarks"} {
-		DB.Exec(fmt.Sprintf("drop table %v;", table))
-	}
-
-	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}}
+	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}, &models.UsersBookmarks{}}
 	for _, value := range values {
 		DB.DropTable(value)
 	}
