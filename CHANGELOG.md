@@ -1,3 +1,6 @@
+### 1.1.5
+- Sort returned bookmarks of a user by `updated_at` in `users_bookmarks` table
+
 ### 1.1.4
 - Sort relateds according to the order set by editors
 
