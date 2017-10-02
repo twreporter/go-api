@@ -72,7 +72,7 @@ func (nc *NewsController) _GetContentConcurrently(parts map[string]IndexPageQuer
 			for k, v := range section {
 				rtn[k] = v
 			}
-		case <-time.After(3 * time.Second):
+		case <-time.After(configs.TimeoutOfIndexPageController * time.Second):
 			log.Info("The requests for fetching section timeouts")
 		}
 	}
@@ -164,7 +164,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 	select {
 	// read the section content from channel
 	case rtn = <-ch:
-	case <-time.After(3 * time.Second):
+	case <-time.After(configs.TimeoutOfIndexPageController * time.Second):
 		log.Info("The requests for fetching sections index page needed timeouts")
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": rtn})
@@ -209,7 +209,7 @@ func (nc *NewsController) GetCategoriesPosts(c *gin.Context) {
 	select {
 	// read the section content from channel
 	case rtn = <-ch:
-	case <-time.After(3 * time.Second):
+	case <-time.After(configs.TimeoutOfIndexPageController * time.Second):
 		log.Info("The requests for fetching sections index page needed timeouts")
 	}
 
