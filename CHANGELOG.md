@@ -1,3 +1,6 @@
+### 1.1.6
+- Fetch sections asynchronously for index_page controller
+
 ### 1.1.5
 - Sort returned bookmarks of a user by `updated_at` in `users_bookmarks` table
 
