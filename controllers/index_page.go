@@ -52,7 +52,7 @@ func (nc *NewsController) _GetIndexPageContent(part IndexPageQueryStruct) (inter
 
 // _GetContentConcurrently ...
 func (nc *NewsController) _GetContentConcurrently(parts map[string]IndexPageQueryStruct) map[string]interface{} {
-	var ch = make(chan map[string]interface{})
+	var ch = make(chan map[string]interface{}, len(parts))
 	var rtn = make(map[string]interface{})
 
 	for name, part := range parts {
@@ -63,17 +63,17 @@ func (nc *NewsController) _GetContentConcurrently(parts map[string]IndexPageQuer
 				ch <- map[string]interface{}{name: entities}
 			}
 		}(name, part)
+	}
 
+	for i := 0; i < len(parts); i++ {
 		select {
 		// read the section content from channel
 		case section := <-ch:
 			for k, v := range section {
 				rtn[k] = v
 			}
-		// set timeout
 		case <-time.After(3 * time.Second):
-			close(ch)
-			log.Info("The requests for fetching sections index page needed timeouts")
+			log.Info("The requests for fetching section timeouts")
 		}
 	}
 
@@ -84,6 +84,8 @@ func (nc *NewsController) _GetContentConcurrently(parts map[string]IndexPageQuer
 // It will return the first fourth sections including
 // latest, editor picks, latest topic and reviews.
 func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
+	var rtn map[string]interface{}
+	var ch = make(chan map[string]interface{})
 	var parts = map[string]IndexPageQueryStruct{
 		constants.LastestSection: {
 			MongoQuery: models.MongoQuery{
@@ -156,14 +158,23 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 		},
 	}
 
-	rtn := nc._GetContentConcurrently(parts)
-
+	go func(parts map[string]IndexPageQueryStruct) {
+		ch <- nc._GetContentConcurrently(parts)
+	}(parts)
+	select {
+	// read the section content from channel
+	case rtn = <-ch:
+	case <-time.After(3 * time.Second):
+		log.Info("The requests for fetching sections index page needed timeouts")
+	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": rtn})
 }
 
 // GetCategoriesPosts is specifically made for index page.
 // It will return the posts of all the categories.
 func (nc *NewsController) GetCategoriesPosts(c *gin.Context) {
+	var rtn map[string]interface{}
+	var ch = make(chan map[string]interface{})
 	var cats = map[string]string{
 		constants.HumanRightsAndSociety:   configs.HumanRightsAndSocietyListID,
 		constants.EnvironmentAndEducation: configs.EnvironmentAndEducationListID,
@@ -192,7 +203,15 @@ func (nc *NewsController) GetCategoriesPosts(c *gin.Context) {
 		}
 	}
 
-	rtn := nc._GetContentConcurrently(parts)
+	go func(parts map[string]IndexPageQueryStruct) {
+		ch <- nc._GetContentConcurrently(parts)
+	}(parts)
+	select {
+	// read the section content from channel
+	case rtn = <-ch:
+	case <-time.After(3 * time.Second):
+		log.Info("The requests for fetching sections index page needed timeouts")
+	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": rtn})
 }
