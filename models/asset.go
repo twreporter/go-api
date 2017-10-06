@@ -20,6 +20,8 @@ type Theme struct {
 	H1FontColor     string        `bson:"h1_font_color" json:"h1_font_color"`
 	H2FontColor     string        `bson:"h2_font_color" json:"h2_font_color"`
 	BackgroundColor string        `bson:"bg_color" json:"bg_color"`
+	FooterBGColor   string        `bson:"footer_bg_color" json:"footer_bg_color"`
+	LogoColor       string        `bson:"logo_color" json:"logo_color"`
 }
 
 // ImageAsset ...
