@@ -1,3 +1,6 @@
+### 1.1.7
+- Embed Theme field in post model 
+
 ### 1.1.6
 - Fetch sections asynchronously for index_page controller
 
