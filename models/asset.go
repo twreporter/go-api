@@ -8,6 +8,22 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+// Theme ...
+type Theme struct {
+	ID              bson.ObjectId `bson:"_id" json:"id"`
+	Name            string        `bson:"name" json:"name"`
+	TitlePosition   string        `bson:"title_position" json:"title_position"`
+	HeaderPosition  string        `bson:"header_position" json:"header_position"`
+	TitleColor      string        `bson:"title_color" json:"title_color"`
+	SubtitleColor   string        `bson:"subtitle_color" json:"subtitle_color"`
+	FontColor       string        `bson:"font_color" json:"font_color"`
+	H1FontColor     string        `bson:"h1_font_color" json:"h1_font_color"`
+	H2FontColor     string        `bson:"h2_font_color" json:"h2_font_color"`
+	BackgroundColor string        `bson:"bg_color" json:"bg_color"`
+	FooterBGColor   string        `bson:"footer_bg_color" json:"footer_bg_color"`
+	LogoColor       string        `bson:"logo_color" json:"logo_color"`
+}
+
 // ImageAsset ...
 type ImageAsset struct {
 	Height uint   `bson:"height" json:"height"`
@@ -37,7 +53,7 @@ type Image struct {
 
 type MongoImageAsset struct {
 	Height         uint           `bson:"height" json:"height"`
-	Filetype       string         `bson:""filetype json:"filetype"`
+	Filetype       string         `bson:"filetype" json:"filetype"`
 	Width          uint           `bson:"width" json:"width"`
 	URL            string         `bson:"url" json:"url"`
 	ResizedTargets ResizedTargets `bson:"resizedTargets" json:"resized_targets"`
@@ -170,6 +186,11 @@ func (pm *Post) GetEmbeddedAsset(key string) []bson.ObjectId {
 		return nil
 	case "LeadingImageOrigin":
 		return nil
+	case "ThemeOrigin":
+		if pm.ThemeOrigin != "" {
+			return append(rtn, pm.ThemeOrigin)
+		}
+		return nil
 	case "CategoriesOrigin":
 		return pm.CategoriesOrigin
 	case "TagsOrigin":
@@ -228,6 +249,8 @@ func (t *Topic) GetEmbeddedAsset(key string) []bson.ObjectId {
 	case "CategoriesOrigin":
 		return nil
 	case "TagsOrigin":
+		return nil
+	case "ThemeOrigin":
 		return nil
 	case "OgImageOrigin":
 		if t.OgImageOrigin != "" {
