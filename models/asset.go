@@ -16,9 +16,8 @@ type Theme struct {
 	HeaderPosition  string        `bson:"header_position" json:"header_position"`
 	TitleColor      string        `bson:"title_color" json:"title_color"`
 	SubtitleColor   string        `bson:"subtitle_color" json:"subtitle_color"`
+	TopicColor      string        `bson:"topic_color" json:"topic_color"`
 	FontColor       string        `bson:"font_color" json:"font_color"`
-	H1FontColor     string        `bson:"h1_font_color" json:"h1_font_color"`
-	H2FontColor     string        `bson:"h2_font_color" json:"h2_font_color"`
 	BackgroundColor string        `bson:"bg_color" json:"bg_color"`
 	FooterBGColor   string        `bson:"footer_bg_color" json:"footer_bg_color"`
 	LogoColor       string        `bson:"logo_color" json:"logo_color"`
