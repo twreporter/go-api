@@ -6,6 +6,8 @@ import (
 	"github.com/jinzhu/gorm"
 	"gopkg.in/matryer/try.v1"
 	"gopkg.in/mgo.v2"
+	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/models"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -31,7 +33,9 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	// db.LogMode(true)
+	db.SetJoinTableHandler(&models.User{}, constants.TableBookmarks, &models.UsersBookmarks{})
+
+	//db.LogMode(true)
 
 	return db, nil
 }

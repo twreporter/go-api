@@ -35,30 +35,40 @@ var (
 	DB               *gorm.DB
 	MgoDB            *mgo.Session
 	MgoDBName        = "gorm"
+
+	// collections name
 	MgoPostCol       = "posts"
 	MgoTopicCol      = "topics"
 	MgoImgCol        = "images"
 	MgoVideoCol      = "videos"
 	MgoTagCol        = "tags"
 	MgoCategoriesCol = "postcategories"
-	ImgID1           = bson.NewObjectId()
-	ImgID2           = bson.NewObjectId()
-	VideoID          = bson.NewObjectId()
-	PostID1          = bson.NewObjectId()
-	PostID2          = bson.NewObjectId()
-	TopicID          = bson.NewObjectId()
-	TagID            = bson.NewObjectId()
-	CatID            = bson.NewObjectId()
-	ImgCol1          models.MongoImage
-	ImgCol2          models.MongoImage
-	VideoCol         models.MongoVideo
-	PostCol1         models.Post
-	PostCol2         models.Post
-	TagCol           models.Tag
-	CatCol           models.Category
-	TopicCol         models.Topic
-	MockPostSlug1    = "mock-post-slug-1"
-	MockTopicSlug    = "mock-topic-slug"
+	MgoThemeCol      = "themes"
+
+	// objectID
+	ImgID1  = bson.NewObjectId()
+	ImgID2  = bson.NewObjectId()
+	VideoID = bson.NewObjectId()
+	PostID1 = bson.NewObjectId()
+	PostID2 = bson.NewObjectId()
+	TopicID = bson.NewObjectId()
+	TagID   = bson.NewObjectId()
+	CatID   = bson.NewObjectId()
+	ThemeID = bson.NewObjectId()
+
+	// collection
+	ImgCol1  models.MongoImage
+	ImgCol2  models.MongoImage
+	VideoCol models.MongoVideo
+	PostCol1 models.Post
+	PostCol2 models.Post
+	TagCol   models.Tag
+	CatCol   models.Category
+	TopicCol models.Topic
+	ThemeCol models.Theme
+
+	MockPostSlug1 = "mock-post-slug-1"
+	MockTopicSlug = "mock-topic-slug"
 )
 
 func OpenGormConnection() (db *gorm.DB, err error) {
@@ -101,11 +111,7 @@ func RunMigration() {
 }
 
 func RunGormMigration() {
-	for _, table := range []string{"users_bookmarks"} {
-		DB.Exec(fmt.Sprintf("drop table %v;", table))
-	}
-
-	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}}
+	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}, &models.UsersBookmarks{}}
 	for _, value := range values {
 		DB.DropTable(value)
 	}
@@ -188,12 +194,19 @@ func SetMgoDefaultRecords() {
 		Name: "mock postcategory",
 	}
 
+	ThemeCol = models.Theme{
+		ID:            ThemeID,
+		Name:          "photograph",
+		TitlePosition: "title-above",
+	}
+
 	PostCol1 = models.Post{
 		ID:               PostID1,
 		Slug:             MockPostSlug1,
 		Name:             "mock post slug 1",
 		Style:            "article",
 		State:            "published",
+		ThemeOrigin:      ThemeID,
 		PublishedDate:    time.Now(),
 		HeroImageOrigin:  ImgID1,
 		CategoriesOrigin: []bson.ObjectId{CatID},
@@ -214,7 +227,6 @@ func SetMgoDefaultRecords() {
 		LeadingVideoOrigin: VideoID,
 		OgImageOrigin:      ImgID1,
 	}
-
 	// insert img1 and  img2
 	MgoDB.DB(MgoDBName).C(MgoImgCol).Insert(ImgCol1)
 
@@ -231,6 +243,9 @@ func SetMgoDefaultRecords() {
 
 	// insert post1 and post2
 	MgoDB.DB(MgoDBName).C(MgoPostCol).Insert(PostCol1)
+
+	// insert theme
+	MgoDB.DB(MgoDBName).C(MgoThemeCol).Insert(ThemeCol)
 
 	PostCol2 = PostCol1
 	PostCol2.ID = PostID2
