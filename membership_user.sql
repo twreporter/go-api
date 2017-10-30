@@ -120,6 +120,7 @@ CREATE TABLE `reporter_accounts` (
   `password` varchar(255) NOT NULL,
   `active` tinyint(1) DEFAULT '0',
   `activate_token` varchar(50) DEFAULT NULL,
+  `act_exp_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_reporter_accounts_account` (`account`),
   KEY `fk_reporter_accounts_users1_idx` (`user_id`),
