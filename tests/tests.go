@@ -23,18 +23,15 @@ import (
 )
 
 var (
-	DefaultID        = "1"
-	DefaultAccount   = "nickhsine@twreporter.org"
-	DefaultPassword  = "0000"
-	DefaultID2       = "2"
-	DefaultAccount2  = "turtle@twreporter.org"
-	DefaultPassword2 = "1111"
-	DefaultService   = "default_service"
-	DefaultToken     = "default_token"
-	Engine           *gin.Engine
-	DB               *gorm.DB
-	MgoDB            *mgo.Session
-	MgoDBName        = "gorm"
+	DefaultID       = "1"
+	DefaultAccount  = "nickhsine@twreporter.org"
+	DefaultPassword = "0000"
+	DefaultService  = "default_service"
+	DefaultToken    = "default_token"
+	Engine          *gin.Engine
+	DB              *gorm.DB
+	MgoDB           *mgo.Session
+	MgoDBName       = "gorm"
 
 	// collections name
 	MgoPostCol       = "posts"
@@ -275,16 +272,7 @@ func SetGormDefaultRecords() {
 		Password:      fmt.Sprintf("%x", key),
 		Active:        true,
 		ActivateToken: "",
-	}
-	_, _ = ms.InsertUserByReporterAccount(ra)
-
-	key, _ = scrypt.Key([]byte(DefaultPassword2), []byte(""), 16384, 8, 1, 32)
-
-	ra = models.ReporterAccount{
-		Account:       DefaultAccount2,
-		Password:      fmt.Sprintf("%x", key),
-		Active:        true,
-		ActivateToken: "",
+		ActExpTime:    time.Now(),
 	}
 	_, _ = ms.InsertUserByReporterAccount(ra)
 

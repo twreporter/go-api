@@ -57,7 +57,7 @@ func (s *GormStorage) GetReporterAccountData(email string) (*models.ReporterAcco
 
 	ra := models.ReporterAccount{}
 	err := s.db.Where(&models.ReporterAccount{Account: email}).Find(&ra).Error
-	return &ra, err
+	return &ra, s.NewStorageError(err, "GormStorage.GetReporterAccountData", "Getting account from reporter_accounts table occurs error")
 }
 
 // GetUserDataByReporterAccount get user data from user table by providing its reporter account data
@@ -119,16 +119,8 @@ func (s *GormStorage) UpdateOAuthData(newData models.OAuthAccount) (models.OAuth
 	return matO, err
 }
 
-// UpdateReporterAccountPassword update password for a reporter account
-func (s *GormStorage) UpdateReporterAccountPassword(ra *models.ReporterAccount, password string) (*models.ReporterAccount, error) {
-	ra.Password = password
+// UpdateReporterAccount update a reporter account
+func (s *GormStorage) UpdateReporterAccount(ra *models.ReporterAccount) error {
 	err := s.db.Save(ra).Error
-	return ra, err
-}
-
-// UpdateReporterAccountActive update password for a reporter account
-func (s *GormStorage) UpdateReporterAccountActive(ra *models.ReporterAccount, active bool) (*models.ReporterAccount, error) {
-	ra.Active = active
-	err := s.db.Save(ra).Error
-	return ra, err
+	return err
 }

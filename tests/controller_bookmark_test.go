@@ -94,9 +94,10 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 }
 
 func TestGetBookmarksOfAUser(t *testing.T) {
+	const userID = "2"
 	var resp *httptest.ResponseRecorder
-	var path = fmt.Sprintf("/v1/users/%v/bookmarks?offset=0", DefaultID2)
-	var jwt = GenerateJWT(GetUser(DefaultID2))
+	var path = fmt.Sprintf("/v1/users/%v/bookmarks?offset=0", userID)
+	var jwt = GenerateJWT(GetUser(userID))
 
 	/** START - List bookmarks successfully **/
 	// List empty array of bookmarks of the user
@@ -133,15 +134,16 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 }
 
 func TestGetABookmarkOfAUser(t *testing.T) {
-	var path = fmt.Sprintf("/v1/users/%v/bookmarks/mock-article-3", DefaultID2)
-	var jwt = GenerateJWT(GetUser(DefaultID2))
+	const userID = "2"
+	var path = fmt.Sprintf("/v1/users/%v/bookmarks/mock-article-3", userID)
+	var jwt = GenerateJWT(GetUser(userID))
 
 	/** START - Fail to get a bookmark of a user **/
 	resp := ServeHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 404)
 
 	// add a bookmark onto a user
-	_ = ServeHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", DefaultID2), bookmarkJSON3, "application/json", fmt.Sprintf("Bearer %v", jwt))
+	_ = ServeHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", userID), bookmarkJSON3, "application/json", fmt.Sprintf("Bearer %v", jwt))
 
 	// still fail to get the bookmark of the user because of host is not provided
 	resp = ServeHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))

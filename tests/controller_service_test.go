@@ -25,11 +25,12 @@ type ServiceResponse struct {
 }
 
 func TestServiceAuthorization(t *testing.T) {
+	const userID = "2"
 	var resp *httptest.ResponseRecorder
 
 	// ===== START - Fail to pass Authorization ===== //
-	// email(of DefaultID2) is not in the admin white list
-	resp = ServeHTTP("POST", "/v1/services", "", "", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultID2))))
+	// email(of userID) is not in the admin white list
+	resp = ServeHTTP("POST", "/v1/services", "", "", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(userID))))
 	assert.Equal(t, resp.Code, 401)
 
 	// without Authorization header

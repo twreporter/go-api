@@ -24,8 +24,7 @@ type MembershipStorage interface {
 	InsertUserByOAuth(models.OAuthAccount) models.User
 	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
 	UpdateOAuthData(models.OAuthAccount) (models.OAuthAccount, error)
-	UpdateReporterAccountPassword(*models.ReporterAccount, string) (*models.ReporterAccount, error)
-	UpdateReporterAccountActive(*models.ReporterAccount, bool) (*models.ReporterAccount, error)
+	UpdateReporterAccount(*models.ReporterAccount) error
 
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)
