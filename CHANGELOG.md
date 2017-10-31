@@ -1,3 +1,15 @@
+### 1.1.9
+- Update controllers/oauth/google/google.go. Set jwt in the cookies
+- Add ActExpTime in ReporterAccount model
+- Update middlewares/jwt.go. Add SetEmailClaim function.
+- Add act_exp_time field in membership_user.sq
+- lAdd GinResponseWrapper function, which deliver the response to the client
+- Update controllers/account.go
+  - add ChangePassword and ForgetPassword functions
+  - code refactor since the return value of each function is wrapped by
+  GinReponseWrapper
+  - functional test refactor
+
 ### 1.1.8
 - Bug fix. Output `html` field in ContentBody.
 

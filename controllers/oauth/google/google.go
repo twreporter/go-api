@@ -1,6 +1,7 @@
 package google
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -82,6 +83,17 @@ func (o Google) Authenticate(c *gin.Context) {
 	location := c.Query("location")
 	domain := c.Query("domain")
 
+	u, err := url.Parse(location)
+	var secure bool
+	secure = false
+
+	if u.Scheme == "https" {
+		secure = true
+	}
+
+	parameters := u.Query()
+	parameters.Add("login", "google")
+
 	// get user data from Google
 	fstring, err := getRemoteUserData(c.Request, c.Writer)
 	if err != nil {
@@ -134,20 +146,13 @@ func (o Google) Authenticate(c *gin.Context) {
 		return
 	}
 
-	u, err := url.Parse(location)
-	var secure bool
-	secure = false
-
-	if u.Scheme == "https" {
-		secure = true
-	}
-
-	parameters := u.Query()
-	parameters.Add("login", "google")
 	u.RawQuery = parameters.Encode()
 	location = u.String()
 
-	c.SetCookie("token", token, 100, u.Path, domain, secure, true)
+	authJson := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
+	authResp, _ := json.Marshal(authJson)
+
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, location)
 }
 
