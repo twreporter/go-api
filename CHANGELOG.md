@@ -1,3 +1,6 @@
+### 1.1.8
+- Bug fix. Output `html` field in ContentBody.
+
 ### 1.1.7
 - Embed Theme field in post model 
 - Make activation email more stylish
