@@ -1,3 +1,16 @@
+### 1.1.7
+- Embed Theme field in post model 
+- Make activation email more stylish
+
+### 1.1.6
+- Fetch sections asynchronously for index_page controller
+
+### 1.1.5
+- Sort returned bookmarks of a user by `updated_at` in `users_bookmarks` table
+
+### 1.1.4
+- Sort relateds according to the order set by editors
+
 ### 1.1.3 
 - Add job title of authors
 - Check JWT expiration time

@@ -1,6 +1,7 @@
 package constants
 
 const (
+	// controller name
 	MembershipController = "membership_controller"
 	NewsController       = "news_controller"
 	FacebookController   = "facebook_controller"
@@ -34,4 +35,8 @@ const (
 	CultureAndArt           = "culture_art"
 	International           = "international"
 	LivingAndMedicalCare    = "living_medical_care"
+
+	// table name
+	TableUsersBookmarks = "users_bookmarks"
+	TableBookmarks      = "bookmarks"
 )

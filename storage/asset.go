@@ -10,6 +10,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+// _StringToPscalCase - change WORD to pscal-case
+// EX: leading_image_portrait -> LeadingImagePortrait
 func (m *MongoStorage) _StringToPscalCase(str string) (pscalCase string) {
 	isToUpper := true
 	for _, runeValue := range str {
@@ -27,7 +29,7 @@ func (m *MongoStorage) _StringToPscalCase(str string) (pscalCase string) {
 	return
 }
 
-// GetEmbeddedAsset ...
+// GetEmbeddedAsset - get full embedded assets of the instance of models.NewsEntity
 func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []string) {
 	if embedded != nil {
 		for _, ele := range embedded {
@@ -47,8 +49,10 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 				assetName := m._StringToPscalCase(ele)
 				if ids := entity.GetEmbeddedAsset(assetName + "Origin"); ids != nil {
 					if len(ids) > 0 {
-						img, err := m.GetImage(ids[0])
-						if err == nil {
+						var imgs []models.MongoImage
+						err := m._GetAssetsByIDs(ids, "images", &imgs)
+						if err == nil && len(imgs) > 0 {
+							img := imgs[0].ToImage()
 							entity.SetEmbeddedAsset(assetName, &img)
 						}
 					}
@@ -57,9 +61,22 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 			case "leading_video":
 				if ids := entity.GetEmbeddedAsset("LeadingVideoOrigin"); ids != nil {
 					if len(ids) > 0 {
-						video, err := m.GetVideo(ids[0])
-						if err == nil {
+						var videos []models.MongoVideo
+						err := m._GetAssetsByIDs(ids, "videos", &videos)
+						if err == nil && len(videos) > 0 {
+							video := videos[0].ToVideo()
 							entity.SetEmbeddedAsset("LeadingVideo", &video)
+						}
+					}
+				}
+				break
+			case "theme":
+				if ids := entity.GetEmbeddedAsset("ThemeOrigin"); ids != nil {
+					if len(ids) > 0 {
+						var themes []models.Theme
+						err := m._GetAssetsByIDs(ids, "themes", &themes)
+						if err == nil && len(themes) > 0 {
+							entity.SetEmbeddedAsset("Theme", &themes[0])
 						}
 					}
 				}
@@ -67,28 +84,27 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 			case "categories":
 				if ids := entity.GetEmbeddedAsset("CategoriesOrigin"); ids != nil {
 					if len(ids) > 0 {
-						categories, _ := m.GetCategories(ids)
-						_categories := make([]models.Category, len(categories))
-						for i, v := range categories {
-							_categories[i] = v
+						var categories []models.Category
+						err := m._GetAssetsByIDs(ids, "postcategories", &categories)
+						if err == nil {
+							entity.SetEmbeddedAsset("Categories", categories)
 						}
-						entity.SetEmbeddedAsset("Categories", _categories)
 					}
 				}
 				break
 			case "tags":
 				if ids := entity.GetEmbeddedAsset("TagsOrigin"); ids != nil {
 					if len(ids) > 0 {
-						tags, _ := m.GetTags(ids)
-						_tags := make([]models.Tag, len(tags))
-						for i, v := range tags {
-							_tags[i] = v
+						var tags []models.Tag
+						err := m._GetAssetsByIDs(ids, "tags", &tags)
+						if err == nil {
+							entity.SetEmbeddedAsset("Tags", tags)
 						}
-						entity.SetEmbeddedAsset("Tags", _tags)
 					}
 				}
 				break
 			case "relateds", "topic_relateds":
+				var _relateds []models.Post
 				if ids := entity.GetEmbeddedAsset("RelatedsOrigin"); ids != nil {
 					if len(ids) > 0 {
 						query := models.MongoQuery{
@@ -101,9 +117,16 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 							embedded = []string{"hero_image", "categories", "tags", "og_image"}
 						}
 						relateds, _, err := m.GetMetaOfPosts(query, 0, 0, "-publishedDate", embedded)
+						for _, id := range ids {
+							for _, related := range relateds {
+								if id.Hex() == related.ID.Hex() {
+									_relateds = append(_relateds, related)
+								}
+							}
+						}
 
 						if err == nil {
-							entity.SetEmbeddedAsset("Relateds", relateds)
+							entity.SetEmbeddedAsset("Relateds", _relateds)
 						}
 					}
 				}
@@ -150,12 +173,10 @@ func (m *MongoStorage) GetEmbeddedAsset(entity models.NewsEntity, embedded []str
 	return
 }
 
-// GetCategories ...
-func (m *MongoStorage) GetCategories(ids []bson.ObjectId) ([]models.Category, error) {
-	var cats []models.Category
-
+// _GetAssetsByIDs - get whole assets by their objectIDs
+func (m *MongoStorage) _GetAssetsByIDs(ids []bson.ObjectId, collectionName string, v interface{}) error {
 	if ids == nil {
-		return cats, nil
+		return nil
 	}
 
 	query := models.MongoQuery{
@@ -164,64 +185,16 @@ func (m *MongoStorage) GetCategories(ids []bson.ObjectId) ([]models.Category, er
 		},
 	}
 
-	_, err := m.GetDocuments(query, 0, 0, "_id", "postcategories", &cats)
+	_, err := m.GetDocuments(query, 0, 0, "_id", collectionName, v)
 
 	if err != nil {
-		return nil, m.NewStorageError(err, "GetCategories", "storage.posts.get_categories")
+		return m.NewStorageError(err, "_GetAssetsByIDs", "storage.assets.get_embedded_assets.get_assets_by_ids")
 	}
 
-	return cats, nil
+	return nil
 }
 
-// GetTags ...
-func (m *MongoStorage) GetTags(ids []bson.ObjectId) ([]models.Tag, error) {
-	var tags []models.Tag
-
-	if ids == nil {
-		return tags, nil
-	}
-
-	query := models.MongoQuery{
-		IDs: models.MongoQueryComparison{
-			In: ids,
-		},
-	}
-
-	_, err := m.GetDocuments(query, 0, 0, "_id", "tags", &tags)
-
-	if err != nil {
-		return nil, m.NewStorageError(err, "GetCategories", "storage.posts.get_tags")
-	}
-
-	return tags, nil
-}
-
-// GetVideo ...
-func (m *MongoStorage) GetVideo(id bson.ObjectId) (models.Video, error) {
-	var mgoVideo models.MongoVideo
-
-	err := m.GetDocument(id, "videos", &mgoVideo)
-
-	if err != nil {
-		return models.Video{}, err
-	}
-
-	return mgoVideo.ToVideo(), nil
-}
-
-// GetImage ...
-func (m *MongoStorage) GetImage(id bson.ObjectId) (models.Image, error) {
-	var mgoImg models.MongoImage
-
-	err := m.GetDocument(id, "images", &mgoImg)
-
-	if err != nil {
-		return models.Image{}, err
-	}
-
-	return mgoImg.ToImage(), nil
-}
-
+// GetAuthors - get whole author documents by their objectIDs
 func (m *MongoStorage) GetAuthors(ids []bson.ObjectId) ([]models.Author, error) {
 	var authors []models.Author
 	var orderedAuthors []models.Author

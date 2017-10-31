@@ -8,7 +8,7 @@ import (
 
 // ContentBody ...
 type ContentBody struct {
-	HTML    string   `json:"html"`
+	HTML    string   `bson:"html" json:"-"`
 	APIData []bson.M `bson:"apiData" json:"api_data"`
 }
 
@@ -30,6 +30,8 @@ type Post struct {
 	Categories                 []Category      `bson:"-" json:"categories,omitempty"`
 	CategoriesOrigin           []bson.ObjectId `bson:"categories,omitempty" json:"-"`
 	Style                      string          `bson:"style" json:"style"`
+	Theme                      *Theme          `bson:"-" json:"theme"`
+	ThemeOrigin                bson.ObjectId   `bson:"theme,omitempty" json:"-"`
 	Copyright                  string          `bson:"copyright" json:"copyright"`
 	Tags                       []Tag           `bson:"-" json:"tags,omitempty"`
 	TagsOrigin                 []bson.ObjectId `bson:"tags,omitempty" json:"-"`

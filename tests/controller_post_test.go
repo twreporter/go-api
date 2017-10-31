@@ -95,6 +95,7 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, post.Categories[0].ID, CatID)
 	assert.Equal(t, post.IsFeatured, true)
 	assert.Equal(t, post.Full, false)
+	assert.Equal(t, post.Theme.ID, ThemeID)
 	// End -- Get all the posts //
 
 	// Start -- Get posts with isFeature=true //

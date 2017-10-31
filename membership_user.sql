@@ -189,6 +189,7 @@ DROP TABLE IF EXISTS `users_bookmarks`;
 CREATE TABLE `users_bookmarks` (
   `user_id` int(10) unsigned NOT NULL,
   `bookmark_id` int(10) unsigned NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`user_id`,`bookmark_id`),
   KEY `fk_users_has_bookmarks_bookmarks1_idx` (`bookmark_id`),
   KEY `fk_users_has_bookmarks_users1_idx` (`user_id`),

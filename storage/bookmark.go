@@ -71,7 +71,10 @@ func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]model
 		return bookmarks, 0, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
 	}
 
-	err = g.db.Model(&user).Limit(limit).Offset(offset).Related(&bookmarks, bookmarksStr).Error
+	// The reason I write the raw sql statement, not use gorm association(see the following commented code),
+	// err = g.db.Model(&user).Limit(limit).Offset(offset).Order("created_at desc").Related(&bookmarks, bookmarksStr).Error
+	// is because I need to sort/limit/offset the records occording to `users_bookmarks`.`created_at`.
+	err = g.db.Raw("SELECT `users_bookmarks`.created_at AS users_bookmarks_created_at, `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND ((`users_bookmarks`.`user_id` IN (?))) ORDER BY users_bookmarks_created_at desc LIMIT ? OFFSET ?", id, limit, offset).Scan(&bookmarks).Error
 
 	if err != nil {
 		return bookmarks, 0, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_bookmarks")
