@@ -1,4 +1,4 @@
-package facebook
+package controllers
 
 import (
 	"encoding/json"
@@ -20,24 +20,26 @@ import (
 	"golang.org/x/oauth2/facebook"
 )
 
-var oauthConf *oauth2.Config
-
 // Facebook ...
 type Facebook struct {
-	Storage storage.MembershipStorage
+	Storage   storage.MembershipStorage
+	oauthConf *oauth2.Config
 }
 
-func (fc Facebook) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	group.GET("/auth/facebook", fc.BeginAuth)
-	group.GET("/auth/facebook/callback", fc.Authenticate)
+// SetRoute set endpoints for serving facebook oauth
+func (f Facebook) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
+	group.GET("/auth/facebook", f.BeginAuth)
+	group.GET("/auth/facebook/callback", f.Authenticate)
 	return group
 }
 
-func (fc Facebook) Close() error {
+// Close ...
+func (f Facebook) Close() error {
 	return nil
 }
 
-func initOauthConfig(location string, domain string) {
+// InitOauthConfig initialize facebook oauth config
+func (f *Facebook) InitOauthConfig(location string, domain string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if location == "" {
 		location = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
@@ -50,8 +52,8 @@ func initOauthConfig(location string, domain string) {
 	location = url.QueryEscape(location)
 	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?location=" + location + "&domain=" + domain
 
-	if oauthConf == nil {
-		oauthConf = &oauth2.Config{
+	if f.oauthConf == nil {
+		f.oauthConf = &oauth2.Config{
 			ClientID:     utils.Cfg.OauthSettings.FacebookSettings.ID,
 			ClientSecret: utils.Cfg.OauthSettings.FacebookSettings.Secret,
 			RedirectURL:  redirectURL,
@@ -59,24 +61,23 @@ func initOauthConfig(location string, domain string) {
 			Endpoint:     facebook.Endpoint,
 		}
 	} else {
-		oauthConf.RedirectURL = redirectURL
+		f.oauthConf.RedirectURL = redirectURL
 	}
 }
 
 // BeginAuth redirects user to the Facebook Authentication
-func (o Facebook) BeginAuth(c *gin.Context) {
-
+func (f *Facebook) BeginAuth(c *gin.Context) {
 	location := c.Query("location")
 	domain := c.Query("domain")
-	initOauthConfig(location, domain)
-	URL, err := url.Parse(oauthConf.Endpoint.AuthURL)
+	f.InitOauthConfig(location, domain)
+	URL, err := url.Parse(f.oauthConf.Endpoint.AuthURL)
 	if err != nil {
 		log.Error("Parse: ", err)
 	}
 	parameters := url.Values{}
-	parameters.Add("client_id", oauthConf.ClientID)
-	parameters.Add("scope", strings.Join(oauthConf.Scopes, " "))
-	parameters.Add("redirect_uri", oauthConf.RedirectURL)
+	parameters.Add("client_id", f.oauthConf.ClientID)
+	parameters.Add("scope", strings.Join(f.oauthConf.Scopes, " "))
+	parameters.Add("redirect_uri", f.oauthConf.RedirectURL)
 	parameters.Add("response_type", "code")
 	parameters.Add("state", utils.Cfg.OauthSettings.FacebookSettings.Statestr)
 	URL.RawQuery = parameters.Encode()
@@ -85,8 +86,106 @@ func (o Facebook) BeginAuth(c *gin.Context) {
 }
 
 // Authenticate requests the user profile from Facebook
-func (o Facebook) Authenticate(c *gin.Context) {
-	log.Info("controllers.oauth.facebook.authenticate. OAuth type: ", constants.Facebook)
+func (f *Facebook) Authenticate(c *gin.Context) {
+	var appErr models.AppError
+	var err error
+	var matchUser models.User
+	var remoteOAuth models.OAuthAccount
+
+	// get user data from Facebook
+	fstring, err := f.GetRemoteUserData(c.Request, c.Writer)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "error": err.Error()})
+		return
+	}
+
+	// decode user data returned by Facebook
+	remoteOAuth = models.OAuthAccount{
+		Type:      constants.Facebook,
+		AId:       utils.ToNullString(gjson.Get(fstring, "id").Str),
+		Email:     utils.ToNullString(gjson.Get(fstring, "email").Str),
+		Name:      utils.ToNullString(gjson.Get(fstring, "name").Str),
+		FirstName: utils.ToNullString(gjson.Get(fstring, "first_name").Str),
+		LastName:  utils.ToNullString(gjson.Get(fstring, "last_name").Str),
+		Gender:    utils.GetGender(gjson.Get(fstring, "gender").Str),
+		Picture:   utils.ToNullString(gjson.Get(fstring, "picture.data.url").Str),
+	}
+
+	// get the record from o_auth_accounts table
+	_, err = f.Storage.GetOAuthData(remoteOAuth.AId, remoteOAuth.Type)
+
+	// oAuth account is not existed
+	// sign in by oauth for the first time
+	if err != nil {
+		appErr = err.(models.AppError)
+
+		// return internal server error
+		if appErr.StatusCode != http.StatusNotFound {
+			c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
+			return
+		}
+
+		// email is provided in oAuth response
+		if remoteOAuth.Email.Valid {
+			// get the record from users table
+			matchUser, err = f.Storage.GetUserByEmail(remoteOAuth.Email.String)
+
+			// record is not existed in users table
+			if err != nil {
+				appErr = err.(models.AppError)
+
+				// return internal server error
+				if appErr.StatusCode != http.StatusNotFound {
+					c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
+					return
+				}
+
+				// no record in users table with this email
+				// create a record in users table
+				// and create a record in o_auth_accounts table
+				matchUser = f.Storage.InsertUserByOAuth(remoteOAuth)
+			} else {
+				// record existed in user table
+				// create record in o_auth_accounts table
+				// and connect it to the user record
+				remoteOAuth.UserID = matchUser.ID
+				err = f.Storage.InsertOAuthAccount(remoteOAuth)
+
+				// return internal server error
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
+					return
+				}
+			}
+		} else {
+			// email is not provided in oAuth response
+			// create a record in users table
+			// and also create a record in o_auth_accounts table
+			matchUser = f.Storage.InsertUserByOAuth(remoteOAuth)
+		}
+	} else {
+		// user signed in before
+		matchUser, err = f.Storage.GetUserDataByOAuth(remoteOAuth)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
+			return
+		}
+
+		// update existing OAuth data
+		_, err = f.Storage.UpdateOAuthData(remoteOAuth)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
+			return
+		}
+	}
+
+	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
+		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
+	if err != nil {
+		c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
+		return
+	}
+
 	location := c.Query("location")
 	domain := c.Query("domain")
 
@@ -101,69 +200,18 @@ func (o Facebook) Authenticate(c *gin.Context) {
 	parameters := u.Query()
 	parameters.Add("login", "facebook")
 
-	// get user data from Facebook
-	fstring, err := getRemoteUserData(c.Request, c.Writer)
-	if err != nil {
-		parameters.Add("error", err.Error())
-		u.RawQuery = parameters.Encode()
-		location = u.String()
-		c.Redirect(http.StatusTemporaryRedirect, location)
-		return
-	}
-
-	// decode user data returned by Facebook
-	remoteOauth := models.OAuthAccount{
-		Type:      constants.Facebook,
-		AId:       utils.ToNullString(gjson.Get(fstring, "id").Str),
-		Email:     utils.ToNullString(gjson.Get(fstring, "email").Str),
-		Name:      utils.ToNullString(gjson.Get(fstring, "name").Str),
-		FirstName: utils.ToNullString(gjson.Get(fstring, "first_name").Str),
-		LastName:  utils.ToNullString(gjson.Get(fstring, "last_name").Str),
-		Gender:    utils.GetGender(gjson.Get(fstring, "gender").Str),
-		Picture:   utils.ToNullString(gjson.Get(fstring, "picture.data.url").Str),
-	}
-
-	log.WithFields(log.Fields{
-		"Type": constants.Facebook,
-		"AId":  remoteOauth.AId,
-	}).Info("controllers.oauth.facebook.authenticate. OAuth Login")
-
-	// find the OAuth user from the database
-	matchUser, err := o.Storage.GetUserDataByOAuth(remoteOauth)
-	// if the user doesn't exist, register the user automatically
-	if err != nil {
-		log.WithFields(log.Fields{
-			"Type": constants.Facebook,
-			"AId":  remoteOauth.AId,
-			"Name": remoteOauth.Name,
-		}).Info("controllers.oauth.facebook.authenticate. Create OAuth User")
-		matchUser = o.Storage.InsertUserByOAuth(remoteOauth)
-	} else {
-		// update existing OAuth data
-		o.Storage.UpdateOAuthData(remoteOauth)
-	}
-
-	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
-		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
-
-	if err != nil {
-		log.Error("controllers.oauth.facebook.authenticate_parse_location_error", err.Error())
-		c.JSON(500, gin.H{"status": "Internal server error", "error": err.Error()})
-		return
-	}
-
 	u.RawQuery = parameters.Encode()
 	location = u.String()
 
-	authJson := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
-	authResp, _ := json.Marshal(authJson)
+	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
+	authResp, _ := json.Marshal(authJSON)
 
 	c.SetCookie("auth_info", string(authResp), 100, u.Path, domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, location)
 }
 
-// getRemoteUserData fetched user data from Facebook
-func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
+// GetRemoteUserData fetched user data from Facebook
+func (f *Facebook) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
 	oauthStateString := utils.Cfg.OauthSettings.FacebookSettings.Statestr
 
@@ -175,7 +223,7 @@ func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 	}
 	code := r.FormValue("code")
 
-	token, err := oauthConf.Exchange(oauth2.NoContext, code)
+	token, err := f.oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Warnf("controllers.oauth.facebook.getRemoteUserData. oauthConf.Exchange() failed with '%s'\n", err)
 		return "", models.NewAppError("Code exchange failed", "controllers.oauth.facebook", err.Error(), 500)
@@ -188,7 +236,8 @@ func getRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 		log.Warnf("controllers.oauth.facebook.getRemoteUserData. Cannot get user info using Facebook API: %s\n", err)
 		return "", models.NewAppError("Cannot get user info using Facebook API", "controllers.oauth.facebook", err.Error(), 500)
 	}
-	defer resp.Body.Close()
+
+	defer utils.Check(resp.Body.Close)
 
 	response, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
