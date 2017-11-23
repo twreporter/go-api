@@ -60,9 +60,7 @@ type ReporterAccount struct {
 	UpdatedAt     time.Time  `json:"updated_at"`
 	DeletedAt     *time.Time `json:"deleted_at"`
 	ID            uint       `gorm:"primary_key" json:"id"`
-	Account       string     `gorm:"size:100;unique_index;not null" json:"account"`
-	Password      string     `gorm:"not null" json:"-"`
-	Active        bool       `gorm:"default:0" json:"active"`
+	Email         string     `gorm:"size:100;unique_index;not null" json:"email"`
 	ActivateToken string     `gorm:"size:50" json:"activate_token"`
 	ActExpTime    time.Time  `json:"-"`
 }

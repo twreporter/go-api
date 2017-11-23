@@ -11,120 +11,51 @@ import (
 	"twreporter.org/go-api/utils"
 )
 
-const (
-	activateMailSubject = "啟動報導者帳號"
-)
-
-// LoginBody is to be binded from form values
-type LoginBody struct {
-	Email    string `json:"email" form:"email" binding:"required"`
-	Password string `json:"password" form:"password" binding:"required"`
+// SignInBody is to store POST body
+type SignInBody struct {
+	Email string `json:"email" form:"email" binding:"required"`
 }
 
 // parseAccountPostBody get email and password value from the POST body
-func (mc *MembershipController) parseAccountPostBody(c *gin.Context) (LoginBody, error) {
-	var err error
-	var login LoginBody
-
-	if err = c.Bind(&login); err != nil {
+func (mc *MembershipController) parseAccountPostBody(c *gin.Context) (signIn SignInBody, err error) {
+	if err = c.Bind(&signIn); err != nil {
 		log.Error("err:", err.Error())
-		return login, models.NewAppError("parseAccountPostBody", "controllers.account.parse_post_body", err.Error(), http.StatusBadRequest)
+		return signIn, models.NewAppError("parseAccountPostBody", "controllers.account.parse_post_body", err.Error(), http.StatusBadRequest)
 	}
-	log.Info("login:", login)
 
-	return login, nil
+	return signIn, nil
 }
 
-// Authenticate authenticate a reporter account
-func (mc *MembershipController) Authenticate(c *gin.Context) (int, gin.H, error) {
-	const errorWhere = "MembershipController.Authenticate"
-	var account *models.ReporterAccount
-	var err error
-	var login LoginBody
-	var email string
-	var encryptedPassword string
-
-	login, err = mc.parseAccountPostBody(c)
-
-	if err != nil {
-		appErr := err.(models.AppError)
-		return appErr.StatusCode, gin.H{"status": "fail", "data": LoginBody{
-			Email:    "email is required",
-			Password: "password is required",
-		}}, nil
-	}
-
-	email = login.Email
-
-	encryptedPassword, err = utils.GenerateEncryptedPassword([]byte(login.Password))
-
-	if err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Encrypt password occurs error", err.Error(), http.StatusInternalServerError)
-	}
-
-	account, err = mc.Storage.GetReporterAccountData(email)
-
-	if err != nil {
-		return 0, gin.H{}, err
-	}
-
-	if !account.Active {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Account is not active", "", http.StatusUnauthorized)
-	}
-
-	if encryptedPassword == account.Password {
-		user, err := mc.Storage.GetUserDataByReporterAccount(account)
-		if err != nil {
-			return 0, gin.H{}, models.NewAppError(errorWhere, "Getting user data from DB occurs error", err.Error(), http.StatusUnauthorized)
-		}
-
-		jwt, err := utils.RetrieveToken(user.ID, user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
-		if err != nil {
-			return 0, gin.H{}, models.NewAppError(errorWhere, "Generating JWT occurs error", err.Error(), http.StatusInternalServerError)
-		}
-
-		return 200, gin.H{"status": "You are logged in",
-			"id": user.ID, "privilege": user.Privilege, "firstname": user.FirstName.String,
-			"lastname": user.LastName.String, "email": user.Email.String, "jwt": jwt}, nil
-	}
-
-	return 0, gin.H{}, models.NewAppError(errorWhere, "Invalid password", "", http.StatusUnauthorized)
-}
-
-// Signup - create/update a reporter account
-func (mc *MembershipController) Signup(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
-	const errorWhere = "MembershipController.Signup"
+// SignIn - send email containing sign-in information to the client
+func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
+	const errorWhere = "MembershipController.SignIn"
+	const SignInMailSubject = "登入報導者"
 	var activeToken string
-	var err error
-	var encryptedPassword string
-	var login LoginBody
+	var appErr models.AppError
 	var email string
-	var ra *models.ReporterAccount
+	var err error
+	var matchedUser models.User
+	var ra models.ReporterAccount
+	var signIn SignInBody
+	var statusCode int
 
 	// extract email and password field in POST body
-	login, err = mc.parseAccountPostBody(c)
+	signIn, err = mc.parseAccountPostBody(c)
 	if err != nil {
 		appErr := err.(models.AppError)
-		return appErr.StatusCode, gin.H{"status": "fail", "data": LoginBody{
-			Email:    "email is required",
-			Password: "password is required",
+		return appErr.StatusCode, gin.H{"status": "fail", "data": SignInBody{
+			Email: "email is required",
 		}}, nil
 	}
 
-	email = login.Email
+	email = signIn.Email
 
 	// Check if mail address is not malform
 	_, err = mail.ParseAddress(email)
 	if err != nil {
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": LoginBody{
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": SignInBody{
 			Email: "email is malform",
 		}}, nil
-	}
-
-	// generate encrypted password
-	encryptedPassword, err = utils.GenerateEncryptedPassword([]byte(login.Password))
-	if err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Generating encrypted password occurs error", err.Error(), http.StatusInternalServerError)
 	}
 
 	// generate active token
@@ -135,61 +66,70 @@ func (mc *MembershipController) Signup(c *gin.Context, mailSender *utils.EmailCo
 
 	// get reporter account by email from reporter_account table
 	ra, err = mc.Storage.GetReporterAccountData(email)
-
-	// account is already signup
+	// account is already signed in before
 	if err == nil {
-		// account is already activated
-		if ra.Active {
-			return 0, gin.H{}, models.NewAppError(errorWhere, "Account is already signup", "", http.StatusConflict)
-		}
-
-		// account is not activated,
-		// we think the signup request as a request for changing password
-		// update the password, active token and active expire time
-		ra.Password = encryptedPassword
+		// update active token and token expire time
 		ra.ActivateToken = activeToken
-		ra.ActExpTime = time.Now().Add(time.Duration(24) * time.Hour)
+		ra.ActExpTime = time.Now().Add(time.Duration(15) * time.Minute)
 		if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
 			return 0, gin.H{}, models.NewAppError(errorWhere, "Updating DB occurs error", err.Error(), http.StatusInternalServerError)
 		}
 
-		// re-send the activation email
-		err = mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, ra.ActivateToken))
-		if err != nil {
-			return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
+		statusCode = http.StatusOK
+	} else {
+		// account is not signed in before
+		appErr = err.(models.AppError)
+
+		// internal server error
+		if appErr.StatusCode != http.StatusNotFound {
+			return 0, gin.H{}, appErr
 		}
 
-		return http.StatusCreated, gin.H{"status": "success", "data": LoginBody{
-			Email: email,
-		}}, nil
-	}
+		ra = models.ReporterAccount{
+			Email:         email,
+			ActivateToken: activeToken,
+			// expire time is one day
+			ActExpTime: time.Now().Add(time.Duration(15) * time.Minute),
+		}
 
-	// create records both in reporter_accounts and users table
-	_, err = mc.Storage.InsertUserByReporterAccount(models.ReporterAccount{
-		Account:       email,
-		Password:      encryptedPassword,
-		Active:        false,
-		ActivateToken: activeToken,
-		// expire time is one day
-		ActExpTime: time.Now().Add(time.Duration(24) * time.Hour),
-	})
+		// try to find record by email in users table
+		matchedUser, err = mc.Storage.GetUserByEmail(email)
+		// the user record is not existed
+		if err != nil {
+			// create records both in reporter_accounts and users table
+			_, err = mc.Storage.InsertUserByReporterAccount(ra)
+			if err != nil {
+				return 0, gin.H{}, models.NewAppError(errorWhere, "Inserting new record into DB occurs error", err.Error(), http.StatusInternalServerError)
+			}
 
-	if err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Inserting new record into DB occurs error", err.Error(), http.StatusInternalServerError)
+		} else {
+			// if user existed,
+			// create a record in reporter_accounts table
+			// and connect these two records
+			ra.UserID = matchedUser.ID
+			err = mc.Storage.InsertReporterAccount(ra)
+			if err != nil {
+				return 0, gin.H{}, models.NewAppError(errorWhere, "Inserting new record into DB occurs error", err.Error(), http.StatusInternalServerError)
+			}
+		}
+
+		statusCode = http.StatusCreated
 	}
 
 	// send activation email
-	err = mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, activeToken))
+	err = mailSender.Send(email, SignInMailSubject, utils.GenerateActivateMailBody(email, activeToken))
 	if err != nil {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
 	}
 
-	return http.StatusCreated, gin.H{"status": "success", "data": LoginBody{
+	return statusCode, gin.H{"status": "success", "data": SignInBody{
 		Email: email,
 	}}, nil
 }
 
-// Activate - make existed reporter account active
+// Activate - validate the reporter account
+// if validated, then sign in successfully,
+// otherwise, sign in unsuccessfully.
 func (mc *MembershipController) Activate(c *gin.Context) (int, gin.H, error) {
 	const errorWhere = "MembershipController.Activate"
 
@@ -210,7 +150,10 @@ func (mc *MembershipController) Activate(c *gin.Context) (int, gin.H, error) {
 
 	// check token
 	if ra.ActivateToken == token {
-		ra.Active = true
+		// set active expire time to now
+		// which make sure the same token not be signed in again
+		ra.ActExpTime = time.Now()
+
 		err = mc.Storage.UpdateReporterAccount(ra)
 		// handle internal server error - can't update the record in reporter_account table
 		if err != nil {
@@ -235,102 +178,4 @@ func (mc *MembershipController) Activate(c *gin.Context) (int, gin.H, error) {
 	}
 
 	return 0, gin.H{}, models.NewAppError(errorWhere, "Token is invalid", "", http.StatusUnauthorized)
-}
-
-// ChangePassword - change password of the user
-func (mc *MembershipController) ChangePassword(c *gin.Context) (int, gin.H, error) {
-	var encryptedPassword string
-	var err error
-	var errorWhere = "MembershipController.ChangePassword"
-	var login LoginBody
-	var ra *models.ReporterAccount
-
-	// extract email and password field in POST body
-	login, err = mc.parseAccountPostBody(c)
-	if err != nil {
-		appErr := err.(models.AppError)
-		log.Error(appErr.Error())
-		return appErr.StatusCode, gin.H{"status": "fail", "data": LoginBody{
-			Email:    "email is required",
-			Password: "password is required",
-		}}, nil
-	}
-
-	// emailClaim is set by gin.middleware in middlewares/jwt.go
-	emailClaim, ok := c.Get("emailClaim")
-
-	if !ok || emailClaim != login.Email {
-		return http.StatusUnauthorized, gin.H{"status": "fail", "data": LoginBody{
-			Email:    "email is not validated",
-			Password: "password is required",
-		}}, nil
-	}
-
-	// get reporter account by email from reporter_accounts table
-	ra, err = mc.Storage.GetReporterAccountData(login.Email)
-	if err != nil {
-		return 0, gin.H{}, err
-	}
-
-	// generate encrypted password
-	encryptedPassword, err = utils.GenerateEncryptedPassword([]byte(login.Password))
-	if err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Generating encrypted password occurs error", err.Error(), http.StatusInternalServerError)
-	}
-
-	// update password of reporter account
-	ra.Password = encryptedPassword
-	err = mc.Storage.UpdateReporterAccount(ra)
-	// handle internal server error - can't update the record in reporter_account table
-	if err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Updating password occurs error", err.Error(), http.StatusInternalServerError)
-	}
-
-	return http.StatusOK, gin.H{"status": "success", "data": LoginBody{
-		Email: login.Email,
-	}}, nil
-}
-
-// ForgetPassword - re-send activation email to the user according to email
-func (mc *MembershipController) ForgetPassword(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
-	type Form struct {
-		Email string `json:"email" form:"email" binding:"required"`
-	}
-
-	var email string
-	var err error
-	var errorWhere = "MembershipController.ForgetPassword"
-	var form Form
-	var ra *models.ReporterAccount
-
-	if err = c.Bind(&form); err != nil {
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": Form{
-			Email: "email is required",
-		}}, nil
-	}
-
-	email = form.Email
-
-	// get reporter account by email from reporter_account table
-	ra, err = mc.Storage.GetReporterAccountData(email)
-
-	if err != nil {
-		return 0, gin.H{}, err
-	}
-
-	// reset expire time
-	ra.ActExpTime = time.Now().Add(time.Duration(24) * time.Hour)
-	if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Updating DB occurs error", err.Error(), http.StatusInternalServerError)
-	}
-
-	// re-send the activation email
-	err = mailSender.Send(email, activateMailSubject, utils.GenerateActivateMailBody(email, ra.ActivateToken))
-	if err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
-	}
-
-	return http.StatusOK, gin.H{"status": "success", "data": Form{
-		Email: email,
-	}}, nil
 }

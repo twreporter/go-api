@@ -51,15 +51,10 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 	mailSender := utils.NewAmazonEmailSender() // use Amazon SES to send mails
 
 	// endpoints for account
-	group.POST("/login", GinResponseWrapper(mc.Authenticate))
-	group.POST("/signup", GinResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
-		return mc.Signup(c, mailSender)
+	group.POST("/signin", GinResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.SignIn(c, mailSender)
 	}))
 	group.GET("/activate", GinResponseWrapper(mc.Activate))
-	group.POST("/change-password", middlewares.CheckJWT(), middlewares.SetEmailClaim(), GinResponseWrapper(mc.ChangePassword))
-	group.POST("/forget-password", GinResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
-		return mc.ForgetPassword(c, mailSender)
-	}))
 
 	// endpoints for bookmarks of users
 	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.GetBookmarksOfAUser)

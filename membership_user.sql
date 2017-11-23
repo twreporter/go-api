@@ -116,13 +116,11 @@ CREATE TABLE `reporter_accounts` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `account` varchar(100) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `active` tinyint(1) DEFAULT '0',
+  `email` varchar(100) NOT NULL,
   `activate_token` varchar(50) DEFAULT NULL,
   `act_exp_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uix_reporter_accounts_account` (`account`),
+  UNIQUE KEY `uix_reporter_accounts_email` (`email`),
   KEY `fk_reporter_accounts_users1_idx` (`user_id`),
   CONSTRAINT `fk_reporter_accounts_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -177,6 +175,7 @@ CREATE TABLE `users` (
   `education` varchar(20) DEFAULT NULL,
   `enable_email` int(5) DEFAULT NULL,
   PRIMARY KEY (`id`)
+  KEY `idx_users_email` (`email`),
 ) ENGINE=InnoDB AUTO_INCREMENT=265 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
