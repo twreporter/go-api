@@ -1,14 +1,19 @@
-### 1.1.9
-- Update controllers/oauth/google/google.go. Set jwt in the cookies
-- Add ActExpTime in ReporterAccount model
+### 2.0.0
+**Major Change**
+- Drop password and signup process, only send activation email every time user want to sign in.
+- Dedup the clients accounts. Connect the client who signs in by oauth or by email to the existed record.
+- Move oauth controllers from subfolders to root controllers folder.
+  - controllers/oauth/goolge/google.go -> controllers/google-oauth.go
+  - controllers/oauth/facebook/facebook.go -> controllers/goog-oauth.go
+- Update controller/google-oauth.go. Set jwt in the cookies
 - Update middlewares/jwt.go. Add SetEmailClaim function.
-- Add act_exp_time field in membership_user.sq
-- lAdd GinResponseWrapper function, which deliver the response to the client
+- Update membership_user.sql
+- Change email content wording and styling
+- Add GinResponseWrapper function, which deliver the response to the client
 - Update controllers/account.go
-  - add ChangePassword and ForgetPassword functions
   - code refactor since the return value of each function is wrapped by
   GinReponseWrapper
-  - functional test refactor
+- Function test refactor
 
 ### 1.1.8
 - Bug fix. Output `html` field in ContentBody.
