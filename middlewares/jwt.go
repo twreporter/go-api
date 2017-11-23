@@ -70,7 +70,7 @@ func SetEmailClaim() gin.HandlerFunc {
 
 // ValidateAdminUsers ...
 func ValidateAdminUsers() gin.HandlerFunc {
-	var whiteList = []string{"nickhsine@twreporter.org", "hsunpei_wang@twreporter.org", "han@twreporter.org", "yucj@twreporter.org"}
+	var whiteList = []string{"nickhsine@twreporter.org", "han@twreporter.org", "yucj@twreporter.org", "developer@twreporter.org"}
 	return func(c *gin.Context) {
 		user := c.Request.Context().Value("user")
 		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["email"]
