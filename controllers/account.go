@@ -13,7 +13,8 @@ import (
 
 // SignInBody is to store POST body
 type SignInBody struct {
-	Email string `json:"email" form:"email" binding:"required"`
+	Email       string `json:"email" form:"email" binding:"required"`
+	Destination string `json:"destination" form:"destination"`
 }
 
 // parseAccountPostBody get email and password value from the POST body
@@ -117,13 +118,14 @@ func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailCo
 	}
 
 	// send activation email
-	err = mailSender.Send(email, SignInMailSubject, utils.GenerateActivateMailBody(email, activeToken))
+	err = mailSender.Send(email, SignInMailSubject, utils.GenerateActivateMailBody(email, activeToken, signIn.Destination))
 	if err != nil {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
 	}
 
 	return statusCode, gin.H{"status": "success", "data": SignInBody{
-		Email: email,
+		Email:       email,
+		Destination: signIn.Destination,
 	}}, nil
 }
 

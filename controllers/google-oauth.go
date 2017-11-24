@@ -38,18 +38,18 @@ func (g Google) Close() error {
 }
 
 // InitOauthConfig initialize google oauth config
-func (g *Google) InitOauthConfig(location string, domain string) {
+func (g *Google) InitOauthConfig(destination string, domain string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
-	if location == "" {
-		location = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
+	if destination == "" {
+		destination = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
 	}
 
 	if domain == "" {
 		domain = consumerSettings.Domain
 	}
 
-	location = url.QueryEscape(location)
-	redirectURL := utils.Cfg.OauthSettings.GoogleSettings.URL + "?location=" + location + "&domain=" + domain
+	destination = url.QueryEscape(destination)
+	redirectURL := utils.Cfg.OauthSettings.GoogleSettings.URL + "?destination=" + destination + "&domain=" + domain
 
 	if g.oauthConf == nil {
 		g.oauthConf = &oauth2.Config{
@@ -70,10 +70,10 @@ func (g *Google) InitOauthConfig(location string, domain string) {
 
 // BeginAuth redirects user to the Google Authentication
 func (g *Google) BeginAuth(c *gin.Context) {
-	location := c.Query("location")
+	destination := c.Query("destination")
 	domain := c.Query("domain")
 
-	g.InitOauthConfig(location, domain)
+	g.InitOauthConfig(destination, domain)
 
 	url := g.oauthConf.AuthCodeURL(utils.Cfg.OauthSettings.GoogleSettings.Statestr)
 
@@ -181,12 +181,12 @@ func (g *Google) Authenticate(c *gin.Context) {
 		return
 	}
 
-	location := c.Query("location")
+	destination := c.Query("destination")
 	domain := c.Query("domain")
 
 	var u *url.URL
 	var secure = false
-	u, err = url.Parse(location)
+	u, err = url.Parse(destination)
 
 	if u.Scheme == "https" {
 		secure = true
@@ -196,13 +196,13 @@ func (g *Google) Authenticate(c *gin.Context) {
 	parameters.Add("login", "google")
 
 	u.RawQuery = parameters.Encode()
-	location = u.String()
+	destination = u.String()
 
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
 	c.SetCookie("auth_info", string(authResp), 100, u.Path, domain, secure, true)
-	c.Redirect(http.StatusTemporaryRedirect, location)
+	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
 // GetRemoteUserData fetched user data from Google

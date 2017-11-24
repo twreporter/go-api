@@ -39,18 +39,18 @@ func (f Facebook) Close() error {
 }
 
 // InitOauthConfig initialize facebook oauth config
-func (f *Facebook) InitOauthConfig(location string, domain string) {
+func (f *Facebook) InitOauthConfig(destionation string, domain string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
-	if location == "" {
-		location = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
+	if destionation == "" {
+		destionation = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
 	}
 
 	if domain == "" {
 		domain = consumerSettings.Domain
 	}
 
-	location = url.QueryEscape(location)
-	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?location=" + location + "&domain=" + domain
+	destionation = url.QueryEscape(destionation)
+	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?destionation=" + destionation + "&domain=" + domain
 
 	if f.oauthConf == nil {
 		f.oauthConf = &oauth2.Config{
@@ -67,9 +67,9 @@ func (f *Facebook) InitOauthConfig(location string, domain string) {
 
 // BeginAuth redirects user to the Facebook Authentication
 func (f *Facebook) BeginAuth(c *gin.Context) {
-	location := c.Query("location")
+	destionation := c.Query("destionation")
 	domain := c.Query("domain")
-	f.InitOauthConfig(location, domain)
+	f.InitOauthConfig(destionation, domain)
 	URL, err := url.Parse(f.oauthConf.Endpoint.AuthURL)
 	if err != nil {
 		log.Error("Parse: ", err)
@@ -186,10 +186,10 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 		return
 	}
 
-	location := c.Query("location")
+	destionation := c.Query("destionation")
 	domain := c.Query("domain")
 
-	u, err := url.Parse(location)
+	u, err := url.Parse(destionation)
 	var secure bool
 	secure = false
 
@@ -201,13 +201,13 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 	parameters.Add("login", "facebook")
 
 	u.RawQuery = parameters.Encode()
-	location = u.String()
+	destionation = u.String()
 
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
 	c.SetCookie("auth_info", string(authResp), 100, u.Path, domain, secure, true)
-	c.Redirect(http.StatusTemporaryRedirect, location)
+	c.Redirect(http.StatusTemporaryRedirect, destionation)
 }
 
 // GetRemoteUserData fetched user data from Facebook
