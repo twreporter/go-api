@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/models"
 )
 
 func TestPing(t *testing.T) {
@@ -23,6 +25,8 @@ func TestMain(m *testing.M) {
 	if DB, err = OpenGormConnection(); err != nil {
 		panic(fmt.Sprintf("No error should happen when connecting to test database, but got err=%+v", err))
 	}
+
+	DB.SetJoinTableHandler(&models.User{}, constants.TableBookmarks, &models.UsersBookmarks{})
 
 	// Create Mongo DB connections
 	if MgoDB, err = OpenMgoConnection(); err != nil {

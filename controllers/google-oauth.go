@@ -66,7 +66,6 @@ func (g *Google) InitOauthConfig(location string, domain string) {
 	} else {
 		g.oauthConf.RedirectURL = redirectURL
 	}
-	log.Info("oauthConfig:", g.oauthConf)
 }
 
 // BeginAuth redirects user to the Google Authentication
