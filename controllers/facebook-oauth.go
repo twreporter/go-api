@@ -39,18 +39,14 @@ func (f Facebook) Close() error {
 }
 
 // InitOauthConfig initialize facebook oauth config
-func (f *Facebook) InitOauthConfig(destionation string, domain string) {
+func (f *Facebook) InitOauthConfig(destionation string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if destionation == "" {
 		destionation = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
 	}
 
-	if domain == "" {
-		domain = consumerSettings.Domain
-	}
-
 	destionation = url.QueryEscape(destionation)
-	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?destionation=" + destionation + "&domain=" + domain
+	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?destionation=" + destionation
 
 	if f.oauthConf == nil {
 		f.oauthConf = &oauth2.Config{
@@ -68,8 +64,7 @@ func (f *Facebook) InitOauthConfig(destionation string, domain string) {
 // BeginAuth redirects user to the Facebook Authentication
 func (f *Facebook) BeginAuth(c *gin.Context) {
 	destionation := c.Query("destionation")
-	domain := c.Query("domain")
-	f.InitOauthConfig(destionation, domain)
+	f.InitOauthConfig(destionation)
 	URL, err := url.Parse(f.oauthConf.Endpoint.AuthURL)
 	if err != nil {
 		log.Error("Parse: ", err)
@@ -187,7 +182,6 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 	}
 
 	destionation := c.Query("destionation")
-	domain := c.Query("domain")
 
 	u, err := url.Parse(destionation)
 	var secure bool
@@ -206,7 +200,7 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
-	c.SetCookie("auth_info", string(authResp), 100, u.Path, domain, secure, true)
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, utils.Cfg.ConsumerSettings.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destionation)
 }
 

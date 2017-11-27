@@ -38,18 +38,14 @@ func (g Google) Close() error {
 }
 
 // InitOauthConfig initialize google oauth config
-func (g *Google) InitOauthConfig(destination string, domain string) {
+func (g *Google) InitOauthConfig(destination string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if destination == "" {
 		destination = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
 	}
 
-	if domain == "" {
-		domain = consumerSettings.Domain
-	}
-
 	destination = url.QueryEscape(destination)
-	redirectURL := utils.Cfg.OauthSettings.GoogleSettings.URL + "?destination=" + destination + "&domain=" + domain
+	redirectURL := utils.Cfg.OauthSettings.GoogleSettings.URL + "?destination=" + destination
 
 	if g.oauthConf == nil {
 		g.oauthConf = &oauth2.Config{
@@ -71,9 +67,8 @@ func (g *Google) InitOauthConfig(destination string, domain string) {
 // BeginAuth redirects user to the Google Authentication
 func (g *Google) BeginAuth(c *gin.Context) {
 	destination := c.Query("destination")
-	domain := c.Query("domain")
 
-	g.InitOauthConfig(destination, domain)
+	g.InitOauthConfig(destination)
 
 	url := g.oauthConf.AuthCodeURL(utils.Cfg.OauthSettings.GoogleSettings.Statestr)
 
@@ -182,7 +177,6 @@ func (g *Google) Authenticate(c *gin.Context) {
 	}
 
 	destination := c.Query("destination")
-	domain := c.Query("domain")
 
 	var u *url.URL
 	var secure = false
@@ -201,13 +195,13 @@ func (g *Google) Authenticate(c *gin.Context) {
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
-	c.SetCookie("auth_info", string(authResp), 100, u.Path, domain, secure, true)
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, utils.Cfg.ConsumerSettings.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
 // GetRemoteUserData fetched user data from Google
 func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
-	loginPath := utils.Cfg.AppSettings.Path + "/login"
+	loginPath := utils.Cfg.AppSettings.Path + "/signin"
 
 	state := r.FormValue("state")
 	if state != utils.Cfg.OauthSettings.GoogleSettings.Statestr {
