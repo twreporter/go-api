@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	//log "github.com/Sirupsen/logrus"
@@ -22,7 +23,7 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 func CheckJWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
-			c.AbortWithStatus(401)
+			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 
 		user := c.Request.Context().Value("user")
@@ -30,10 +31,10 @@ func CheckJWT() gin.HandlerFunc {
 			exp := user.(*jwt.Token).Claims.(jwt.MapClaims)["exp"].(float64)
 
 			if int64(exp) < time.Now().Unix() {
-				c.AbortWithStatus(401)
+				c.AbortWithStatus(http.StatusUnauthorized)
 			}
 		} else {
-			c.AbortWithStatus(401)
+			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}
 }
@@ -46,14 +47,30 @@ func ValidateUserID() gin.HandlerFunc {
 		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["userID"]
 		userID := c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
-			c.AbortWithStatus(401)
+			c.AbortWithStatus(http.StatusUnauthorized)
 		}
+	}
+}
+
+// SetEmailClaim get email value from jwt, and set it into gin.Context
+func SetEmailClaim() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := c.Request.Context().Value("user")
+		emailClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["email"]
+
+		c.Set("emailClaim", fmt.Sprint(emailClaim))
+
+		// The reason why we don't validate the email value in POST body with jwt email claim HERE
+		// is because c.Bind(&login) only can be executed once.
+		// If we get POST body here, then in the controllers, such as controllers/account.go,
+		// we cannot c.Bind(&login) to get the POST body.
+		// Hence, here only set emailClaim in the gin.Context
 	}
 }
 
 // ValidateAdminUsers ...
 func ValidateAdminUsers() gin.HandlerFunc {
-	var whiteList = []string{"nickhsine@twreporter.org", "hsunpei_wang@twreporter.org", "han@twreporter.org", "yucj@twreporter.org"}
+	var whiteList = []string{"nickhsine@twreporter.org", "han@twreporter.org", "yucj@twreporter.org", "developer@twreporter.org"}
 	return func(c *gin.Context) {
 		user := c.Request.Context().Value("user")
 		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["email"]
@@ -64,6 +81,6 @@ func ValidateAdminUsers() gin.HandlerFunc {
 			}
 		}
 
-		c.AbortWithStatus(401)
+		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 }

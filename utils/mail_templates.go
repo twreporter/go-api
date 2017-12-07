@@ -23,6 +23,15 @@ const activateTpl = `
 			background-color: #a67a44;
 			color: #ffffff;
 		}
+
+		a {
+			text-decoration: none;
+		}
+
+		.desc a {
+			color: #040404;
+		}
+
 		</style>
 		</head>
 		<body>
@@ -44,10 +53,10 @@ const activateTpl = `
 										<br />
 										<div>
 											<span>
-											<p style="white-space:pre-line;color:#040404">
+											<p class="desc" style="white-space:pre-line;color:#040404;text-decoration:none;">
 													{{.Desc}}
 													<div style="width: 100px">
-													<a href="https://www.twreporter.org/" target="_blank"><img src="https://gallery.mailchimp.com/4da5a7d3b98dbc9fdad009e7e/images/47480183-df10-4474-932c-dea01abc2569.png" style="border: 0px  ; width: 100%; height: 100%; margin: 0px;"></a>
+														<a href="https://www.twreporter.org/" target="_blank"><img src="https://gallery.mailchimp.com/4da5a7d3b98dbc9fdad009e7e/images/47480183-df10-4474-932c-dea01abc2569.png" style="border: 0px  ; width: 100%; height: 100%; margin: 0px;"></a>
 													</div>
 												</p>
 											</span>

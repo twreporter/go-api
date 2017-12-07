@@ -9,7 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-// RetrieveToken ...
+// RetrieveToken - generate jwt token according to user's info
 func RetrieveToken(userID uint, privilege int, firstName string, lastName string, email string) (string, error) {
 	log.WithFields(log.Fields{
 		"ID":        userID,

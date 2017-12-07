@@ -2,6 +2,7 @@ package tests
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http/httptest"
 	"testing"
@@ -76,7 +77,7 @@ func TestRegisterAndDeregister(t *testing.T) {
 }
 
 func TestGetRegisterUser(t *testing.T) {
-	resp := ServeHTTP("GET", "/v1/registrations/default_service/nickhsine@twreporter.org", "", "", "")
+	resp := ServeHTTP("GET", fmt.Sprintf("/v1/registrations/default_service/%v", DefaultAccount), "", "", "")
 	assert.Equal(t, resp.Code, 200)
 
 	resp = ServeHTTP("GET", "/v1/registrations/default_service/non_existed@twreporter.org", "", "", "")
@@ -101,7 +102,7 @@ func TestGetRegisterUsers(t *testing.T) {
 func TestActivateRegistration(t *testing.T) {
 	utils.Cfg.ConsumerSettings.Host = "www.twreporter.org"
 	utils.Cfg.ConsumerSettings.Protocal = "https"
-	resp := ServeHTTP("GET", `/v1/activation/default_service/nickhsine@twreporter.org?activeToken=default_token`, "", "", "")
+	resp := ServeHTTP("GET", fmt.Sprintf("/v1/activation/default_service/%v?activeToken=default_token", DefaultAccount), "", "", "")
 	assert.Equal(t, resp.Code, 307)
 
 	loc, _ := resp.Result().Location()

@@ -27,5 +27,6 @@ func (*UsersBookmarks) Add(handler gorm.JoinTableHandlerInterface, db *gorm.DB, 
 	return db.Create(&UsersBookmarks{
 		UserID:     foreignPrimaryKey,
 		BookmarkID: associationPrimaryKey,
+		CreatedAt:  time.Now(),
 	}).Error
 }
