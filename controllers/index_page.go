@@ -43,7 +43,6 @@ func (nc *NewsController) _GetIndexPageContent(part IndexPageQueryStruct) (inter
 	}
 
 	if err != nil {
-		log.Info("err:", err)
 		return nil, err
 	}
 

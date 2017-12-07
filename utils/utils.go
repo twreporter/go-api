@@ -11,8 +11,8 @@ import (
 )
 
 // GenerateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
-func GenerateActivateMailBody(mailAddress, activeToken string) string {
-	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s", Cfg.ConsumerSettings.Protocal, Cfg.ConsumerSettings.Host, Cfg.ConsumerSettings.Port, mailAddress, activeToken)
+func GenerateActivateMailBody(mailAddress, activeToken, destination string) string {
+	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", Cfg.ConsumerSettings.Protocal, Cfg.ConsumerSettings.Host, Cfg.ConsumerSettings.Port, mailAddress, activeToken, destination)
 
 	var defaultBody = fmt.Sprintf("<a href=\"%s\" target=\"_blank\">啟動報導者帳號</a>", href)
 
@@ -29,13 +29,18 @@ func GenerateActivateMailBody(mailAddress, activeToken string) string {
 		Header   string
 		Href     string
 	}{
-		Activate: "啟動《報導者》帳號",
+		Activate: "登入《報導者》帳號",
 		Desc: `
 		親愛的讀者 您好：
 
-		請點擊上方連結確認啟動帳號。
-		`,
-		Header: "歡迎註冊《報導者》，開啟新聞小革命",
+		請點擊上方按鈕登入《報導者》網站。
+
+		此連結僅能被使用一次，並且在十五分鐘之後失效。
+
+		若使用上方按鈕無法登入，請複製以下網址，並貼到瀏覽器網址列上。
+
+		` + href,
+		Header: "歡迎登入《報導者》，開啟新聞小革命",
 		Href:   href,
 	}
 

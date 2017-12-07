@@ -4,8 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	// "gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/constants"
-	"twreporter.org/go-api/controllers/oauth/facebook"
-	"twreporter.org/go-api/controllers/oauth/google"
 	// "twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -83,8 +81,8 @@ func NewControllerFactory() (*ControllerFactory, error) {
 
 	// init controllers
 	mc := NewMembershipController(gs)
-	fc := facebook.Facebook{Storage: gs}
-	gc := google.Google{Storage: gs}
+	fc := Facebook{Storage: gs}
+	gc := Google{Storage: gs}
 
 	ms := storage.NewMongoStorage(session)
 	nc := NewNewsController(ms)

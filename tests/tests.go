@@ -3,7 +3,6 @@ package tests
 import (
 	"bytes"
 	"fmt"
-	"golang.org/x/crypto/scrypt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,26 +14,19 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/controllers"
-	"twreporter.org/go-api/controllers/oauth/facebook"
-	"twreporter.org/go-api/controllers/oauth/google"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 )
 
 var (
-	DefaultID        = "1"
-	DefaultAccount   = "nickhsine@twreporter.org"
-	DefaultPassword  = "0000"
-	DefaultID2       = "2"
-	DefaultAccount2  = "turtle@twreporter.org"
-	DefaultPassword2 = "1111"
-	DefaultService   = "default_service"
-	DefaultToken     = "default_token"
-	Engine           *gin.Engine
-	DB               *gorm.DB
-	MgoDB            *mgo.Session
-	MgoDBName        = "gorm"
+	DefaultAccount = "developer@twreporter.org"
+	DefaultService = "default_service"
+	DefaultToken   = "default_token"
+	Engine         *gin.Engine
+	DB             *gorm.DB
+	MgoDB          *mgo.Session
+	MgoDBName      = "gorm"
 
 	// collections name
 	MgoPostCol       = "posts"
@@ -268,23 +260,10 @@ func SetGormDefaultRecords() {
 	// Set an active reporter account
 	ms := storage.NewGormStorage(DB)
 
-	key, _ := scrypt.Key([]byte(DefaultPassword), []byte(""), 16384, 8, 1, 32)
-
 	ra := models.ReporterAccount{
-		Account:       DefaultAccount,
-		Password:      fmt.Sprintf("%x", key),
-		Active:        true,
-		ActivateToken: "",
-	}
-	_, _ = ms.InsertUserByReporterAccount(ra)
-
-	key, _ = scrypt.Key([]byte(DefaultPassword2), []byte(""), 16384, 8, 1, 32)
-
-	ra = models.ReporterAccount{
-		Account:       DefaultAccount2,
-		Password:      fmt.Sprintf("%x", key),
-		Active:        true,
-		ActivateToken: "",
+		Email:         DefaultAccount,
+		ActivateToken: DefaultToken,
+		ActExpTime:    time.Now().Add(time.Duration(15) * time.Minute),
 	}
 	_, _ = ms.InsertUserByReporterAccount(ra)
 
@@ -299,8 +278,8 @@ func SetupGinServer() {
 
 	// init controllers
 	mc := controllers.NewMembershipController(gs)
-	fc := facebook.Facebook{Storage: gs}
-	gc := google.Google{Storage: gs}
+	fc := controllers.Facebook{Storage: gs}
+	gc := controllers.Google{Storage: gs}
 
 	ms := storage.NewMongoStorage(MgoDB)
 	nc := controllers.NewNewsController(ms)
@@ -333,9 +312,9 @@ func GenerateJWT(user models.User) (jwt string) {
 	return
 }
 
-func GetUser(userId string) (user models.User) {
+func GetUser(email string) (user models.User) {
 	as := storage.NewGormStorage(DB)
-	user, _ = as.GetUserByID(userId)
+	user, _ = as.GetUserByEmail(email)
 	return
 }
 

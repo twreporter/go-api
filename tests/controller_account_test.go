@@ -9,61 +9,100 @@ import (
 	"twreporter.org/go-api/storage"
 )
 
-func TestLogin(t *testing.T) {
-	var resp *httptest.ResponseRecorder
-
-	// Login successfully
-	resp = ServeHTTP("POST", "/v1/login",
-		fmt.Sprintf("email=%v&password=%v", DefaultAccount, DefaultPassword),
-		"application/x-www-form-urlencoded", "")
-	assert.Equal(t, resp.Code, 200)
-
-	// Fail to login
-	resp = ServeHTTP("POST", "/v1/login",
-		fmt.Sprintf("email=%v&password=wrongpassword", DefaultAccount),
-		"application/x-www-form-urlencoded", "") //wrong password
-	assert.Equal(t, resp.Code, 401)
-}
-
-func TestSignupAndActivate(t *testing.T) {
-	var email string
+func TestSignIn(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 
 	// START - test signp endpoint //
-	// form POST body
-	email = "han@twreporter.org"
-
-	resp = ServeHTTP("POST", "/v1/signup", fmt.Sprintf("email=%v&password=0000", email),
-		"application/x-www-form-urlencoded", "")
-	assert.Equal(t, resp.Code, 201)
 
 	// JSON POST body
-	resp = ServeHTTP("POST", "/v1/signup", `{"email":"mika@twreporter.org","password":"0000"}`,
+	resp = ServeHTTP("POST", "/v1/signin", fmt.Sprintf("{\"email\":\"%s\"}", DefaultAccount),
+		"application/json", "")
+	assert.Equal(t, resp.Code, 200)
+
+	// form POST body
+	resp = ServeHTTP("POST", "/v1/signin", fmt.Sprintf("email=%s", DefaultAccount),
+		"application/x-www-form-urlencoded", "")
+	assert.Equal(t, resp.Code, 200)
+
+	// neither JSON nor form POST body
+	resp = ServeHTTP("POST", "/v1/signin", "", "application/text", "")
+	assert.Equal(t, resp.Code, 400)
+
+	// sign in with different email
+	resp = ServeHTTP("POST", "/v1/signin", fmt.Sprintf("{\"email\":\"%s\"}", "contact@twreporter.org"),
 		"application/json", "")
 	assert.Equal(t, resp.Code, 201)
 
-	// neither JSON nor form POST body
-	resp = ServeHTTP("POST", "/v1/signup", "", "application/text", "")
-	assert.Equal(t, resp.Code, 400)
-
-	// signup an already account
-	resp = ServeHTTP("POST", "/v1/signup", `{"email":"nickhsine@twreporter.org","password":"0000"}`,
-		"application/json", "")
-	assert.Equal(t, resp.Code, 409)
-
 	// END - test signup endpoint //
+}
+
+func TestActivate(t *testing.T) {
+	var resp *httptest.ResponseRecorder
 
 	// START - test activate endpoint //
 	as := storage.NewGormStorage(DB)
-	user, _ := as.GetReporterAccountData(email)
+	user, _ := as.GetReporterAccountData(DefaultAccount)
 
 	// test activate
 	activateToken := user.ActivateToken
-	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", email, activateToken), "", "", "")
+	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", DefaultAccount, activateToken), "", "", "")
+	fmt.Print(resp.Body)
 	assert.Equal(t, resp.Code, 200)
 
 	// test activate fails
-	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", "mika@twreporter.org", ""), "", "", "")
+	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", DefaultAccount, ""), "", "", "")
 	assert.Equal(t, resp.Code, 401)
 	// END - test activate endpoint //
 }
+
+/*
+func TestChangePassword(t *testing.T) {
+	const userAccount = "test@twreporter.org"
+	const userPasswd = "passwd"
+	const passwdChanged = "passwdChanged"
+	var resp *httptest.ResponseRecorder
+
+	// create an existing active user
+	ms := storage.NewGormStorage(DB)
+	ra := models.ReporterAccount{
+		Account:       userAccount,
+		Password:      userPasswd,
+		Active:        true,
+		ActivateToken: "",
+		ActExpTime:    time.Now(),
+	}
+	user, _ := ms.InsertUserByReporterAccount(ra)
+
+	// lack of JWT in request header
+	resp = ServeHTTP("POST", "/v1/change-password", fmt.Sprintf("{\"email\":\"%v\",\"password\":\"%v\"}", userAccount, passwdChanged),
+		"application/json", "")
+	assert.Equal(t, resp.Code, 401)
+
+	// lack of password in the POST BODY
+	resp = ServeHTTP("POST", "/v1/change-password", fmt.Sprintf("{\"email\":\"%v\"}", userAccount, passwdChanged),
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(user)))
+	assert.Equal(t, resp.Code, 400)
+
+	resp = ServeHTTP("POST", "/v1/change-password", fmt.Sprintf("{\"email\":\"%s\",\"password\":\"%s\"}", userAccount, passwdChanged),
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(user)))
+
+	assert.Equal(t, resp.Code, 200)
+}
+
+func TestForgetPassword(t *testing.T) {
+	var testAccount = DefaultAccount
+	var resp *httptest.ResponseRecorder
+
+	// START - test forget-password endpoint
+	// fail test case - not provide the email in the url parameters
+	resp = ServeHTTP("POST", "/v1/forget-password", "",
+		"application/x-www-form-urlencoded", "")
+	assert.Equal(t, resp.Code, 400)
+
+	// success test case
+	resp = ServeHTTP("POST", "/v1/forget-password", fmt.Sprintf("{\"email\":\"%v\"}", testAccount),
+		"application/json", "")
+	assert.Equal(t, resp.Code, 200)
+	// END - test forget-password endpoint
+}
+*/
