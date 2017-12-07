@@ -41,7 +41,7 @@ func (g Google) Close() error {
 func (g *Google) InitOauthConfig(destination string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if destination == "" {
-		destination = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
+		destination = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port + "/activate"
 	}
 
 	destination = url.QueryEscape(destination)

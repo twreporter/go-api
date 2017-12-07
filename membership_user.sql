@@ -40,10 +40,10 @@ CREATE TABLE `bookmarks` (
   `is_external` tinyint(0) DEFAULT '0',
   `title` varchar(100) NOT NULL,
   `category` varchar(20) DEFAULT NULL,
-  `authors` varchar(250) DEFAULT NULL,
+  `authors` varchar(10000) DEFAULT NULL,
   `pub_date` int(10) unsigned DEFAULT NULL,
   `desc` varchar(250) DEFAULT NULL,
-  `thumbnail` varchar(512) DEFAULT NULL,
+  `thumbnail` varchar(1024) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_bookmarks_slug_host` (`slug`, `host`),
   KEY `idx_bookmarks_deleted_at` (`deleted_at`)
