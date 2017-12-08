@@ -5,6 +5,8 @@ FROM golang:1.8-alpine
 # Copy the local package files to the container's workspace.
 ADD . /go/src/twreporter.org/go-api/
 
+COPY ./aws_credentials /root/.aws/credentials 
+
 # Build the outyet command inside the container.
 # (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
