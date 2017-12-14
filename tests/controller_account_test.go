@@ -1,12 +1,15 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"twreporter.org/go-api/storage"
+	"twreporter.org/go-api/utils"
 )
 
 func TestSignIn(t *testing.T) {
@@ -53,6 +56,37 @@ func TestActivate(t *testing.T) {
 	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", DefaultAccount, ""), "", "", "")
 	assert.Equal(t, resp.Code, 401)
 	// END - test activate endpoint //
+}
+
+func TestRenewJWT(t *testing.T) {
+	as := storage.NewGormStorage(DB)
+	user, _ := as.GetReporterAccountData(DefaultAccount)
+	jwt, _ := utils.RetrieveToken(user.ID, user.Email)
+
+	// START - test renew jwt endpoint //
+	// renew jwt successfully
+	resp := ServeHTTP("GET", fmt.Sprintf("/v1/token/%v", user.ID), "", "application/json", fmt.Sprintf("Bearer %v", jwt))
+	body, _ := ioutil.ReadAll(resp.Result().Body)
+
+	res := struct {
+		Status string `json:"status"`
+		Data   struct {
+			Token     string `json:"token"`
+			TokenType string `json:"token_type"`
+		} `json:"data"`
+	}{}
+	json.Unmarshal(body, &res)
+
+	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, res.Status, "success")
+	assert.Equal(t, res.Data.TokenType, "Bearer")
+	assert.NotEmpty(t, res.Data.Token)
+
+	// fail to renew jwt
+	jwt = "testjwt"
+	resp = ServeHTTP("GET", fmt.Sprintf("/v1/token/%v", user.ID), "", "application/json", fmt.Sprintf("Bearer %v", jwt))
+	assert.Equal(t, resp.Code, 401)
+	// End - test renew jwt endpoint //
 }
 
 /*

@@ -55,6 +55,7 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 		return mc.SignIn(c, mailSender)
 	}))
 	group.GET("/activate", GinResponseWrapper(mc.Activate))
+	group.GET("/token/:userID", middlewares.CheckJWT(), GinResponseWrapper(mc.RenewJWT))
 
 	// endpoints for bookmarks of users
 	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.GetBookmarksOfAUser)
