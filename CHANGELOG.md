@@ -1,3 +1,10 @@
+### 2.0.1
+- [PR#102](https://github.com/twreporter/go-api/pull/102)
+- Use userID, email and standard claims to generate JWT.
+- Code refactors. Fix typo, add error check.
+- Still redirect to destination even if oauth fails.
+- New endpoint "/v1/token/:userID", which is used to renew JWT for clients.
+
 ### 2.0.0
 **Major Change**
 - Drop password and signup process, only send activation email every time user want to sign in.
