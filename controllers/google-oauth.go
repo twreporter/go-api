@@ -41,7 +41,7 @@ func (g Google) Close() error {
 func (g *Google) InitOauthConfig(destination string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if destination == "" {
-		destination = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port + "/activate"
+		destination = consumerSettings.Protocol + "://" + consumerSettings.Host + ":" + consumerSettings.Port + "/activate"
 	}
 
 	destination = url.QueryEscape(destination)
@@ -82,10 +82,12 @@ func (g *Google) Authenticate(c *gin.Context) {
 	var matchUser models.User
 	var remoteOAuth models.OAuthAccount
 
+	destination := c.Query("destination")
+
 	// get user data from Google
 	fstring, err := g.GetRemoteUserData(c.Request, c.Writer)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "error": err.Error()})
+		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
 	}
 
@@ -112,6 +114,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 		// return internal server error
 		if appErr.StatusCode != http.StatusNotFound {
 			c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
+
 			return
 		}
 
@@ -169,14 +172,11 @@ func (g *Google) Authenticate(c *gin.Context) {
 		}
 	}
 
-	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
-		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
+	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Email.String)
 	if err != nil {
 		c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
 		return
 	}
-
-	destination := c.Query("destination")
 
 	var u *url.URL
 	var secure = false
@@ -201,12 +201,10 @@ func (g *Google) Authenticate(c *gin.Context) {
 
 // GetRemoteUserData fetched user data from Google
 func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
-	loginPath := utils.Cfg.AppSettings.Path + "/signin"
 
 	state := r.FormValue("state")
 	if state != utils.Cfg.OauthSettings.GoogleSettings.Statestr {
 		log.Warnf("controllers.oauth.google.getRemoteUserData. Invalid oauth state, expected '%s', got '%s'\n", utils.Cfg.OauthSettings.GoogleSettings.Statestr, state)
-		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return "", models.NewAppError("OAuth state", "controllers.oauth.google", "Invalid oauth state", 500)
 	}
 
@@ -214,14 +212,12 @@ func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (stri
 	token, err := g.oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Warnf("controllers.oauth.google.getRemoteUserData. Code exchange failed with '%s'\n", err)
-		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return "", models.NewAppError("Code exchange failed", "controllers.oauth.google", err.Error(), 500)
 	}
 
 	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
 		log.Warn("controllers.oauth.google.getRemoteUserData. Cannot get user info using Google API")
-		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return "", models.NewAppError("Cannot get user info using Google API", "controllers.oauth.google", err.Error(), 500)
 	}
 
@@ -229,7 +225,6 @@ func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (stri
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Warn("controllers.oauth.google.getRemoteUserData. Error parsing Google user data")
-		http.Redirect(w, r, loginPath, http.StatusTemporaryRedirect)
 		return "", models.NewAppError("Error parsing Google user data", "controllers.oauth.google", err.Error(), 500)
 	}
 	// fmt.Fprintf(w, "Content: %s\n", contents)
