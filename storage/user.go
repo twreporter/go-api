@@ -16,8 +16,11 @@ func (gs *GormStorage) GetUserByID(userID string) (models.User, error) {
 	user := models.User{}
 
 	// SELECT * FROM users WHERE ID = $userID
-	err := gs.db.First(&user, "id = ?", userID).Error
-	return user, err
+	if err := gs.db.First(&user, "id = ?", userID).Error; err != nil {
+		return user, gs.NewStorageError(err, "GormStorage.GetUserByID", "storage.user.get_user_by_id.error")
+	}
+
+	return user, nil
 }
 
 // GetUserByEmail gets the user by its email

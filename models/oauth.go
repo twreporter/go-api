@@ -6,6 +6,6 @@ type AuthenticatedResponse struct {
 	Privilege int    `json:"privilege"`
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
-	Email     string `json:"eamil"`
+	Email     string `json:"email"`
 	Jwt       string `json:"jwt"`
 }

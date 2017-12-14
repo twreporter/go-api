@@ -35,6 +35,7 @@ func GetGender(s string) sql.NullString {
 	return ngender
 }
 
+// Check - use to fix GoMetaLinter warning of error not check
 func Check(f func() error) {
 	if err := f(); err != nil {
 		log.Error("Received error:", err.Error())
