@@ -148,7 +148,7 @@ func (mc *MembershipController) ActivateRegistration(c *gin.Context) {
 
 	u := url.URL{
 		Host:   utils.Cfg.ConsumerSettings.Host,
-		Scheme: utils.Cfg.ConsumerSettings.Protocal,
+		Scheme: utils.Cfg.ConsumerSettings.Protocol,
 		Path:   constants.Activate,
 	}
 

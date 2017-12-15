@@ -12,7 +12,7 @@ import (
 
 // GenerateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
 func GenerateActivateMailBody(mailAddress, activeToken, destination string) string {
-	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", Cfg.ConsumerSettings.Protocal, Cfg.ConsumerSettings.Host, Cfg.ConsumerSettings.Port, mailAddress, activeToken, destination)
+	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", Cfg.ConsumerSettings.Protocol, Cfg.ConsumerSettings.Host, Cfg.ConsumerSettings.Port, mailAddress, activeToken, destination)
 
 	var defaultBody = fmt.Sprintf("<a href=\"%s\" target=\"_blank\">啟動報導者帳號</a>", href)
 

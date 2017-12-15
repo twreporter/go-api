@@ -101,7 +101,7 @@ func TestGetRegisterUsers(t *testing.T) {
 
 func TestActivateRegistration(t *testing.T) {
 	utils.Cfg.ConsumerSettings.Host = "www.twreporter.org"
-	utils.Cfg.ConsumerSettings.Protocal = "https"
+	utils.Cfg.ConsumerSettings.Protocol = "https"
 	resp := ServeHTTP("GET", fmt.Sprintf("/v1/activation/default_service/%v?activeToken=default_token", DefaultAccount), "", "", "")
 	assert.Equal(t, resp.Code, 307)
 
