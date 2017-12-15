@@ -3,7 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
-	"time"
+	//"time"
 
 	//log "github.com/Sirupsen/logrus"
 	"github.com/auth0/go-jwt-middleware"
@@ -23,17 +23,6 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 func CheckJWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-		}
-
-		user := c.Request.Context().Value("user")
-		if user != nil {
-			exp := user.(*jwt.Token).Claims.(jwt.MapClaims)["exp"].(float64)
-
-			if int64(exp) < time.Now().Unix() {
-				c.AbortWithStatus(http.StatusUnauthorized)
-			}
-		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}

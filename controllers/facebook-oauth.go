@@ -42,7 +42,7 @@ func (f Facebook) Close() error {
 func (f *Facebook) InitOauthConfig(destination string) {
 	consumerSettings := utils.Cfg.ConsumerSettings
 	if destination == "" {
-		destination = consumerSettings.Protocal + "://" + consumerSettings.Host + ":" + consumerSettings.Port
+		destination = consumerSettings.Protocol + "://" + consumerSettings.Host + ":" + consumerSettings.Port
 	}
 
 	destination = url.QueryEscape(destination)
@@ -87,6 +87,8 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 	var matchUser models.User
 	var remoteOAuth models.OAuthAccount
 
+	destination := c.Query("destination")
+
 	// get user data from Facebook
 	fstring, err := f.GetRemoteUserData(c.Request, c.Writer)
 	if err != nil {
@@ -116,7 +118,7 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 
 		// return internal server error
 		if appErr.StatusCode != http.StatusNotFound {
-			c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
+			c.Redirect(http.StatusTemporaryRedirect, destination)
 			return
 		}
 
@@ -174,14 +176,11 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 		}
 	}
 
-	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Privilege,
-		matchUser.FirstName.String, matchUser.LastName.String, matchUser.Email.String)
+	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Email.String)
 	if err != nil {
 		c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
 		return
 	}
-
-	destination := c.Query("destination")
 
 	u, err := url.Parse(destination)
 	var secure bool

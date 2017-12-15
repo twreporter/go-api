@@ -17,8 +17,14 @@ const (
 	// ConnSecurityStarttls global string constants
 	ConnSecurityStarttls = "STARTTLS"
 
-	// AppSettingsDefaultPath default path of app
-	AppSettingsDefaultPath = "http://testtest.twreporter.org:8080"
+	// AppSettingsDefaultHost default host of app
+	AppSettingsDefaultHost = "testtest.twreporter.org"
+
+	// AppSettingsDefaultPort default Port of app
+	AppSettingsDefaultPort = "8080"
+
+	// AppSettingsDefaultProtocol default Protocol of app
+	AppSettingsDefaultProtocol = "http"
 
 	// AppSettingsDefaultExpiration default expiration of app
 	AppSettingsDefaultExpiration = 168 // 7 days
@@ -56,7 +62,9 @@ const (
 
 // AppSettings could be defined in configs/config.json
 type AppSettings struct {
-	Path       string
+	Host       string
+	Port       string
+	Protocol   string
 	Version    string
 	Token      string
 	Expiration time.Duration
@@ -128,7 +136,7 @@ type AlgoliaSettings struct {
 // ConsumerSettings describes who uses this api
 type ConsumerSettings struct {
 	Domain   string
-	Protocal string
+	Protocol string
 	Host     string
 	Port     string
 }
@@ -164,6 +172,15 @@ func (o *Config) SetDefaults() {
 	}
 	if o.AppSettings.Version == "" {
 		o.AppSettings.Version = AppSettingsDefaultVersion
+	}
+	if o.AppSettings.Host == "" {
+		o.AppSettings.Host = AppSettingsDefaultHost
+	}
+	if o.AppSettings.Port == "" {
+		o.AppSettings.Port = AppSettingsDefaultPort
+	}
+	if o.AppSettings.Protocol == "" {
+		o.AppSettings.Protocol = AppSettingsDefaultProtocol
 	}
 	if o.DBSettings.Name == "" {
 		o.DBSettings.Name = DbSettingsDefaultName

@@ -308,7 +308,7 @@ func RequestWithBody(method, path, body string) (req *http.Request) {
 }
 
 func GenerateJWT(user models.User) (jwt string) {
-	jwt, _ = utils.RetrieveToken(user.ID, user.Privilege, user.FirstName.String, user.LastName.String, user.Email.String)
+	jwt, _ = utils.RetrieveToken(user.ID, user.Email.String)
 	return
 }
 
