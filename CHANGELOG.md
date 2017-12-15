@@ -4,6 +4,7 @@
 - Code refactors. Fix typo, add error check.
 - Still redirect to destination even if oauth fails.
 - New endpoint "/v1/token/:userID", which is used to renew JWT for clients.
+- Set Cache-Control: no-store for those endpoints related to users
 
 ### 2.0.0
 **Major Change**

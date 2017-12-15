@@ -51,17 +51,17 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 	mailSender := utils.NewAmazonEmailSender() // use Amazon SES to send mails
 
 	// endpoints for account
-	group.POST("/signin", GinResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	group.POST("/signin", middlewares.SetCacheControl("no-store"), GinResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.SignIn(c, mailSender)
 	}))
-	group.GET("/activate", GinResponseWrapper(mc.Activate))
-	group.GET("/token/:userID", middlewares.CheckJWT(), GinResponseWrapper(mc.RenewJWT))
+	group.GET("/activate", middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.Activate))
+	group.GET("/token/:userID", middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.RenewJWT))
 
 	// endpoints for bookmarks of users
-	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.GetBookmarksOfAUser)
-	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.GetBookmarksOfAUser)
-	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.CreateABookmarkOfAUser)
-	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.DeleteABookmarkOfAUser)
+	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.GetBookmarksOfAUser)
+	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.GetBookmarksOfAUser)
+	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.CreateABookmarkOfAUser)
+	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.DeleteABookmarkOfAUser)
 
 	// endpoint for registration
 	// TODO add middleware to check the request from twreporter.org domain
