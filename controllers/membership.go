@@ -3,8 +3,11 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/middlewares"
+	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // NewMembershipController ...
@@ -26,23 +29,39 @@ func (mc *MembershipController) Close() error {
 	return nil
 }
 
+type wrappedFn func(c *gin.Context) (int, gin.H, error)
+
+// GinResponseWrapper ...
+func GinResponseWrapper(fn wrappedFn) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		statusCode, obj, err := fn(c)
+		if err != nil {
+			appErr := err.(models.AppError)
+			log.Error(appErr.Error())
+			c.JSON(appErr.StatusCode, gin.H{"status": "error", "message": appErr.Message})
+			return
+		}
+		c.JSON(statusCode, obj)
+	}
+}
+
 // SetRoute is the method of Controller interface
 func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	// mailSender := utils.NewSMTPEmailSender()                          // use office365 to send mails
 	mailSender := utils.NewAmazonEmailSender() // use Amazon SES to send mails
 
 	// endpoints for account
-	group.POST("/login", mc.Authenticate)
-	group.POST("/signup", func(c *gin.Context) {
-		mc.Signup(c, mailSender)
-	})
-	group.GET("/activate", mc.Activate)
+	group.POST("/signin", middlewares.SetCacheControl("no-store"), GinResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.SignIn(c, mailSender)
+	}))
+	group.GET("/activate", middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.Activate))
+	group.GET("/token/:userID", middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.RenewJWT))
 
 	// endpoints for bookmarks of users
-	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.GetBookmarksOfAUser)
-	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.GetBookmarksOfAUser)
-	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.CreateABookmarkOfAUser)
-	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), mc.DeleteABookmarkOfAUser)
+	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.GetBookmarksOfAUser)
+	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.GetBookmarksOfAUser)
+	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.CreateABookmarkOfAUser)
+	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.DeleteABookmarkOfAUser)
 
 	// endpoint for registration
 	// TODO add middleware to check the request from twreporter.org domain

@@ -11,6 +11,7 @@ type Bookmark struct {
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 	DeletedAt  *time.Time `json:"deleted_at"`
+	Users      []User     `gorm:"many2many:users_bookmarks;"`
 	Slug       string     `gorm:"size:100;not null" json:"slug" form:"slug" binding:"required"`
 	Title      string     `gorm:"size:100;not null" json:"title" from:"title" binding:"required"`
 	Desc       string     `gorm:"size:250" json:"desc" form:"desc"`

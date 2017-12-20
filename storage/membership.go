@@ -17,15 +17,17 @@ type MembershipStorage interface {
 
 	/** User methods **/
 	GetUserByID(string) (models.User, error)
+	GetUserByEmail(string) (models.User, error)
 	GetOAuthData(sql.NullString, string) (models.OAuthAccount, error)
 	GetUserDataByOAuth(models.OAuthAccount) (models.User, error)
-	GetReporterAccountData(string) (*models.ReporterAccount, error)
-	GetUserDataByReporterAccount(*models.ReporterAccount) (*models.User, error)
+	GetReporterAccountData(string) (models.ReporterAccount, error)
+	GetUserDataByReporterAccount(models.ReporterAccount) (models.User, error)
+	InsertOAuthAccount(models.OAuthAccount) error
+	InsertReporterAccount(models.ReporterAccount) error
 	InsertUserByOAuth(models.OAuthAccount) models.User
 	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
 	UpdateOAuthData(models.OAuthAccount) (models.OAuthAccount, error)
-	UpdateReporterAccountPassword(*models.ReporterAccount, string) (*models.ReporterAccount, error)
-	UpdateReporterAccountActive(*models.ReporterAccount, bool) (*models.ReporterAccount, error)
+	UpdateReporterAccount(models.ReporterAccount) error
 
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)

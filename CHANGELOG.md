@@ -1,3 +1,28 @@
+### 2.0.1
+- [PR#102](https://github.com/twreporter/go-api/pull/102)
+- Use userID, email and standard claims to generate JWT.
+- Code refactors. Fix typo, add error check.
+- Still redirect to destination even if oauth fails.
+- New endpoint "/v1/token/:userID", which is used to renew JWT for clients.
+- Set Cache-Control: no-store for those endpoints related to users
+
+### 2.0.0
+**Major Change**
+- Drop password and signup process, only send activation email every time user want to sign in.
+- Dedup the clients accounts. Connect the client who signs in by oauth or by email to the existed record.
+- Move oauth controllers from subfolders to root controllers folder.
+  - controllers/oauth/goolge/google.go -> controllers/google-oauth.go
+  - controllers/oauth/facebook/facebook.go -> controllers/goog-oauth.go
+- Update controller/google-oauth.go. Set jwt in the cookies
+- Update middlewares/jwt.go. Add SetEmailClaim function.
+- Update membership_user.sql
+- Change email content wording and styling
+- Add GinResponseWrapper function, which deliver the response to the client
+- Update controllers/account.go
+  - code refactor since the return value of each function is wrapped by
+  GinReponseWrapper
+- Function test refactor
+
 ### 1.1.8
 - Bug fix. Output `html` field in ContentBody.
 

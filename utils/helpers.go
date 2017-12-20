@@ -4,6 +4,8 @@ import (
 	"database/sql"
 
 	"twreporter.org/go-api/configs/constants"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // ToNullString invalidates a sql.NullString if empty, validates if not empty
@@ -31,4 +33,11 @@ func GetGender(s string) sql.NullString {
 		ngender = ToNullString(constants.GenderOthers)
 	}
 	return ngender
+}
+
+// Check - use to fix GoMetaLinter warning of error not check
+func Check(f func() error) {
+	if err := f(); err != nil {
+		log.Error("Received error:", err.Error())
+	}
 }

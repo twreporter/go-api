@@ -38,10 +38,8 @@ func (g *GormStorage) GetABookmarkOfAUser(userID string, bookmarkSlug string, bo
 	var user models.User
 	var err error
 
-	user, err = g.GetUserByID(userID)
-
-	if err != nil {
-		return bookmark, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
+	if user, err = g.GetUserByID(userID); err != nil {
+		return bookmark, err
 	}
 
 	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmarks).Error
@@ -65,10 +63,8 @@ func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]model
 	var user models.User
 	var err error
 
-	user, err = g.GetUserByID(id)
-
-	if err != nil {
-		return bookmarks, 0, g.NewStorageError(err, "GetBookmarksOfAUser", "storage.bookmark.error_to_get_user")
+	if user, err = g.GetUserByID(id); err != nil {
+		return bookmarks, 0, err
 	}
 
 	// The reason I write the raw sql statement, not use gorm association(see the following commented code),
@@ -87,12 +83,12 @@ func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]model
 
 // CreateABookmarkOfAUser this func will create a bookmark and build the relationship between the bookmark and the user
 func (g *GormStorage) CreateABookmarkOfAUser(userID string, bookmark models.Bookmark) (models.Bookmark, error) {
-	var _bookmark models.Bookmark
+	var _bookmark models.Bookmark = bookmark
+	var err error
+	var user models.User
 
-	user, err := g.GetUserByID(userID)
-
-	if err != nil {
-		return _bookmark, g.NewStorageError(err, "CreateABookmarkOfAUser", "storage.bookmark.error_to_get_user")
+	if user, err = g.GetUserByID(userID); err != nil {
+		return _bookmark, err
 	}
 
 	// get first matched record, or create a new one
@@ -123,9 +119,8 @@ func (g *GormStorage) DeleteABookmarkOfAUser(userID, bookmarkID string) error {
 	var bookmark models.Bookmark
 	var user models.User
 
-	user, err = g.GetUserByID(userID)
-	if err != nil {
-		return g.NewStorageError(err, "DeleteABookmarkOfAUser", "storage.bookmark.error_to_get_user")
+	if user, err = g.GetUserByID(userID); err != nil {
+		return err
 	}
 
 	bookmark, err = g.GetABookmarkByID(bookmarkID)

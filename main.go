@@ -55,7 +55,7 @@ func main() {
 		panic(err)
 	}
 
-	defer cf.Close()
+	defer utils.Check(cf.Close)
 
 	// set up the router
 	router := routers.SetupRouter(cf)
@@ -67,6 +67,6 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}
-	s.ListenAndServe()
+	utils.Check(s.ListenAndServe)
 
 }
