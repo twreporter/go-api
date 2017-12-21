@@ -102,7 +102,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			},
 			Limit:        6,
 			Offset:       0,
-			Sort:         "-publishedDate",
+			Sort:         "-updatedAt",
 			ResourceType: "posts",
 		},
 		constants.LatestTopicSection: {

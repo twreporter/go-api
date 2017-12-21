@@ -121,6 +121,7 @@ jobs:
 
               # config.json for go-api
               echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.json
+              echo ${AWS_CREDENTIALS} | base64 -i --decode > ./aws_credentials
 
               docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
               gcloud docker -- push gcr.io/coastal-run-106202/go-api:$PKG_VER

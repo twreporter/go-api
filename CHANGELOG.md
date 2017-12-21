@@ -1,3 +1,7 @@
+### 2.0.2
+- Set Cache-Control: no-store in the response header for oauth endpoints 
+- Sort EditorPicksSection by updated_at field in controllers/index_page.go
+
 ### 2.0.1
 - [PR#102](https://github.com/twreporter/go-api/pull/102)
 - Use userID, email and standard claims to generate JWT.
