@@ -1,6 +1,12 @@
 {
+  "Environment": "development",
+  "CorsSettings": {
+    "AllowOrigins": ["*"]
+  },
   "AppSettings": {
-    "Path": "http://testtest.twreporter.org:8080",
+    "Protocol": "http",
+    "Host": "testtest.twreporter.org",
+    "Port": "8080",
     "Version": "v1",
     "Token": "",
     "Expiration": 168
@@ -8,30 +14,35 @@
   "EmailSettings": {
     "SMTPUsername": "",
     "SMTPPassword": "",
-    "SMTPServer": "smtp.office365.com",
-    "SMTPServerOwner": "office360",
-    "SMTPPort": "587",
-    "ConnectionSecurity": "STARTTLS"
-    "FeedbackName": "報導者 The Reporter",
-    "FeedbackEmail": "contact@twreporter.org"
+    "SMTPServer": "",
+    "SMTPServerOwner": "",
+    "SMTPPort": "",
+    "ConnectionSecurity": "",
+    "FeedbackName": "",
+    "FeedbackEmail": ""
   },
   "AmazonMailSettings": {
-    "Sender": "no-reply@twreporter.org",
+    "Sender": "",
     "AwsRegion": "",
-    "CharSet": "UTF-8"
+    "CharSet": ""
   },
   "DBSettings": {
-    "Name":     "test_membership",
-    "User":     "",
-    "Password": "",
+    "Name":     "membership_user",
+    "User":     "root",
+    "Password": "root_passwd",
     "Address":  "127.0.0.1",
     "Port":     "3306"
   },
+  "MongoDBSettings": {
+    "URL": "localhost",
+    "DBName": "plate",
+    "Timeout": 5
+  },
   "OauthSettings": {
     "FacebookSettings": {
-      "Id": "",
+      "ID": "",
       "Secret": "",
-      "Url": "http://testtest.twreporter.org:8080/v1/auth/facebook/callback",
+      "URL": "http://testtest.twreporter.org:8080/v1/auth/facebook/callback",
       "Statestr": ""
     },
     "GoogleSettings": {
@@ -41,7 +52,17 @@
       "Statestr": ""
     }
   },
+  "AlgoliaSettings": {
+    "ApplicationID": "",
+    "APIKey": ""
+  },
+  "ConsumerSettings": {
+    "Domain": "twreporter.org",
+    "Protocol": "http",
+    "Host": "testtest.twreporter.org",
+    "Port": "3000"
+  },
   "EncryptSettings": {
-    "Salt": "@#$%"
+    "Salt": ""
   }
 }
