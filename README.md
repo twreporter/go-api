@@ -65,6 +65,20 @@ Change `DBSettings` fields to connect to your own database, like following examp
   },
 ```
 
+### AWS SES Setup
+Currently the source code sends email through AWS SES,
+
+If you want to send email through your AWS SES, just put your AWS SES config under `~/.aws/credentials`
+
+```
+### THIS IS AWS SES CREDENTIALS
+[default]
+aws_access_key_id = ${AWS_ACCESS_KEY_ID}
+aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}
+```
+
+Otherwise, you have to change the `utils/mail.go` to integrate with your email service.
+
 ## RESTful API
 `go-api` is a RESTful API built by golang.
 
