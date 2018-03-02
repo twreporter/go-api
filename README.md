@@ -697,3 +697,5 @@ Update a service or create a service if not existed
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
+## License
+Go-api is [MIT licensed](https://github.com/twreporter/go-api/blob/master/LICENSE)
