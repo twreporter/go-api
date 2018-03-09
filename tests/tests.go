@@ -162,6 +162,11 @@ func SetMgoDefaultRecords() {
 					Width:  80,
 					URL:    "https://www.twreporter.org/images/mock-image-1-tiny.jpg",
 				},
+				W400: models.ImageAsset{
+					Height: 300,
+					Width:  400,
+					URL:    "https://www.twreporter.org/images/mock-image-1-w400.jpg",
+				},
 			},
 		},
 	}
