@@ -40,16 +40,16 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "glide.lock" }}
+          - dependencies-{{ checksum "glide.lock" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - dependencies-
 
       - run: glide install
 
       - save_cache:
           paths:
             - vendor
-          key: v1-dependencies-{{ checksum "glide.lock" }}
+          key: dependencies-{{ checksum "glide.lock" }}
 
       # run tests!
       - run: go test $(glide novendor)
