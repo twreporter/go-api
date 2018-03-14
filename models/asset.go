@@ -36,6 +36,7 @@ type ResizedTargets struct {
 	Tiny    ImageAsset `bson:"tiny" json:"tiny"`
 	Desktop ImageAsset `bson:"desktop" json:"desktop"`
 	Tablet  ImageAsset `bson:"tablet" json:"tablet"`
+	W400    ImageAsset `bson:"w400" json:"w400"`
 }
 
 // Image is used to return in response
