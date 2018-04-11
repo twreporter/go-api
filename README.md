@@ -1,6 +1,30 @@
 # TWReporter's Golang Backend API
 
-## Testing
+## Environment
+### Development
+Please make sure that you install [Glide
+  package manager](https://github.com/Masterminds/glide) in the environment.
+
+```
+cd $GOPATH/src/twreporter.org/go-api
+glide install                           # Install packages and dependencies
+go run main.go                          # Run without live-reloading
+```
+
+### Live Reloading
+Note that `GOPATH/bin` should be in your `PATH`.
+```
+go get github.com/codegangsta/gin
+gin                                     # Run with live-reloading
+```
+
+### Production
+```
+go build
+./go-api
+```
+
+## Functional Testing
 ### Prerequisite
 * Make sure the environment you run the test has a running `MySQL` server and `MongoDB` server
 * Execute the following commands after logining into MySQL server. 
@@ -19,46 +43,196 @@ go test -v $(glide novendor)
 ```
 
 ## Configurations
-
-#### MySQL connection
-Copy `configs/config.example.json` and rename as `configs/config.json`. Change its content to connect to your own database.
-
-## Development
-Please make sure that you install [Glide
-  package manager](https://github.com/Masterminds/glide) in the environment.
-
+### MySQL Setup
 ```
-cd $GOPATH/src/twreporter.org/go-api
-glide install                           # Install packages and dependencies
-go run main.go                          # Run without live-reloading
+// create membership_user database
+mysqladmin -u root -p create membership_user
+
+// import defined mysql tables into membership_user database
+mysql -u root -p membership_user < membership_user.sql
 ```
 
-#### Live Reloading
-Note that `GOPATH/bin` should be in your `PATH`.
+### MySQL connection
+Copy `configs/config.example.json` and rename as `configs/config.json`.
+Change `DBSettings` fields to connect to your own database, like following example.
 ```
-go get github.com/codegangsta/gin
-gin                                     # Run with live-reloading
+  "DBSettings": {
+    "Name":     "membership_user",
+    "User":     "root",
+    "Password": "root_password",
+    "Address":  "127.0.0.1",
+    "Port":     "3306"
+  },
 ```
 
+### AWS SES Setup
+Currently the source code sends email through AWS SES,
 
-## Production
+If you want to send email through your AWS SES, just put your AWS SES config under `~/.aws/credentials`
+
 ```
-go build
-./go-api
+[default]
+aws_access_key_id = ${AWS_ACCESS_KEY_ID}
+aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}
 ```
+
+Otherwise, you have to change the `utils/mail.go` to integrate with your email service.
 
 ## RESTful API
 `go-api` is a RESTful API built by golang.
 
 It provides several RESTful web services, including
-- User login/logout/signup
-- Read posts
-- Read topics
-- Read the combination of sections of index page
-- Create/Read/Update/Delete bookmarks of a user
-- Create/Read/Update/Delete registration(s)
-- Create/Read/Update/Delete service(s)
+- [User login/oauth(facebook & google)](https://github.com/twreporter/go-api#users)
+- [Read posts](https://github.com/twreporter/go-api#read-posts)
+- [Read topics](https://github.com/twreporter/go-api#read-topics)
+- [Read the combination of sections on index page](https://github.com/twreporter/go-api#read-posts-of-latest-editor-picked-latest-topic-reviews-topics-photography-and-infographic-sections-of-index-page)
+- [Read the posts of multiple categories on index page](https://github.com/twreporter/go-api#read-posts-of-character-culture_movie-human_rights-international-land_environment-photo_audio-political_society-and-transformed_justice-categories)
+- [Create/Read/Update/Delete bookmarks of a user](https://github.com/twreporter/go-api#bookmarks)
+- [Create/Read/Update/Delete registration(s)](https://github.com/twreporter/go-api#registrations)
+- [Create/Read/Update/Delete service(s)](https://github.com/twreporter/go-api#services)
 
+## USERS
+### Signin
+- workflow: 
+	1. user send `POST` request to `v1/signin` endpoint
+	2. system will send activation email to user
+	3. user click activation link(`<a>` link) in the email body
+	4. go-api server verifies the token
+	5. if verified, user will get a jwt(Json Web Token)
+	6. user can use JWT to send personal requests(go-api server will verfiy the jwt).
+	
+### OAuth
+Before Oauth signin, you have to setup the oauth config in `configs/config.json`
+```
+  "OauthSettings": {
+    "FacebookSettings": {
+      "ID": "${ID_YOU_GET_FROM_FACEBOOK_DEVELOPER}",
+      "Secret": "${SECRECT_YOU_GET_FROM_FACEBOOK_DEVELOPER}",
+      "URL": "http://${GO_API_SERVER_HOST_NAME}:8080/v1/auth/facebook/callback",
+      "Statestr": "${THE_STATE_YOU_WANT_TO_USE_IN_AUTHORIZE_URL}"
+    },
+    "GoogleSettings": {
+      "Id": "${ID_YOU_GET_FROM_GOOGLE_DEVELOPER}",
+      "Secret": "${SECRECT_YOU_GET_FROM_FACEBOOK_DEVELOPER}",
+      "Url": "http://${GO_API_SERVER_HOST_NAME}:8080/v1/auth/google/callback",
+      "Statestr": "THE_STATE_YOU_WANT_TO_USE_IN_AUTHORIZE_URL"
+    }
+  },
+  "ConsumerSettings": {
+    "Domain": "${CONSUMER_DOMAIN_NAME}",
+    "Protocol": "http",
+    "Host": "${CONSUMER_HOST_NAME}",
+    "Port": "3000"
+  },
+```
+- workflow
+	1. users click oauth login button, broswer send GET request to `/v1/oauth/goolge` or `/v1/oauth/facebook` endpoints(on go-api server)
+	2. go-api server redirect users to google or facebook oauth confirmation page
+	3. on goolge/facebook oauth page, user input account and password
+	4. if verified by facebook/google, facebook/google will redirect user to `/v1/oauth/google/callback` or `/v1/oauth/facebook/callback` endpoints on go-api server.
+	5. if verified by go-api server, go-api server will redirect user to customer page(here, will be `${ConsumerSettings.Protocol}://${ConsumerSettings.Host}:${ConsumerSettings.Port}/`).
+	6. jwt(Json Web Token) will be set in the response header(`Set-Cookie: ${cookie}`), and user can get the jwt from browser `cookie`.
+	7. user can use JWT to send personal requests(go-api server will verfiy the jwt).
+### Example
+[TWReporter main site](https://www.twreporter.org/signin) is using the above workflow, you can try to signin on our site.
+
+### Signin Endpoint
+- URL: `/v1/signin`
+- Method: `POST`
+- Data Params:
+```
+{
+  "email": "nickhsine@twreporter.org",
+  "destination": "https://www.twreporter.org"
+}
+```
+	- Required: `email` 
+	- Optional:`destination`
+	- Explain: 
+	
+	`email` is the user email, the activation email will be sent to.
+	
+	`destionation` is the redirect URL after user signed in.
+  
+- Response: 
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "data": {
+      	"email": "nickhsine@twreporter.org",
+	"destination": "https://www.twreporter.org"
+      },
+        "status": "success"
+    }
+    ```
+  * **Code:** 400 <br />
+  **Content:** `{"status": "fail", "data": "{"email":"email is required", "destination":"destination is optional"}"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "error", "message": "Internal server error: Sending activation email occurs error"}`
+   
+### User Activation Endpoint
+- URL: `/v1/activate`
+- Method: `GET`
+- URL Param:
+  * Required: `email` and `token`
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "status": "success",
+      "id": "USER_ID",
+      "privilege": "PRIVILEGE",
+      "firstname": "Nick",
+      "lastname": "Li",
+      "email": "nickhsine@twreporter.org",
+      "jwt": "JSON_WEB_TOKEN"
+    }
+    ```
+  * **Code:** 401 <br />
+  **Content:** `{"status": "error", "message": "ActivateToken is expired"}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "error", "message": "Generating JWT occurs error"}`
+  
+
+### Renew JWT Endpoint
+- URL: `/v1/token/:userID`
+  * example: `/v1/token/100`
+- Method: `GET`
+- Response:
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "status": "success",
+      "data": {
+      	"token": "NEW_JSON_WEB_TOKEN",
+	"token_type": "Bearer"
+      }
+    }
+    ```
+  * **Code:** 401 <br />
+  **Content:** `{"status": "error", "message": ""}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "error", "message": "Renewing JWT occurs error"}`
+
+### OAuth Endpoints
+- URL: `/v1/auth/google` | `/v1/auth/facebook`
+- Method: `GET`
+- Response:
+  * **Code:** 302 <br />
+    **Header:**
+    ```	
+    "Set-Cookie: auth_info={\"id\":100,\"privilege\":0,\"firstname\":\"\",\"lastname\":\"\",\"email\":\"nickhsine97753017@gmail.com\",\"jwt\":\"jwt_token_goes_here\"}; Domain=twreporter.org; Max-Age=100 HttpOnly"
+    ```
+    **Redirect URL:** `http://testtest.twreporter.org:3000/?login=google`
+  * **Code:** 401 <br />
+  **Content:** `{"status": "error", "message": ""}`
+  * **Code:** 500 <br />
+  **Content:** `{"status": "error", "message": "Renewing JWT occurs error"}`
+
+## POSTS 
 ### Read posts
 - URL: `/v1/posts`
 - Method: `GET`
@@ -72,9 +246,13 @@ It provides several RESTful web services, including
   full=[boolean]
   `
   * Explain:
+  
   `offset`: the number you want to skip
+  
   `limit`: the number you want server to return
+  
   `sort`: the field to sort by in the returned records
+  
   `full`: if true, each record in the returued records will have all the embedded assets
 
   * example:
@@ -95,6 +273,7 @@ It provides several RESTful web services, including
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
+## TOPICS
 ### Read topics
 - URL: `/v1/topics`
 - Method: `GET`
@@ -108,9 +287,13 @@ It provides several RESTful web services, including
   full=[boolean]
   `
   * Explain:
+  
   `offset`: the number you want to skip
+  
   `limit`: the number you want server to return
+  
   `sort`: the field to sort by in the returned records
+  
   `full`: if true, each record in the returued records will have all the embedded assets
 
   * example:
@@ -131,6 +314,7 @@ It provides several RESTful web services, including
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
+## INDEX_PAGE
 ### Read posts of latest, editor picked, latest topic, reviews, topics, photography and infographic sections of index page 
 - URL: `/v1/index_page`
 - Method: `GET`
@@ -228,6 +412,7 @@ It provides several RESTful web services, including
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
+## BOOKMARKS
 ### Get bookmarks
 - URL: `/v1/users/:userID/bookmarks`
   * example: `/v1/users/1/bookmarks`
@@ -309,6 +494,7 @@ It provides several RESTful web services, including
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
+## SERVICES
 ### Create a service
 - URL: `/v1/services/`
 - Content-Type of Header: `application/json`
@@ -417,6 +603,7 @@ Update a service or create a service if not existed
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
+## REGISTRATIONS
 ### Create a registration
 - URL: `/v1/registrations/:service/`
   * example: `/v1/registrations/news_letter/`
@@ -523,15 +710,5 @@ Update a service or create a service if not existed
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
 
-### Activate(Update) a registration
-After register a service such as news_letter, the system will send a email to the user for activating the registration.<br />
-The email will contain a link like `go-api.twreporter.org/v1/activation/news_letter/nickhsine%40twreporter.org?activateToken=${here_goes_the_token}`.<br />
-When user clicks the link, the registration will be activated.
-
-- URL: `/v1/activation/:service/:userEmail`
-	* example: `/v1/registrations/news_letter/nickhsine%40twreporter.org`
-- Method: `GET`
-- Response:
-	* **Code: ** 307 <br /> 
-	Redirect to the front-end website. If the activation fails, the redirect url will have error URL param.<br />
-	For example https://www.twreporter.org/?error=Account+token+is+not+correct&error_code=403
+## License
+Go-api is [MIT licensed](https://github.com/twreporter/go-api/blob/master/LICENSE)

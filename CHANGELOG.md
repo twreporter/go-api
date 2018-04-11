@@ -1,3 +1,6 @@
+### 2.0.3
+- Add a new resized target option: w400
+
 ### 2.0.2
 - Set Cache-Control: no-store in the response header for oauth endpoints 
 - Sort EditorPicksSection by updated_at field in controllers/index_page.go
