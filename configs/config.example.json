@@ -27,9 +27,9 @@
     "CharSet": ""
   },
   "DBSettings": {
-    "Name":     "membership_user",
-    "User":     "root",
-    "Password": "root_passwd",
+    "Name":     "test_membership",
+    "User":     "test_membership",
+    "Password": "test_membership",
     "Address":  "127.0.0.1",
     "Port":     "3306"
   },

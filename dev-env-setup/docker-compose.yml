@@ -1,0 +1,10 @@
+version: '3'
+services:
+    mysql:
+        image: thereporter/dev-mysql-go-api
+        ports:
+            - '3306:3306'
+    mongodb:
+        image: thereporter/dev-mongo-go-api
+        ports:
+            - '27017:27017'
