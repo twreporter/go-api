@@ -8,6 +8,10 @@ Please make sure that you install [Glide
 ```
 cd $GOPATH/src/twreporter.org/go-api
 glide install                           # Install packages and dependencies
+
+// use Makefile
+make start 
+// or 
 go run main.go                          # Run without live-reloading
 ```
 
@@ -84,6 +88,11 @@ Otherwise, you have to change the `utils/mail.go` to integrate with your email s
 
 ### How To Run Tests
 ```
+// use Makefile
+make test
+
+// or
+
 go test $(glide novendor)
 
 // or print logs

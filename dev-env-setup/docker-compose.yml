@@ -5,6 +5,13 @@ services:
         ports:
             - '3306:3306'
     mongodb:
-        image: thereporter/dev-mongo-go-api
-        ports:
-            - '27017:27017'
+      image: thereporter/dev-mongo-go-api
+      ports:
+        - '27017:27017'
+      depends_on:
+        - mysql
+      volumes:
+        - ./wait-for-it.sh:/dev-env-setup/wait-for-it.sh
+      command: >
+        bash -c "/dev-env-setup/wait-for-it.sh mysql:3306 --timeout=120
+        && mongod"
