@@ -1,6 +1,6 @@
 # TWReporter's Golang Backend API
 
-## Environment
+## Environment 
 ### Development
 Please make sure that you install [Glide
   package manager](https://github.com/Masterminds/glide) in the environment.
@@ -8,6 +8,10 @@ Please make sure that you install [Glide
 ```
 cd $GOPATH/src/twreporter.org/go-api
 glide install                           # Install packages and dependencies
+
+// use Makefile
+make start 
+// or 
 go run main.go                          # Run without live-reloading
 ```
 
@@ -24,44 +28,45 @@ go build
 ./go-api
 ```
 
-## Functional Testing
-### Prerequisite
-* Make sure the environment you run the test has a running `MySQL` server and `MongoDB` server
-* Execute the following commands after logining into MySQL server. 
+## Dependencies Setup and Configurations
+There are two major dependencies of go-api, one is MySQL database, 
+another is MongoDB. <br/>
+MySQL DB stores membership data, which is related to users.<br/>
+MongoDB stores news entities, which is the content that go-api provides.<br/>
+
+### Install docker-compose
+[docker-compose installation](https://docs.docker.com/compose/install/) 
+
+### Start/Stop MySQL and MongoDB with default settings
 ```
-CREATE USER 'gorm'@'localhost' IDENTIFIED BY 'gorm';
-CREATE DATABASE gorm;
-GRANT ALL ON gorm.* TO 'gorm'@'localhost';
+// start MySQL and MongoDB
+make env-up
+
+// stop MySQL and MongoDB
+make env-down
 ```
 
-### How To Run Tests
-```
-go test $(glide novendor)
-
-// or print logs
-go test -v $(glide novendor)
-```
-
-## Configurations
-### MySQL Setup
-```
-// create membership_user database
-mysqladmin -u root -p create membership_user
-
-// import defined mysql tables into membership_user database
-mysql -u root -p membership_user < membership_user.sql
-```
-
-### MySQL connection
+### Configure MySQL Connection
 Copy `configs/config.example.json` and rename as `configs/config.json`.
 Change `DBSettings` fields to connect to your own database, like following example.
 ```
   "DBSettings": {
-    "Name":     "membership_user",
-    "User":     "root",
-    "Password": "root_password",
+    "Name":     "test_membership",
+    "User":     "test_membership",
+    "Password": "test_membership",
     "Address":  "127.0.0.1",
     "Port":     "3306"
+  },
+```
+
+### Configure MongoDB Connection
+Copy `configs/config.example.json` and rename as `configs/config.json`.
+Change `MongoDBSettings` fields to connect to your own database, like following example.
+```
+  "MongoDBSettings": {
+    "URL": "localhost",
+    "DBName": "plate",
+    "Timeout": 5
   },
 ```
 
@@ -69,7 +74,6 @@ Change `DBSettings` fields to connect to your own database, like following examp
 Currently the source code sends email through AWS SES,
 
 If you want to send email through your AWS SES, just put your AWS SES config under `~/.aws/credentials`
-
 ```
 [default]
 aws_access_key_id = ${AWS_ACCESS_KEY_ID}
@@ -77,6 +81,23 @@ aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}
 ```
 
 Otherwise, you have to change the `utils/mail.go` to integrate with your email service.
+
+## Functional Testing
+### Prerequisite
+* Make sure the environment you run the test has a running `MySQL` server and `MongoDB` server<br/>
+
+### How To Run Tests
+```
+// use Makefile
+make test
+
+// or
+
+go test $(glide novendor)
+
+// or print logs
+go test -v $(glide novendor)
+```
 
 ## RESTful API
 `go-api` is a RESTful API built by golang.
