@@ -277,7 +277,7 @@ Before Oauth signin, you have to setup the oauth config in `configs/config.json`
   `full`: if true, each record in the returued records will have all the embedded assets
 
   * example:
-  `?where={"tags":{"$in":"57bab17eab5c6c0f00db77d1"}}&offset=10&limit=10&sort=-publishedDate&full=true` <br />
+  `?where={"tags":{"in":["57bab17eab5c6c0f00db77d1"]}}&offset=10&limit=10&sort=-publishedDate&full=true` <br />
   this example will get 10 full records tagged by 57bab17eab5c6c0f00db77d1 and sorted by publishedDate ascendingly.
 
 - Response:
