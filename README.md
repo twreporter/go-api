@@ -109,6 +109,7 @@ It provides several RESTful web services, including
 - [Read the combination of sections on index page](https://github.com/twreporter/go-api#read-posts-of-latest-editor-picked-latest-topic-reviews-topics-photography-and-infographic-sections-of-index-page)
 - [Read the posts of multiple categories on index page](https://github.com/twreporter/go-api#read-posts-of-character-culture_movie-human_rights-international-land_environment-photo_audio-political_society-and-transformed_justice-categories)
 - [Create/Read/Update/Delete bookmarks of a user](https://github.com/twreporter/go-api#bookmarks)
+- [Create/Read a web push subscription](https://github.com/twreporter/go-api#web-push-subscriptions)
 - [Create/Read/Update/Delete registration(s)](https://github.com/twreporter/go-api#registrations)
 - [Create/Read/Update/Delete service(s)](https://github.com/twreporter/go-api#services)
 
@@ -514,6 +515,108 @@ Before Oauth signin, you have to setup the oauth config in `configs/config.json`
   **Content:** `{"status": "Record not found", "error": "${here_goes_error_msg}"}`
   * **Code:** 500 <br />
   **Content:** `{"status": "Internal server error", "error": "${here_goes_error_msg}"}`
+
+## WEB PUSH SUBSCRIPTIONS
+### Read a web push subscription
+- Method: `GET`
+- URL: `/v1/web-push/subscriptions`
+- URL Param: 
+  * Required: 
+    `
+    ednpoint=[string] 
+    `
+  * example: 
+    `/v1/web-push/subscriptions?endpoint=https://fcm.googleapis.com/fcm/send/cHB8zjJfX14:APA91bGYoY_R4trCoq2-94pDVUoHcLajBVwaBTkRzJ3q7QiykGXWQW6xN1k7JMUYP4qfgLnRknmQ03WrirHf1eJdR1GHLLmxhX9ZgrZIwb2_mbatDI0Uervod0i5dw_8xRX9TnVms4t8`
+
+- Response: 
+  * **Code:** 200 <br />
+    **Content:**
+    ```
+    {
+      "status": "success",
+      "data": {
+        "id": 1,
+        "created_at": "2018-05-21T10:42:58Z",
+        "updated_at": "2018-05-21T10:42:58Z",
+        "deleted_at": null,
+        "endpoint": "https://fcm.googleapis.com/fcm/send/cHB8zjJfX14:APA91bGYoY_R4trCoq2-94pDVUoHcLajBVwaBTkRzJ3q7QiykGXWQW6xN1k7JMUYP4qfgLnRknmQ03WrirHf1eJdR1GHLLmxhX9ZgrZIwb2_mbatDI0Uervod0i5dw_8xRX9TnVms4t8",
+        "hash_endpoint": "709c44db8951ece74e1893ba558efefa",
+        "expiration_time": null,
+        "user_id": null
+      }
+    }
+    ```
+  * **Code:** 404 <br />
+    **Content:**
+    ```
+    {
+      "status": "error",
+      "message": "Fail to get a web push subscription"
+    }
+    ```
+  * **Code:** 500 <br />
+    **Content:** 
+    ```
+    {
+      "status": "error", 
+      "message": "${here_goes_error_msg}"
+    }
+    ```
+
+### Create a web push subscription
+- URL: `/v1/web-push/subscriptions`
+- Content-Type of Header: `application/json` or `application/x-www-form-urlencoded`
+- Method: `POST`
+- Data Params:
+  * Required:  
+    `endpoint: [string]`<br/>
+    `keys: [string]`
+  * Optional:
+    `expiration_time: [string|null]`<br/>
+    `user_id: [string|null]`
+```
+// Content-Type: application/json
+{
+  "endpoint": "https://fcm.googleapis.com/fcm/send/f4Stnx6WC5s:APA91bFGo-JD8bDwezv1fx3RRyBVq6XxOkYIo8_7vCAJ3HFHLppKAV6GNmOIZLH0YeC2lM_Ifs9GkLK8Vi_8ASEYLBC1aU9nJy2rZSUfH7DE0AqIIbLrs93SdEdkwr5uL6skPMjJsMRQ",
+  "keys": "{\"p256dh\":\"BDmY8OGe-LfW0ENPIADvmdZMo3GfX2J2yqURpsDOn5tT8lQV-VVHyhRUgzjnmx_RRoobwdLULdBr26oULtLML3w\",\"auth\":\"P_AJ9QSqcgM-KJi_GRN3fQ\"}",
+  "expiration_time": "1526959900",
+  "user_id": "2"
+}
+```
+- Response: 
+  * **Code:** 201 <br />
+    **Content:**
+    ```
+    {
+      "data": {
+        "endpoint": "https://fcm.googleapis.com/fcm/send/f4Stnx6WC5s:APA91bFGo-JD8bDwezv1fx3RRyBVq6XxOkYIo8_7vCAJ3HFHLppKAV6GNmOIZLH0YeC2lM_Ifs9GkLK8Vi_8ASEYLBC1aU9nJy2rZSUfH7DE0AqIIbLrs93SdEdkwr5uL6skPMjJsMRQ",
+        "keys": "{\"p256dh\":\"BDmY8OGe-LfW0ENPIADvmdZMo3GfX2J2yqURpsDOn5tT8lQV-VVHyhRUgzjnmx_RRoobwdLULdBr26oULtLML3w\",\"auth\":\"P_AJ9QSqcgM-KJi_GRN3fQ\"}",
+        "expiration_time": "1526959900",
+        "user_id": "2",
+      },
+      "status": "success"
+    }
+    ```
+  * **Code:** 400 <br />
+    **Content:** 
+    ```
+    {
+      "data": {
+        "endpoint": "endpoint is required, and need to be a string",
+        "keys": "keys is required, and need to be a string",
+        "expiration_time": "expirationTime is optional, if provide, need to be a string of timestamp",
+        "user_id": "user_id is optional, if provide, need to be a string",
+      },
+      "status": "fail"
+    ```
+  * **Code:** 500 <br />
+    **Content:** 
+    ```
+    {
+      "status": "error", 
+      "message": "${here_goes_error_msg}"
+    }
+    ```
 
 ## SERVICES
 ### Create a service
