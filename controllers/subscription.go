@@ -14,8 +14,8 @@ import (
 // SubscribeWebpush - which handles the HTTP POST request,
 // and try to create a webpush subscription record into the persistent database
 func (mc *MembershipController) SubscribeWebpush(c *gin.Context) (int, gin.H, error) {
-	// SubscriptionBody is to store POST body
-	type SubscriptionBody struct {
+	// subscriptionBody is to store POST body
+	type subscriptionBody struct {
 		Endpoint       string `json:"endpoint" form:"endpoint" binding:"required"`
 		Keys           string `json:"keys" form:"keys" binding:"required"`
 		ExpirationTime string `json:"expirationTime" form:"expirationTime"`
@@ -24,17 +24,17 @@ func (mc *MembershipController) SubscribeWebpush(c *gin.Context) (int, gin.H, er
 
 	const errorWhere = "MembershipController.SubscribeWebpush"
 	var err error
-	var sBody SubscriptionBody
+	var sBody subscriptionBody
 	var expirationTime int64
 	var userID uint64
 	var wpSub models.WebpushSubscription
 
 	if err = c.Bind(&sBody); err != nil {
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": SubscriptionBody{
-			Endpoint:       "endpoint is required",
-			Keys:           "keys is required",
-			ExpirationTime: "expirationTime is optional",
-			UserID:         "user_id is optional",
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": subscriptionBody{
+			Endpoint:       "endpoint is required, and need to be a string",
+			Keys:           "keys is required, and need to be a string",
+			ExpirationTime: "expirationTime is optional, if provide, need to be a string of timestamp",
+			UserID:         "user_id is optional, if provide, need to be a string",
 		}}, nil
 	}
 
