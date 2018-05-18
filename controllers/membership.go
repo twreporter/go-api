@@ -63,6 +63,10 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.CreateABookmarkOfAUser)
 	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.DeleteABookmarkOfAUser)
 
+	// endpoints for web push subscriptions
+	group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, GinResponseWrapper(mc.SubscribeWebPush))
+	group.GET("/web-push/subscriptions", GinResponseWrapper(mc.IsWebPushSubscribed))
+
 	// endpoint for registration
 	// TODO add middleware to check the request from twreporter.org domain
 	group.POST("/registrations/:service", mc.Register)

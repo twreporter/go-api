@@ -37,6 +37,10 @@ type MembershipStorage interface {
 	CreateABookmarkOfAUser(string, models.Bookmark) (models.Bookmark, error)
 	DeleteABookmarkOfAUser(string, string) error
 
+	/** Web Push Subscription methods **/
+	CreateAWebPushSubscription(models.WebPushSubscription) error
+	GetAWebPushSubscriptionByHashEndpoint(string) (models.WebPushSubscription, error)
+
 	/** Service methods **/
 	GetService(string) (models.Service, error)
 	CreateService(models.ServiceJSON) (models.Service, error)
