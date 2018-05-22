@@ -171,3 +171,26 @@ CREATE TABLE `users_bookmarks` (
   CONSTRAINT `fk_users_has_bookmarks_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+
+--
+-- Table structure for table `web_push_subscription`
+--
+
+DROP TABLE IF EXISTS `web_push_subscriptions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `web_push_subscriptions` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `endpoint` varchar(2048) NOT NULL,
+  `hash_endpoint` char(32) NOT NULL,
+  `keys` varchar(200) NOT NULL,
+  `expiration_time` timestamp NULL DEFAULT NULL,
+  `user_id` int(10) unsigned NULL DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uix_web_push_subscriptions_hash_endpoint` (`hash_endpoint`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
