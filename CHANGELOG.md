@@ -1,5 +1,8 @@
-### 2.0.4
+### 2.1.1
 - Update membership_user.sql. Remove soft delete on web_push_subscriptions table
+ 
+### 2.1.0
+- New endpoint for subscribing webpush notification
 
 ### 2.0.3
 - Add a new resized target option: w400
