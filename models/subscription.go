@@ -10,7 +10,6 @@ type WebPushSubscription struct {
 	ID             uint       `json:"id"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
-	DeletedAt      *time.Time `json:"deleted_at"`
 	Endpoint       string     `json:"endpoint"`
 	HashEndpoint   string     `gorm:"unique;" json:"hash_endpoint"`
 	Keys           string     `json:"-"`

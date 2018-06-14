@@ -1,3 +1,6 @@
+### 2.0.4
+- Update membership_user.sql. Remove soft delete on web_push_subscriptions table
+
 ### 2.0.3
 - Add a new resized target option: w400
 
