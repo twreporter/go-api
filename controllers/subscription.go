@@ -21,18 +21,18 @@ func (mc *MembershipController) IsWebPushSubscribed(c *gin.Context) (int, gin.H,
 	var wpSub models.WebPushSubscription
 
 	if endpoint == "" {
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": struct {
-			Query string
-		}{
-			Query: "query parameter `endpoint` should be provied",
-		}}, nil
+		return http.StatusNotFound, gin.H{"status": "error", "message": "Fail to get a web push subscription since you do not provide endpoint in URL query param"}, nil
 	}
 
 	hashEndpoint = fmt.Sprintf("%x", md5.Sum([]byte(endpoint)))
 
 	if wpSub, err = mc.Storage.GetAWebPushSubscriptionByHashEndpoint(hashEndpoint); err != nil {
-		appErr, _ := err.(models.AppError)
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Get a web push subscription fails", appErr.Error(), appErr.StatusCode)
+		switch appErr := err.(type) {
+		case models.AppError:
+			return 0, gin.H{}, models.NewAppError(errorWhere, "Fail to get a web push subscription", appErr.Error(), appErr.StatusCode)
+		default:
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Unknown Error Type. Fail to get a web push subscription"}, nil
+		}
 	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": wpSub}, nil
@@ -83,8 +83,12 @@ func (mc *MembershipController) SubscribeWebPush(c *gin.Context) (int, gin.H, er
 	}
 
 	if err = mc.Storage.CreateAWebPushSubscription(wpSub); err != nil {
-		appErr, _ := err.(models.AppError)
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Creating a web push subscription fails", appErr.Error(), appErr.StatusCode)
+		switch appErr := err.(type) {
+		case models.AppError:
+			return 0, gin.H{}, models.NewAppError(errorWhere, "Fails to create a web push subscription", appErr.Error(), appErr.StatusCode)
+		default:
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Unknown Error Type. Fails to create a web push subscription"}, nil
+		}
 	}
 
 	return http.StatusCreated, gin.H{"status": "success", "data": sBody}, nil
