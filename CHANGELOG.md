@@ -1,3 +1,6 @@
+### 2.1.1
+- Update membership_user.sql. Remove soft delete on web_push_subscriptions table
+
 ### 2.1.0
 - New endpoint for subscribing webpush notification
 

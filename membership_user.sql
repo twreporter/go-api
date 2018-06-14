@@ -187,9 +187,8 @@ CREATE TABLE `web_push_subscriptions` (
   `keys` varchar(200) NOT NULL,
   `expiration_time` timestamp NULL DEFAULT NULL,
   `user_id` int(10) unsigned NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_web_push_subscriptions_hash_endpoint` (`hash_endpoint`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
