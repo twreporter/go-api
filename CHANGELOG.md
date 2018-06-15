@@ -4,6 +4,9 @@
 ### 2.1.0
 - New endpoint for subscribing webpush notification
 
+### 2.1.0
+- New endpoint for subscribing webpush notification
+
 ### 2.0.3
 - Add a new resized target option: w400
 
