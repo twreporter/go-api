@@ -83,7 +83,7 @@ func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]model
 
 // CreateABookmarkOfAUser this func will create a bookmark and build the relationship between the bookmark and the user
 func (g *GormStorage) CreateABookmarkOfAUser(userID string, bookmark models.Bookmark) (models.Bookmark, error) {
-	var _bookmark models.Bookmark = bookmark
+	var _bookmark = bookmark
 	var err error
 	var user models.User
 

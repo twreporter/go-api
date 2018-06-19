@@ -174,22 +174,23 @@ CREATE TABLE `users_bookmarks` (
 
 
 --
--- Table structure for table `web_push_subscription`
+-- Table structure for table `web_push_subs
 --
 
-DROP TABLE IF EXISTS `web_push_subscriptions`;
+DROP TABLE IF EXISTS `web_push_subs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `web_push_subscriptions` (
+CREATE TABLE `web_push_subs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `endpoint` varchar(2048) NOT NULL,
-  `hash_endpoint` char(32) NOT NULL,
+  `endpoint` varchar(500) NOT NULL,
+  `crc32_endpoint` int(10) unsigned NOT NULL,
   `keys` varchar(200) NOT NULL,
   `expiration_time` timestamp NULL DEFAULT NULL,
   `user_id` int(10) unsigned NULL DEFAULT NULL,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uix_web_push_subscriptions_hash_endpoint` (`hash_endpoint`)
+  UNIQUE KEY `uix_web_push_subs_endpoint` (`endpoint`),
+  KEY `idx_web_push_subs_crc32_endpoint` (`crc32_endpoint`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
