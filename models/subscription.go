@@ -30,7 +30,7 @@ func (wpSub *WebPushSubscription) SetUserID(userID uint) {
 	wpSub.UserID = &userID
 }
 
-// set WebPushSubscription's table name ti be `web_push_subs`
+// set WebPushSubscription's table name to be `web_push_subs`
 func (WebPushSubscription) TableName() string {
 	return "web_push_subs"
 }
