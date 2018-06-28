@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"twreporter.org/go-api/models"
 )
 
@@ -11,16 +12,17 @@ func (g *GormStorage) CreateAWebPushSubscription(wpSub models.WebPushSubscriptio
 	if err != nil {
 		return g.NewStorageError(err, "GormStorage.CreateAWebPushSubscription", "storage.subscription.error_to_create_a_subscription")
 	}
+
 	return nil
 }
 
-// GetAWebPushSubscriptionByHashEndpoint - read a record from persistent database according to its unique hash endpoint value
-func (g *GormStorage) GetAWebPushSubscriptionByHashEndpoint(hashEndpoint string) (models.WebPushSubscription, error) {
+// GetAWebPushSubscription - read a record from persistent database according to its crc32(endpoint) and endpoint value
+func (g *GormStorage) GetAWebPushSubscription(crc32Endpoint uint32, endpoint string) (models.WebPushSubscription, error) {
 	var wpSub models.WebPushSubscription
 	var err error
 
-	if err = g.db.Find(&wpSub, "hash_endpoint = ?", hashEndpoint).Error; err != nil {
-		return wpSub, g.NewStorageError(err, "GormStorage.GetAWebPushSubscriptionByHashEndpoint", "storage.subscription.error_to_get_a_web_push_subscription")
+	if err = g.db.Find(&wpSub, "crc32_endpoint = ? AND endpoint = ?", crc32Endpoint, endpoint).Error; err != nil {
+		return wpSub, g.NewStorageError(err, "GormStorage.GetAWebPushSubscription", fmt.Sprintf("Getting subscription by endpoint %v and crc32_endpoint %v occurs error", endpoint, crc32Endpoint))
 	}
 
 	return wpSub, nil

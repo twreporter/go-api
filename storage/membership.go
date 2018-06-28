@@ -39,7 +39,7 @@ type MembershipStorage interface {
 
 	/** Web Push Subscription methods **/
 	CreateAWebPushSubscription(models.WebPushSubscription) error
-	GetAWebPushSubscriptionByHashEndpoint(string) (models.WebPushSubscription, error)
+	GetAWebPushSubscription(uint32, string) (models.WebPushSubscription, error)
 
 	/** Service methods **/
 	GetService(string) (models.Service, error)
