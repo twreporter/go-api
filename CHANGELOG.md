@@ -1,3 +1,9 @@
+### 2.1.2
+- [Performance] Replace md5 hash function by crc32 on subscriptions table
+  - rename web_push_subscriptions to web_push_subs
+  - add UNIQUE KEY on `endpoint` field, and set `endpoint` to varchar(500)
+  - rename `hash_endpoint` to `crc32_endpoint`, and remove UNIQUE KEY from `crc32_endpoint`
+
 ### 2.1.1
 - Update membership_user.sql. Remove soft delete on web_push_subscriptions table
  
