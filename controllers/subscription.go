@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"crypto/md5"
 	"fmt"
+	"hash/crc32"
 	"net/http"
 	"strconv"
 
@@ -17,21 +17,21 @@ func (mc *MembershipController) IsWebPushSubscribed(c *gin.Context) (int, gin.H,
 	const errorWhere = "MembershipController.IsWebPushSubscribed"
 	var endpoint = c.Query("endpoint")
 	var err error
-	var hashEndpoint string
+	var crc32Endpoint uint32
 	var wpSub models.WebPushSubscription
 
 	if endpoint == "" {
 		return http.StatusNotFound, gin.H{"status": "error", "message": "Fail to get a web push subscription since you do not provide endpoint in URL query param"}, nil
 	}
 
-	hashEndpoint = fmt.Sprintf("%x", md5.Sum([]byte(endpoint)))
+	crc32Endpoint = crc32.Checksum([]byte(endpoint), crc32.IEEETable)
 
-	if wpSub, err = mc.Storage.GetAWebPushSubscriptionByHashEndpoint(hashEndpoint); err != nil {
+	if wpSub, err = mc.Storage.GetAWebPushSubscription(crc32Endpoint, endpoint); err != nil {
 		switch appErr := err.(type) {
 		case models.AppError:
 			return 0, gin.H{}, models.NewAppError(errorWhere, "Fail to get a web push subscription", appErr.Error(), appErr.StatusCode)
 		default:
-			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Unknown Error Type. Fail to get a web push subscription"}, nil
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error Type. Fail to get a web push subscription. %v", err.Error())}, nil
 		}
 	}
 
@@ -50,9 +50,11 @@ func (mc *MembershipController) SubscribeWebPush(c *gin.Context) (int, gin.H, er
 	}
 
 	const errorWhere = "MembershipController.SubscribeWebPush"
+	var endpoint string
 	var err error
-	var sBody subscriptionBody
 	var expirationTime int64
+	var crc32Endpoint uint32
+	var sBody subscriptionBody
 	var userID uint64
 	var wpSub models.WebPushSubscription
 
@@ -65,13 +67,13 @@ func (mc *MembershipController) SubscribeWebPush(c *gin.Context) (int, gin.H, er
 		}}, nil
 	}
 
-	// HashEndpoint is created by md5 hash.
-	// It is a unique key in the persistent database
-	// to avoid from creating the duplicate record
+	endpoint = sBody.Endpoint
+	crc32Endpoint = crc32.Checksum([]byte(endpoint), crc32.IEEETable)
+
 	wpSub = models.WebPushSubscription{
-		Endpoint:     sBody.Endpoint,
-		HashEndpoint: fmt.Sprintf("%x", md5.Sum([]byte(sBody.Endpoint))),
-		Keys:         sBody.Keys,
+		Endpoint:      endpoint,
+		Crc32Endpoint: crc32Endpoint,
+		Keys:          sBody.Keys,
 	}
 
 	if userID, err = strconv.ParseUint(sBody.UserID, 10, 0); err == nil {
@@ -87,7 +89,7 @@ func (mc *MembershipController) SubscribeWebPush(c *gin.Context) (int, gin.H, er
 		case models.AppError:
 			return 0, gin.H{}, models.NewAppError(errorWhere, "Fails to create a web push subscription", appErr.Error(), appErr.StatusCode)
 		default:
-			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Unknown Error Type. Fails to create a web push subscription"}, nil
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error Type. Fails to create a web push subscription. %v", err.Error())}, nil
 		}
 	}
 
