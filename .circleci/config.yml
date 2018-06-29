@@ -6,7 +6,7 @@ jobs:
     docker:
       # specify the version you desire here
       - image: thereporter/circleci-go-api:latest
-      - image: circleci/mongo:3.2.13
+      - image: circleci/mongo:3.2
       - image: circleci/mysql:5.7
         environment:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
