@@ -24,20 +24,34 @@ var ErrDuplicateEntry uint16 = 1062
 // ErrMgoDuplicateEntry record is already existed in MongoDB
 var ErrMgoDuplicateEntry = 11000
 
+// IsRecordNotFoundError check if err is equal to gorm.ErrRecordNotFound
+func IsRecordNotFoundError(err error) bool {
+	return err == ErrRecordNotFound
+}
+
+// IsDuplicateEntryError check if err belongs to mysql.MySQLError and its error number is equal to ErrDuplicateEntry
+func IsDuplicateEntryError(err error) bool {
+	errStruct, ok := err.(*mysql.MySQLError)
+	if ok && errStruct.Number == ErrDuplicateEntry {
+		return true
+	}
+	return false
+}
+
 // NewStorageError return AppError with detailed information.
 // This method is mainly used to deal with MySQL error.
 func (g *GormStorage) NewStorageError(err error, where string, message string) error {
-	errStruct, ok := err.(*mysql.MySQLError)
-
-	if err != nil && err.Error() == ErrRecordNotFound.Error() {
+	switch {
+	case IsRecordNotFoundError(err):
 		return models.NewAppError(where, "Record not found", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusNotFound)
-	} else if ok && errStruct.Number == ErrDuplicateEntry {
+	case IsDuplicateEntryError(err):
 		return models.NewAppError(where, "Record is already existed", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusConflict)
-	} else if err != nil {
+	case err != nil:
 		log.Error(err.Error())
 		return models.NewAppError(where, "Internal server error", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusInternalServerError)
+	default:
+		return nil
 	}
-	return nil
 }
 
 // NewStorageError return AppError with detailed information.
