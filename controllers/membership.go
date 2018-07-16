@@ -1,9 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/middlewares"
 	// "twreporter.org/go-api/models"
