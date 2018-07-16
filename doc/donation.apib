@@ -1,0 +1,193 @@
+FORMAT: 1A
+HOST: https://go-api.twreporter.org
+
+# Donation API
+TWReporter Donation API, integrated with Tappay Web Service
+
+## Data Structures
+
+### PayByPrimeRequest
++ prime : test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (required)
++ amount : 500 (required, number)
++ currency : TWD (optional)                         # default is TWD
++ details : 報導者小額捐款 (optional)               # System should provide default value
++ cardholder (Cardholder, required)
++ `order_number` : `order_number_we_define` (string, optional)
++ `pay_by` : `credit_card` (string, required)                   # enum("credit_card", "line", "apple", "google", "samsung", "others")
++ `merchant_id` : `twreporter_CTBC` (optional)          # System should provide default value
+
+### PayByCardTokenRequest
++ card_key : 91c8c5bd22208027093e7a2a7ed8cb08c616183f489088c9f1dd0ef51975efa4 (required)
++ card_token : 41ce67b0c2e6dbea2725dfef37bd71695da7405f1e7c904469d3678f191f31bc (required)
++ periodic_donation_id : 10 (required, number)
++ amount : 500 (required, number)
++ currency : TWD (optional)                         # default is TWD
++ details : 報導者小額捐款 (optional)
++ `order_number` : `order_number_we_define` (optional)
++ `merchant_id` : `twreporter_CTBC` (optional)
+
+### PayByPrimeResponse
++ id : 11 (required, number)
++ card_info (CardInfo, required) 
++ cardholder (Cardholder, required)
++ amount : 500 (required, number)
++ currency : TWD (required)
++ details : 報導者小額捐款 (required)
++ `order_number` : `order_number_we_define` (optional)
+
+
+### PayByTokenResponse
++ id : 11 (required, number)
++ periodic_record_id : 10 (required, number)
++ card_info (CardInfo, required) 
++ amount : 500 (required, number)
++ currency : TWD (required)
++ details : 報導者小額捐款 (required)
++ `order_number` : `order_number_we_define` (optional)
+
+### PeriodicPayResponse
++ id : 10 (required, number)
++ cardholder (Cardholder, required)
++ start_date : `2018-06-12` (required)        # the date the user start to pay periodically
++ paid_times : 1 (required, number)         # how many times the user already paid
++ amount : 500 (required, number)
++ last_success_date : `2018-07-12` (required) # the date the user paid successfully
++ failure_times : 0 (required)              # how many times the user paid unsuccessfully
++ `pay_by` : `credit_card` (required)           # enum("credit_card", "line", "apple", "google", "samsung", "others")
++ is_stopped : false (required, boolean)
+
+### TapPayByPrimeRequest
++ prime : test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (required)
++ partner_key : partner_key_str (required)
++ merchant_id : merchant_id_str (required)
++ amount : 500 (required, number)
++ currency : TWD (optional)
++ details : 報導者定期定額捐款 (required) 
++ cardholder (Cardholder, required)
++ remember: false (required, boolean)
++ `order_number` : `order_number_we_define` (required)
+
+### TapPayByPrimeResponse
++ status : 0 (required, number)
++ msg : Success (required)
++ rec_trade_id : D20180712Gl0C0w (required)
++ bank_transaction_id : TP20180712Gl0C0w (required)
++ auth_code : 756376 (required)
++ card_secret (CardSecret, optional)
++ amount : 100 (required, number)
++ currency : TWD (required)
++ card_info (CardInfo, required)
++ `order_number` : `order_number_we_define` (required)
++ acquirer : TW_CTBC (required)
++ transaction_time_millis : 1531363227359 (required, number)
++ bank_transaction_time (BankTransactionTime, required)
++ bank_result_code : 0 (required)
++ bank_result_msg : bank_message (required)
+
+### Cardholder
++ phone_number : +886912345678 (required)
++ name : 王小明 (required)
++ email : donator@email.com (required)
++ zip_code : 10410 (optional)
++ address : 台北市南京東路三段30號6樓 (optional)
++ national_id : A123456789 (optional)
+
+### CardSecret
++ card_token : 99beec9af1bfbd5e3fb9081bba2ba1739ba1e0d76f42db066cdd015e5c9de756 (required)
++ card_key : f0669edae6640dc55987a99530609c42a37c6d0592865a96f4a81ef415f2407b (required)
+
+### CardInfo
++ bin_code : 424242 (required)
++ last_four : 4242 (required)
++ issuer : JPMORGAN CHASE BANK NA (required)
++ funding : 0 (required, number)
++ type : 1 (required, number)
++ level : card_level (required)
++ country : UNITED STATES (required)
++ country_code : US (required)
++ expiry_date : 202301 (optional)
+
+### BankTransactionTime
++ start_time_millis : 1531363227382 (required)
++ end_time_millis : 1531363227382 (required)
+
+
+### CreatePeriodicDonationResponse
++ donation_result (PayByPrimeResponse, required)
++ periodic_donation_result (PeriodicPayResponse, required)
+
+### PayByPrimeFailResponse
++ prime : Required. Type: <string>. EX: test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (optional)
++ amount : Required. Type: <number>. Condition: bigger than 0. EX: 500 (optional)
++ cardholder (CardholderFailData, optional)
++ `pay_by` : Required. Type: <string>. EX: credit_card (optional)
+
+### CardholderFailData
++ phone_number : Required. Type: <string>. EX: +886912345678 (optional)
++ name : Required. Type: <string>. EX: 王小明 (optional)
++ email : Required. Type: <string>. EX: test@twreporter.org (optional)
+
+
+# Donation Endpoints
+endpoints for donation
+
+# Periodic Donation List [/v1/periodic_donations]
+## Create a Periodic Donation[POST]
++ Request with body (application/json)
+  + Attributes (PayByPrimeRequest)
+
++ Response 201 (application/json)
+
+  + Attributes
+
+        + status : success (required)
+        + data (CreatePeriodicDonationResponse, required)
+
++ Response 400 (application/json)
+
+  + Attributes
+
+        + status : fail (required)
+        + data (PayByPrimeFailResponse, required)
+
++ Response 500 (application/json)
+  Unknown error type
+
+    + Body
+
+     	    	{
+            "status": "error",
+            "message": "Unknown server error during create"
+          	}
+
+
+# Donations List [/v1/donations]
+## Create a Donation[POST]
+
++ Request with body (application/json)
+  + Attributes (PayByPrimeRequest)
+
++ Response 201 (application/json)
+
+  + Attributes 
+  
+        + status : success (required)
+        + data (PayByPrimeResponse, required)
+
++ Response 400 (application/json)
+
+  + Attributes
+
+        + status : fail (required)
+        + data (PayByPrimeFailResponse, required)
+
++ Response 500 (application/json)
+  Unknown error type
+
+    + Body
+
+          	{
+            "status": "error",
+            "message": "Unknown server error during create"
+        		}
+
