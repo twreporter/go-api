@@ -9,37 +9,32 @@ TWReporter Donation API, integrated with Tappay Web Service
 ### PayByPrimeRequest
 + prime : test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (required)
 + amount : 500 (required, number)
-+ currency : TWD (optional)                         # default is TWD
-+ details : 報導者小額捐款 (optional)               # System should provide default value
++ currency : TWD (optional)                                     # default is TWD
++ details : 報導者小額捐款 (optional)                           # System should provide default value
 + cardholder (Cardholder, required)
 + `order_number` : `order_number_we_define` (string, optional)
 + `pay_by` : `credit_card` (string, required)                   # enum("credit_card", "line", "apple", "google", "samsung", "others")
-+ `merchant_id` : `twreporter_CTBC` (optional)          # System should provide default value
++ `merchant_id` : `twreporter_CTBC` (optional)                  # System should provide default value
++ result_url (RequestURL, optional)                            # request_url is used in line-pay
 
-### PayByCardTokenRequest
-+ card_key : 91c8c5bd22208027093e7a2a7ed8cb08c616183f489088c9f1dd0ef51975efa4 (required)
-+ card_token : 41ce67b0c2e6dbea2725dfef37bd71695da7405f1e7c904469d3678f191f31bc (required)
-+ periodic_donation_id : 10 (required, number)
+### RequestURL
++ `frontend_redirect_url` : `https://your.domain.com/transaction_is_done` (required)
++ `backend_notify_url` : `https://your.domain.com/tappay_will_notify_this` (required)
+
+### PayByOthersRequest
++ email : others@email.domain.com (string, optional) 
++ pay_method : atm (string, required)
 + amount : 500 (required, number)
-+ currency : TWD (optional)                         # default is TWD
-+ details : 報導者小額捐款 (optional)
-+ `order_number` : `order_number_we_define` (optional)
-+ `merchant_id` : `twreporter_CTBC` (optional)
++ currency : TWD (optional)                                     # default is TWD
++ details : 報導者小額捐款 (optional)                           # System should provide default value
++ `order_number` : `order_number_we_define` (string, optional)
++ `merchant_id` : `twreporter_CTBC` (optional)                  # System should provide default value
 
-### PayByPrimeResponse
+### PaySuccessResponse
 + id : 11 (required, number)
++ periodic_record_id : 10 (optional, number)
 + card_info (CardInfo, required) 
 + cardholder (Cardholder, required)
-+ amount : 500 (required, number)
-+ currency : TWD (required)
-+ details : 報導者小額捐款 (required)
-+ `order_number` : `order_number_we_define` (optional)
-
-
-### PayByTokenResponse
-+ id : 11 (required, number)
-+ periodic_record_id : 10 (required, number)
-+ card_info (CardInfo, required) 
 + amount : 500 (required, number)
 + currency : TWD (required)
 + details : 報導者小額捐款 (required)
@@ -47,6 +42,7 @@ TWReporter Donation API, integrated with Tappay Web Service
 
 ### PeriodicPayResponse
 + id : 10 (required, number)
++ user_id : 1 (required, number)
 + cardholder (Cardholder, required)
 + start_date : `2018-06-12` (required)        # the date the user start to pay periodically
 + paid_times : 1 (required, number)         # how many times the user already paid
@@ -64,8 +60,18 @@ TWReporter Donation API, integrated with Tappay Web Service
 + currency : TWD (optional)
 + details : 報導者定期定額捐款 (required) 
 + cardholder (Cardholder, required)
-+ remember: false (required, boolean)
-+ `order_number` : `order_number_we_define` (required)
++ remember: false (required, boolean)                   # We can get `card_secret` in response if `remember` = true
++ `order_number` : `order_number_we_define` (optional)
+
+### TapPayByCardTokenRequest
++ card_token : 99beec9af1bfbd5e3fb9081bba2ba1739ba1e0d76f42db066cdd015e5c9de756 (required)
++ card_key : f0669edae6640dc55987a99530609c42a37c6d0592865a96f4a81ef415f2407b (required)
++ partner_key : partner_key_str (required)
++ merchant_id : merchant_id_str (required)
++ amount : 500 (required, number)
++ currency : TWD (required)
++ details : 報導者定期定額捐款 (required) 
++ `order_number` : `order_number_we_define` (optional)
 
 ### TapPayByPrimeResponse
 + status : 0 (required, number)
@@ -84,10 +90,26 @@ TWReporter Donation API, integrated with Tappay Web Service
 + bank_result_code : 0 (required)
 + bank_result_msg : bank_message (required)
 
+### TapPayByTokenResponse
++ status : 0 (required, number)
++ msg : Success (required)
++ rec_trade_id : D20180712Gl0C0w (required)
++ bank_transaction_id : TP20180712Gl0C0w (required)
++ auth_code : 756376 (required)
++ amount : 100 (required, number)
++ currency : TWD (required)
++ card_info (CardInfo, required)
++ `order_number` : `order_number_we_define` (required)
++ acquirer : TW_CTBC (required)
++ transaction_time_millis : 1531363227359 (required, number)
++ bank_transaction_time (BankTransactionTime, required)
++ bank_result_code : 0 (required)
++ bank_result_msg : bank_message (required)
+
 ### Cardholder
-+ phone_number : +886912345678 (required)
-+ name : 王小明 (required)
-+ email : donator@email.com (required)
++ phone_number : +886912345678 (optional)
++ name : 王小明 (optional)
++ email : donator@email.com (optional)
 + zip_code : 10410 (optional)
 + address : 台北市南京東路三段30號6樓 (optional)
 + national_id : A123456789 (optional)
@@ -113,8 +135,7 @@ TWReporter Donation API, integrated with Tappay Web Service
 
 
 ### CreatePeriodicDonationResponse
-+ donation_result (PayByPrimeResponse, required)
-+ periodic_donation_result (PeriodicPayResponse, required)
++ donation_result (PaySuccessResponse, required)
 
 ### PayByPrimeFailResponse
 + prime : Required. Type: <string>. EX: test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (optional)
@@ -127,11 +148,12 @@ TWReporter Donation API, integrated with Tappay Web Service
 + name : Required. Type: <string>. EX: 王小明 (optional)
 + email : Required. Type: <string>. EX: test@twreporter.org (optional)
 
-
 # Donation Endpoints
 endpoints for donation
 
 # Periodic Donation List [/v1/periodic_donations]
+Currently, we only create periodic donations for credit card
+
 ## Create a Periodic Donation[POST]
 + Request with body (application/json)
   + Attributes (PayByPrimeRequest)
@@ -141,7 +163,7 @@ endpoints for donation
   + Attributes
 
         + status : success (required)
-        + data (CreatePeriodicDonationResponse, required)
+        + data (PaySuccessResponse, required)
 
 + Response 400 (application/json)
 
@@ -161,8 +183,12 @@ endpoints for donation
           	}
 
 
-# Donations List [/v1/donations]
+# Donations [/v1/donations/{pay_method}/]
++ Parameters
+    + `pay_method`: `credit_card` (required) - It could be `credit_card`, `line`, `apple`, `google` or `samsung`.
+
 ## Create a Donation[POST]
+Create a donation record
 
 + Request with body (application/json)
   + Attributes (PayByPrimeRequest)
@@ -172,7 +198,7 @@ endpoints for donation
   + Attributes 
   
         + status : success (required)
-        + data (PayByPrimeResponse, required)
+        + data (PaySuccessResponse, required)
 
 + Response 400 (application/json)
 
@@ -190,4 +216,97 @@ endpoints for donation
             "status": "error",
             "message": "Unknown server error during create"
         		}
+
+# Donations [/v1/donations/others/]
+## Create a Donation by old fashion method[POST]
+Create a donation record with other pay methods
++ Request with body (application/json)
+  + Attributes (PayByOthersRequest)
+
++ Response 201 (application/json)
+
+    + Body
+
+            {
+            "status": "success",
+            "data": {
+              "email": "others@email.domain"
+              "pay_method": "atm",
+              "amount": 500,
+              "currency": "TWD",
+              "details": "報導者捐款",
+            }
+            }
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+            "status": "fails",
+            "data": {
+              "pay_method": "Required. Type: <string>. EX: atm",
+              "amount": "Required. Type: <number>. EX: 500",
+              "details": "Required. Type: <string>. EX: 報導者捐款" 
+            }
+            }
+
++ Response 500 (application/json)
+  Unknown error type
+
+    + Body
+
+            {
+            "status": "error",
+            "message": "Unknown server error during create"
+            }
+
+# View Donations [/v1/donations{?email,pay_methods,page,number_per_page}]
+## View Donations of User by Email [GET]
++ Parameters
+    + email: `developer%40twreporter.org` (required) - User's email.
+    + page: `1` (optional, unsigned integer) - The page number, default to 1 if not specified.
+    + `pay_methods`: `credit_card` (optional) - A collection of pay methods.
+    + `number_per_page`: `5` (optional, unsigned integer) - The number of notification per page, default to 20 if not specified.
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data
+            + page: 1 (required, number)
+            + nPerPage: 5 (required, number)
+            + totalRecords: 1 (required, number)
+            + records (array[PaySuccessResponse]) (required)
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+            "status": "Fail",
+            "data": {
+                "page": "Invalid page index"
+                }
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+            "status": "Fail",
+            "data": {
+                "page": "Invalid data page reference, page: 2 perPage: 40"
+                }
+            }
+
++ Response 500 (application/json)
+
+    + Body
+            
+            {
+            "status": "Error",
+            "message": "Unknown server error. Cannot fetch dontaion list"
+            }
 
