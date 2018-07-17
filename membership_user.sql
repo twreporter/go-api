@@ -194,3 +194,127 @@ CREATE TABLE `web_push_subs` (
   KEY `idx_web_push_subs_crc32_endpoint` (`crc32_endpoint`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `pay_by_prime_donations`
+--
+
+DROP TABLE IF EXISTS `pay_by_prime_donations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pay_by_prime_donations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `status` int NOT NULL,  /* https://docs.tappaysdk.com/samsung-pay/zh/error.html#error-code */ 
+  `msg` varchar(100) NOT NULL,
+  `rec_trade_id` varchar(20) NOT NULL,
+  `bank_transaction_id` varchar(50) NOT NULL,
+  `auth_code` varchar(6) NOT NULL,
+  `amount` int(10) unsigned NOT NULL,
+  `currency` char(3) DEFAULT 'TWD' NOT NULL,
+  `order_number` varchar(50) NOT NULL,
+  `acquirer` varchar(50) NOT NULL,
+  `transaction_time` timestamp NOT NULL,
+  `bank_transaction_start_time` timestamp NOT NULL,
+  `bank_transaction_end_time` timestamp NOT NULL,
+  `bank_result_code` varchar(50) DEFAULT '0' NOT NULL,
+  `bank_result_msg` varchar(50) DEFAULT '' NOT NULL,
+  `pay_method` enum('credit_card', 'line', 'apple', 'google', 'samsung') NOT NULL,
+  `card_info_bin_code` varchar(6) NOT NULL,  /* 卡片前六碼 */
+  `card_info_last_four` varchar(4) NOT NULL, /* 卡片後四碼 */
+  `card_info_issuer` varchar(50) NOT NULL, /* 發卡銀行 */
+  `card_info_funding` tinyint DEFAULT 0 NOT NULL,  /*0 = 信用卡 (Credit Card) 1 = 簽帳卡 (Debit Card) 2 = 預付卡 (Prepaid Card)*/
+  `card_info_type` tinyint NOT NUll, /* 1 = VISA, 2 = MasterCard, 3 = JCB, 4 = Union Pay, 5 = AMEX*/
+  `card_info_level` varchar(10) DEFAULT '' NOT NULL, /* 卡片等級 */
+  `card_info_country` varchar(30) DEFAULT '' NOT NULL, /*  發卡行國家 */
+  `card_info_country_code` varchar(10) DEFAULT '' NOT NULL, /*  發卡行國家碼 */
+  `card_info_expiry_date` varchar(6) DEFAULT NULL, /* 卡片到期時間，格式 YYYYMM，(remember = true 時回傳) (Apple Pay / Google Pay 不會回傳此欄位) */
+  PRIMARY KEY (`id`),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `pay_by_card_token_donations`
+--
+
+DROP TABLE IF EXISTS `pay_by_card_token_donations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pay_by_card_token_donations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `periodic_id` int(10) unsigned NOT NULL,
+  `status` int NOT NULL,  /* https://docs.tappaysdk.com/samsung-pay/zh/error.html#error-code */ 
+  `msg` varchar(100) NOT NULL,
+  `rec_trade_id` varchar(20) NOT NULL,
+  `bank_transaction_id` varchar(50) NOT NULL,
+  `auth_code` varchar(6) NOT NULL,
+  `amount` int(10) unsigned NOT NULL,
+  `currency` char(3) DEFAULT 'TWD' NOT NULL,
+  `order_number` varchar(50) NOT NULL,
+  `acquirer` varchar(50) NOT NULL,
+  `transaction_time` timestamp NOT NULL,
+  `bank_transaction_start_time` timestamp NOT NULL,
+  `bank_transaction_end_time` timestamp NOT NULL,
+  `bank_result_code` varchar(50) DEFAULT '0' NOT NULL,
+  `bank_result_msg` varchar(50) DEFAULT '' NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_pay_by_card_token_donations_periodic_id` (`periodic_id`),
+  KEY `idx_pay_by_card_token_donations_amount` (`amount`),
+  CONSTRAINT `fk_pay_by_card_token_donations_periodic_id` FOREIGN KEY (`periodic_id`) REFERENCES `periodic_donations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `pay_by_other_method_donations`
+--
+
+DROP TABLE IF EXISTS `pay_by_other_method_donations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pay_by_other_method_donations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `email` varchar(100) NOT NULL,
+  `pay_method` varchar(50) NOT NULL,
+  `amount` int(10) unsigned NOT NULL,
+  `currency` char(3) DEFAULT 'TWD' NOT NULL,
+  `details` varchar(50) NOT NULL,
+  `merchat_id` varchar(30) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_pay_by_other_method_donations_pay_method` (`pay_method`),
+  KEY `idx_pay_by_other_method_donations_amount` (`amount`),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `periodic_donations`
+--
+
+DROP TABLE IF EXISTS `periodic_donations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `periodic_donations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `currency` char(3) DEFAULT 'TWD' NOT NULL,
+  `start_date` DATE DEFAULT CURRENT_DATE,
+  `paid_times` smallint unsigned DEFAULT 0 NOT NULL,
+  `amount` int(10) unsigned NOT NULL,
+  `last_success_date` DATE DEFAULT NULL,
+  `failure_times` tinyint unsigned DEFAULT 0 NOT NULL,
+  `is_stopped` tinyint(1) unsigned DEFAULT 0 NOT NULL,
+  `card_info_bin_code` varchar(6) NOT NULL,  /* 卡片前六碼 */
+  `card_info_last_four` varchar(4) NOT NULL, /* 卡片後四碼 */
+  `card_info_issuer` varchar(50) NOT NULL, /* 發卡銀行 */
+  `card_info_funding` tinyint DEFAULT 0 NOT NULL,  /*0 = 信用卡 (Credit Card) 1 = 簽帳卡 (Debit Card) 2 = 預付卡 (Prepaid Card)*/
+  `card_info_type` tinyint NOT NUll, /* 1 = VISA, 2 = MasterCard, 3 = JCB, 4 = Union Pay, 5 = AMEX*/
+  `card_info_level` varchar(10) DEFAULT '' NOT NULL, /* 卡片等級 */
+  `card_info_country` varchar(30) DEFAULT '' NOT NULL, /*  發卡行國家 */
+  `card_info_country_code` varchar(10) DEFAULT '' NOT NULL, /*  發卡行國家碼 */
+  `card_info_expiry_date` varchar(6) DEFAULT NULL, /* 卡片到期時間，格式 YYYYMM，(remember = true 時回傳) (Apple Pay / Google Pay 不會回傳此欄位) */
+  PRIMARY KEY (`id`),
+  KEY `fk_periodic_donations_idx` (`user_id`),
+  KEY `idx_periodic_donations_start_date` (`start_date`),
+  KEY `idx_periodic_donations_amount` (`amount`),
+  KEY `idx_periodic_donations_is_stopped` (`is_stopped`),
+  CONSTRAINT `fk_periodic_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
