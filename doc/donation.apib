@@ -32,7 +32,7 @@ TWReporter Donation API, integrated with Tappay Web Service
 
 ### PaySuccessResponse
 + id : 11 (required, number)
-+ periodic_record_id : 10 (optional, number)
++ is_periodic : true (required, boolean)
 + card_info (CardInfo, required) 
 + cardholder (Cardholder, required)
 + amount : 500 (required, number)
@@ -138,15 +138,15 @@ TWReporter Donation API, integrated with Tappay Web Service
 + donation_result (PaySuccessResponse, required)
 
 ### PayByPrimeFailResponse
-+ prime : Required. Type: <string>. EX: test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (optional)
-+ amount : Required. Type: <number>. Condition: bigger than 0. EX: 500 (optional)
++ prime : Required. Type: <string>. e.g., test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (optional)
++ amount : Required. Type: <number>. Condition: bigger than 0. e.g., 500 (optional)
 + cardholder (CardholderFailData, optional)
-+ `pay_by` : Required. Type: <string>. EX: credit_card (optional)
++ `pay_by` : Required. Type: <string>. e.g., credit_card (optional)
 
 ### CardholderFailData
-+ phone_number : Required. Type: <string>. EX: +886912345678 (optional)
-+ name : Required. Type: <string>. EX: 王小明 (optional)
-+ email : Required. Type: <string>. EX: test@twreporter.org (optional)
++ phone_number : Required. Type: <string>. e.g., +886912345678 (optional)
++ name : Required. Type: <string>. e.g., 王小明 (optional)
++ email : Required. Type: <string>. e.g., test@twreporter.org (optional)
 
 # Donation Endpoints
 endpoints for donation
@@ -245,9 +245,9 @@ Create a donation record with other pay methods
             {
             "status": "fails",
             "data": {
-              "pay_method": "Required. Type: <string>. EX: atm",
-              "amount": "Required. Type: <number>. EX: 500",
-              "details": "Required. Type: <string>. EX: 報導者捐款" 
+              "pay_method": "Required. Type: <string>. e.g., atm",
+              "amount": "Required. Type: <number>. e.g., 500",
+              "details": "Required. Type: <string>. e.g., 報導者捐款" 
             }
             }
 
@@ -266,7 +266,7 @@ Create a donation record with other pay methods
 + Parameters
     + email: `developer%40twreporter.org` (required) - User's email.
     + page: `1` (optional, unsigned integer) - The page number, default to 1 if not specified.
-    + `pay_methods`: `credit_card` (optional) - A collection of pay methods.
+    + `pay_methods`: `credit_card` (optional, array(string)) - A collection of pay methods. URL will be like `/v1/donations?pay_methods=credit_card&pay_methods=line&pay_methods=apple`.
     + `number_per_page`: `5` (optional, unsigned integer) - The number of notification per page, default to 20 if not specified.
 
 + Response 200 (application/json)
@@ -275,8 +275,8 @@ Create a donation record with other pay methods
         + status: success (required)
         + data
             + page: 1 (required, number)
-            + nPerPage: 5 (required, number)
-            + totalRecords: 1 (required, number)
+            + number_per_page: 5 (required, number)
+            + total_records: 1 (required, number)
             + records (array[PaySuccessResponse]) (required)
 
 + Response 400 (application/json)
