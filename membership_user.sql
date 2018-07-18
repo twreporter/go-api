@@ -245,7 +245,7 @@ DROP TABLE IF EXISTS `pay_by_card_token_donations`;
 CREATE TABLE `pay_by_card_token_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `periodic_id` int(10) unsigned NOT NULL,
-  `status` int NOT NULL,  /* https://docs.tappaysdk.com/samsung-pay/zh/error.html#error-code */ 
+  `status` int NOT NULL, 
   `msg` varchar(100) NOT NULL,
   `rec_trade_id` varchar(20) NOT NULL,
   `bank_transaction_id` varchar(50) NOT NULL,

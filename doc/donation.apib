@@ -15,7 +15,7 @@ TWReporter Donation API, integrated with Tappay Web Service
 + `order_number` : `order_number_we_define` (string, optional)
 + `pay_by` : `credit_card` (string, required)                   # enum("credit_card", "line", "apple", "google", "samsung", "others")
 + `merchant_id` : `twreporter_CTBC` (optional)                  # System should provide default value
-+ result_url (RequestURL, optional)                            # request_url is used in line-pay
++ result_url (RequestURL, optional)                             # request_url is used in line-pay
 
 ### RequestURL
 + `frontend_redirect_url` : `https://your.domain.com/transaction_is_done` (required)
@@ -42,14 +42,14 @@ TWReporter Donation API, integrated with Tappay Web Service
 
 ### PeriodicPayResponse
 + id : 10 (required, number)
-+ user_id : 1 (required, number)
 + cardholder (Cardholder, required)
-+ start_date : `2018-06-12` (required)        # the date the user start to pay periodically
-+ paid_times : 1 (required, number)         # how many times the user already paid
++ currency : TWD (required)
++ start_date : 1531899571 (required, number)        # the date the user start to pay periodically
++ paid_times : 1 (required, number)                 # how many times the user already paid
 + amount : 500 (required, number)
-+ last_success_date : `2018-07-12` (required) # the date the user paid successfully
-+ failure_times : 0 (required)              # how many times the user paid unsuccessfully
-+ `pay_by` : `credit_card` (required)           # enum("credit_card", "line", "apple", "google", "samsung", "others")
++ last_success_date : 1531899571 (required, number) # the date the user paid successfully
++ failure_times : 0 (required)                      # how many times the user paid unsuccessfully
++ `pay_by` : `credit_card` (required)               # enum("credit_card", "line", "apple", "google", "samsung", "others")
 + is_stopped : false (required, boolean)
 
 ### TapPayByPrimeRequest
@@ -183,7 +183,7 @@ Currently, we only create periodic donations for credit card
           	}
 
 
-# Donations [/v1/donations/{pay_method}/]
+# Donations [/v1/donations/{pay_method}]
 + Parameters
     + `pay_method`: `credit_card` (required) - It could be `credit_card`, `line`, `apple`, `google` or `samsung`.
 
@@ -217,7 +217,7 @@ Create a donation record
             "message": "Unknown server error during create"
         		}
 
-# Donations [/v1/donations/others/]
+# Donations [/v1/donations/others]
 ## Create a Donation by old fashion method[POST]
 Create a donation record with other pay methods
 + Request with body (application/json)
