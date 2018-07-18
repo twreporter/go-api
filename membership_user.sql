@@ -204,6 +204,9 @@ DROP TABLE IF EXISTS `pay_by_prime_donations`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pay_by_prime_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` timestamp NULL DEFAULT NULL,
   `email` varchar(100) NOT NULL,
   `name` varchar(30) NOT NULL,
   `status` int NOT NULL,
@@ -244,6 +247,9 @@ DROP TABLE IF EXISTS `pay_by_card_token_donations`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pay_by_card_token_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` timestamp NULL DEFAULT NULL,
   `periodic_id` int(10) unsigned NOT NULL,
   `status` int NOT NULL, 
   `msg` varchar(100) NOT NULL,
@@ -275,6 +281,9 @@ DROP TABLE IF EXISTS `pay_by_other_method_donations`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pay_by_other_method_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` timestamp NULL DEFAULT NULL,
   `email` varchar(100) NOT NULL,
   `pay_method` varchar(50) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
@@ -296,12 +305,17 @@ DROP TABLE IF EXISTS `periodic_donations`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `periodic_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `card_token` varchar(64) NOT NULL,
+  `card_key` varchar(64) NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
   `currency` char(3) DEFAULT 'TWD' NOT NULL,
   `start_date` timestamp DEFAULT CURRENT_TIMESTAMP,
-  `paid_times` smallint unsigned DEFAULT 0 NOT NULL,
+  `paid_times` smallint unsigned DEFAULT 1 NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  `last_success_date` timestamp NULL DEFAULT NULL,
+  `last_success_date` timestamp DEFAULT CURRENT_TIMESTAMP,
   `failure_times` tinyint unsigned DEFAULT 0 NOT NULL,
   `is_stopped` tinyint(1) unsigned DEFAULT 0 NOT NULL,
   `card_info_bin_code` varchar(6) NOT NULL,  
@@ -331,6 +345,9 @@ DROP TABLE IF EXISTS `donation_summary`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `donation_summary` (
   `email` varchar(100) NOT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` timestamp NULL DEFAULT NULL,
   `credit_card_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
   `credit_card_donation_amount` int(10) unsigned DEFAULT 0 NOT NULL,
   `card_token_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
