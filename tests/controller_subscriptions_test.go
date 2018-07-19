@@ -16,13 +16,6 @@ type wpSubResponse struct {
 	Data   models.WebPushSubscription `json:"data"`
 }
 
-type WebPushSubscriptionPostBody struct {
-	Endpoint       string `json:"endpoint"`
-	Keys           string `json:"keys"`
-	ExpirationTime string `json:"expiration_time"`
-	UserID         string `json:"user_id"`
-}
-
 func TestIsWebPushSubscribed(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 	var path string

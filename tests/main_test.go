@@ -19,6 +19,13 @@ var Defaults = struct {
 	WebPushEndpoint: "https://fcm.googleapis.com/fcm/send/f4Stnx6WC5s:APA91bFGo-JD8bDwezv1fx3RRyBVq6XxOkYIo8_7vCAJ3HFHLppKAV6GNmOIZLH0YeC2lM_Ifs9GkLK8Vi_8ASEYLBC1aU9nJy2rZSUfH7DE0AqIIbLrs93SdEdkwr5uL6skLPMjJsRQ",
 }
 
+type WebPushSubscriptionPostBody struct {
+	Endpoint       string `json:"endpoint"`
+	Keys           string `json:"keys"`
+	ExpirationTime string `json:"expiration_time"`
+	UserID         string `json:"user_id"`
+}
+
 // setDefaultWebPushSubscription - set up default records in web_push_subscriptions table
 func setDefaultWebPushSubscription() {
 	var path = "/v1/web-push/subscriptions"
