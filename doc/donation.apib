@@ -206,6 +206,17 @@ Create a donation record
         + status : fail (required)
         + data (PayByPrimeFailResponse, required)
 
++ Response 404 (application/json)
+  Resource Not Found Error
+
+    + Body
+
+          	{
+            "status": "error",
+            "message": "Resource ${pay_method} is not supported"
+        		}
+
+
 + Response 500 (application/json)
   Unknown error type
 
