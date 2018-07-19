@@ -14,9 +14,11 @@
     "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A123456789"</span>
   </span>}</span>,
   "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"order_number_we_define"</span></span>,
-  "<span class="hljs-attribute">pay_by</span>": <span class="hljs-value"><span class="hljs-string">"credit_card"</span></span>,
   "<span class="hljs-attribute">merchant_id</span>": <span class="hljs-value"><span class="hljs-string">"twreporter_CTBC"</span></span>,
-  "<span class="hljs-attribute">result_url (RequestURL, optional)                             # request_url is used in line</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span>
+  "<span class="hljs-attribute">result_url</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">frontend_redirect_url</span>": <span class="hljs-value"><span class="hljs-string">"https://your.domain.com/transaction_is_done"</span></span>,
+    "<span class="hljs-attribute">backend_notify_url</span>": <span class="hljs-value"><span class="hljs-string">"https://your.domain.com/tappay_will_notify_this"</span>
+  </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -59,22 +61,29 @@
     "<span class="hljs-attribute">order_number</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">pay_by</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-    </span>}</span>,
     "<span class="hljs-attribute">merchant_id</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">result_url (RequestURL, optional)                             # request_url is used in line</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
-      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"pay"</span>
+    "<span class="hljs-attribute">result_url</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">frontend_redirect_url</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">backend_notify_url</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}
+      </span>}</span>,
+      "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+        <span class="hljs-string">"frontend_redirect_url"</span>,
+        <span class="hljs-string">"backend_notify_url"</span>
+      ]
     </span>}
   </span>}</span>,
   "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
     <span class="hljs-string">"prime"</span>,
     <span class="hljs-string">"amount"</span>,
-    <span class="hljs-string">"cardholder"</span>,
-    <span class="hljs-string">"pay_by"</span>
+    <span class="hljs-string">"cardholder"</span>
   ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>201</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
@@ -304,9 +313,11 @@
     "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A123456789"</span>
   </span>}</span>,
   "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"order_number_we_define"</span></span>,
-  "<span class="hljs-attribute">pay_by</span>": <span class="hljs-value"><span class="hljs-string">"credit_card"</span></span>,
   "<span class="hljs-attribute">merchant_id</span>": <span class="hljs-value"><span class="hljs-string">"twreporter_CTBC"</span></span>,
-  "<span class="hljs-attribute">result_url (RequestURL, optional)                             # request_url is used in line</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span>
+  "<span class="hljs-attribute">result_url</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">frontend_redirect_url</span>": <span class="hljs-value"><span class="hljs-string">"https://your.domain.com/transaction_is_done"</span></span>,
+    "<span class="hljs-attribute">backend_notify_url</span>": <span class="hljs-value"><span class="hljs-string">"https://your.domain.com/tappay_will_notify_this"</span>
+  </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -349,22 +360,29 @@
     "<span class="hljs-attribute">order_number</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">pay_by</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-    </span>}</span>,
     "<span class="hljs-attribute">merchant_id</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">result_url (RequestURL, optional)                             # request_url is used in line</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
-      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"pay"</span>
+    "<span class="hljs-attribute">result_url</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">frontend_redirect_url</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">backend_notify_url</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}
+      </span>}</span>,
+      "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+        <span class="hljs-string">"frontend_redirect_url"</span>,
+        <span class="hljs-string">"backend_notify_url"</span>
+      ]
     </span>}
   </span>}</span>,
   "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
     <span class="hljs-string">"prime"</span>,
     <span class="hljs-string">"amount"</span>,
-    <span class="hljs-string">"cardholder"</span>,
-    <span class="hljs-string">"pay_by"</span>
+    <span class="hljs-string">"cardholder"</span>
   ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>201</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
@@ -723,7 +741,7 @@
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>500</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"Error"</span></span>,
   "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"Unknown server error. Cannot fetch dontaion list"</span>
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 18 Jul 2018</p><script>/* eslint-env browser */
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 19 Jul 2018</p><script>/* eslint-env browser */
 /* eslint quotes: [2, "single"] */
 'use strict';
 

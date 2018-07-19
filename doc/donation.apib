@@ -13,9 +13,8 @@ TWReporter Donation API, integrated with Tappay Web Service
 + details : 報導者小額捐款 (optional)                           # System should provide default value
 + cardholder (Cardholder, required)
 + `order_number` : `order_number_we_define` (string, optional)
-+ `pay_by` : `credit_card` (string, required)                   # enum("credit_card", "line", "apple", "google", "samsung", "others")
 + `merchant_id` : `twreporter_CTBC` (optional)                  # System should provide default value
-+ result_url (RequestURL, optional)                             # request_url is used in line-pay
++ result_url (RequestURL, optional)
 
 ### RequestURL
 + `frontend_redirect_url` : `https://your.domain.com/transaction_is_done` (required)
