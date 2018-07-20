@@ -239,7 +239,8 @@ CREATE TABLE `pay_by_prime_donations` (
   `card_info_country_code` varchar(10) DEFAULT NULL, 
   `card_info_expiry_date` varchar(6) DEFAULT NULL, 
   PRIMARY KEY (`id`),
-  KEY `idx_pay_by_prime_donations_email_pay_method` (`email`,`pay_method`)
+  KEY `idx_pay_by_prime_donations_cardholder_email_pay_method` (`cardholder_email`,`pay_method`),
+  CONSTRAINT `fk_pay_by_prime_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -339,7 +340,6 @@ CREATE TABLE `periodic_donations` (
   `card_info_country_code` varchar(10) DEFAULT NULL, 
   `card_info_expiry_date` varchar(6) DEFAULT NULL, 
   PRIMARY KEY (`id`),
-  KEY `fk_periodic_donations_idx` (`user_id`),
   KEY `idx_periodic_donations_start_date` (`start_date`),
   KEY `idx_periodic_donations_amount` (`amount`),
   KEY `idx_periodic_donations_is_stopped` (`is_stopped`),
