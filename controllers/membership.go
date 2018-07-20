@@ -63,6 +63,11 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.CreateABookmarkOfAUser)
 	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.DeleteABookmarkOfAUser)
 
+	// endpoints for donation
+	group.POST("/users/:userID/periodic_donations" /*middlewares.CheckJWT(),*/, GinResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
+	group.POST("/users/:userID/donations/:pay_method" /*middlewares.CheckJWT(),*/, GinResponseWrapper(mc.CreateADonationOfAUser))
+	group.GET("/users/:userID/donations" /*middlewares.CheckJWT(),*/, GinResponseWrapper(mc.GetDonationsOfAUser))
+
 	// endpoints for web push subscriptions
 	group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, GinResponseWrapper(mc.SubscribeWebPush))
 	group.GET("/web-push/subscriptions", GinResponseWrapper(mc.IsWebPushSubscribed))

@@ -111,3 +111,34 @@ type PeriodicDonation struct {
 	CardInfoCountryCode   *string    `gorm:"type:varchar(10)" json:"card_info_country_code"`
 	CardInfoExpiryDate    *string    `gorm:"type:varchar(6);" json:"card_info_expiry_date"`
 }
+
+type CardInfo struct {
+	BinCode     string `json:"bin_code"`
+	LastFour    string `json:"last_four"`
+	Issuer      string `json:"issuer"`
+	Funding     uint   `json:"funding"`
+	Type        uint   `json:"type"`
+	Level       string `json:"level"`
+	Country     string `json:"country"`
+	CountryCode string `json:"country_code"`
+	ExpiryDate  string `json:"expiry_date"`
+}
+
+type Cardholder struct {
+	PhoneNumber string `json:"phone_number"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	ZipCode     string `json:"zip_code"`
+	Address     string `json:"address"`
+	NationalID  string `json:"national_id"`
+}
+
+type DonationRecord struct {
+	IsPeriodic  bool       `json:"is_periodic"`
+	CardInfo    CardInfo   `json:"card_info"`
+	Cardholder  Cardholder `json:"cardholder"`
+	Amount      uint       `json:"amount"`
+	Currency    string     `json:"currency"`
+	Details     string     `json:"details"`
+	OrderNumber string     `json:"order_number"`
+}
