@@ -132,7 +132,6 @@ TWReporter Donation API, integrated with Tappay Web Service
 + start_time_millis : 1531363227382 (required)
 + end_time_millis : 1531363227382 (required)
 
-
 ### CreatePeriodicDonationResponse
 + donation_result (PaySuccessResponse, required)
 
@@ -150,11 +149,21 @@ TWReporter Donation API, integrated with Tappay Web Service
 # Donation Endpoints
 endpoints for donation
 
-# Periodic Donation List [/v1/periodic_donations]
+# Periodic Donation List [/v1/users/{user_id}/periodic_donations]
 Currently, we only create periodic donations for credit card
 
++ Parameters
+    + `user_id`: `1` (required) - User's ID
+
 ## Create a Periodic Donation[POST]
-+ Request with body (application/json)
+
++ Request with body 
+
+  + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+
   + Attributes (PayByPrimeRequest)
 
 + Response 201 (application/json)
@@ -170,6 +179,26 @@ Currently, we only create periodic donations for credit card
 
         + status : fail (required)
         + data (PayByPrimeFailResponse, required)
+
++ Response 401 (application/json)
+  Unauthorized 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "JWT unauthorized"
+            }
+
++ Response 403 (application/json)
+  Forbidden 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "Don't have permission to create this resource"
+            }
 
 + Response 500 (application/json)
   Unknown error type
@@ -182,17 +211,26 @@ Currently, we only create periodic donations for credit card
           	}
 
 
-# Donations [/v1/donations/{pay_method}]
+# Donations [/v1/users/{user_id}/donations/{pay_method}]
 + Parameters
+    + `user_id`: `1` (required) - User's ID
     + `pay_method`: `credit_card` (required) - It could be `credit_card`, `line`, `apple`, `google` or `samsung`.
 
 ## Create a Donation[POST]
 Create a donation record
 
-+ Request with body (application/json)
+
++ Request with body 
+
+  + Headers
+
+              Content-Type: application/json
+              Authorization: Bearer <jwt>
+
   + Attributes (PayByPrimeRequest)
 
 + Response 201 (application/json)
+
 
   + Attributes 
   
@@ -205,6 +243,26 @@ Create a donation record
 
         + status : fail (required)
         + data (PayByPrimeFailResponse, required)
+
++ Response 401 (application/json)
+  Unauthorized 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "JWT unauthorized"
+            }
+
++ Response 403 (application/json)
+  Forbidden 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "Don't have permission to create this resource"
+            }
 
 + Response 404 (application/json)
   Resource Not Found Error
@@ -230,7 +288,15 @@ Create a donation record
 # Donations [/v1/donations/others]
 ## Create a Donation by old fashion method[POST]
 Create a donation record with other pay methods
-+ Request with body (application/json)
+
+
++ Request with body 
+
+  + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+
   + Attributes (PayByOthersRequest)
 
 + Response 201 (application/json)
@@ -261,6 +327,16 @@ Create a donation record with other pay methods
             }
             }
 
++ Response 401 (application/json)
+  Unauthorized 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "JWT unauthorized"
+            }
+          
 + Response 500 (application/json)
   Unknown error type
 
@@ -271,13 +347,20 @@ Create a donation record with other pay methods
             "message": "Unknown server error during create"
             }
 
-# View Donations [/v1/donations{?email,pay_methods,page,number_per_page}]
-## View Donations of User by Email [GET]
+# View Donations [/v1/users/{user_id}/donations{?pay_methods,page,number_per_page}]
+## View Donations of a User by user_id [GET]
 + Parameters
-    + email: `developer%40twreporter.org` (required) - User's email.
+    + user_id: `1` (required) - User's id.
     + page: `1` (optional, unsigned integer) - The page number, default to 1 if not specified.
     + `pay_methods`: `credit_card` (optional, array(string)) - A collection of pay methods. URL will be like `/v1/donations?pay_methods=credit_card&pay_methods=line&pay_methods=apple`.
     + `number_per_page`: `5` (optional, unsigned integer) - The number of notification per page, default to 20 if not specified.
+
++ Request 
+
+  + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
 
 + Response 200 (application/json)
 
@@ -298,6 +381,26 @@ Create a donation record with other pay methods
             "data": {
                 "page": "Invalid page index"
                 }
+            }
+
++ Response 401 (application/json)
+  Unauthorized 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "JWT unauthorized"
+            }
+
++ Response 403 (application/json)
+  Forbidden 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "Don't have permission to access this resource"
             }
 
 + Response 404 (application/json)
