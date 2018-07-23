@@ -323,7 +323,7 @@ func TestCreateADonation(t *testing.T) {
 	// - Create a Donation by Unrecognized Pay Method
 	// - 404 Not Found Error
 	// ===========================================
-	path = "/v1/donations/unknown_pay_method"
+	path = "/v1/users/1/donations/unknown_pay_method"
 
 	resp = ServeHTTP("POST", path, "", "application/json", "")
 
@@ -332,7 +332,7 @@ func TestCreateADonation(t *testing.T) {
 	// ==========================================
 	// Test One Time Donation Creation
 	// =========================================
-	path = "/v1/donations/credit_card"
+	path = "/v1/users/1/donations/credit_card"
 	testCreateADonationRecord(t, path, false)
 }
 
@@ -342,6 +342,6 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// ==========================================
 	// Test Periodic Donation Creation
 	// =========================================
-	path = "/v1/periodic_donations"
+	path = "/v1/users/1/periodic_donations"
 	testCreateADonationRecord(t, path, true)
 }
