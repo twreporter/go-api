@@ -13,7 +13,7 @@ import (
 )
 
 /*
-The whole testing mongodb is set by ./test.go
+The whole testing mongodb is set by ./db.go
 You should check #SetMgoDefaultRecords function,
 if you want to know more about the data set in the testing mongodb
 */
@@ -36,27 +36,27 @@ func TestGetAPost(t *testing.T) {
 	// Post Not Found //
 
 	// Get a post without full url param //
-	resp = ServeHTTP("GET", "/v1/posts/"+MockPostSlug1, "",
+	resp = ServeHTTP("GET", "/v1/posts/"+Globs.Defaults.MockPostSlug1, "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
 	res := PostResponse{}
 	json.Unmarshal(body, &res)
-	assert.Equal(t, res.Record.ID, PostID1)
+	assert.Equal(t, res.Record.ID, Globs.Defaults.PostID1)
 	assert.Equal(t, len(res.Record.Relateds), 0)
 	assert.Equal(t, res.Record.Full, false)
 	// Get a post without full url param //
 
 	// Get a post with full url param //
-	resp = ServeHTTP("GET", "/v1/posts/"+MockPostSlug1+"?full=true", "",
+	resp = ServeHTTP("GET", "/v1/posts/"+Globs.Defaults.MockPostSlug1+"?full=true", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
 	res = PostResponse{}
 	json.Unmarshal(body, &res)
-	assert.Equal(t, res.Record.ID, PostID1)
+	assert.Equal(t, res.Record.ID, Globs.Defaults.PostID1)
 	assert.Equal(t, len(res.Record.Relateds), 1)
-	assert.Equal(t, res.Record.Relateds[0].ID, PostID2)
+	assert.Equal(t, res.Record.Relateds[0].ID, Globs.Defaults.PostID2)
 	assert.Equal(t, res.Record.Full, true)
 	// Get a post with full url param //
 }
@@ -75,27 +75,27 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, len(res.Records), 2)
 
 	post := res.Records[0]
-	assert.Equal(t, post.ID, PostCol2.ID)
-	assert.Equal(t, post.OgImage.ID, ImgID2)
-	assert.Equal(t, post.HeroImage.ID, ImgID2)
-	assert.Equal(t, post.Topic.ID, TopicID)
+	assert.Equal(t, post.ID, Globs.Defaults.PostCol2.ID)
+	assert.Equal(t, post.OgImage.ID, Globs.Defaults.ImgID2)
+	assert.Equal(t, post.HeroImage.ID, Globs.Defaults.ImgID2)
+	assert.Equal(t, post.Topic.ID, Globs.Defaults.TopicID)
 	assert.Equal(t, len(post.Tags), 1)
 	assert.Equal(t, len(post.Categories), 1)
-	assert.Equal(t, post.Tags[0].ID, TagID)
-	assert.Equal(t, post.Categories[0].ID, CatID)
+	assert.Equal(t, post.Tags[0].ID, Globs.Defaults.TagID)
+	assert.Equal(t, post.Categories[0].ID, Globs.Defaults.CatID)
 	assert.Equal(t, post.IsFeatured, false)
 	assert.Equal(t, post.Full, false)
 
 	post = res.Records[1]
-	assert.Equal(t, post.ID, PostCol1.ID)
-	assert.Equal(t, post.OgImage.ID, ImgID1)
-	assert.Equal(t, post.Topic.ID, TopicID)
+	assert.Equal(t, post.ID, Globs.Defaults.PostCol1.ID)
+	assert.Equal(t, post.OgImage.ID, Globs.Defaults.ImgID1)
+	assert.Equal(t, post.Topic.ID, Globs.Defaults.TopicID)
 	assert.Equal(t, len(post.Tags), 0)
 	assert.Equal(t, len(post.Categories), 1)
-	assert.Equal(t, post.Categories[0].ID, CatID)
+	assert.Equal(t, post.Categories[0].ID, Globs.Defaults.CatID)
 	assert.Equal(t, post.IsFeatured, true)
 	assert.Equal(t, post.Full, false)
-	assert.Equal(t, post.Theme.ID, ThemeID)
+	assert.Equal(t, post.Theme.ID, Globs.Defaults.ThemeID)
 	// End -- Get all the posts //
 
 	// Start -- Get posts with isFeature=true //
@@ -108,7 +108,7 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, len(res.Records), 1)
 
 	post = res.Records[0]
-	assert.Equal(t, post.ID, PostCol1.ID)
+	assert.Equal(t, post.ID, Globs.Defaults.PostCol1.ID)
 	// End -- Get posts with isFeature=true //
 
 	// Start -- Get posts with style=review //
@@ -121,7 +121,7 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, len(res.Records), 1)
 
 	post = res.Records[0]
-	assert.Equal(t, post.ID, PostCol2.ID)
+	assert.Equal(t, post.ID, Globs.Defaults.PostCol2.ID)
 	// End -- Get posts with style=review //
 
 	// Start -- Get posts with slug=mock-post-slug-2 //
@@ -134,11 +134,11 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, len(res.Records), 1)
 
 	post = res.Records[0]
-	assert.Equal(t, post.ID, PostCol2.ID)
+	assert.Equal(t, post.ID, Globs.Defaults.PostCol2.ID)
 	// End -- Get posts with slug=mock-post-slug-2 //
 
 	// Start -- Get posts containing TagID //
-	resp = ServeHTTP("GET", fmt.Sprintf("/v1/posts?where={\"tags\":{\"in\":[\"%v\"]}}", TagID.Hex()), "",
+	resp = ServeHTTP("GET", fmt.Sprintf("/v1/posts?where={\"tags\":{\"in\":[\"%v\"]}}", Globs.Defaults.TagID.Hex()), "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -147,11 +147,11 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, len(res.Records), 1)
 
 	post = res.Records[0]
-	assert.Equal(t, post.ID, PostCol2.ID)
+	assert.Equal(t, post.ID, Globs.Defaults.PostCol2.ID)
 	// End -- Get posts containing TagID //
 
 	// Start -- Get posts containing CatID //
-	resp = ServeHTTP("GET", fmt.Sprintf("/v1/posts?where={\"postcategories\":{\"in\":[\"%v\"]}}", CatID.Hex()), "",
+	resp = ServeHTTP("GET", fmt.Sprintf("/v1/posts?where={\"postcategories\":{\"in\":[\"%v\"]}}", Globs.Defaults.CatID.Hex()), "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
