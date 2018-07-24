@@ -20,7 +20,7 @@ func TestIsWebPushSubscribed(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 	var path string
 
-	path = fmt.Sprintf("/v1/web-push/subscriptions?endpoint=%v", Defaults.WebPushEndpoint)
+	path = fmt.Sprintf("/v1/web-push/subscriptions?endpoint=%v", Globs.Defaults.WebPushEndpoint)
 
 	/** START - Read a web push subscription successfully **/
 
@@ -32,7 +32,7 @@ func TestIsWebPushSubscribed(t *testing.T) {
 	res := wpSubResponse{}
 	json.Unmarshal(body, &res)
 
-	assert.Equal(t, Defaults.WebPushEndpoint, res.Data.Endpoint)
+	assert.Equal(t, Globs.Defaults.WebPushEndpoint, res.Data.Endpoint)
 
 	/** END - Read a web push subscription successfully **/
 
@@ -85,7 +85,7 @@ func TestSubscribeWebPush(t *testing.T) {
 
 	// Situation 2: Endpoint is already subscribed
 	webPush = WebPushSubscriptionPostBody{
-		Endpoint:       Defaults.WebPushEndpoint,
+		Endpoint:       Globs.Defaults.WebPushEndpoint,
 		Keys:           "{\"p256dh\":\"test-p256dh\",\"auth\":\"test-auth\"}",
 		ExpirationTime: "1526959900",
 		UserID:         "1",

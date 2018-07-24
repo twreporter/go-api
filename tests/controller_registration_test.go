@@ -77,7 +77,7 @@ func TestRegisterAndDeregister(t *testing.T) {
 }
 
 func TestGetRegisterUser(t *testing.T) {
-	resp := ServeHTTP("GET", fmt.Sprintf("/v1/registrations/default_service/%v", DefaultAccount), "", "", "")
+	resp := ServeHTTP("GET", fmt.Sprintf("/v1/registrations/default_service/%v", Globs.Defaults.Account), "", "", "")
 	assert.Equal(t, resp.Code, 200)
 
 	resp = ServeHTTP("GET", "/v1/registrations/default_service/non_existed@twreporter.org", "", "", "")
@@ -92,7 +92,7 @@ func TestGetRegisterUsers(t *testing.T) {
 	res := RegistrationResponse{}
 	json.Unmarshal(body, &res)
 	assert.NotEqual(t, res.Count, 0)
-	assert.Equal(t, res.Registrations[0].Service.Name, DefaultService)
+	assert.Equal(t, res.Registrations[0].Service.Name, Globs.Defaults.Service)
 
 	// Fail
 	resp = ServeHTTP("GET", "/v1/registrations/non_existed_service", "", "", "")
@@ -102,13 +102,13 @@ func TestGetRegisterUsers(t *testing.T) {
 func TestActivateRegistration(t *testing.T) {
 	utils.Cfg.ConsumerSettings.Host = "www.twreporter.org"
 	utils.Cfg.ConsumerSettings.Protocol = "https"
-	resp := ServeHTTP("GET", fmt.Sprintf("/v1/activation/default_service/%v?activeToken=default_token", DefaultAccount), "", "", "")
+	resp := ServeHTTP("GET", fmt.Sprintf("/v1/activation/default_service/%v?activeToken=default_token", Globs.Defaults.Account), "", "", "")
 	assert.Equal(t, resp.Code, 307)
 
 	loc, _ := resp.Result().Location()
 	assert.Equal(t, loc.String(), "https://www.twreporter.org/activate")
 
-	ms := storage.NewGormStorage(DB)
-	reg, _ := ms.GetRegistration(DefaultAccount, "default_service")
+	ms := storage.NewGormStorage(Globs.GormDB)
+	reg, _ := ms.GetRegistration(Globs.Defaults.Account, "default_service")
 	assert.Equal(t, reg.Active, true)
 }

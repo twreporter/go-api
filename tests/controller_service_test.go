@@ -29,13 +29,13 @@ func TestServiceAuthorization(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 	var user models.User
 
-	user = GetUser(DefaultAccount)
+	user = GetUser(Globs.Defaults.Account)
 	email := user.Email
 	// set different email
 	user.Email = utils.ToNullString("contact@twreporter.org")
 
 	// ===== START - Fail to pass Authorization ===== //
-	// DefaultAccount is not in the admin white list
+	// Globs.Defaults.Account is not in the admin white list
 	resp = ServeHTTP("POST", "/v1/services", "", "", fmt.Sprintf("Bearer %v", GenerateJWT(user)))
 	assert.Equal(t, resp.Code, 401)
 
@@ -57,17 +57,17 @@ func TestCreateAService(t *testing.T) {
 
 	// Wrong JSON POST body
 	resp = ServeHTTP("POST", "/v1/services", "",
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 400)
 
 	// Success to create
 	resp = ServeHTTP("POST", "/v1/services", `{"name":"test_service_1"}`,
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 201)
 
 	// Fail to create the existing service
 	resp = ServeHTTP("POST", "/v1/services", `{"name":"test_service_1"}`,
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 409)
 }
 
@@ -76,7 +76,7 @@ func TestDeleteAService(t *testing.T) {
 
 	// Create a service to delete
 	resp = ServeHTTP("POST", "/v1/services", `{"name":"test_service_3"}`,
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 
 	// Get the new one service's name
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -86,12 +86,12 @@ func TestDeleteAService(t *testing.T) {
 
 	// Delete the service successfully
 	resp = ServeHTTP("DELETE", fmt.Sprintf("/v1/services/%v", name), "",
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 204)
 
 	// Delete the service again
 	resp = ServeHTTP("DELETE", fmt.Sprintf("/v1/services/%v", name), "",
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 404)
 }
 
@@ -100,12 +100,12 @@ func TestReadAService(t *testing.T) {
 
 	// Fail to read service due to service not existed
 	resp = ServeHTTP("GET", "/v1/services/service_not_existed", "",
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 404)
 
 	// Read successfully
 	resp = ServeHTTP("GET", "/v1/services/default_service", "",
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 200)
 
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -120,22 +120,22 @@ func TestUpdateAService(t *testing.T) {
 
 	// Create a service if service is not existed
 	resp = ServeHTTP("PUT", "/v1/services/service_to_update", `{"name":"service_to_update"}`,
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 200)
 
 	// Update the existing service
 	resp = ServeHTTP("PUT", "/v1/services/service_to_update", `{"name":"updated_service"}`,
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 200)
 
 	// Cannot read the old service
 	resp = ServeHTTP("GET", "/v1/services/service_to_update", "",
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 404)
 
 	// Read successfully
 	resp = ServeHTTP("GET", "/v1/services/updated_service", "",
-		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(DefaultAccount))))
+		"application/json", fmt.Sprintf("Bearer %v", GenerateJWT(GetUser(Globs.Defaults.Account))))
 	assert.Equal(t, resp.Code, 200)
 
 }
