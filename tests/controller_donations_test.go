@@ -345,3 +345,19 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	path = "/v1/users/1/periodic_donations"
 	testCreateADonationRecord(t, path, true)
 }
+
+func TestGetDonations(t *testing.T) {
+	var resp *httptest.ResponseRecorder
+	var path string
+
+	// ===========================================
+	// Failure (Client Error)
+	// - Get Donations of A Unkonwn User
+	// - 404 Not Found Error
+	// ===========================================
+	path = "/v1/users/unknown_user/donations"
+
+	resp = ServeHTTP("GET", path, "", "", "")
+
+	assert.Equal(t, 404, resp.Code)
+}
