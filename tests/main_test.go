@@ -223,7 +223,7 @@ func ServeHTTP(method, path, body, contentType, authorization string) (resp *htt
 	return
 }
 
-func SetupGinServer(gormDB *gorm.DB, mgoDB *mgo.Session) *gin.Engine {
+func setupGinServer(gormDB *gorm.DB, mgoDB *mgo.Session) *gin.Engine {
 	// set up data storage
 	gs := storage.NewGormStorage(gormDB)
 
@@ -270,7 +270,7 @@ func TestMain(m *testing.M) {
 	Globs.MgoDB = mgoDB
 
 	// set up gin server
-	engine := SetupGinServer(gormDB, mgoDB)
+	engine := setupGinServer(gormDB, mgoDB)
 	Globs.GinEngine = engine
 
 	defer Globs.GormDB.Close()
