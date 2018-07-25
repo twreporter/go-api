@@ -126,7 +126,7 @@ func openMgoConnection() (session *mgo.Session, err error) {
 	return
 }
 
-func SetUpDBEnvironment() (*gorm.DB, *mgo.Session) {
+func setUpDBEnvironment() (*gorm.DB, *mgo.Session) {
 	var err error
 	var gormDB *gorm.DB
 	var mgoDB *mgo.Session

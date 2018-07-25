@@ -13,9 +13,7 @@ import (
 )
 
 /*
-The whole testing mongodb is set by ./db.go
-You should check #SetMgoDefaultRecords function,
-if you want to know more about the data set in the testing mongodb
+The whole testing mongodb is set up by `setMgoDefaultRecords` function in `pre_test_environment_setup.go`
 */
 
 type PostsResponse struct {

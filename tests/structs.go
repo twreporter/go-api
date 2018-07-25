@@ -8,7 +8,7 @@ import (
 	"twreporter.org/go-api/models"
 )
 
-type DefaultVariables struct {
+type defaultVariables struct {
 	Account string
 	Service string
 	Token   string
@@ -37,19 +37,16 @@ type DefaultVariables struct {
 
 	MockPostSlug1 string
 	MockTopicSlug string
-
-	// web push
-	WebPushEndpoint string
 }
 
-type GlobalVariables struct {
-	Defaults  DefaultVariables
+type globalVariables struct {
+	Defaults  defaultVariables
 	GinEngine *gin.Engine
 	GormDB    *gorm.DB
 	MgoDB     *mgo.Session
 }
 
-type WebPushSubscriptionPostBody struct {
+type webPushSubscriptionPostBody struct {
 	Endpoint       string `json:"endpoint"`
 	Keys           string `json:"keys"`
 	ExpirationTime string `json:"expiration_time"`
