@@ -2,6 +2,7 @@ package tests
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http/httptest"
 	"testing"
@@ -32,6 +33,7 @@ type (
 	donationRecord struct {
 		ID          uint       `json:"id"`
 		IsPeriodic  bool       `json:"is_periodic"`
+		PayMethod   string     `json:"pay_method"`
 		CardInfo    cardInfo   `json:"card_info"`
 		Cardholder  cardholder `json:"cardholder"`
 		Amount      uint       `json:"amount"`
@@ -42,6 +44,17 @@ type (
 	responseBody struct {
 		Status string         `json:"status"`
 		Data   donationRecord `json:"data"`
+	}
+	responseBodyForList struct {
+		Status string `json:"status"`
+		Data   struct {
+			Records []donationRecord `json:"records"`
+			Meta    struct {
+				Total  uint `json:"total"`
+				Offset uint `json:"offset"`
+				Limit  uint `json:"limit"`
+			}
+		} `json:"data"`
 	}
 	requestBody struct {
 		Prime       string     `json:"prime"`
@@ -62,6 +75,7 @@ const (
 	testCurrency         = "TWD"
 	testOrderNumber      = "otd:developer@twreporter.org:1531966435"
 	testMerchatID        = "twreporter_CTBC"
+	donatorEmail         = "donater@twreporter.org"
 )
 
 var testCardholder = cardholder{
@@ -71,6 +85,47 @@ var testCardholder = cardholder{
 	ZipCode:     "104",
 	Address:     "台北市中山區南京東路X巷X號X樓",
 	NationalID:  "A123456789",
+}
+
+var defaults = struct {
+	Total      uint
+	Offset     uint
+	Limit      uint
+	CreditCard string
+}{
+	Total:      0,
+	Offset:     0,
+	Limit:      10,
+	CreditCard: "credit_card",
+}
+
+func setUp() {
+	user := CreateUser(donatorEmail)
+
+	reqBody := requestBody{
+		Prime:  testPrime,
+		Amount: testAmount,
+		Cardholder: cardholder{
+			Email: donatorEmail,
+		},
+	}
+
+	// insert three default records
+	// first, insert a periodic donation
+	path := fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
+	reqBodyInBytes, _ := json.Marshal(reqBody)
+	resp := ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+
+	// second, insert a one time donation
+	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
+	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+
+	// third, insert a periodic donation
+	path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
+	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+
+	// set default total to 3
+	defaults.Total = 3
 }
 
 func testCardInfoWithDefaultValue(t *testing.T, ci cardInfo) {
@@ -311,7 +366,6 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
 	// - Request Body Data Validation Error
 	// ===========================================
 	testDonationDataValidation(t, path)
-
 }
 
 func TestCreateADonation(t *testing.T) {
@@ -347,8 +401,14 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 }
 
 func TestGetDonations(t *testing.T) {
+	var resBody responseBodyForList
 	var resp *httptest.ResponseRecorder
 	var path string
+
+	// set up default records
+	setUp()
+
+	user := GetUser(donatorEmail)
 
 	// ===========================================
 	// Failure (Client Error)
@@ -360,4 +420,125 @@ func TestGetDonations(t *testing.T) {
 	resp = ServeHTTP("GET", path, "", "", "")
 
 	assert.Equal(t, 404, resp.Code)
+
+	// ================================================================
+	// Success
+	// - Get Donations of A User Without `pay_methods` Param
+	// - Missing `pay_methods` Param (which means all pay_methods)
+	// ================================================================
+	path = fmt.Sprintf("/v1/users/%d/donations?offset=%d&limit=%d", user.ID, defaults.Offset, defaults.Limit)
+	resp = ServeHTTP("GET", path, "", "", "")
+	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, 200, resp.Code)
+	assert.Equal(t, "success", resBody.Status)
+	assert.Equal(t, defaults.Total, resBody.Data.Meta.Total)
+	assert.Equal(t, defaults.Offset, resBody.Data.Meta.Offset)
+	assert.Equal(t, defaults.Limit, resBody.Data.Meta.Limit)
+	assert.Equal(t, defaults.Total, len(resBody.Data.Records))
+	assert.Equal(t, defaults.CreditCard, resBody.Data.Records[0].PayMethod)
+	assert.Equal(t, true, resBody.Data.Records[0].IsPeriodic)
+	assert.Equal(t, defaults.CreditCard, resBody.Data.Records[1].PayMethod)
+	assert.Equal(t, false, resBody.Data.Records[1].IsPeriodic)
+	assert.Equal(t, defaults.CreditCard, resBody.Data.Records[2].PayMethod)
+	assert.Equal(t, true, resBody.Data.Records[2].IsPeriodic)
+
+	// ===================================================
+	// Success
+	// - Get Donations of A User Without `offset` Param
+	// - Missing `offset` Param (which means offset=0)
+	// ===================================================
+	path = fmt.Sprintf("/v1/users/%d/donations?pay_methods=credit_card&limit=%d", user.ID, defaults.Limit)
+	resp = ServeHTTP("GET", path, "", "", "")
+	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, 200, resp.Code)
+	assert.Equal(t, "success", resBody.Status)
+	assert.Equal(t, defaults.Total, resBody.Data.Meta.Total)
+	assert.Equal(t, defaults.Offset, resBody.Data.Meta.Offset)
+
+	// =====================================================
+	// Success
+	// - Get Donations of A User Without `limit` Param
+	// - Missing `limit` Param (which means limit=10)
+	// =====================================================
+	path = fmt.Sprintf("/v1/users/%d/donations?pay_methods=credit_card&offset=%d", user.ID, defaults.Offset)
+	resp = ServeHTTP("GET", path, "", "", "")
+	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, 200, resp.Code)
+	assert.Equal(t, "success", resBody.Status)
+	assert.Equal(t, defaults.Total, resBody.Data.Meta.Total)
+	assert.Equal(t, defaults.Offset, resBody.Data.Meta.Limit)
+
+	// ===================================================
+	// Success
+	// - Get Donations of A User Without Any Params
+	// - Missing `pay_method`, `offset` and `limit` Param
+	// ===================================================
+	path = fmt.Sprintf("/v1/users/%d/donations", user.ID)
+	resp = ServeHTTP("GET", path, "", "", "")
+	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, 200, resp.Code)
+	assert.Equal(t, "success", resBody.Status)
+	assert.Equal(t, defaults.Total, resBody.Data.Meta.Total)
+	assert.Equal(t, defaults.Limit, resBody.Data.Meta.Limit)
+	assert.Equal(t, defaults.Total, len(resBody.Data.Records))
+
+	// ===============================================================
+	// Success
+	// - Get Donations of A User by Providing `offset=1` and `limit=1`
+	// - ?offset=1&limit=1
+	// ===============================================================
+	path = fmt.Sprintf("/v1/users/%d/donations?offset=1&limit=1", user.ID)
+	resp = ServeHTTP("GET", path, "", "", "")
+	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, 200, resp.Code)
+	assert.Equal(t, "success", resBody.Status)
+	assert.Equal(t, defaults.Total, resBody.Data.Meta.Total)
+	assert.Equal(t, 1, resBody.Data.Meta.Limit)
+	assert.Equal(t, 1, len(resBody.Data.Records))
+	assert.Equal(t, defaults.CreditCard, resBody.Data.Records[0].PayMethod)
+	assert.Equal(t, false, resBody.Data.Records[0].IsPeriodic)
+
+	// ====================================================
+	// Success
+	// - Get Donations of A User With `offset>total`
+	// - ?offset=3&limit=1 (offset is equal to or more than total)
+	// ====================================================
+	path = fmt.Sprintf("/v1/users/%d/donations?offset=%d&limit=1", user.ID, defaults.Total)
+	resp = ServeHTTP("GET", path, "", "", "")
+	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, 200, resp.Code)
+	assert.Equal(t, "success", resBody.Status)
+	assert.Equal(t, 0, len(resBody.Data.Records))
+
+	// =========================================================
+	// Success
+	// - Get Donations of A User With `limit=0`
+	// - ?offset=0&limit=0 (limit is 0)
+	// =========================================================
+	path = fmt.Sprintf("/v1/users/%d/donations?offset=0&limit=0", user.ID)
+	resp = ServeHTTP("GET", path, "", "", "")
+	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, 200, resp.Code)
+	assert.Equal(t, "success", resBody.Status)
+	assert.Equal(t, 0, len(resBody.Data.Records))
+
+	// =========================================================
+	// Success
+	// - Get Donations of A User
+	// - Test offset and limit are not integer
+	// - Test SQL Injection, put statement in pay_methods
+	// - ?limit=NaN&offset=NaN&pay_methods=;select * from users;
+	// =========================================================
+	path = fmt.Sprintf("/v1/users/%d/donations?limit=NaN&offset=NaN&pay_methods=;select * from users;", user.ID)
+	resp = ServeHTTP("GET", path, "", "", "")
+	assert.Equal(t, 200, resp.Code)
+	assert.Equal(t, "success", resBody.Status)
+	assert.Equal(t, 3, len(resBody.Data.Records))
 }

@@ -185,6 +185,20 @@ func GetReporterAccount(email string) (ra models.ReporterAccount) {
 	return ra
 }
 
+func CreateUser(email string) models.User {
+	as := storage.NewGormStorage(Globs.GormDB)
+
+	ra := models.ReporterAccount{
+		Email:         email,
+		ActivateToken: Globs.Defaults.Token,
+		ActExpTime:    time.Now().Add(time.Duration(15) * time.Minute),
+	}
+
+	user, _ := as.InsertUserByReporterAccount(ra)
+
+	return user
+}
+
 func GetUser(email string) (user models.User) {
 	as := storage.NewGormStorage(Globs.GormDB)
 	user, _ = as.GetUserByEmail(email)
