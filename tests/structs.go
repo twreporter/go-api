@@ -37,9 +37,6 @@ type DefaultVariables struct {
 
 	MockPostSlug1 string
 	MockTopicSlug string
-
-	// web push
-	WebPushEndpoint string
 }
 
 type GlobalVariables struct {

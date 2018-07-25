@@ -37,9 +37,8 @@ func init() {
 		CatID:   bson.NewObjectId(),
 		ThemeID: bson.NewObjectId(),
 
-		MockPostSlug1:   "mock-post-slug-1",
-		MockTopicSlug:   "mock-topic-slug",
-		WebPushEndpoint: "https://fcm.googleapis.com/fcm/send/f4Stnx6WC5s:APA91bFGo-JD8bDwezv1fx3RRyBVq6XxOkYIo8_7vCAJ3HFHLppKAV6GNmOIZLH0YeC2lM_Ifs9GkLK8Vi_8ASEYLBC1aU9nJy2rZSUfH7DE0AqIIbLrs93SdEdkwr5uL6skLPMjJsRQ",
+		MockPostSlug1: "mock-post-slug-1",
+		MockTopicSlug: "mock-topic-slug",
 	}
 
 	img1 := models.MongoImage{
@@ -191,6 +190,17 @@ func GetUser(email string) (user models.User) {
 	return
 }
 
+func CreateReporterAccount(email string) (ra models.ReporterAccount) {
+	ms := storage.NewGormStorage(Globs.GormDB)
+
+	ra = models.ReporterAccount{
+		Email: email,
+	}
+	_, _ = ms.InsertUserByReporterAccount(ra)
+
+	return ra
+}
+
 func ServeHTTP(method, path, body, contentType, authorization string) (resp *httptest.ResponseRecorder) {
 	var req *http.Request
 
@@ -259,8 +269,6 @@ func TestMain(m *testing.M) {
 	// set up gin server
 	engine := SetupGinServer(gormDB, mgoDB)
 	Globs.GinEngine = engine
-
-	CreateMockData()
 
 	defer Globs.GormDB.Close()
 	defer Globs.MgoDB.Close()
