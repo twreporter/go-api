@@ -389,7 +389,7 @@ func TestCreateADonation(t *testing.T) {
 
 	// ===========================================
 	// Failure (Client Error)
-	// - Create a Donation on Unauthenticated Resoruce
+	// - Create a Donation on Unauthenticated Resource
 	// - 403 Forbidden
 	// ===========================================
 	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", 2)
@@ -433,7 +433,7 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 
 	// ===========================================
 	// Failure (Client Error)
-	// - Create a Periodic Donation on Unauthenticated Resoruce
+	// - Create a Periodic Donation on Unauthenticated Resource
 	// - 403 Forbidden
 	// ===========================================
 	path = fmt.Sprintf("/v1/users/%d/periodic_donations", 2)
@@ -471,7 +471,7 @@ func TestGetDonations(t *testing.T) {
 
 	// ===========================================
 	// Failure (Client Error)
-	// - Create a Periodic Donation on Unauthenticated Resoruce
+	// - Create a Periodic Donation on Unauthenticated Resource
 	// - 403 Forbidden
 	// ===========================================
 	path = fmt.Sprintf("/v1/users/%d/donations", defaultUser.ID)
@@ -606,11 +606,11 @@ func TestGetDonations(t *testing.T) {
 	// =========================================================
 	// Success
 	// - Get Donations of A User
-	// - Test offset and limit are not integer
+	// - Test offset and limit are not unsigned integer
 	// - Test SQL Injection, put statement in pay_methods
-	// - ?limit=NaN&offset=NaN&pay_methods=;select * from users;
+	// - ?limit=NaN&offset=-1&pay_methods=;select * from users;
 	// =========================================================
-	path = fmt.Sprintf("/v1/users/%d/donations?limit=NaN&offset=NaN&pay_methods=;select * from users;", user.ID)
+	path = fmt.Sprintf("/v1/users/%d/donations?limit=NaN&offset=-1&pay_methods=;select * from users;", user.ID)
 	resp = serveHTTP("GET", path, "", "", "")
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
