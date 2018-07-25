@@ -693,16 +693,13 @@
 </div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"error"</span></span>,
   "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"Unknown server error during create"</span>
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div><div id="view-donations" class="resource"><h3 class="resource-heading">View Donations <a href="#view-donations" class="permalink">&nbsp;&para;</a></h3><div id="view-donations-get" class="action get"><h4 class="action-heading"><div class="name">View Donations of a User by user_id</div><a href="#view-donations-get" class="method get">GET</a><code class="uri">/v1/users/{user_id}/donations{?pay_methods,page,number_per_page}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v1/users/<span class="hljs-attribute" title="user_id">1</span>/donations?<span class="hljs-attribute">pay_methods=</span><span class="hljs-literal">credit_card</span>&<span class="hljs-attribute">page=</span><span class="hljs-literal">1</span>&<span class="hljs-attribute">number_per_page=</span><span class="hljs-literal">5</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>user_id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>1</span></span><p>User’s id.</p>
-</dd><dt>page</dt><dd><code>unsigned integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>1</span></span><p>The page number, default to 1 if not specified.</p>
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div><div id="view-donations" class="resource"><h3 class="resource-heading">View Donations <a href="#view-donations" class="permalink">&nbsp;&para;</a></h3><div id="view-donations-get" class="action get"><h4 class="action-heading"><div class="name">View Donations of a User by user_id</div><a href="#view-donations-get" class="method get">GET</a><code class="uri">/v1/users/{user_id}/donations{?pay_methods,offset,limit}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v1/users/<span class="hljs-attribute" title="user_id">1</span>/donations?<span class="hljs-attribute">pay_methods=</span><span class="hljs-literal">credit_card</span>&<span class="hljs-attribute">offset=</span><span class="hljs-literal">0</span>&<span class="hljs-attribute">limit=</span><span class="hljs-literal">5</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>user_id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>1</span></span><p>User’s id.</p>
+</dd><dt>offset</dt><dd><code>unsigned integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>0</span></span><p>Default is 0.</p>
+</dd><dt>limit</dt><dd><code>unsigned integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5</span></span><p>The number of donations per request, default to 10 if not specified.</p>
 </dd><dt>pay_methods</dt><dd><code>array(string)</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>credit_card</span></span><p>A collection of pay methods. URL will be like <code>/v1/donations?pay_methods=credit_card&amp;pay_methods=line&amp;pay_methods=apple</code>.</p>
-</dd><dt>number_per_page</dt><dd><code>unsigned integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5</span></span><p>The number of notification per page, default to 20 if not specified.</p>
 </dd></dl></div><div class="title"><strong>Request</strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Bearer &lt;jwt&gt;</span></code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>200</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">page</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
-    "<span class="hljs-attribute">number_per_page</span>": <span class="hljs-value"><span class="hljs-number">5</span></span>,
-    "<span class="hljs-attribute">total_records</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
     "<span class="hljs-attribute">records</span>": <span class="hljs-value">[
       {
         "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-number">11</span></span>,
@@ -731,7 +728,12 @@
         "<span class="hljs-attribute">details</span>": <span class="hljs-value"><span class="hljs-string">"報導者小額捐款"</span></span>,
         "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"order_number_we_define"</span>
       </span>}
-    ]
+    ]</span>,
+    "<span class="hljs-attribute">meta</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">total</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+      "<span class="hljs-attribute">offset</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+      "<span class="hljs-attribute">limit</span>": <span class="hljs-value"><span class="hljs-number">10</span>
+    </span>}
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -743,34 +745,34 @@
     "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
       "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
-        "<span class="hljs-attribute">page</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
-        </span>}</span>,
-        "<span class="hljs-attribute">number_per_page</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
-        </span>}</span>,
-        "<span class="hljs-attribute">total_records</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
-        </span>}</span>,
         "<span class="hljs-attribute">records</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">meta</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+          "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">total</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">offset</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">limit</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+            </span>}
+          </span>}</span>,
+          "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+            <span class="hljs-string">"total"</span>,
+            <span class="hljs-string">"offset"</span>,
+            <span class="hljs-string">"limit"</span>
+          ]
         </span>}
-      </span>}</span>,
-      "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
-        <span class="hljs-string">"page"</span>,
-        <span class="hljs-string">"number_per_page"</span>,
-        <span class="hljs-string">"total_records"</span>
-      ]
+      </span>}
     </span>}
   </span>}</span>,
   "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
     <span class="hljs-string">"status"</span>
   ]
-</span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>400</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
-  "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"Fail"</span></span>,
-  "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">page</span>": <span class="hljs-value"><span class="hljs-string">"Invalid page index"</span>
-  </span>}
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>401</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><div class="description"><p>Unauthorized</p>
 </div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"error"</span></span>,
@@ -780,14 +782,14 @@
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"error"</span></span>,
   "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"Don't have permission to access this resource"</span>
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>404</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
-  "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"Fail"</span></span>,
+  "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"error"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">page</span>": <span class="hljs-value"><span class="hljs-string">"Invalid data page reference, page: 2 perPage: 40"</span>
+    "<span class="hljs-attribute">page</span>": <span class="hljs-value"><span class="hljs-string">"User {user_id} is not found."</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>500</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"Error"</span></span>,
   "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"Unknown server error. Cannot fetch dontaion list"</span>
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 23 Jul 2018</p><script>/* eslint-env browser */
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 25 Jul 2018</p><script>/* eslint-env browser */
 /* eslint quotes: [2, "single"] */
 'use strict';
 
