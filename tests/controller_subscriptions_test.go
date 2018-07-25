@@ -16,18 +16,33 @@ type wpSubResponse struct {
 	Data   models.WebPushSubscription `json:"data"`
 }
 
-type WebPushSubscriptionPostBody struct {
-	Endpoint       string `json:"endpoint"`
-	Keys           string `json:"keys"`
-	ExpirationTime string `json:"expiration_time"`
-	UserID         string `json:"user_id"`
+var isSetUp = false
+var webPushEndpoint = "https://fcm.googleapis.com/fcm/send/f4Stnx6WC5s:APA91bFGo-JD8bDwezv1fx3RRyBVq6XxOkYIo8_7vCAJ3HFHLppKAV6GNmOIZLH0YeC2lM_Ifs9GkLK8Vi_8ASEYLBC1aU9nJy2rZSUfH7DE0AqIIbLrs93SdEdkwr5uL6skLPMjJsRQ"
+
+func setUp() {
+	if !isSetUp {
+		var path = "/v1/web-push/subscriptions"
+		var webPush = WebPushSubscriptionPostBody{
+			Endpoint:       webPushEndpoint,
+			Keys:           "{\"p256dh\":\"BDmY8OGe-LfW0ENPIADvmdZMo3GfX2J2yqURpsDOn5tT8lQV-VVHyhRUgzjnmx_RRoobwdLULdBr26oULtLML3w\",\"auth\":\"P_AJ9QSqcgM-KJi_GRN3fQ\"}",
+			ExpirationTime: "1526959900",
+			UserID:         "1",
+		}
+
+		webPushJSON, _ := json.Marshal(webPush)
+		ServeHTTP("POST", path, string(webPushJSON), "application/json", "")
+	}
+	isSetUp = true
 }
 
 func TestIsWebPushSubscribed(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 	var path string
 
-	path = fmt.Sprintf("/v1/web-push/subscriptions?endpoint=%v", Defaults.WebPushEndpoint)
+	// set up before testing
+	setUp()
+
+	path = fmt.Sprintf("/v1/web-push/subscriptions?endpoint=%v", webPushEndpoint)
 
 	/** START - Read a web push subscription successfully **/
 
@@ -39,7 +54,7 @@ func TestIsWebPushSubscribed(t *testing.T) {
 	res := wpSubResponse{}
 	json.Unmarshal(body, &res)
 
-	assert.Equal(t, Defaults.WebPushEndpoint, res.Data.Endpoint)
+	assert.Equal(t, webPushEndpoint, res.Data.Endpoint)
 
 	/** END - Read a web push subscription successfully **/
 
@@ -63,6 +78,9 @@ func TestSubscribeWebPush(t *testing.T) {
 	var path = "/v1/web-push/subscriptions"
 	var webPush WebPushSubscriptionPostBody
 	var webPushByteArray []byte
+
+	// set up before testing
+	setUp()
 
 	/** START - Add a web push subscription successfully **/
 	webPush = WebPushSubscriptionPostBody{
@@ -92,7 +110,7 @@ func TestSubscribeWebPush(t *testing.T) {
 
 	// Situation 2: Endpoint is already subscribed
 	webPush = WebPushSubscriptionPostBody{
-		Endpoint:       Defaults.WebPushEndpoint,
+		Endpoint:       webPushEndpoint,
 		Keys:           "{\"p256dh\":\"test-p256dh\",\"auth\":\"test-auth\"}",
 		ExpirationTime: "1526959900",
 		UserID:         "1",

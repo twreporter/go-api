@@ -52,7 +52,7 @@ func TestBookmarkAuthorization(t *testing.T) {
 	var user models.User
 	var path string
 
-	user = GetUser(DefaultAccount)
+	user = GetUser(Globs.Defaults.Account)
 	path = fmt.Sprintf("/v1/users/%v/bookmarks", user.ID)
 
 	/** START - Fail to pass Authorization **/
@@ -76,7 +76,7 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 	var user models.User
 	var path string
 
-	user = GetUser(DefaultAccount)
+	user = GetUser(Globs.Defaults.Account)
 	path = fmt.Sprintf("/v1/users/%v/bookmarks", user.ID)
 
 	var jwt = GenerateJWT(user)
@@ -111,7 +111,7 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 	var path string
 	var jwt string
 
-	user = GetUser(DefaultAccount)
+	user = GetUser(Globs.Defaults.Account)
 	path = fmt.Sprintf("/v1/users/%v/bookmarks?offset=0", user.ID)
 	jwt = GenerateJWT(user)
 
@@ -152,7 +152,7 @@ func TestGetABookmarkOfAUser(t *testing.T) {
 	var path string
 	var jwt string
 
-	user = GetUser(DefaultAccount)
+	user = GetUser(Globs.Defaults.Account)
 	jwt = GenerateJWT(user)
 	path = fmt.Sprintf("/v1/users/%v/bookmarks/mock-article-3", user.ID)
 
@@ -190,7 +190,7 @@ func TestDeleteBookmark(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 	var user models.User
 
-	user = GetUser(DefaultAccount)
+	user = GetUser(Globs.Defaults.Account)
 	jwt = GenerateJWT(user)
 
 	// add a bookmark onto a user

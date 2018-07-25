@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 )
 
@@ -18,12 +17,12 @@ func TestSignIn(t *testing.T) {
 	// START - test signp endpoint //
 
 	// JSON POST body
-	resp = ServeHTTP("POST", "/v1/signin", fmt.Sprintf("{\"email\":\"%s\"}", DefaultAccount),
+	resp = ServeHTTP("POST", "/v1/signin", fmt.Sprintf("{\"email\":\"%s\"}", Globs.Defaults.Account),
 		"application/json", "")
 	assert.Equal(t, resp.Code, 200)
 
 	// form POST body
-	resp = ServeHTTP("POST", "/v1/signin", fmt.Sprintf("email=%s", DefaultAccount),
+	resp = ServeHTTP("POST", "/v1/signin", fmt.Sprintf("email=%s", Globs.Defaults.Account),
 		"application/x-www-form-urlencoded", "")
 	assert.Equal(t, resp.Code, 200)
 
@@ -43,24 +42,22 @@ func TestActivate(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 
 	// START - test activate endpoint //
-	as := storage.NewGormStorage(DB)
-	user, _ := as.GetReporterAccountData(DefaultAccount)
+	user := GetReporterAccount(Globs.Defaults.Account)
 
 	// test activate
 	activateToken := user.ActivateToken
-	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", DefaultAccount, activateToken), "", "", "")
+	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", Globs.Defaults.Account, activateToken), "", "", "")
 	fmt.Print(resp.Body)
 	assert.Equal(t, resp.Code, 200)
 
 	// test activate fails
-	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", DefaultAccount, ""), "", "", "")
+	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", Globs.Defaults.Account, ""), "", "", "")
 	assert.Equal(t, resp.Code, 401)
 	// END - test activate endpoint //
 }
 
 func TestRenewJWT(t *testing.T) {
-	as := storage.NewGormStorage(DB)
-	user, _ := as.GetReporterAccountData(DefaultAccount)
+	user := GetReporterAccount(Globs.Defaults.Account)
 	jwt, _ := utils.RetrieveToken(user.ID, user.Email)
 
 	// START - test renew jwt endpoint //
@@ -124,7 +121,7 @@ func TestChangePassword(t *testing.T) {
 }
 
 func TestForgetPassword(t *testing.T) {
-	var testAccount = DefaultAccount
+	var testAccount = Globs.Defaults.Account
 	var resp *httptest.ResponseRecorder
 
 	// START - test forget-password endpoint

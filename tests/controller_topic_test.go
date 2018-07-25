@@ -35,33 +35,33 @@ func TestGetATopic(t *testing.T) {
 	// Post Not Found //
 
 	// Get a post without full url param //
-	resp = ServeHTTP("GET", "/v1/topics/"+MockTopicSlug, "",
+	resp = ServeHTTP("GET", "/v1/topics/"+Globs.Defaults.MockTopicSlug, "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
 	res := TopicResponse{}
 	json.Unmarshal(body, &res)
-	assert.Equal(t, res.Record.ID, TopicID)
+	assert.Equal(t, res.Record.ID, Globs.Defaults.TopicID)
 	assert.Equal(t, len(res.Record.Relateds), 0)
-	assert.Equal(t, res.Record.LeadingImage.ID, ImgID1)
-	assert.Equal(t, res.Record.OgImage.ID, ImgID1)
+	assert.Equal(t, res.Record.LeadingImage.ID, Globs.Defaults.ImgID1)
+	assert.Equal(t, res.Record.OgImage.ID, Globs.Defaults.ImgID1)
 	assert.Equal(t, res.Record.Full, false)
 	// Get a post without full url param //
 
 	// Get a post with full url param //
-	resp = ServeHTTP("GET", "/v1/topics/"+MockTopicSlug+"?full=true", "",
+	resp = ServeHTTP("GET", "/v1/topics/"+Globs.Defaults.MockTopicSlug+"?full=true", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
 	res = TopicResponse{}
 	json.Unmarshal(body, &res)
-	assert.Equal(t, res.Record.ID, TopicID)
+	assert.Equal(t, res.Record.ID, Globs.Defaults.TopicID)
 	assert.Equal(t, len(res.Record.Relateds), 2)
-	assert.Equal(t, res.Record.Relateds[0].ID, PostID1)
-	assert.Equal(t, res.Record.Relateds[1].ID, PostID2)
-	assert.Equal(t, res.Record.LeadingImage.ID, ImgID1)
-	assert.Equal(t, res.Record.LeadingVideo.ID, VideoID)
-	assert.Equal(t, res.Record.OgImage.ID, ImgID1)
+	assert.Equal(t, res.Record.Relateds[0].ID, Globs.Defaults.PostID1)
+	assert.Equal(t, res.Record.Relateds[1].ID, Globs.Defaults.PostID2)
+	assert.Equal(t, res.Record.LeadingImage.ID, Globs.Defaults.ImgID1)
+	assert.Equal(t, res.Record.LeadingVideo.ID, Globs.Defaults.VideoID)
+	assert.Equal(t, res.Record.OgImage.ID, Globs.Defaults.ImgID1)
 	assert.Equal(t, res.Record.Full, true)
 	// Get a post with full url param //
 }
@@ -80,8 +80,8 @@ func TestGetTopics(t *testing.T) {
 	assert.Equal(t, len(res.Records), 1)
 
 	topic := res.Records[0]
-	assert.Equal(t, topic.ID, TopicCol.ID)
-	assert.Equal(t, topic.LeadingImage.ID, ImgID1)
+	assert.Equal(t, topic.ID, Globs.Defaults.TopicCol.ID)
+	assert.Equal(t, topic.LeadingImage.ID, Globs.Defaults.ImgID1)
 	assert.Equal(t, len(topic.Relateds), 0)
 	// End -- Get all the posts //
 
@@ -95,9 +95,9 @@ func TestGetTopics(t *testing.T) {
 	assert.Equal(t, len(res.Records), 1)
 
 	topic = res.Records[0]
-	assert.Equal(t, topic.ID, TopicCol.ID)
-	assert.Equal(t, topic.LeadingImage.ID, ImgID1)
-	assert.Equal(t, topic.LeadingVideo.ID, VideoID)
+	assert.Equal(t, topic.ID, Globs.Defaults.TopicCol.ID)
+	assert.Equal(t, topic.LeadingImage.ID, Globs.Defaults.ImgID1)
+	assert.Equal(t, topic.LeadingVideo.ID, Globs.Defaults.VideoID)
 	assert.Equal(t, len(topic.Relateds), 2)
 	// End -- Get all the posts //
 
