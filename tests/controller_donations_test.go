@@ -99,7 +99,7 @@ var defaults = struct {
 	CreditCard: "credit_card",
 }
 
-func setUp() {
+func setUpBeforeDonationsTest() {
 	user := CreateUser(donatorEmail)
 
 	reqBody := requestBody{
@@ -114,15 +114,15 @@ func setUp() {
 	// first, insert a periodic donation
 	path := fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
 	reqBodyInBytes, _ := json.Marshal(reqBody)
-	resp := ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	// second, insert a one time donation
 	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	// third, insert a periodic donation
 	path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	// set default total to 3
 	defaults.Total = 3
@@ -406,7 +406,7 @@ func TestGetDonations(t *testing.T) {
 	var path string
 
 	// set up default records
-	setUp()
+	setUpBeforeDonationsTest()
 
 	user := GetUser(donatorEmail)
 
@@ -450,7 +450,7 @@ func TestGetDonations(t *testing.T) {
 	// ===================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?pay_methods=credit_card&limit=%d", user.ID, defaults.Limit)
 	resp = ServeHTTP("GET", path, "", "", "")
-	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
@@ -464,7 +464,7 @@ func TestGetDonations(t *testing.T) {
 	// =====================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?pay_methods=credit_card&offset=%d", user.ID, defaults.Offset)
 	resp = ServeHTTP("GET", path, "", "", "")
-	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
@@ -478,7 +478,7 @@ func TestGetDonations(t *testing.T) {
 	// ===================================================
 	path = fmt.Sprintf("/v1/users/%d/donations", user.ID)
 	resp = ServeHTTP("GET", path, "", "", "")
-	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
@@ -493,7 +493,7 @@ func TestGetDonations(t *testing.T) {
 	// ===============================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?offset=1&limit=1", user.ID)
 	resp = ServeHTTP("GET", path, "", "", "")
-	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
@@ -510,7 +510,7 @@ func TestGetDonations(t *testing.T) {
 	// ====================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?offset=%d&limit=1", user.ID, defaults.Total)
 	resp = ServeHTTP("GET", path, "", "", "")
-	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
@@ -523,7 +523,7 @@ func TestGetDonations(t *testing.T) {
 	// =========================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?offset=0&limit=0", user.ID)
 	resp = ServeHTTP("GET", path, "", "", "")
-	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
