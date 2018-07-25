@@ -11,7 +11,7 @@ import (
 	"twreporter.org/go-api/constants"
 )
 
-type IndexPageResponse struct {
+type indexPageResponse struct {
 	Status  string                   `json:"status"`
 	Records map[string][]interface{} `json:"records"`
 }
@@ -25,7 +25,7 @@ func TestIndexPage(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
-	res := IndexPageResponse{}
+	res := indexPageResponse{}
 	json.Unmarshal(body, &res)
 
 	latest, ok1 := res.Records[constants.LastestSection]

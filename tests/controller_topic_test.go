@@ -17,12 +17,12 @@ You should check #SetMgoDefaultRecords function,
 if you want to know more about the data set in the testing mongodb
 */
 
-type TopicsResponse struct {
+type topicsResponse struct {
 	Status  string         `json:"status"`
 	Records []models.Topic `json:"records"`
 }
 
-type TopicResponse struct {
+type topicResponse struct {
 	Status string       `json:"status"`
 	Record models.Topic `json:"record"`
 }
@@ -39,7 +39,7 @@ func TestGetATopic(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
-	res := TopicResponse{}
+	res := topicResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, res.Record.ID, Globs.Defaults.TopicID)
 	assert.Equal(t, len(res.Record.Relateds), 0)
@@ -53,7 +53,7 @@ func TestGetATopic(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = TopicResponse{}
+	res = topicResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, res.Record.ID, Globs.Defaults.TopicID)
 	assert.Equal(t, len(res.Record.Relateds), 2)
@@ -75,7 +75,7 @@ func TestGetTopics(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
-	res := TopicsResponse{}
+	res := topicsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 1)
 
@@ -90,7 +90,7 @@ func TestGetTopics(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = TopicsResponse{}
+	res = topicsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 1)
 
@@ -106,7 +106,7 @@ func TestGetTopics(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = TopicsResponse{}
+	res = topicsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 1)
 	// End -- Get the topics with slug=mock-topic-slug//
@@ -116,7 +116,7 @@ func TestGetTopics(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = TopicsResponse{}
+	res = topicsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 0)
 	// End -- Get the topics with slug=mock-topic-slug//

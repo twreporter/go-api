@@ -12,7 +12,7 @@ import (
 	"twreporter.org/go-api/utils"
 )
 
-type ServiceJSON struct {
+type serviceJSON struct {
 	ID        int    `json:"ID"`
 	CreatedAt string `json:"CreatedAt"`
 	UpdatedAt string `json:"UpdatedAt"`
@@ -20,9 +20,9 @@ type ServiceJSON struct {
 	Name      string `json:"Name"`
 }
 
-type ServiceResponse struct {
+type serviceResponse struct {
 	Status  string      `json:"status"`
-	Service ServiceJSON `json:"record"`
+	Service serviceJSON `json:"record"`
 }
 
 func TestServiceAuthorization(t *testing.T) {
@@ -80,7 +80,7 @@ func TestDeleteAService(t *testing.T) {
 
 	// Get the new one service's name
 	body, _ := ioutil.ReadAll(resp.Result().Body)
-	res := ServiceResponse{}
+	res := serviceResponse{}
 	json.Unmarshal(body, &res)
 	name := res.Service.Name
 
@@ -109,7 +109,7 @@ func TestReadAService(t *testing.T) {
 	assert.Equal(t, resp.Code, 200)
 
 	body, _ := ioutil.ReadAll(resp.Result().Body)
-	res := ServiceResponse{}
+	res := serviceResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, res.Service.ID, 1)
 	assert.Equal(t, res.Service.Name, "default_service")

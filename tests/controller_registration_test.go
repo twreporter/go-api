@@ -12,25 +12,25 @@ import (
 	"twreporter.org/go-api/utils"
 )
 
-type UserJSON struct {
+type userJSON struct {
 }
 
-type RegistrationJSON struct {
+type registrationJSON struct {
 	ID            int    `json:"ID"`
 	CreatedAt     string `json:"CreatedAt"`
 	UpdatedAt     string `json:"UpdatedAt"`
 	DeletedAt     string `json:"DeletedAt"`
 	ServiceID     string `json:"ServiceID"`
-	Service       ServiceJSON
+	Service       serviceJSON
 	UserID        int      `json:"UserID"`
-	User          UserJSON `json:"User"`
+	User          userJSON `json:"User"`
 	Active        bool     `json:"Active"`
 	ActivateToken string   `json:"ActivateToken"`
 }
 
-type RegistrationResponse struct {
+type registrationResponse struct {
 	Status        string             `json:"status"`
-	Registrations []RegistrationJSON `json:"records"`
+	Registrations []registrationJSON `json:"records"`
 	Count         int                `json:"count"`
 }
 
@@ -89,7 +89,7 @@ func TestGetRegisterUsers(t *testing.T) {
 	assert.Equal(t, resp.Code, 200)
 
 	body, _ := ioutil.ReadAll(resp.Result().Body)
-	res := RegistrationResponse{}
+	res := registrationResponse{}
 	json.Unmarshal(body, &res)
 	assert.NotEqual(t, res.Count, 0)
 	assert.Equal(t, res.Registrations[0].Service.Name, Globs.Defaults.Service)

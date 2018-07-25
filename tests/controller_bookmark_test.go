@@ -14,7 +14,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-type BookmarkJSON struct {
+type bookmarkJSON struct {
 	ID         int    `json:"ID"`
 	CreatedAt  string `json:"created_at"`
 	UpdatedAt  string `json:"updated_at"`
@@ -30,22 +30,22 @@ type BookmarkJSON struct {
 	PubDate    string `json:"published_date"`
 }
 
-type Meta struct {
+type meta struct {
 	Offset int `json:"offset"`
 	Limit  int `json:"limit"`
 	Total  int `json:"total"`
 }
 
 type Response struct {
-	Meta      Meta           `json:"meta"`
+	Meta      meta           `json:"meta"`
 	Status    string         `json:"status"`
-	Bookmarks []BookmarkJSON `json:"records"`
-	Bookmark  BookmarkJSON   `json:"record"`
+	Bookmarks []bookmarkJSON `json:"records"`
+	Bookmark  bookmarkJSON   `json:"record"`
 }
 
-var bookmarkJSON = `{"slug":"mock-article-1","title":"mock title 1","host":"www.twreporter.org","is_external":false,"desc": "mock desc 1","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
-var bookmarkJSON2 = `{"slug":"mock-article-2","title":"mock title 2","host":"www.twreporter.org","is_external":false,"desc": "mock desc 2","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
-var bookmarkJSON3 = `{"slug":"mock-article-3","title":"mock title 3","host":"www.twreporter.org","is_external":false,"desc": "mock desc 3","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+var bookmarkJSONStr = `{"slug":"mock-article-1","title":"mock title 1","host":"www.twreporter.org","is_external":false,"desc": "mock desc 1","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+var bookmarkJSONStr2 = `{"slug":"mock-article-2","title":"mock title 2","host":"www.twreporter.org","is_external":false,"desc": "mock desc 2","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
+var bookmarkJSONStr3 = `{"slug":"mock-article-3","title":"mock title 3","host":"www.twreporter.org","is_external":false,"desc": "mock desc 3","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
 
 func TestBookmarkAuthorization(t *testing.T) {
 	var resp *httptest.ResponseRecorder
@@ -82,11 +82,11 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 	var jwt = generateJWT(user)
 
 	/** START - Add bookmark successfully **/
-	resp = serveHTTP("POST", path, bookmarkJSON, "application/json", fmt.Sprintf("Bearer %v", jwt))
+	resp = serveHTTP("POST", path, bookmarkJSONStr, "application/json", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 201)
 
 	// add another bookmark
-	resp = serveHTTP("POST", path, bookmarkJSON2, "application/json", fmt.Sprintf("Bearer %v", jwt))
+	resp = serveHTTP("POST", path, bookmarkJSONStr2, "application/json", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 201)
 	/** END - Add bookmark successfully **/
 
@@ -99,7 +99,7 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 	var fakeID uint = 100
 	jwt, _ = utils.RetrieveToken(fakeID, "test@twreporter.org")
 	log.Info("jwt:", jwt)
-	resp = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), bookmarkJSON,
+	resp = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), bookmarkJSONStr,
 		"application/json", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 404)
 	/** END - Fail to add bookmark **/
@@ -122,7 +122,7 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 
 	// List non-empty array of bookmarks of the user
 	// add a bookmark into the user
-	_ = serveHTTP("POST", path, bookmarkJSON, "application/json", fmt.Sprintf("Bearer %v", jwt))
+	_ = serveHTTP("POST", path, bookmarkJSONStr, "application/json", fmt.Sprintf("Bearer %v", jwt))
 	// get bookmarks of the user
 	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 200)
@@ -161,7 +161,7 @@ func TestGetABookmarkOfAUser(t *testing.T) {
 	assert.Equal(t, resp.Code, 404)
 
 	// add a bookmark onto a user
-	_ = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", user.ID), bookmarkJSON3, "application/json", fmt.Sprintf("Bearer %v", jwt))
+	_ = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", user.ID), bookmarkJSONStr3, "application/json", fmt.Sprintf("Bearer %v", jwt))
 
 	// still fail to get the bookmark of the user because of host is not provided
 	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
@@ -194,7 +194,7 @@ func TestDeleteBookmark(t *testing.T) {
 	jwt = generateJWT(user)
 
 	// add a bookmark onto a user
-	_ = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", user.ID), bookmarkJSON3, "application/json", fmt.Sprintf("Bearer %v", jwt))
+	_ = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", user.ID), bookmarkJSONStr3, "application/json", fmt.Sprintf("Bearer %v", jwt))
 
 	/** START - Delete bookmark successfully **/
 	resp = serveHTTP("DELETE", fmt.Sprintf("/v1/users/%v/bookmarks/1", user.ID), "", "", fmt.Sprintf("Bearer %v", jwt))

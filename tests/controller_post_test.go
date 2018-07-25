@@ -16,12 +16,12 @@ import (
 The whole testing mongodb is set up by `setMgoDefaultRecords` function in `pre_test_environment_setup.go`
 */
 
-type PostsResponse struct {
+type postsResponse struct {
 	Status  string        `json:"status"`
 	Records []models.Post `json:"records"`
 }
 
-type PostResponse struct {
+type postResponse struct {
 	Status string      `json:"status"`
 	Record models.Post `json:"record"`
 }
@@ -38,7 +38,7 @@ func TestGetAPost(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
-	res := PostResponse{}
+	res := postResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, res.Record.ID, Globs.Defaults.PostID1)
 	assert.Equal(t, len(res.Record.Relateds), 0)
@@ -50,7 +50,7 @@ func TestGetAPost(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = PostResponse{}
+	res = postResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, res.Record.ID, Globs.Defaults.PostID1)
 	assert.Equal(t, len(res.Record.Relateds), 1)
@@ -68,7 +68,7 @@ func TestGetPosts(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
-	res := PostsResponse{}
+	res := postsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 2)
 
@@ -101,7 +101,7 @@ func TestGetPosts(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = PostsResponse{}
+	res = postsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 1)
 
@@ -114,7 +114,7 @@ func TestGetPosts(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = PostsResponse{}
+	res = postsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 1)
 
@@ -127,7 +127,7 @@ func TestGetPosts(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = PostsResponse{}
+	res = postsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 1)
 
@@ -140,7 +140,7 @@ func TestGetPosts(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = PostsResponse{}
+	res = postsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 1)
 
@@ -153,7 +153,7 @@ func TestGetPosts(t *testing.T) {
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
-	res = PostsResponse{}
+	res = postsResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, len(res.Records), 2)
 	// End -- Get posts containing CatID //
