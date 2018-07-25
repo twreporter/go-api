@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"twreporter.org/go-api/models"
 )
 
 type (
@@ -149,7 +151,7 @@ func testCardholderWithDefaultValue(t *testing.T, ch cardholder) {
 	assert.Equal(t, testCardholder.Address, ch.Address)
 }
 
-func testDonationDataValidation(t *testing.T, path string) {
+func testDonationDataValidation(t *testing.T, path string, authorization string) {
 	var resp *httptest.ResponseRecorder
 	var reqBody requestBody
 	var reqBodyInBytes []byte
@@ -167,7 +169,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -182,7 +184,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -201,7 +203,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -218,7 +220,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -236,7 +238,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -254,7 +256,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -273,12 +275,12 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
 	assert.Equal(t, 400, resp.Code)
 }
 
-func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
+func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, authorization string) {
 	var resp *httptest.ResponseRecorder
 	var reqBody requestBody
 	var resBody responseBody
@@ -303,7 +305,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 
@@ -331,7 +333,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 
@@ -356,7 +358,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
 	assert.Equal(t, 500, resp.Code)
 
@@ -365,39 +367,84 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
 	// - Create a Donation by Credit Card
 	// - Request Body Data Validation Error
 	// ===========================================
-	testDonationDataValidation(t, path)
+	testDonationDataValidation(t, path, authorization)
 }
 
 func TestCreateADonation(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 	var path string
 
+	user := getUser(Globs.Defaults.Account)
+	jwt := generateJWT(user)
+	authorization := fmt.Sprintf("Bearer %s", jwt)
+
+	// ===========================================
+	// Failure (Client Error)
+	// - Create a Donation Without Authorization Header
+	// - 401 Unauthorized
+	// ===========================================
+	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
+	resp = serveHTTP("POST", path, "", "application/json", "")
+	assert.Equal(t, 401, resp.Code)
+
+	// ===========================================
+	// Failure (Client Error)
+	// - Create a Donation on Unauthenticated Resoruce
+	// - 403 Forbidden
+	// ===========================================
+	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", 2)
+	resp = serveHTTP("POST", path, "", "application/json", authorization)
+	assert.Equal(t, 403, resp.Code)
+
 	// ===========================================
 	// Failure (Client Error)
 	// - Create a Donation by Unrecognized Pay Method
 	// - 404 Not Found Error
 	// ===========================================
-	path = "/v1/users/1/donations/unknown_pay_method"
+	path = fmt.Sprintf("/v1/users/%d/donations/unknown_pay_method", user.ID)
 
-	resp = serveHTTP("POST", path, "", "application/json", "")
+	resp = serveHTTP("POST", path, "", "application/json", authorization)
 
 	assert.Equal(t, 404, resp.Code)
 
 	// ==========================================
 	// Test One Time Donation Creation
 	// =========================================
-	path = "/v1/users/1/donations/credit_card"
-	testCreateADonationRecord(t, path, false)
+	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
+	testCreateADonationRecord(t, path, false, authorization)
 }
 
 func TestCreateAPeriodicDonation(t *testing.T) {
+	var resp *httptest.ResponseRecorder
 	var path string
+
+	user := getUser(Globs.Defaults.Account)
+	jwt := generateJWT(user)
+	authorization := fmt.Sprintf("Bearer %s", jwt)
+
+	// ===========================================
+	// Failure (Client Error)
+	// - Create a Periodic Donation Without Authorization Header
+	// - 401 Unauthorized
+	// ===========================================
+	path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
+	resp = serveHTTP("POST", path, "", "application/json", "")
+	assert.Equal(t, 401, resp.Code)
+
+	// ===========================================
+	// Failure (Client Error)
+	// - Create a Periodic Donation on Unauthenticated Resoruce
+	// - 403 Forbidden
+	// ===========================================
+	path = fmt.Sprintf("/v1/users/%d/periodic_donations", 2)
+	resp = serveHTTP("POST", path, "", "application/json", authorization)
+	assert.Equal(t, 403, resp.Code)
 
 	// ==========================================
 	// Test Periodic Donation Creation
 	// =========================================
 	path = "/v1/users/1/periodic_donations"
-	testCreateADonationRecord(t, path, true)
+	testCreateADonationRecord(t, path, true, authorization)
 }
 
 func TestGetDonations(t *testing.T) {
@@ -408,17 +455,44 @@ func TestGetDonations(t *testing.T) {
 	// set up default records
 	setUpBeforeDonationsTest()
 
+	defaultUser := getUser(Globs.Defaults.Account)
 	user := getUser(donatorEmail)
+	jwt := generateJWT(user)
+	authorization := fmt.Sprintf("Bearer %s", jwt)
+
+	// ===========================================
+	// Failure (Client Error)
+	// - Get Donations of A Unkonwn User Without Authorization Header
+	// - 401 Unauthorized
+	// ===========================================
+	path = fmt.Sprintf("/v1/users/%d/donations", user.ID)
+	resp = serveHTTP("GET", path, "", "", "")
+	assert.Equal(t, 401, resp.Code)
+
+	// ===========================================
+	// Failure (Client Error)
+	// - Create a Periodic Donation on Unauthenticated Resoruce
+	// - 403 Forbidden
+	// ===========================================
+	path = fmt.Sprintf("/v1/users/%d/donations", defaultUser.ID)
+	resp = serveHTTP("GET", path, "", "", authorization)
+	assert.Equal(t, 403, resp.Code)
 
 	// ===========================================
 	// Failure (Client Error)
 	// - Get Donations of A Unkonwn User
 	// - 404 Not Found Error
 	// ===========================================
-	path = "/v1/users/unknown_user/donations"
+	path = "/v1/users/1000/donations"
+	jwt = generateJWT(models.User{
+		ID: 1000,
+		Email: sql.NullString{
+			String: "unknown@twreporter.org",
+			Valid:  true,
+		},
+	})
 
-	resp = serveHTTP("GET", path, "", "", "")
-
+	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %s", jwt))
 	assert.Equal(t, 404, resp.Code)
 
 	// ================================================================
