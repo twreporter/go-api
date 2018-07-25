@@ -28,13 +28,13 @@ type PostResponse struct {
 
 func TestGetAPost(t *testing.T) {
 	// Post Not Found //
-	resp := ServeHTTP("GET", "/v1/posts/post-not-found", "",
+	resp := serveHTTP("GET", "/v1/posts/post-not-found", "",
 		"", "")
 	assert.Equal(t, resp.Code, 404)
 	// Post Not Found //
 
 	// Get a post without full url param //
-	resp = ServeHTTP("GET", "/v1/posts/"+Globs.Defaults.MockPostSlug1, "",
+	resp = serveHTTP("GET", "/v1/posts/"+Globs.Defaults.MockPostSlug1, "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -46,7 +46,7 @@ func TestGetAPost(t *testing.T) {
 	// Get a post without full url param //
 
 	// Get a post with full url param //
-	resp = ServeHTTP("GET", "/v1/posts/"+Globs.Defaults.MockPostSlug1+"?full=true", "",
+	resp = serveHTTP("GET", "/v1/posts/"+Globs.Defaults.MockPostSlug1+"?full=true", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -64,7 +64,7 @@ func TestGetPosts(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 
 	// Start -- Get all the posts //
-	resp = ServeHTTP("GET", "/v1/posts", "",
+	resp = serveHTTP("GET", "/v1/posts", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -97,7 +97,7 @@ func TestGetPosts(t *testing.T) {
 	// End -- Get all the posts //
 
 	// Start -- Get posts with isFeature=true //
-	resp = ServeHTTP("GET", "/v1/posts?where={\"is_featured\":true}", "",
+	resp = serveHTTP("GET", "/v1/posts?where={\"is_featured\":true}", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -110,7 +110,7 @@ func TestGetPosts(t *testing.T) {
 	// End -- Get posts with isFeature=true //
 
 	// Start -- Get posts with style=review //
-	resp = ServeHTTP("GET", "/v1/posts?where={\"style\":\"review\"}", "",
+	resp = serveHTTP("GET", "/v1/posts?where={\"style\":\"review\"}", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -123,7 +123,7 @@ func TestGetPosts(t *testing.T) {
 	// End -- Get posts with style=review //
 
 	// Start -- Get posts with slug=mock-post-slug-2 //
-	resp = ServeHTTP("GET", "/v1/posts?where={\"slug\":\"mock-post-slug-2\"}", "",
+	resp = serveHTTP("GET", "/v1/posts?where={\"slug\":\"mock-post-slug-2\"}", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -136,7 +136,7 @@ func TestGetPosts(t *testing.T) {
 	// End -- Get posts with slug=mock-post-slug-2 //
 
 	// Start -- Get posts containing TagID //
-	resp = ServeHTTP("GET", fmt.Sprintf("/v1/posts?where={\"tags\":{\"in\":[\"%v\"]}}", Globs.Defaults.TagID.Hex()), "",
+	resp = serveHTTP("GET", fmt.Sprintf("/v1/posts?where={\"tags\":{\"in\":[\"%v\"]}}", Globs.Defaults.TagID.Hex()), "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -149,7 +149,7 @@ func TestGetPosts(t *testing.T) {
 	// End -- Get posts containing TagID //
 
 	// Start -- Get posts containing CatID //
-	resp = ServeHTTP("GET", fmt.Sprintf("/v1/posts?where={\"postcategories\":{\"in\":[\"%v\"]}}", Globs.Defaults.CatID.Hex()), "",
+	resp = serveHTTP("GET", fmt.Sprintf("/v1/posts?where={\"postcategories\":{\"in\":[\"%v\"]}}", Globs.Defaults.CatID.Hex()), "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)

@@ -168,23 +168,23 @@ func init() {
 	}
 }
 
-func RequestWithBody(method, path, body string) (req *http.Request) {
+func requestWithBody(method, path, body string) (req *http.Request) {
 	req, _ = http.NewRequest(method, path, bytes.NewBufferString(body))
 	return
 }
 
-func GenerateJWT(user models.User) (jwt string) {
+func generateJWT(user models.User) (jwt string) {
 	jwt, _ = utils.RetrieveToken(user.ID, user.Email.String)
 	return
 }
 
-func GetReporterAccount(email string) (ra models.ReporterAccount) {
+func getReporterAccount(email string) (ra models.ReporterAccount) {
 	as := storage.NewGormStorage(Globs.GormDB)
 	ra, _ = as.GetReporterAccountData(email)
 	return ra
 }
 
-func CreateUser(email string) models.User {
+func createUser(email string) models.User {
 	as := storage.NewGormStorage(Globs.GormDB)
 
 	ra := models.ReporterAccount{
@@ -198,16 +198,16 @@ func CreateUser(email string) models.User {
 	return user
 }
 
-func GetUser(email string) (user models.User) {
+func getUser(email string) (user models.User) {
 	as := storage.NewGormStorage(Globs.GormDB)
 	user, _ = as.GetUserByEmail(email)
 	return
 }
 
-func ServeHTTP(method, path, body, contentType, authorization string) (resp *httptest.ResponseRecorder) {
+func serveHTTP(method, path, body, contentType, authorization string) (resp *httptest.ResponseRecorder) {
 	var req *http.Request
 
-	req = RequestWithBody(method, path, body)
+	req = requestWithBody(method, path, body)
 
 	if contentType != "" {
 		req.Header.Add("Content-Type", contentType)

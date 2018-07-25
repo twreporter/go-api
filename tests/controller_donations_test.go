@@ -100,7 +100,7 @@ var defaults = struct {
 }
 
 func setUpBeforeDonationsTest() {
-	user := CreateUser(donatorEmail)
+	user := createUser(donatorEmail)
 
 	reqBody := requestBody{
 		Prime:  testPrime,
@@ -114,15 +114,15 @@ func setUpBeforeDonationsTest() {
 	// first, insert a periodic donation
 	path := fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
 	reqBodyInBytes, _ := json.Marshal(reqBody)
-	ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	// second, insert a one time donation
 	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
-	ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	// third, insert a periodic donation
 	path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
-	ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	// set default total to 3
 	defaults.Total = 3
@@ -167,7 +167,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -182,7 +182,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -201,7 +201,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -218,7 +218,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -236,7 +236,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -254,7 +254,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	assert.Equal(t, 400, resp.Code)
 
@@ -273,7 +273,7 @@ func testDonationDataValidation(t *testing.T, path string) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	assert.Equal(t, 400, resp.Code)
 }
@@ -303,7 +303,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 
@@ -331,7 +331,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 
@@ -356,7 +356,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool) {
 	}
 
 	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = ServeHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
+	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
 
 	assert.Equal(t, 500, resp.Code)
 
@@ -379,7 +379,7 @@ func TestCreateADonation(t *testing.T) {
 	// ===========================================
 	path = "/v1/users/1/donations/unknown_pay_method"
 
-	resp = ServeHTTP("POST", path, "", "application/json", "")
+	resp = serveHTTP("POST", path, "", "application/json", "")
 
 	assert.Equal(t, 404, resp.Code)
 
@@ -408,7 +408,7 @@ func TestGetDonations(t *testing.T) {
 	// set up default records
 	setUpBeforeDonationsTest()
 
-	user := GetUser(donatorEmail)
+	user := getUser(donatorEmail)
 
 	// ===========================================
 	// Failure (Client Error)
@@ -417,7 +417,7 @@ func TestGetDonations(t *testing.T) {
 	// ===========================================
 	path = "/v1/users/unknown_user/donations"
 
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 
 	assert.Equal(t, 404, resp.Code)
 
@@ -427,7 +427,7 @@ func TestGetDonations(t *testing.T) {
 	// - Missing `pay_methods` Param (which means all pay_methods)
 	// ================================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?offset=%d&limit=%d", user.ID, defaults.Offset, defaults.Limit)
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 	resBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
@@ -449,7 +449,7 @@ func TestGetDonations(t *testing.T) {
 	// - Missing `offset` Param (which means offset=0)
 	// ===================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?pay_methods=credit_card&limit=%d", user.ID, defaults.Limit)
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
@@ -463,7 +463,7 @@ func TestGetDonations(t *testing.T) {
 	// - Missing `limit` Param (which means limit=10)
 	// =====================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?pay_methods=credit_card&offset=%d", user.ID, defaults.Offset)
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
@@ -477,7 +477,7 @@ func TestGetDonations(t *testing.T) {
 	// - Missing `pay_method`, `offset` and `limit` Param
 	// ===================================================
 	path = fmt.Sprintf("/v1/users/%d/donations", user.ID)
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
@@ -492,7 +492,7 @@ func TestGetDonations(t *testing.T) {
 	// - ?offset=1&limit=1
 	// ===============================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?offset=1&limit=1", user.ID)
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
@@ -509,7 +509,7 @@ func TestGetDonations(t *testing.T) {
 	// - ?offset=3&limit=1 (offset is equal to or more than total)
 	// ====================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?offset=%d&limit=1", user.ID, defaults.Total)
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
@@ -522,7 +522,7 @@ func TestGetDonations(t *testing.T) {
 	// - ?offset=0&limit=0 (limit is 0)
 	// =========================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?offset=0&limit=0", user.ID)
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, 200, resp.Code)
@@ -537,7 +537,7 @@ func TestGetDonations(t *testing.T) {
 	// - ?limit=NaN&offset=NaN&pay_methods=;select * from users;
 	// =========================================================
 	path = fmt.Sprintf("/v1/users/%d/donations?limit=NaN&offset=NaN&pay_methods=;select * from users;", user.ID)
-	resp = ServeHTTP("GET", path, "", "", "")
+	resp = serveHTTP("GET", path, "", "", "")
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
 	assert.Equal(t, 3, len(resBody.Data.Records))

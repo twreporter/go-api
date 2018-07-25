@@ -21,7 +21,7 @@ func TestIndexPage(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 
 	// Start -- Get four sections in the index page first screen //
-	resp = ServeHTTP("GET", "/v1/index_page", "",
+	resp = serveHTTP("GET", "/v1/index_page", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)

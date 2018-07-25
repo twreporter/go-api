@@ -41,51 +41,51 @@ func TestRegisterAndDeregister(t *testing.T) {
 
 	// ===== TestRegister START ===== //
 	// Wrong JSON POST body
-	resp = ServeHTTP("POST", path, "", contentType, "")
+	resp = serveHTTP("POST", path, "", contentType, "")
 	assert.Equal(t, resp.Code, 400)
 
 	// Success to register
-	resp = ServeHTTP("POST", "/v1/registrations/default_service", `{"email":"han@twreporter.org"}`, contentType, "")
+	resp = serveHTTP("POST", "/v1/registrations/default_service", `{"email":"han@twreporter.org"}`, contentType, "")
 	assert.Equal(t, resp.Code, 201)
 
 	// Fail to create the existed registration
-	resp = ServeHTTP("POST", "/v1/registrations/default_service", `{"email":"han@twreporter.org"}`, contentType, "")
+	resp = serveHTTP("POST", "/v1/registrations/default_service", `{"email":"han@twreporter.org"}`, contentType, "")
 	assert.Equal(t, resp.Code, 409)
 
 	// Fail to create the registration when service is not existed
-	resp = ServeHTTP("POST", "/v1/registrations/non_existed_service", `{"email":"han@twreporter.org"}`, contentType, "")
+	resp = serveHTTP("POST", "/v1/registrations/non_existed_service", `{"email":"han@twreporter.org"}`, contentType, "")
 	assert.Equal(t, resp.Code, 404)
 	// ===== TestRegister END ===== //
 
 	// ===== TestDeregister START ===== //
 	// Success to deregister
-	resp = ServeHTTP("DELETE", "/v1/registrations/default_service/han@twreporter.org", "", contentType, "")
+	resp = serveHTTP("DELETE", "/v1/registrations/default_service/han@twreporter.org", "", contentType, "")
 	assert.Equal(t, resp.Code, 204)
 
 	// Deregister again
-	resp = ServeHTTP("DELETE", "/v1/registrations/default_service/han@twreporter.org", "", contentType, "")
+	resp = serveHTTP("DELETE", "/v1/registrations/default_service/han@twreporter.org", "", contentType, "")
 	assert.Equal(t, resp.Code, 404)
 
 	// It's fine to delete an non-existed resource
-	resp = ServeHTTP("DELETE", "/v1/registrations/default_service/not_existed@twreporter.org", "", contentType, "")
+	resp = serveHTTP("DELETE", "/v1/registrations/default_service/not_existed@twreporter.org", "", contentType, "")
 	assert.Equal(t, resp.Code, 404)
 
 	// Fail to delete the registration when service is not existed
-	resp = ServeHTTP("POST", "/v1/registrations/non_existed_service/nickhsine@twreporter.org", "", contentType, "")
+	resp = serveHTTP("POST", "/v1/registrations/non_existed_service/nickhsine@twreporter.org", "", contentType, "")
 	assert.Equal(t, resp.Code, 404)
 	// ===== TestDeregister END ===== //
 }
 
 func TestGetRegisterUser(t *testing.T) {
-	resp := ServeHTTP("GET", fmt.Sprintf("/v1/registrations/default_service/%v", Globs.Defaults.Account), "", "", "")
+	resp := serveHTTP("GET", fmt.Sprintf("/v1/registrations/default_service/%v", Globs.Defaults.Account), "", "", "")
 	assert.Equal(t, resp.Code, 200)
 
-	resp = ServeHTTP("GET", "/v1/registrations/default_service/non_existed@twreporter.org", "", "", "")
+	resp = serveHTTP("GET", "/v1/registrations/default_service/non_existed@twreporter.org", "", "", "")
 	assert.Equal(t, resp.Code, 404)
 }
 
 func TestGetRegisterUsers(t *testing.T) {
-	resp := ServeHTTP("GET", "/v1/registrations/default_service", "", "", "")
+	resp := serveHTTP("GET", "/v1/registrations/default_service", "", "", "")
 	assert.Equal(t, resp.Code, 200)
 
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -95,14 +95,14 @@ func TestGetRegisterUsers(t *testing.T) {
 	assert.Equal(t, res.Registrations[0].Service.Name, Globs.Defaults.Service)
 
 	// Fail
-	resp = ServeHTTP("GET", "/v1/registrations/non_existed_service", "", "", "")
+	resp = serveHTTP("GET", "/v1/registrations/non_existed_service", "", "", "")
 	assert.Equal(t, resp.Code, 404)
 }
 
 func TestActivateRegistration(t *testing.T) {
 	utils.Cfg.ConsumerSettings.Host = "www.twreporter.org"
 	utils.Cfg.ConsumerSettings.Protocol = "https"
-	resp := ServeHTTP("GET", fmt.Sprintf("/v1/activation/default_service/%v?activeToken=default_token", Globs.Defaults.Account), "", "", "")
+	resp := serveHTTP("GET", fmt.Sprintf("/v1/activation/default_service/%v?activeToken=default_token", Globs.Defaults.Account), "", "", "")
 	assert.Equal(t, resp.Code, 307)
 
 	loc, _ := resp.Result().Location()

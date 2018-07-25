@@ -29,13 +29,13 @@ type TopicResponse struct {
 
 func TestGetATopic(t *testing.T) {
 	// Post Not Found //
-	resp := ServeHTTP("GET", "/v1/topics/post-not-found", "",
+	resp := serveHTTP("GET", "/v1/topics/post-not-found", "",
 		"", "")
 	assert.Equal(t, resp.Code, 404)
 	// Post Not Found //
 
 	// Get a post without full url param //
-	resp = ServeHTTP("GET", "/v1/topics/"+Globs.Defaults.MockTopicSlug, "",
+	resp = serveHTTP("GET", "/v1/topics/"+Globs.Defaults.MockTopicSlug, "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -49,7 +49,7 @@ func TestGetATopic(t *testing.T) {
 	// Get a post without full url param //
 
 	// Get a post with full url param //
-	resp = ServeHTTP("GET", "/v1/topics/"+Globs.Defaults.MockTopicSlug+"?full=true", "",
+	resp = serveHTTP("GET", "/v1/topics/"+Globs.Defaults.MockTopicSlug+"?full=true", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -71,7 +71,7 @@ func TestGetTopics(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 
 	// Start -- Get all the topics //
-	resp = ServeHTTP("GET", "/v1/topics", "",
+	resp = serveHTTP("GET", "/v1/topics", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
@@ -86,7 +86,7 @@ func TestGetTopics(t *testing.T) {
 	// End -- Get all the posts //
 
 	// Start -- Get all the full topics //
-	resp = ServeHTTP("GET", "/v1/topics?full=true", "",
+	resp = serveHTTP("GET", "/v1/topics?full=true", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -102,7 +102,7 @@ func TestGetTopics(t *testing.T) {
 	// End -- Get all the posts //
 
 	// Start -- Get the topics with slug=mock-topic-slug//
-	resp = ServeHTTP("GET", "/v1/topics?where={\"slug\":\"mock-topic-slug\"}", "",
+	resp = serveHTTP("GET", "/v1/topics?where={\"slug\":\"mock-topic-slug\"}", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
@@ -112,7 +112,7 @@ func TestGetTopics(t *testing.T) {
 	// End -- Get the topics with slug=mock-topic-slug//
 
 	// Start -- Get no topics  //
-	resp = ServeHTTP("GET", "/v1/topics?where={\"slug\":\"wrong-topic-slug\"}", "",
+	resp = serveHTTP("GET", "/v1/topics?where={\"slug\":\"wrong-topic-slug\"}", "",
 		"", "")
 	assert.Equal(t, resp.Code, 200)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
