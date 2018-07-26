@@ -127,7 +127,7 @@ type CardInfo struct {
 type Cardholder struct {
 	PhoneNumber string `json:"phone_number"`
 	Name        string `json:"name"`
-	Email       string `json:"email" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
 	ZipCode     string `json:"zip_code"`
 	Address     string `json:"address"`
 	NationalID  string `json:"national_id"`
