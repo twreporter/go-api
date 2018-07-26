@@ -21,7 +21,7 @@ type (
 		Type        int    `json:"type"`
 		Level       string `json:"level"`
 		Country     string `json:"country"`
-		CountryCode string `json:"us"`
+		CountryCode string `json:"country_code"`
 		ExpiryDate  string `json:"expiry_date"`
 	}
 	cardholder struct {
@@ -130,7 +130,7 @@ func setUpBeforeDonationsTest() {
 	defaults.Total = 3
 }
 
-func testCardInfoWithDefaultValue(t *testing.T, ci cardInfo) {
+func testCardInfoWithDefaultValue(t *testing.T, ci cardInfo, isPeriodic bool) {
 	assert.Equal(t, "424242", ci.BinCode)
 	assert.Equal(t, "4242", ci.LastFour)
 	assert.Equal(t, "JPMORGAN CHASE BANK NA", ci.Issuer)
@@ -139,7 +139,9 @@ func testCardInfoWithDefaultValue(t *testing.T, ci cardInfo) {
 	assert.Equal(t, "", ci.Level)
 	assert.Equal(t, "UNITED STATES", ci.Country)
 	assert.Equal(t, "US", ci.CountryCode)
-	assert.Equal(t, "202301", ci.ExpiryDate)
+	if isPeriodic {
+		assert.Equal(t, "202301", ci.ExpiryDate)
+	}
 }
 
 func testCardholderWithDefaultValue(t *testing.T, ch cardholder) {
@@ -316,7 +318,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 	assert.Equal(t, testCurrency, resBody.Data.Currency)
 	assert.Equal(t, testDetails, resBody.Data.Details)
 	assert.Equal(t, testOrderNumber, resBody.Data.OrderNumber)
-	testCardInfoWithDefaultValue(t, resBody.Data.CardInfo)
+	testCardInfoWithDefaultValue(t, resBody.Data.CardInfo, isPeriodic)
 	testCardholderWithDefaultValue(t, resBody.Data.Cardholder)
 
 	// ===========================================
