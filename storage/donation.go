@@ -4,8 +4,12 @@ import (
 	"twreporter.org/go-api/models"
 )
 
-//TODO
 func (g *GormStorage) CreateAPayByPrimeDonation(m models.PayByPrimeDonation) error {
+	errWhere := "GormStorage.CreateAPayByPrimeDonation"
+	err := g.db.Create(&m).Error
+	if nil != err {
+		return g.NewStorageError(err, errWhere, err.Error())
+	}
 	return nil
 }
 
