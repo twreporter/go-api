@@ -114,18 +114,25 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		IsPeriodic  bool              `json:"is_periodic"`
 		PayMethod   string            `json:"pay_method"`
 		CardInfo    models.CardInfo   `json:"card_info"`
-		Cardholder  models.Cardholder `json:"card_holder"`
+		Cardholder  models.Cardholder `json:"cardholder"`
 		Amount      uint              `json:"amount"`
 		Currency    string            `json:"currency"`
 		Details     string            `json:"details"`
 		OrderNumber string            `json:"order_number"`
 	}
 	const errorWhere = "MembershipController.CreateADonationOfAUser"
+
+	// Validate pay_method
+	payMethod := c.Param("pay_method")
+	if err := validatePayMethod(payMethod); nil != err {
+		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{"pay_method": err.Error()}}, nil
+	}
+
 	var reqBody primeReqBody
 
 	// Validate request body
 	if err := c.Bind(&reqBody); nil != err {
-		log.Error("parse model error: ", err)
+		log.Error("parse model error: " + err.Error())
 		failData := gin.H{}
 
 		switch e := err.(type) {
@@ -139,12 +146,6 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 			// Omit intentionally
 		}
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
-	}
-
-	// Validate pay_method
-	payMethod := c.Param("pay_method")
-	if err := validatePayMethod(payMethod); nil != err {
-		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{"pay_method": err.Error()}}, nil
 	}
 
 	/*userIDStr := c.Param("userID")
@@ -177,13 +178,18 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		tapPayReq.ResultUrl = reqBody.ResultUrl
 	}
 
-	tapPayReq.OrderNumber = generateOrderNumber(oneTime, getPayMethodID(payMethod))
+	if "" != reqBody.OrderNumber {
+		tapPayReq.OrderNumber = reqBody.OrderNumber
+	} else {
+		tapPayReq.OrderNumber = generateOrderNumber(oneTime, getPayMethodID(payMethod))
+	}
 	tapPayReq.PartnerKey = utils.Cfg.DonationSettings.TapPayPartnerKey
 
 	// Setup HTTP client
 	client := &http.Client{}
 
 	tapPayReqJson, _ := json.Marshal(tapPayReq)
+	log.Info("TapPayUrl: " + utils.Cfg.DonationSettings.TapPayUrl)
 	req, _ := http.NewRequest("POST", utils.Cfg.DonationSettings.TapPayUrl, bytes.NewBuffer(tapPayReqJson))
 	req.Header.Add("x-api-key", tapPayReq.PartnerKey)
 	req.Header.Add("Content-Type", "application/json")
@@ -201,6 +207,15 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	var tapPayResp tapPayByPrimeResp
 	err = json.Unmarshal(body, &tapPayResp)
 
+	switch {
+	case nil != err:
+		return 0, gin.H{}, models.NewAppError(errorWhere, "Cannot unmarshal json response from Tap Pay Server", err.Error(), http.StatusInternalServerError)
+	// TODO: Should deal with several Tap Pay error code
+	case 0 != tapPayResp.Status:
+		return 0, gin.H{}, models.NewAppError(errorWhere, "Cannot make success transaction on tap pay", "", http.StatusInternalServerError)
+	default:
+		// Omit intentionally
+	}
 	if nil != err {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Cannot unmarshal json response from Tap Pay Server", err.Error(), http.StatusInternalServerError)
 	}
@@ -215,7 +230,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	primeResp.Details = tapPayReq.Details
 	primeResp.OrderNumber = tapPayReq.OrderNumber
 
-	return http.StatusOK, gin.H{"status": "ok", "data": primeResp}, nil
+	return http.StatusCreated, gin.H{"status": "success", "data": primeResp}, nil
 }
 
 //TODO
@@ -245,7 +260,6 @@ func newTapPayByPrimeReq() tapPayByPrimeReqBody {
 	req.Details = defaultDetails
 	req.Currency = defaultCurrency
 	req.MerchantID = defaultMerchantID
-
 	return req
 }
 
