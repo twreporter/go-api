@@ -69,7 +69,7 @@ type (
 		ResultUrl   linePayResultUrl  `json:"result_url"`
 	}
 
-	tapPayPrimeResp struct {
+	tapPayTransactionResp struct {
 		Status                int                 `json:"status"`
 		Msg                   string              `json:"msg"`
 		RecTradeID            string              `json:"rec_trade_id"`
@@ -154,38 +154,12 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// Build Tappay pay by prime request
 	tapPayReq := buildTapPayPrimeReq(payMethod, reqBody)
 
-	// Setup HTTP client
-	client := &http.Client{}
-
 	tapPayReqJson, _ := json.Marshal(tapPayReq)
-	req, _ := http.NewRequest("POST", utils.Cfg.DonationSettings.TapPayUrl, bytes.NewBuffer(tapPayReqJson))
-	req.Header.Add("x-api-key", tapPayReq.PartnerKey)
-	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := client.Do(req)
-	if nil != err {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Cannot request to Tap Pay Server", err.Error(), http.StatusInternalServerError)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if nil != err {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Cannot read response from Tap Pay Server", err.Error(), http.StatusInternalServerError)
-	}
+	tapPayResp, err := serveHttp(tapPayReq.PartnerKey, tapPayReqJson)
 
-	var tapPayResp tapPayPrimeResp
-	err = json.Unmarshal(body, &tapPayResp)
-
-	switch {
-	case nil != err:
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Cannot unmarshal json response from Tap Pay Server", err.Error(), http.StatusInternalServerError)
-	case 0 != tapPayResp.Status:
-		log.Error(tapPayResp.Msg)
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Cannot make success transaction on tap pay", "", http.StatusInternalServerError)
-	default:
-		// Omit intentionally
-	}
 	if nil != err {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Cannot unmarshal json response from Tap Pay Server", err.Error(), http.StatusInternalServerError)
+		return 0, gin.H{}, models.NewAppError(errorWhere, err.Error(), "", http.StatusInternalServerError)
 	}
 
 	clientResp := buildClientPrimeResp(payMethod, tapPayReq, tapPayResp)
@@ -202,6 +176,22 @@ func (t *tapPayPrimeReq) setDefault() {
 	t.Details = defaultDetails
 	t.Currency = defaultCurrency
 	t.MerchantID = defaultMerchantID
+}
+
+func buildClientPrimeResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp) clientPrimeResp {
+	c := clientPrimeResp{}
+	c.IsPeriodic = false
+	c.PayMethod = payMethod
+
+	c.CardInfo = resp.CardInfo
+	c.Cardholder = req.Cardholder
+	c.OrderNumber = req.OrderNumber
+
+	c.Amount = resp.Amount
+	c.Currency = resp.Currency
+	c.Details = req.Details
+
+	return c
 }
 
 func buildTapPayPrimeReq(payMethod string, req clientPrimeReq) tapPayPrimeReq {
@@ -241,22 +231,6 @@ func buildTapPayPrimeReq(payMethod string, req clientPrimeReq) tapPayPrimeReq {
 	return *t
 }
 
-func buildClientPrimeResp(payMethod string, req tapPayPrimeReq, resp tapPayPrimeResp) clientPrimeResp {
-	c := clientPrimeResp{}
-	c.IsPeriodic = false
-	c.PayMethod = payMethod
-
-	c.CardInfo = resp.CardInfo
-	c.Cardholder = req.Cardholder
-	c.OrderNumber = req.OrderNumber
-
-	c.Amount = resp.Amount
-	c.Currency = resp.Currency
-	c.Details = req.Details
-
-	return c
-}
-
 func generateOrderNumber(t payType, payMethodID int) string {
 	timestamp := time.Now().Unix()
 	orderNumber := fmt.Sprintf("%s-%d%d%d", orderPrefix, timestamp, t, payMethodID)
@@ -274,11 +248,45 @@ func getPayMethodID(payMethod string) int {
 	return invalidPayMethodID
 }
 
-func validatePayMethod(payMethod string) error {
+func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
+	// Setup HTTP client
+	client := &http.Client{}
+
+	req, _ := http.NewRequest("POST", utils.Cfg.DonationSettings.TapPayUrl, bytes.NewBuffer(reqBodyJson))
+	req.Header.Add("x-api-key", key)
+	req.Header.Add("Content-Type", "application/json")
+
+	rawResp, err := client.Do(req)
+	if nil != err {
+		log.Error(err.Error())
+		return tapPayTransactionResp{}, errors.New("cannot request to tap pay server")
+	}
+	defer rawResp.Body.Close()
+	body, err := ioutil.ReadAll(rawResp.Body)
+	if nil != err {
+		log.Error(err.Error())
+		return tapPayTransactionResp{}, errors.New("Cannot read response from Tap Pay Server")
+	}
+
+	var resp tapPayTransactionResp
+	err = json.Unmarshal(body, &resp)
+
 	switch {
-	case invalidPayMethodID != getPayMethodID(payMethod):
-		return nil
+	case nil != err:
+		return tapPayTransactionResp{}, errors.New("Cannot unmarshal json response from Tap Pay Server")
+	case 0 != resp.Status:
+		log.Error("tap pay msg: " + resp.Msg)
+		return tapPayTransactionResp{}, errors.New("Cannot make success transaction on tap pay")
 	default:
+		// Omit intentionally
+	}
+
+	return resp, nil
+}
+
+func validatePayMethod(payMethod string) error {
+	if invalidPayMethodID != getPayMethodID(payMethod) {
+		return nil
 	}
 
 	var errMsg bytes.Buffer
