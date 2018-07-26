@@ -58,6 +58,12 @@ const (
 
 	// AmazonMailSettingsDefaultCharSet sets the default charset
 	AmazonMailSettingsDefaultCharSet = "UTF-8"
+
+	// DonationSettingsDefaultTapPayPartnerKey sets the default partner key
+	DonationSettingsDefaultTapPayPartnerKey = "YourTapPayPartnerKey"
+
+	// DonationSettingsDefaultTapPayUrl sets the default Tap Server(Sandbox)
+	DonationSettingsDefaultTapPayUrl = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-token"
 )
 
 // AppSettings could be defined in configs/config.json
@@ -150,6 +156,11 @@ type CorsSettings struct {
 	AllowOrigins []string
 }
 
+type DonationSettings struct {
+	TapPayPartnerKey string
+	TapPayUrl        string
+}
+
 // Config contains all the other configs
 type Config struct {
 	CorsSettings       CorsSettings
@@ -163,6 +174,7 @@ type Config struct {
 	OauthSettings      OauthSettings
 	ConsumerSettings   ConsumerSettings
 	EncryptSettings    EncryptSettings
+	DonationSettings   DonationSettings
 }
 
 // SetDefaults could set default value in the Config struct
@@ -214,5 +226,13 @@ func (o *Config) SetDefaults() {
 	}
 	if o.EncryptSettings.Salt == "" {
 		o.EncryptSettings.Salt = EncryptSettingsDefaultSalt
+	}
+
+	if o.DonationSettings.TapPayPartnerKey == "" {
+		o.DonationSettings.TapPayPartnerKey = DonationSettingsDefaultTapPayPartnerKey
+	}
+
+	if o.DonationSettings.TapPayUrl == "" {
+		o.DonationSettings.TapPayUrl = DonationSettingsDefaultTapPayUrl
 	}
 }
