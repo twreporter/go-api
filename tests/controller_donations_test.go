@@ -32,6 +32,10 @@ type (
 		Address     string `json:"address"`
 		NationalID  string `json:"national_id"`
 	}
+	linePayResultURL struct {
+		FrontendRedirectURL string `json:"frontend_redirect_url"`
+		BackendRedirectURL  string `json:"backend_redirect_url"`
+	}
 	donationRecord struct {
 		ID          uint       `json:"id"`
 		IsPeriodic  bool       `json:"is_periodic"`
@@ -59,14 +63,14 @@ type (
 		} `json:"data"`
 	}
 	requestBody struct {
-		Prime       string     `json:"prime"`
-		Amount      uint       `json:"amount"`
-		Currency    string     `json:"currency"`
-		Details     string     `json:"details"`
-		Cardholder  cardholder `json:"cardholder"`
-		OrderNumber string     `json:"order_number"`
-		MerchantID  string     `json:"merchat_id"`
-		ResultURL   string     `json:"result_url"` // Line pay needed only
+		Prime       string           `json:"prime"`
+		Amount      uint             `json:"amount"`
+		Currency    string           `json:"currency"`
+		Details     string           `json:"details"`
+		Cardholder  cardholder       `json:"cardholder"`
+		OrderNumber string           `json:"order_number"`
+		MerchantID  string           `json:"merchat_id"`
+		ResultURL   linePayResultURL `json:"result_url"` // Line pay needed only
 	}
 )
 
