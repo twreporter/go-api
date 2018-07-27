@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/utils"
 )
 
 var Defaults = struct {
@@ -42,6 +43,11 @@ func TestPing(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	var err error
+	// set default config
+	utils.Cfg.SetDefaults()
+	// set default mongo database to MgoDBName
+	utils.Cfg.MongoDBSettings.DBName = MgoDBName
+
 	// Create DB connections
 	if DB, err = OpenGormConnection(); err != nil {
 		panic(fmt.Sprintf("No error should happen when connecting to test database, but got err=%+v", err))

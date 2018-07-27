@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"fmt"
+
 	// log "github.com/Sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -46,13 +48,13 @@ func (m *MongoStorage) GetDocuments(qs models.MongoQuery, limit int, offset int,
 	err = m.db.DB(utils.Cfg.MongoDBSettings.DBName).C(collection).Find(qs).Limit(limit).Skip(offset).Sort(sort).All(documents)
 
 	if err != nil {
-		return 0, m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_documents_error")
+		return 0, m.NewStorageError(err, "MongoStorage.GetDocuments", fmt.Sprintf("get documents by conditions(where: %#v, limit: %d, offset: %d, sort: %s, collection:%s) occurs error", qs, limit, offset, sort, collection))
 	}
 
 	count, err = m.db.DB(utils.Cfg.MongoDBSettings.DBName).C(collection).Find(qs).Count()
 
 	if err != nil {
-		return 0, m.NewStorageError(err, "GetDocuments", "storage.mongo_storage.get_total_count_of_documents")
+		return 0, m.NewStorageError(err, "MongoStorage.GetDocuments", fmt.Sprintf("count documents by condition(where: %#v, collection: %s) occurs error", qs, collection))
 	}
 
 	return count, nil
@@ -61,13 +63,13 @@ func (m *MongoStorage) GetDocuments(qs models.MongoQuery, limit int, offset int,
 // GetDocument ...
 func (m *MongoStorage) GetDocument(id bson.ObjectId, collection string, doc interface{}) error {
 	if id == "" {
-		return m.NewStorageError(ErrMgoNotFound, "GetDocument", "storage.mongo_storage.get_document.id_not_provided")
+		return m.NewStorageError(ErrMgoNotFound, "MongoStorage.GetDocument", "can not get document by zeroed string")
 	}
 
 	err := m.db.DB(utils.Cfg.MongoDBSettings.DBName).C(collection).FindId(id).One(doc)
 
 	if err != nil {
-		return m.NewStorageError(err, "GetDocument", "storage.mongo_storage.get_document.error")
+		return m.NewStorageError(err, "MongoStorage.GetDocument", fmt.Sprintf("get document(id: %v, collection: %s) occurs error", id, collection))
 	}
 	return nil
 }

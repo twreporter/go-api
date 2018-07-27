@@ -1,12 +1,15 @@
 package controllers
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/middlewares"
 	// "twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
-	//log "github.com/Sirupsen/logrus"
+	//	log "github.com/Sirupsen/logrus"
 )
 
 // NewMembershipController ...
@@ -28,6 +31,26 @@ func (mc *MembershipController) Close() error {
 	return nil
 }
 
+type wrappedFn func(c *gin.Context) (int, gin.H, error)
+
+// GinResponseWrapper ...
+func GinResponseWrapper(fn wrappedFn) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		statusCode, obj, err := fn(c)
+		if err != nil {
+			switch appErr := err.(type) {
+			case *models.AppError:
+				c.JSON(appErr.StatusCode, gin.H{"status": "error", "message": appErr.Message})
+				return
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error. %s", err.Error())})
+				return
+			}
+		}
+		c.JSON(statusCode, obj)
+	}
+}
+
 // SetRoute is the method of Controller interface
 func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	// mailSender := utils.NewSMTPEmailSender()                          // use office365 to send mails
@@ -41,15 +64,16 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 	group.GET("/token/:userID", middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.RenewJWT))
 
 	// endpoints for bookmarks of users
-	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.GetBookmarksOfAUser)
-	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.GetBookmarksOfAUser)
-	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.CreateABookmarkOfAUser)
-	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), mc.DeleteABookmarkOfAUser)
+	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.GetBookmarksOfAUser))
+	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.GetBookmarksOfAUser))
+	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.CreateABookmarkOfAUser))
+	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.DeleteABookmarkOfAUser))
 
 	// endpoints for web push subscriptions
 	group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, ginResponseWrapper(mc.SubscribeWebPush))
 	group.GET("/web-push/subscriptions", ginResponseWrapper(mc.IsWebPushSubscribed))
 
+	/* Comment out these unused endpoints
 	// endpoint for registration
 	// TODO add middleware to check the request from twreporter.org domain
 	group.POST("/registrations/:service", mc.Register)
@@ -65,6 +89,7 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 	group.DELETE("/services/:name", middlewares.CheckJWT(), middlewares.ValidateAdminUsers(), mc.Delete)
 	group.PUT("/services/:name", middlewares.CheckJWT(), middlewares.ValidateAdminUsers(), mc.Update)
 	group.GET("/services/:name", middlewares.CheckJWT(), mc.Read)
+	*/
 
 	return group
 }
