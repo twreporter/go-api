@@ -188,7 +188,7 @@ func (m *MongoStorage) _GetAssetsByIDs(ids []bson.ObjectId, collectionName strin
 	_, err := m.GetDocuments(query, 0, 0, "_id", collectionName, v)
 
 	if err != nil {
-		return m.NewStorageError(err, "_GetAssetsByIDs", "storage.assets.get_embedded_assets.get_assets_by_ids")
+		return m.NewStorageError(err, "MongoStorage._GetAssetsByIDs", fmt.Sprintf("get assets %s by ids %v occurs error", collectionName, ids))
 	}
 
 	return nil

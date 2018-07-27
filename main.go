@@ -17,13 +17,15 @@ import (
 )
 
 func main() {
+	var err error
+	var cf *controllers.ControllerFactory
 
 	p, _ := build.Default.Import("twreporter.org/go-api", "", build.FindOnly)
 
 	fname := filepath.Join(p.Dir, "configs/config.json")
 
 	// Load config file
-	err := utils.LoadConfig(fname)
+	err = utils.LoadConfig(fname)
 	if err != nil {
 		log.Fatal("main.load_config.fatal_error: ", err.Error())
 	}
@@ -34,7 +36,7 @@ func main() {
 	})
 	secureFunc := func() gin.HandlerFunc {
 		return func(c *gin.Context) {
-			err := secureMiddleware.Process(c.Writer, c.Request)
+			err = secureMiddleware.Process(c.Writer, c.Request)
 
 			// If there was an error, do not continue.
 			if err != nil {
@@ -49,7 +51,7 @@ func main() {
 		}
 	}()
 
-	cf, err := controllers.NewControllerFactory()
+	cf, err = controllers.NewControllerFactory()
 
 	if err != nil {
 		panic(err)

@@ -23,7 +23,7 @@ func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailCo
 	const errorWhere = "MembershipController.SignIn"
 	const SignInMailSubject = "登入報導者"
 	var activeToken string
-	var appErr models.AppError
+	var appErr *models.AppError
 	var email string
 	var err error
 	var matchedUser models.User
@@ -69,7 +69,7 @@ func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailCo
 		statusCode = http.StatusOK
 	} else {
 		// account is not signed in before
-		appErr = err.(models.AppError)
+		appErr = err.(*models.AppError)
 
 		// internal server error
 		if appErr.StatusCode != http.StatusNotFound {
@@ -124,7 +124,7 @@ func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailCo
 // otherwise, sign in unsuccessfully.
 func (mc *MembershipController) Activate(c *gin.Context) (int, gin.H, error) {
 	const errorWhere = "MembershipController.Activate"
-	var appErr models.AppError
+	var appErr *models.AppError
 	var err error
 	var jwt string
 	var ra models.ReporterAccount
@@ -135,7 +135,7 @@ func (mc *MembershipController) Activate(c *gin.Context) (int, gin.H, error) {
 
 	// get reporter account by email from reporter_account table
 	if ra, err = mc.Storage.GetReporterAccountData(email); err != nil {
-		appErr = err.(models.AppError)
+		appErr = err.(*models.AppError)
 		return 0, gin.H{}, models.NewAppError(errorWhere, fmt.Sprintf("Activating email %s occurs error", email), err.Error(), appErr.StatusCode)
 	}
 
@@ -177,7 +177,7 @@ func (mc *MembershipController) Activate(c *gin.Context) (int, gin.H, error) {
 // if validated, then renew a new one
 func (mc *MembershipController) RenewJWT(c *gin.Context) (int, gin.H, error) {
 	const errorWhere = "MembershipController.RenewJWT"
-	var appErr models.AppError
+	var appErr *models.AppError
 	var err error
 	var jwt string
 	var user models.User
@@ -185,7 +185,7 @@ func (mc *MembershipController) RenewJWT(c *gin.Context) (int, gin.H, error) {
 	userID := c.Param("userID")
 
 	if user, err = mc.Storage.GetUserByID(userID); err != nil {
-		appErr = err.(models.AppError)
+		appErr = err.(*models.AppError)
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Renewing JWT occurs error", appErr.Error(), appErr.StatusCode)
 	}
 

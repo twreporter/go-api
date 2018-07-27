@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"mime"
+	"net/http"
 	"net/mail"
 	"net/smtp"
 	"time"
@@ -79,7 +81,7 @@ func (s *SMTPEmailSender) Send(to, subject, body string) error {
 	err := s.send(addr, auth, emailSettings.SMTPUsername, []string{to}, []byte(message))
 
 	if err != nil {
-		return models.NewAppError("Send", "utils.mail.send_mail", err.Error(), 500)
+		return models.NewAppError("SMTPEmailSender.Send", "internal server error: fail to send email", err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
@@ -142,7 +144,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 		case "Password:":
 			return []byte(a.password), nil
 		default:
-			return nil, models.NewAppError("Next", "utils.mail.smtp_authentication_machanism", "SMTP client aborts the authentication attempt and close the connection", 500)
+			return nil, errors.New("Unkown fromServer")
 		}
 	}
 	return nil, nil
@@ -221,7 +223,7 @@ func (s *AmazonMailSender) Send(to, subject, body string) error {
 				ec = ses.ErrCodeConfigurationSetDoesNotExistException + ": "
 			}
 		}
-		return models.NewAppError("Send", "utils.mail.send_mail", ec+err.Error(), 500)
+		return models.NewAppError("AmazonMailSender.Send", "internal server error: fail to send email", ec+err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
