@@ -123,3 +123,12 @@ func ginResponseWrapper(fn wrappedFn) func(c *gin.Context) {
 		c.JSON(statusCode, obj)
 	}
 }
+
+func appErrorTypeAssertion(err error) *models.AppError {
+	switch appErr := err.(type) {
+	case *models.AppError:
+		return appErr
+	default:
+		return models.NewAppError("AppErrorTypeAssertion", "unknown error type", err.Error(), http.StatusInternalServerError)
+	}
+}
