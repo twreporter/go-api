@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	//"strconv"
+	"strconv"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -98,11 +98,18 @@ const (
 	invalidPayMethodID = -1
 
 	orderPrefix = "twreporter"
+
+	statusToPay  = "to_pay"
+	statusPaying = "paying"
+	statusPaid   = "paid"
+	statusError  = "error"
+
+	primeTableName = "pay_by_prime_donations"
 )
 
 // pay type Enum
 const (
-	oneTime payType = iota + 1
+	oneTime payType = iota
 	periodic
 )
 
@@ -120,8 +127,11 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	return 0, gin.H{}, nil
 }
 
+// Handler for an authenticated user to create an one-time donation
 func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin.H, error) {
 	const errorWhere = "MembershipController.CreateADonationOfAUser"
+
+	// Validate client request
 
 	// Validate pay_method
 	payMethod := c.Param("pay_method")
@@ -149,18 +159,47 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
-	//userID, _ := strconv.ParseUint(c.Param("userID"), 10, strconv.IntSize)
+	userID, _ := strconv.ParseUint(c.Param("userID"), 10, strconv.IntSize)
+
+	// Start Tappay transaction
 
 	// Build Tappay pay by prime request
 	tapPayReq := buildTapPayPrimeReq(payMethod, reqBody)
 
+	draftRecord := buildPrimeDraftRecord(uint(userID), payMethod, tapPayReq)
+
+	if err := mc.Storage.CreateAPayByPrimeDonation(draftRecord); nil != err {
+		switch appErr := err.(type) {
+		case models.AppError:
+			return 0, gin.H{}, models.NewAppError(errorWhere, "Fails to create a draft prime record", appErr.Error(), appErr.StatusCode)
+		default:
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error Type. Fails to create a draft prime record. %v", err.Error())}, nil
+		}
+	}
+
 	tapPayReqJson, _ := json.Marshal(tapPayReq)
+
+	// Update the transaction status to 'paying'
+	mc.Storage.UpdateTransactionStatus(tapPayReq.OrderNumber, statusPaying, primeTableName)
 
 	tapPayResp, err := serveHttp(tapPayReq.PartnerKey, tapPayReqJson)
 
 	if nil != err {
+		if (tapPayTransactionResp{}) != tapPayResp {
+			// If tappay error occurs, update the tansaction status to 'error'
+			mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, models.PayByPrimeDonation{
+				ThirdPartyStatus: tapPayResp.Status,
+				Msg:              tapPayResp.Msg,
+				Status:           statusError,
+			})
+		}
 		return 0, gin.H{}, models.NewAppError(errorWhere, err.Error(), "", http.StatusInternalServerError)
 	}
+
+	// Update the transaction status to 'paid' if transaction succeeds
+	updateRecord := buildPrimeSuccessRecord(tapPayResp)
+
+	mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, updateRecord)
 
 	clientResp := buildClientPrimeResp(payMethod, tapPayReq, tapPayResp)
 
@@ -192,6 +231,70 @@ func buildClientPrimeResp(payMethod string, req tapPayPrimeReq, resp tapPayTrans
 	c.Details = req.Details
 
 	return c
+}
+
+func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) models.PayByPrimeDonation {
+	m := models.PayByPrimeDonation{}
+
+	m.UserID = userID
+	m.PayMethod = payMethod
+
+	m.CardholderEmail = req.Cardholder.Email
+	m.CardholderPhoneNumber = &req.Cardholder.PhoneNumber
+	m.CardholderName = &req.Cardholder.Name
+	m.CardholderZipCode = &req.Cardholder.ZipCode
+	m.CardholderAddress = &req.Cardholder.Address
+	m.CardholderNationalID = &req.Cardholder.NationalID
+
+	m.Details = req.Details
+	m.MerchantID = req.MerchantID
+	m.OrderNumber = req.OrderNumber
+
+	m.Status = statusToPay
+
+	return m
+}
+
+func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonation {
+	m := models.PayByPrimeDonation{}
+
+	m.ThirdPartyStatus = resp.Status
+	m.Msg = resp.Msg
+	m.RecTradeID = resp.RecTradeID
+	m.BankTransactionID = resp.BankTransactionID
+	m.AuthCode = resp.AuthCode
+	m.Acquirer = resp.Acquirer
+	m.BankResultCode = &resp.BankResultCode
+	m.BankResultMsg = &resp.BankResultMsg
+
+	ttm := time.Unix(resp.TransactionTimeMillis/1000, resp.TransactionTimeMillis%1000)
+	m.TransactionTime = &ttm
+
+	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
+	if nil == err {
+		stm := time.Unix(t/1000, t%1000)
+		m.BankTransactionStartTime = &stm
+	}
+
+	t, err = strconv.ParseInt(resp.BankTransactionTime.EndTimeMillis, 10, strconv.IntSize)
+	if nil == err {
+		etm := time.Unix(t/1000, t%1000)
+		m.BankTransactionEndTime = &etm
+	}
+
+	m.CardInfoBinCode = &resp.CardInfo.BinCode
+	m.CardInfoLastFour = &resp.CardInfo.LastFour
+	m.CardInfoIssuer = &resp.CardInfo.Issuer
+	m.CardInfoFunding = &resp.CardInfo.Funding
+	m.CardInfoType = &resp.CardInfo.Type
+	m.CardInfoLevel = &resp.CardInfo.Level
+	m.CardInfoCountry = &resp.CardInfo.Country
+	m.CardInfoCountryCode = &resp.CardInfo.CountryCode
+	m.CardInfoExpiryDate = &resp.CardInfo.ExpiryDate
+
+	m.Status = "paid"
+
+	return m
 }
 
 func buildTapPayPrimeReq(payMethod string, req clientPrimeReq) tapPayPrimeReq {
@@ -276,7 +379,7 @@ func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
 		return tapPayTransactionResp{}, errors.New("Cannot unmarshal json response from Tap Pay Server")
 	case 0 != resp.Status:
 		log.Error("tap pay msg: " + resp.Msg)
-		return tapPayTransactionResp{}, errors.New("Cannot make success transaction on tap pay")
+		return resp, errors.New("Cannot make success transaction on tap pay")
 	default:
 		// Omit intentionally
 	}
