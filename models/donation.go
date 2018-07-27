@@ -9,7 +9,8 @@ type PayByPrimeDonation struct {
 	CreatedAt                time.Time  `json:"created_at"`
 	UpdatedAt                time.Time  `json:"updated_at"`
 	DeletedAt                *time.Time `json:"deleted_at"`
-	Status                   int        `gorm:"not null" json:"status"`
+	Status                   string     `gorm:"type:ENUM('to_pay','paying','paid','error');not null" json:"status"`
+	ThirdPartyStatus         int        `json:"third_party_status"`
 	Msg                      string     `gorm:"type:varchar(100);not null" json:"msg"`
 	RecTradeID               string     `gorm:"type:varchar(20);not null" json:"rec_trade_id"`
 	BankTransactionID        string     `gorm:"type:varchar(50);not null" json:"bank_transaction_id"`
@@ -41,6 +42,7 @@ type PayByPrimeDonation struct {
 	CardInfoExpiryDate       *string    `gorm:"type:varchar(6);" json:"card_info_expiry_date"`
 	Details                  string     `gorm:"type:varchar(50);not null" json:"details"`
 	MerchantID               string     `gorm:"type:varchar(30);not null" json:"merchant_id"`
+	UserID                   uint       `gorm:"type:int(10);unsigned;not null" json:"user_id"`
 }
 
 type PayByCardTokenDonation struct {
