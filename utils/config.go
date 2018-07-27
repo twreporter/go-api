@@ -20,7 +20,7 @@ func LoadConfig(fileName string) error {
 
 	file, err := os.Open(fileName)
 	if err != nil {
-		appError := models.NewAppError("LoadConfig", "utils.config.load_conifg.open_file: ", err.Error(), 500)
+		appError := models.NewAppError("LoadConfig", "internal server error: fail to load config", err.Error(), 500)
 		return appError
 	}
 
@@ -28,7 +28,7 @@ func LoadConfig(fileName string) error {
 	config := models.Config{}
 	err = decoder.Decode(&config)
 	if err != nil {
-		appError := models.NewAppError("LoadConfig", "utils.config.load_config.decode_json: ", err.Error(), 500)
+		appError := models.NewAppError("LoadConfig", "internal server error: fail to load config", err.Error(), 500)
 		return appError
 	}
 
