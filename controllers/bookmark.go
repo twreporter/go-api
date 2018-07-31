@@ -10,9 +10,8 @@ import (
 )
 
 // GetBookmarksOfAUser given userID this func will list all the bookmarks belongs to the user
-func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) {
+func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) (int, gin.H, error) {
 	var err error
-	var appErr models.AppError
 	var bookmarks []models.Bookmark
 	var bookmark models.Bookmark
 	var total int
@@ -27,15 +26,11 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) {
 	if bookmarkSlug != "" {
 		host := c.Query("host")
 
-		bookmark, err = mc.Storage.GetABookmarkOfAUser(userID, bookmarkSlug, host)
-		if err != nil {
-			appErr = err.(models.AppError)
-			c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
-			return
+		if bookmark, err = mc.Storage.GetABookmarkOfAUser(userID, bookmarkSlug, host); err != nil {
+			return 0, gin.H{}, err
 		}
 
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "record": bookmark})
-		return
+		return http.StatusOK, gin.H{"status": "ok", "record": bookmark}, nil
 	}
 
 	_limit := c.Query("limit")
@@ -48,62 +43,59 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) {
 		limit = 10
 	}
 
-	bookmarks, total, err = mc.Storage.GetBookmarksOfAUser(userID, limit, offset)
-
-	if err != nil {
-		appErr = err.(models.AppError)
-		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
-		return
+	if bookmarks, total, err = mc.Storage.GetBookmarksOfAUser(userID, limit, offset); err != nil {
+		return 0, gin.H{}, err
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": bookmarks, "meta": models.MetaOfResponse{
+	// TODO The response JSON should be like
+	//	{
+	//		"status": "success",
+	//		"data":  {
+	//			"meta": meta,
+	//			"records": bookmarks
+	//		}
+	//	}
+	return http.StatusOK, gin.H{"status": "ok", "records": bookmarks, "meta": models.MetaOfResponse{
 		Total:  total,
 		Offset: offset,
 		Limit:  limit,
-	}})
+	}}, nil
 }
 
 // DeleteABookmarkOfAUser given userID and bookmarkHref, this func will remove the relationship between user and bookmark
-func (mc *MembershipController) DeleteABookmarkOfAUser(c *gin.Context) {
-	var appErr models.AppError
+func (mc *MembershipController) DeleteABookmarkOfAUser(c *gin.Context) (int, gin.H, error) {
 
 	bookmarkID := c.Param("bookmarkID")
 	userID := c.Param("userID")
 
-	err := mc.Storage.DeleteABookmarkOfAUser(userID, bookmarkID)
-
-	if err != nil {
-		appErr = err.(models.AppError)
-		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
-		return
+	if err := mc.Storage.DeleteABookmarkOfAUser(userID, bookmarkID); err != nil {
+		return 0, gin.H{}, err
 	}
 
-	c.Data(http.StatusNoContent, gin.MIMEHTML, nil)
+	return http.StatusNoContent, gin.H{}, nil
 }
 
 // CreateABookmarkOfAUser given userID and bookmark POST body, this func will try to create bookmark record in the bookmarks table,
 // and build the relationship between bookmark and user
-func (mc *MembershipController) CreateABookmarkOfAUser(c *gin.Context) {
-	var appErr models.AppError
+func (mc *MembershipController) CreateABookmarkOfAUser(c *gin.Context) (int, gin.H, error) {
 	var bookmark models.Bookmark
 	var err error
 
 	userID := c.Param("userID")
-	bookmark, err = mc.parseBookmarkPOSTBody(c)
-	if err != nil {
-		appErr = err.(models.AppError)
-		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
-		return
+	if bookmark, err = mc.parseBookmarkPOSTBody(c); err != nil {
+		return 0, gin.H{}, err
 	}
 
-	bookmark, err = mc.Storage.CreateABookmarkOfAUser(userID, bookmark)
-	if err != nil {
-		appErr = err.(models.AppError)
-		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
-		return
+	if bookmark, err = mc.Storage.CreateABookmarkOfAUser(userID, bookmark); err != nil {
+		return 0, gin.H{}, err
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"status": "ok", "record": bookmark})
+	// TODO The response JSON should be like
+	//	{
+	//		"status": "success",
+	//		"data": bookmark
+	//	}
+	return http.StatusCreated, gin.H{"status": "ok", "record": bookmark}, nil
 }
 
 func (mc *MembershipController) parseBookmarkPOSTBody(c *gin.Context) (models.Bookmark, error) {
@@ -111,7 +103,7 @@ func (mc *MembershipController) parseBookmarkPOSTBody(c *gin.Context) (models.Bo
 	var bm models.Bookmark
 
 	if err = c.Bind(&bm); err != nil {
-		return models.Bookmark{}, models.NewAppError("parseBookmarkPOSTBody", "Bad request", "POST body is neither JSON nor x-www-form-urlencoded", http.StatusBadRequest)
+		return models.Bookmark{}, models.NewAppError("MembershipController.parseBookmarkPOSTBody", "POST body is neither JSON nor x-www-form-urlencoded", err.Error(), http.StatusBadRequest)
 	}
 
 	return bm, nil

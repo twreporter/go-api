@@ -8,8 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
 	"twreporter.org/go-api/models"
-
-	log "github.com/Sirupsen/logrus"
+	//log "github.com/Sirupsen/logrus"
 )
 
 // ErrRecordNotFound record not found error, happens when haven't find any matched data when looking up with a struct
@@ -43,12 +42,11 @@ func IsDuplicateEntryError(err error) bool {
 func (g *GormStorage) NewStorageError(err error, where string, message string) error {
 	switch {
 	case IsRecordNotFoundError(err):
-		return models.NewAppError(where, "Record not found", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusNotFound)
+		return models.NewAppError(where, fmt.Sprintf("record not found. %s", message), err.Error(), http.StatusNotFound)
 	case IsDuplicateEntryError(err):
-		return models.NewAppError(where, "Record is already existed", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusConflict)
+		return models.NewAppError(where, fmt.Sprintf("record is already existed. %s", message), err.Error(), http.StatusConflict)
 	case err != nil:
-		log.Error(err.Error())
-		return models.NewAppError(where, "Internal server error", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusInternalServerError)
+		return models.NewAppError(where, fmt.Sprintf("internal server error. %s", message), err.Error(), http.StatusInternalServerError)
 	default:
 		return nil
 	}
@@ -60,12 +58,11 @@ func (m *MongoStorage) NewStorageError(err error, where string, message string) 
 	errStruct, ok := err.(*mgo.LastError)
 
 	if err != nil && err.Error() == ErrMgoNotFound.Error() {
-		return models.NewAppError(where, "Record not found", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusNotFound)
+		return models.NewAppError(where, fmt.Sprintf("record not found. %s", message), err.Error(), http.StatusNotFound)
 	} else if ok && errStruct.Code == ErrMgoDuplicateEntry {
-		return models.NewAppError(where, "Record is already existed", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusConflict)
+		return models.NewAppError(where, fmt.Sprintf("record is already existed. %s", message), err.Error(), http.StatusConflict)
 	} else if err != nil {
-		log.Error(err.Error())
-		return models.NewAppError(where, "Internal server error", fmt.Sprintf("%v : %v", message, err.Error()), http.StatusInternalServerError)
+		return models.NewAppError(where, fmt.Sprintf("internal server error. %s", message), err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
