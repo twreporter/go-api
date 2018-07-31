@@ -91,9 +91,6 @@ func OpenMgoConnection() (session *mgo.Session, err error) {
 	}
 	session, err = mgo.Dial(dbhost)
 
-	// set settings
-	utils.Cfg.MongoDBSettings.DBName = MgoDBName
-
 	return
 }
 

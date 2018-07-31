@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -78,17 +79,27 @@ func (g *Google) BeginAuth(c *gin.Context) {
 
 // Authenticate requests the user profile from Google
 func (g *Google) Authenticate(c *gin.Context) {
-	var appErr models.AppError
+	var appErr *models.AppError
+	var destination string
 	var err error
+	var fstring string
 	var matchUser models.User
 	var remoteOAuth models.OAuthAccount
+	var token string
 
-	destination := c.Query("destination")
+	defer func() {
+		// for better ux, redirect users to destination due to internal server error
+		if err != nil {
+			appErr = appErrorTypeAssertion(err)
+			log.Error(appErr.Error())
+			c.Redirect(http.StatusTemporaryRedirect, destination)
+		}
+	}()
+
+	destination = c.Query("destination")
 
 	// get user data from Google
-	fstring, err := g.GetRemoteUserData(c.Request, c.Writer)
-	if err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, destination)
+	if fstring, err = g.GetRemoteUserData(c.Request, c.Writer); err != nil {
 		return
 	}
 
@@ -110,12 +121,10 @@ func (g *Google) Authenticate(c *gin.Context) {
 	// oAuth account is not existed
 	// sign in by oauth for the first time
 	if err != nil {
-		appErr = err.(models.AppError)
+		appErr = appErrorTypeAssertion(err)
 
 		// return internal server error
 		if appErr.StatusCode != http.StatusNotFound {
-			c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
-
 			return
 		}
 
@@ -126,11 +135,10 @@ func (g *Google) Authenticate(c *gin.Context) {
 
 			// record is not existed in users table
 			if err != nil {
-				appErr = err.(models.AppError)
+				appErr = err.(*models.AppError)
 
 				// return internal server error
 				if appErr.StatusCode != http.StatusNotFound {
-					c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
 					return
 				}
 
@@ -145,9 +153,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 				remoteOAuth.UserID = matchUser.ID
 				err = g.Storage.InsertOAuthAccount(remoteOAuth)
 
-				// return internal server error
 				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 					return
 				}
 			}
@@ -161,21 +167,18 @@ func (g *Google) Authenticate(c *gin.Context) {
 		// user signed in before
 		matchUser, err = g.Storage.GetUserDataByOAuth(remoteOAuth)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 			return
 		}
 
 		// update existing OAuth data
 		_, err = g.Storage.UpdateOAuthData(remoteOAuth)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 			return
 		}
 	}
 
-	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Email.String)
+	token, err = utils.RetrieveToken(matchUser.ID, matchUser.Email.String)
 	if err != nil {
-		c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
 		return
 	}
 
@@ -203,30 +206,30 @@ func (g *Google) Authenticate(c *gin.Context) {
 // GetRemoteUserData fetched user data from Google
 func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
+	oauthStateString := utils.Cfg.OauthSettings.GoogleSettings.Statestr
+
 	state := r.FormValue("state")
-	if state != utils.Cfg.OauthSettings.GoogleSettings.Statestr {
-		log.Warnf("controllers.oauth.google.getRemoteUserData. Invalid oauth state, expected '%s', got '%s'\n", utils.Cfg.OauthSettings.GoogleSettings.Statestr, state)
-		return "", models.NewAppError("OAuth state", "controllers.oauth.google", "Invalid oauth state", 500)
+	if state != oauthStateString {
+		return "", models.NewAppError("Google.GetRemoteUserData", "invalid oauth state", fmt.Sprintf("invalid oauth state, expected '%s', actual '%s'\n", oauthStateString, state), http.StatusInternalServerError)
 	}
 
 	code := r.FormValue("code")
+
 	token, err := g.oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		log.Warnf("controllers.oauth.google.getRemoteUserData. Code exchange failed with '%s'\n", err)
-		return "", models.NewAppError("Code exchange failed", "controllers.oauth.google", err.Error(), 500)
+		return "", models.NewAppError("Google.GetRemoteUserData", "code exchange failed", err.Error(), http.StatusInternalServerError)
 	}
 
 	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
-		log.Warn("controllers.oauth.google.getRemoteUserData. Cannot get user info using Google API")
-		return "", models.NewAppError("Cannot get user info using Google API", "controllers.oauth.google", err.Error(), 500)
+		return "", models.NewAppError("Google.GetRemoteUserData", "cannot get user info using Google API", err.Error(), http.StatusInternalServerError)
 	}
 
 	defer utils.Check(response.Body.Close)
+
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Warn("controllers.oauth.google.getRemoteUserData. Error parsing Google user data")
-		return "", models.NewAppError("Error parsing Google user data", "controllers.oauth.google", err.Error(), 500)
+		return "", models.NewAppError("Google.GetRemoteUserData", "error parsing Google user data", err.Error(), http.StatusInternalServerError)
 	}
 	// fmt.Fprintf(w, "Content: %s\n", contents)
 

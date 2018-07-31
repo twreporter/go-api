@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"hash/crc32"
 	"net/http"
 	"strconv"
@@ -27,12 +26,7 @@ func (mc *MembershipController) IsWebPushSubscribed(c *gin.Context) (int, gin.H,
 	crc32Endpoint = crc32.Checksum([]byte(endpoint), crc32.IEEETable)
 
 	if wpSub, err = mc.Storage.GetAWebPushSubscription(crc32Endpoint, endpoint); err != nil {
-		switch appErr := err.(type) {
-		case models.AppError:
-			return 0, gin.H{}, models.NewAppError(errorWhere, "Fail to get a web push subscription", appErr.Error(), appErr.StatusCode)
-		default:
-			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error Type. Fail to get a web push subscription. %v", err.Error())}, nil
-		}
+		return 0, gin.H{}, err
 	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": wpSub}, nil
@@ -85,12 +79,7 @@ func (mc *MembershipController) SubscribeWebPush(c *gin.Context) (int, gin.H, er
 	}
 
 	if err = mc.Storage.CreateAWebPushSubscription(wpSub); err != nil {
-		switch appErr := err.(type) {
-		case models.AppError:
-			return 0, gin.H{}, models.NewAppError(errorWhere, "Fails to create a web push subscription", appErr.Error(), appErr.StatusCode)
-		default:
-			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error Type. Fails to create a web push subscription. %v", err.Error())}, nil
-		}
+		return 0, gin.H{}, err
 	}
 
 	return http.StatusCreated, gin.H{"status": "success", "data": sBody}, nil

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -36,7 +37,7 @@ func RetrieveToken(userID uint, email string) (string, error) {
 	tokenString, err := token.SignedString([]byte(Cfg.AppSettings.Token))
 
 	if err != nil {
-		return "", models.NewAppError("RetrieveToken", "utils.token.retrieve_token", err.Error(), 500)
+		return "", models.NewAppError("RetrieveToken", "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)
 	}
 
 	return tokenString, nil

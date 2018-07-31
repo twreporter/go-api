@@ -33,7 +33,7 @@ func (nc *NewsController) GetPosts(c *gin.Context) {
 	}
 
 	if err != nil {
-		appErr := err.(models.AppError)
+		appErr := err.(*models.AppError)
 		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
 		return
 	}
@@ -64,7 +64,7 @@ func (nc *NewsController) GetAPost(c *gin.Context) {
 	}
 
 	if err != nil {
-		appErr := err.(models.AppError)
+		appErr := err.(*models.AppError)
 		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
 		return
 	}
