@@ -88,13 +88,19 @@ type (
 		BankResultMsg         string              `json:"bank_result_msg"`
 	}
 
+	tapPayMinTransactionResp struct {
+		Status int    `json:"status"`
+		Msg    string `json:"msg"`
+	}
+
 	payType int
 )
 
 const (
-	defaultDetails    = "報導者小額捐款"
-	defaultCurrency   = "TWD"
-	defaultMerchantID = "twreporter_CTBC"
+	defaultDetails        = "報導者小額捐款"
+	defaultCurrency       = "TWD"
+	defaultMerchantID     = "twreporter_CTBC"
+	defaultRequestTimeout = 45 * time.Second
 
 	invalidPayMethodID = -1
 
@@ -359,24 +365,43 @@ func getPayMethodID(payMethod string) int {
 	return invalidPayMethodID
 }
 
+func handleTapPayBodyParseError(body []byte) (tapPayTransactionResp, error) {
+	var minResp tapPayMinTransactionResp
+	var resp tapPayTransactionResp
+
+	if err := json.Unmarshal(body, &minResp); nil != err {
+		return tapPayTransactionResp{}, errors.New("Cannot unmarshal json response from tap pay server")
+	}
+
+	resp.Status = minResp.Status
+	resp.Msg = minResp.Msg
+
+	return resp, nil
+}
+
 func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
-	// Setup HTTP client
-	client := &http.Client{}
+	// Setup HTTP client with timeout
+	client := &http.Client{Timeout: defaultRequestTimeout}
 
 	req, _ := http.NewRequest("POST", utils.Cfg.DonationSettings.TapPayUrl, bytes.NewBuffer(reqBodyJson))
 	req.Header.Add("x-api-key", key)
 	req.Header.Add("Content-Type", "application/json")
 
 	rawResp, err := client.Do(req)
+
+	// If fail to sending request
 	if nil != err {
 		log.Error(err.Error())
 		return tapPayTransactionResp{}, errors.New("cannot request to tap pay server")
 	}
 	defer rawResp.Body.Close()
+
+	// If timeout or other errors occur during reading the body...
+	// TODO: Might require a mechanism to notify users
 	body, err := ioutil.ReadAll(rawResp.Body)
 	if nil != err {
 		log.Error(err.Error())
-		return tapPayTransactionResp{}, errors.New("Cannot read response from Tap Pay Server")
+		return tapPayTransactionResp{}, errors.New("Cannot read response from tap pay server")
 	}
 
 	var resp tapPayTransactionResp
@@ -384,7 +409,8 @@ func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
 
 	switch {
 	case nil != err:
-		return tapPayTransactionResp{}, errors.New("Cannot unmarshal json response from Tap Pay Server")
+		log.Error(err.Error())
+		return handleTapPayBodyParseError(body)
 	case 0 != resp.Status:
 		log.Error("tap pay msg: " + resp.Msg)
 		return resp, errors.New("Cannot make success transaction on tap pay")
