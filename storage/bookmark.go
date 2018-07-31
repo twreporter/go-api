@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"net/http"
 	"twreporter.org/go-api/models"
 	// log "github.com/Sirupsen/logrus"
 )
@@ -56,7 +57,7 @@ func (g *GormStorage) GetABookmarkOfAUser(userID string, bookmarkSlug string, bo
 		}
 	}
 
-	return bookmark, models.NewAppError("GormStorage.GetABookmarkOfAUser", "Record not found", fmt.Sprintf("User %s does not have the bookmark whose slug is %s and host is %s", userID, bookmarkSlug, bookmarkHost), 404)
+	return bookmark, models.NewAppError("GormStorage.GetABookmarkOfAUser", "Record not found", fmt.Sprintf("User %s does not have the bookmark whose slug is %s and host is %s", userID, bookmarkSlug, bookmarkHost), http.StatusNotFound)
 }
 
 // GetBookmarksOfAUser lists bookmarks of the user

@@ -90,7 +90,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 	defer func() {
 		// for better ux, redirect users to destination due to internal server error
 		if err != nil {
-			appErr = AppErrorTypeAssertion(err)
+			appErr = appErrorTypeAssertion(err)
 			log.Error(appErr.Error())
 			c.Redirect(http.StatusTemporaryRedirect, destination)
 		}
@@ -121,7 +121,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 	// oAuth account is not existed
 	// sign in by oauth for the first time
 	if err != nil {
-		appErr = AppErrorTypeAssertion(err)
+		appErr = appErrorTypeAssertion(err)
 
 		// return internal server error
 		if appErr.StatusCode != http.StatusNotFound {

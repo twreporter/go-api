@@ -42,7 +42,7 @@ func (gs *GormStorage) GetOAuthData(aid sql.NullString, aType string) (models.OA
 	oac := models.OAuthAccount{}
 	err := gs.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).Last(&oac).Error
 	if err != nil {
-		return oac, gs.NewStorageError(err, "GormStorage.GetOAuthData", fmt.Sprint("get oauth account error"))
+		return oac, gs.NewStorageError(err, "GormStorage.GetOAuthData", "get oauth account error")
 	}
 	return oac, err
 }

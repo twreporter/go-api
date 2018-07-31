@@ -98,8 +98,7 @@ func NewControllerFactory() (*ControllerFactory, error) {
 	return cf, nil
 }
 
-// AppErrorTypeAssertion type assertion for *models.AppError
-func AppErrorTypeAssertion(err error) *models.AppError {
+func appErrorTypeAssertion(err error) *models.AppError {
 	switch appErr := err.(type) {
 	case *models.AppError:
 		return appErr
