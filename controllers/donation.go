@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -105,6 +106,8 @@ const (
 	statusError  = "error"
 
 	primeTableName = "pay_by_prime_donations"
+
+	tapPayRespStatusSuccess = 0
 )
 
 // pay type Enum
@@ -180,12 +183,15 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	tapPayReqJson, _ := json.Marshal(tapPayReq)
 
 	// Update the transaction status to 'paying'
-	mc.Storage.UpdateTransactionStatus(tapPayReq.OrderNumber, statusPaying, primeTableName)
+	if err := mc.Storage.UpdateTransactionStatus(tapPayReq.OrderNumber, statusPaying, primeTableName); nil != err {
+		log.Error(err.Error())
+		// Proceed even if the status update failed
+	}
 
 	tapPayResp, err := serveHttp(tapPayReq.PartnerKey, tapPayReqJson)
 
 	if nil != err {
-		if (tapPayTransactionResp{}) != tapPayResp {
+		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the tansaction status to 'error'
 			mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, models.PayByPrimeDonation{
 				ThirdPartyStatus: tapPayResp.Status,
@@ -199,7 +205,9 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// Update the transaction status to 'paid' if transaction succeeds
 	updateRecord := buildPrimeSuccessRecord(tapPayResp)
 
-	mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, updateRecord)
+	if err := mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, updateRecord); nil != err {
+		log.Error(err.Error())
+	}
 
 	clientResp := buildClientPrimeResp(payMethod, tapPayReq, tapPayResp)
 
@@ -392,17 +400,6 @@ func validatePayMethod(payMethod string) error {
 		return nil
 	}
 
-	var errMsg bytes.Buffer
-	errMsg.WriteString("Unsupported pay_method. Only support payment by")
-
-	for k, v := range payMethodCollections {
-		if 0 != k {
-			errMsg.WriteString(", ")
-		}
-		errMsg.WriteString("'")
-		errMsg.WriteString(v)
-		errMsg.WriteString("'")
-	}
-
-	return errors.New(errMsg.String())
+	errMsg := fmt.Sprintf("Unsupported pay_method. Only support payment by %s", strings.Join(payMethodCollections, ", "))
+	return errors.New(errMsg)
 }

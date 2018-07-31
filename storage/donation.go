@@ -2,19 +2,20 @@ package storage
 
 import (
 	"bytes"
+	"fmt"
 
 	log "github.com/Sirupsen/logrus"
 
 	"twreporter.org/go-api/models"
 )
 
-// CreateAPayByPrimeDonation creates a draft order records in database
+// CreateAPayByPrimeDonation creates a draft order in database
 func (g *GormStorage) CreateAPayByPrimeDonation(m models.PayByPrimeDonation) error {
 	errWhere := "GormStorage.CreateAPayByPrimeDonation"
 	err := g.db.Create(&m).Error
 	if nil != err {
 		log.Error(err.Error())
-		return g.NewStorageError(err, errWhere, err.Error())
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not create the record(%#v)", m))
 	}
 	return nil
 }
@@ -32,7 +33,7 @@ func (g *GormStorage) UpdateTransactionStatus(order string, status string, table
 	err := g.db.Exec(sqlStmt.String()).Error
 	if nil != err {
 		log.Error(err.Error())
-		return g.NewStorageError(err, errWhere, err.Error())
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not update transaction status(order: %s, status: %s, table: %s)"))
 	}
 	return nil
 }
@@ -43,7 +44,7 @@ func (g *GormStorage) UpdateAPayByPrimeDonation(order string, m models.PayByPrim
 	err := g.db.Model(&m).Where("order_number = ?", order).Updates(m).Error
 	if nil != err {
 		log.Error(err.Error())
-		return g.NewStorageError(err, errWhere, err.Error())
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not update prime donation(order: %s, record: %#v)", order, m))
 	}
 	return nil
 }
