@@ -173,7 +173,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	if err := mc.Storage.CreateAPayByPrimeDonation(draftRecord); nil != err {
 		switch appErr := err.(type) {
-		case models.AppError:
+		case *models.AppError:
 			return 0, gin.H{}, models.NewAppError(errorWhere, "Fails to create a draft prime record", appErr.Error(), appErr.StatusCode)
 		default:
 			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error Type. Fails to create a draft prime record. %v", err.Error())}, nil
@@ -192,7 +192,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
-			// If tappay error occurs, update the tansaction status to 'error'
+			// If tappay error occurs, update the transaction status to 'error'
 			mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, models.PayByPrimeDonation{
 				ThirdPartyStatus: tapPayResp.Status,
 				Msg:              tapPayResp.Msg,
