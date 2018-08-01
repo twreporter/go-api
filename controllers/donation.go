@@ -368,15 +368,21 @@ func getPayMethodID(payMethod string) int {
 func handleTapPayBodyParseError(body []byte) (tapPayTransactionResp, error) {
 	var minResp tapPayMinTransactionResp
 	var resp tapPayTransactionResp
+	var err error
 
-	if err := json.Unmarshal(body, &minResp); nil != err {
+	if err = json.Unmarshal(body, &minResp); nil != err {
 		return tapPayTransactionResp{}, errors.New("Cannot unmarshal json response from tap pay server")
+	}
+
+	if 0 != minResp.Status {
+		log.Error("tap pay msg: " + minResp.Msg)
+		err = errors.New("Cannot make success transaction on tap pay")
 	}
 
 	resp.Status = minResp.Status
 	resp.Msg = minResp.Msg
 
-	return resp, nil
+	return resp, err
 }
 
 func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
