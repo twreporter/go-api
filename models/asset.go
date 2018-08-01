@@ -2,6 +2,7 @@ package models
 
 import (
 	"reflect"
+	"time"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -116,6 +117,17 @@ type Author struct {
 	ID       bson.ObjectId `bson:"_id" json:"id"`
 	JobTitle string        `bson:"job_title" json:"job_title"`
 	Name     string        `bson:"name" json:"name"`
+}
+
+type FullAuthor struct {
+	Author
+	Bio struct {
+		Html string `bson:"html" json:"html"`
+		Md   string `bson:"md" json:"md"`
+	}
+	Email     string      `bson:"email" json:"email"`
+	Thumbnail *MongoImage `bson:"thumbnail" json:"thumbnail"`
+	UpdatedAt time.Time   `bson:"updatedAt" json:"updated_at"`
 }
 
 // Category ...

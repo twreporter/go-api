@@ -36,9 +36,18 @@ func (nc *NewsController) GetQueryParam(c *gin.Context) (mq models.MongoQuery, l
 	_full := c.Query("full")
 	sort = c.Query("sort")
 
+	// provide default param if error occurs
 	limit, _ = strconv.Atoi(_limit)
 	offset, _ = strconv.Atoi(_offset)
 	full, _ = strconv.ParseBool(_full)
+
+	if limit < 0 {
+		limit = 0
+	}
+
+	if offset < 0 {
+		offset = 0
+	}
 
 	if where == "" {
 		where = "{}"
@@ -51,6 +60,8 @@ func (nc *NewsController) GetQueryParam(c *gin.Context) (mq models.MongoQuery, l
 
 // SetRoute is the method of Controller interface
 func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
+	group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ginResponseWrapper(nc.GetAuthors))
+
 	// endpoints for posts
 	group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), nc.GetPosts)
 	group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), nc.GetAPost)
