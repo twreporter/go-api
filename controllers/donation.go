@@ -374,7 +374,7 @@ func handleTapPayBodyParseError(body []byte) (tapPayTransactionResp, error) {
 		return tapPayTransactionResp{}, errors.New("Cannot unmarshal json response from tap pay server")
 	}
 
-	if 0 != minResp.Status {
+	if tapPayRespStatusSuccess != minResp.Status {
 		log.Error("tap pay msg: " + minResp.Msg)
 		err = errors.New("Cannot make success transaction on tap pay")
 	}
@@ -417,7 +417,7 @@ func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
 	case nil != err:
 		log.Error(err.Error())
 		return handleTapPayBodyParseError(body)
-	case 0 != resp.Status:
+	case tapPayRespStatusSuccess != resp.Status:
 		log.Error("tap pay msg: " + resp.Msg)
 		return resp, errors.New("Cannot make success transaction on tap pay")
 	default:
