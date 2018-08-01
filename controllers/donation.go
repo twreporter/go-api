@@ -106,10 +106,9 @@ const (
 
 	orderPrefix = "twreporter"
 
-	statusToPay  = "to_pay"
 	statusPaying = "paying"
 	statusPaid   = "paid"
-	statusError  = "error"
+	statusFail   = "fail"
 
 	primeTableName = "pay_by_prime_donations"
 
@@ -188,21 +187,15 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	tapPayReqJson, _ := json.Marshal(tapPayReq)
 
-	// Update the transaction status to 'paying'
-	if err := mc.Storage.UpdateTransactionStatus(tapPayReq.OrderNumber, statusPaying, primeTableName); nil != err {
-		log.Error(err.Error())
-		// Proceed even if the status update failed
-	}
-
 	tapPayResp, err := serveHttp(tapPayReq.PartnerKey, tapPayReqJson)
 
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
-			// If tappay error occurs, update the transaction status to 'error'
+			// If tappay error occurs, update the transaction status to 'fail'
 			mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, models.PayByPrimeDonation{
 				ThirdPartyStatus: tapPayResp.Status,
 				Msg:              tapPayResp.Msg,
-				Status:           statusError,
+				Status:           statusFail,
 			})
 		}
 		return 0, gin.H{}, models.NewAppError(errorWhere, err.Error(), "", http.StatusInternalServerError)
@@ -264,7 +257,7 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 	m.MerchantID = req.MerchantID
 	m.OrderNumber = req.OrderNumber
 
-	m.Status = statusToPay
+	m.Status = statusPaying
 
 	return m
 }

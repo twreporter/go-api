@@ -9,7 +9,7 @@ type PayByPrimeDonation struct {
 	CreatedAt                time.Time  `json:"created_at"`
 	UpdatedAt                time.Time  `json:"updated_at"`
 	DeletedAt                *time.Time `json:"deleted_at"`
-	Status                   string     `gorm:"type:ENUM('to_pay','paying','paid','error');not null" json:"status"`
+	Status                   string     `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
 	ThirdPartyStatus         int        `json:"third_party_status"`
 	Msg                      string     `gorm:"type:varchar(100);not null" json:"msg"`
 	RecTradeID               string     `gorm:"type:varchar(20);not null" json:"rec_trade_id"`

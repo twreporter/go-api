@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"bytes"
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
@@ -16,24 +15,6 @@ func (g *GormStorage) CreateAPayByPrimeDonation(m models.PayByPrimeDonation) err
 	if nil != err {
 		log.Error(err.Error())
 		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not create the record(%#v)", m))
-	}
-	return nil
-}
-
-// UpdatetTransactionStatus updates the status during the transaction
-func (g *GormStorage) UpdateTransactionStatus(order string, status string, table string) error {
-
-	errWhere := "GormStorage.UpdateTransactionStatus"
-
-	var sqlStmt bytes.Buffer
-	sqlStmt.WriteString("UPDATE " + table + " ")
-	sqlStmt.WriteString("SET status='" + status + "' ")
-	sqlStmt.WriteString("WHERE order_number='" + order + "'")
-
-	err := g.db.Exec(sqlStmt.String()).Error
-	if nil != err {
-		log.Error(err.Error())
-		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not update transaction status(order: %s, status: %s, table: %s)"))
 	}
 	return nil
 }

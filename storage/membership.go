@@ -57,7 +57,6 @@ type MembershipStorage interface {
 
 	/** Donation methods **/
 	CreateAPayByPrimeDonation(models.PayByPrimeDonation) error
-	UpdateTransactionStatus(string, string, string) error
 	UpdateAPayByPrimeDonation(string, models.PayByPrimeDonation) error
 	CreateAPeriodDonation(models.PeriodicDonation) error
 	CreateAPayByCardTokenDonation(models.PayByCardTokenDonation) error
