@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -19,7 +20,9 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 		var err error
 
 		// connect to MySQL database
-		db, err = gorm.Open("mysql", Cfg.DBSettings.User+":"+Cfg.DBSettings.Password+"@tcp("+Cfg.DBSettings.Address+":"+Cfg.DBSettings.Port+")/"+Cfg.DBSettings.Name+"?parseTime=true")
+		var endpoint = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", Cfg.DBSettings.User, Cfg.DBSettings.Password, Cfg.DBSettings.Address, Cfg.DBSettings.Port, Cfg.DBSettings.Name)
+		log.Info("connect to mysql ", endpoint)
+		db, err = gorm.Open("mysql", endpoint)
 
 		if err != nil {
 			time.Sleep(time.Duration(retryMaxDelay) * time.Second)
