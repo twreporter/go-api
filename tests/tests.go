@@ -64,22 +64,23 @@ var (
 )
 
 func OpenGormConnection() (db *gorm.DB, err error) {
-	// CREATE USER 'gorm'@'localhost' IDENTIFIED BY 'gorm';
-	// CREATE DATABASE gorm;
-	// GRANT ALL ON gorm.* TO 'gorm'@'localhost';
 	dbhost := os.Getenv("GORM_DBADDRESS")
 	if dbhost != "" {
-		dbhost = fmt.Sprintf("tcp(%v)", dbhost)
+		utils.Cfg.DBSettings.Address = dbhost
 	} else {
-		dbhost = "tcp(127.0.0.1:3306)"
+		utils.Cfg.DBSettings.Address = "127.0.0.1"
 	}
-	db, err = gorm.Open("mysql", fmt.Sprintf("gorm:gorm@%v/gorm?charset=utf8&parseTime=True", dbhost))
+
+	utils.Cfg.DBSettings.User = "gorm"
+	utils.Cfg.DBSettings.Password = "gorm"
+	utils.Cfg.DBSettings.Port = "3306"
+	utils.Cfg.DBSettings.Name = "gorm"
+
+	db, _ = utils.InitDB(10, 5)
 
 	if os.Getenv("DEBUG") == "true" {
 		db.LogMode(true)
 	}
-
-	db.DB().SetMaxIdleConns(10)
 
 	return
 }
