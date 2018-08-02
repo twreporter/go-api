@@ -94,7 +94,7 @@ type PeriodicDonation struct {
 	UserID                uint       `gorm:"type:int(10) unsigned;not null" json:"user_id"`
 	Currency              string     `gorm:"type:varchar(3);default:'TWD';not null" json:"currency"`
 	Amount                uint       `gorm:"type:int(10) unsigned;not null;index:idx_periodic_donations_amount" json:"amount"`
-	LastSuccessAt         time.Time  `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"last_success_at"`
+	LastSuccessAt         *time.Time `json:"last_success_at"`
 	CardholderEmail       string     `gorm:"type:varchar(100);not null" json:"cardholder_email"`
 	CardholderPhoneNumber *string    `gorm:"type:varchar(20)" json:"cardholder_phone_number"`
 	CardholderName        *string    `gorm:"type:varchar(30)" json:"cardholder_name"`

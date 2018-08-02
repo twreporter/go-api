@@ -208,7 +208,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
 	}
 
-	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp)
+	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp, true)
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
 
@@ -228,7 +228,8 @@ func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDon
 	m.CardToken = resp.CardSecret.CardToken
 	m.CardKey = resp.CardSecret.CardKey
 
-	m.LastSuccessAt = time.Now()
+	t := time.Now()
+	m.LastSuccessAt = &t
 	m.Status = statusPeriodicPaid
 
 	return m
@@ -307,7 +308,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		log.Error(err.Error())
 	}
 
-	resp := buildClientResp(payMethod, tapPayReq, tapPayResp)
+	resp := buildClientResp(payMethod, tapPayReq, tapPayResp, false)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -323,9 +324,9 @@ func (t *tapPayPrimeReq) setDefault() {
 	t.MerchantID = defaultMerchantID
 }
 
-func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp) clientResp {
+func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp, isPeriodic bool) clientResp {
 	c := clientResp{}
-	c.IsPeriodic = false
+	c.IsPeriodic = isPeriodic
 	c.PayMethod = payMethod
 
 	c.CardInfo = resp.CardInfo
