@@ -20,7 +20,7 @@ import (
 )
 
 type (
-	clientPrimeReq struct {
+	clientReq struct {
 		Prime       string            `json:"prime" form:"prime" binding:"required"`
 		Amount      uint              `json:"amount" form:"amount" binding:"required"`
 		Currency    string            `json:"currency" form:"currency"`
@@ -31,7 +31,7 @@ type (
 		ResultUrl   linePayResultUrl  `json:"result_url" form:"result_url"`
 	}
 
-	clientPrimeResp struct {
+	clientResp struct {
 		IsPeriodic  bool              `json:"is_periodic"`
 		PayMethod   string            `json:"pay_method"`
 		CardInfo    models.CardInfo   `json:"card_info"`
@@ -147,7 +147,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{"pay_method": err.Error()}}, nil
 	}
 
-	var reqBody clientPrimeReq
+	var reqBody clientReq
 
 	// Validate request body
 	if err := c.Bind(&reqBody); nil != err {
@@ -208,9 +208,9 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		log.Error(err.Error())
 	}
 
-	clientResp := buildClientPrimeResp(payMethod, tapPayReq, tapPayResp)
+	resp := buildClientResp(payMethod, tapPayReq, tapPayResp)
 
-	return http.StatusCreated, gin.H{"status": "success", "data": clientResp}, nil
+	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
 
 //TODO
@@ -224,8 +224,8 @@ func (t *tapPayPrimeReq) setDefault() {
 	t.MerchantID = defaultMerchantID
 }
 
-func buildClientPrimeResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp) clientPrimeResp {
-	c := clientPrimeResp{}
+func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp) clientResp {
+	c := clientResp{}
 	c.IsPeriodic = false
 	c.PayMethod = payMethod
 
@@ -304,7 +304,7 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 	return m
 }
 
-func buildTapPayPrimeReq(payMethod string, req clientPrimeReq) tapPayPrimeReq {
+func buildTapPayPrimeReq(payMethod string, req clientReq) tapPayPrimeReq {
 	t := &tapPayPrimeReq{}
 
 	t.setDefault()
@@ -342,7 +342,7 @@ func buildTapPayPrimeReq(payMethod string, req clientPrimeReq) tapPayPrimeReq {
 }
 
 func generateOrderNumber(t payType, payMethodID int) string {
-	timestamp := time.Now().Unix()
+	timestamp := time.Now().UnixNano()
 	orderNumber := fmt.Sprintf("%s-%d%d%d", orderPrefix, timestamp, t, payMethodID)
 	msg := fmt.Sprintf("OrderNumber: %s", orderNumber)
 	log.Info(msg)
