@@ -59,6 +59,8 @@ imports:
   - proto
 - name: github.com/jinzhu/configor
   version: b7df2005e02e9226447139012db968eda90a4b91
+- name: github.com/jinzhu/copier
+  version: 7e38e58719c33e0d44d585c4ab477a30f8cb82d
 - name: github.com/jinzhu/gorm
   version: 5174cc5c242a728b435ea2be8a2f7f998e15429b
   subpackages:

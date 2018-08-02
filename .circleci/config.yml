@@ -9,33 +9,16 @@ jobs:
       - image: circleci/mongo:3.2
       - image: circleci/mysql:5.7
         environment:
-          MYSQL_ALLOW_EMPTY_PASSWORD: true
           MYSQL_DATABASE: gorm
           MYSQL_HOST: localhost
           MYSQL_USER: gorm
+          MYSQL_PASSWORD: gorm
           MYSQL_ROOT_HOST: "%"
 
     working_directory: /go/src/twreporter.org/go-api
 
     steps:
       - checkout
-
-      - run:
-          name: Waiting for MySQL to be ready
-          command: |
-            for i in `seq 1 10`;
-            do
-              nc -z localhost 3306 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for MySQL && exit 1
-
-      - run:
-          name: Configure MySQL Database
-          command: |
-            mysql -u root --host 127.0.0.1 --port 3306 -e \
-            "CREATE USER IF NOT EXISTS 'gorm'@'%' IDENTIFIED BY 'gorm'; CREATE DATABASE IF NOT EXISTS gorm; GRANT ALL ON gorm.* TO 'gorm'@'%';"
 
       # Download and cache dependencies
       - restore_cache:
@@ -80,54 +63,67 @@ jobs:
       - restore_cache:
           keys:
             - v1-build-{{ checksum ".circle-sha" }}
+      - run:
+          name: Connect to container cluster
+          command: |
+            # GOOGLE_AUTH, GOOGLE_PROJECT_ID, GOOGLE_COMPUTE_ZONE,
+            # GOOGLE_STAGING_CLUSTER_NAME and GOOGLE_CLUSTER_NAME
+            # is defined in Environment Variables of circleci project
+            echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
+            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcp-key.json"
+            CLUSTER_NAME=""
+
+            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
+              CLUSTER_NAME=${GOOGLE_STAGING_CLUSTER_NAME}
+            fi
+
+            if [ "${CIRCLE_BRANCH}" == "release" ]; then
+              CLUSTER_NAME=${GOOGLE_CLUSTER_NAME}
+            fi
+
+            echo "CLUSTER_NAME: ${CLUSTER_NAME}"
+            echo "CLUSTER_NAME=${CLUSTER_NAME}" > circle_ci_local_env
+            gcloud --quiet container clusters get-credentials $CLUSTER_NAME
 
       - run:
           name: Install kubectl
           command: |
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            source circle_ci_local_env
+            echo "CLUSTER_NAME: ${CLUSTER_NAME}"
+            KUBECTL_VERSION="$(gcloud container clusters describe ${CLUSTER_NAME} | sed -n 's/.*currentMasterVersion:[ ]*\(.*\)-\(.*\)/\1/p')"
+            echo "KUBECTL_VERSION=${KUBECTL_VERSION}"
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
 
       - run:
           name: Build, push and deploy Docker image
           command: |
-            # GOOGLE_AUTH, GO_CONFIG, GOOGLE_PROJECT_ID, GOOGLE_COMPUTE_ZONE,
-            # GOOGLE_STAGING_CLUSTER_NAME and GOOGLE_CLUSTER_NAME
-            # is defined in Environment Variables of circleci project
-
             cd /go/src/twreporter.org/go-api
-            echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
-            export PKG_VER="$(cat .pkg-version)"
-            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcp-key.json"
+            PKG_VER="$(cat .pkg-version)"
+
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-              # connect to staging gke
-              gcloud --quiet container clusters get-credentials ${GOOGLE_STAGING_CLUSTER_NAME}
+              # pkg version for staging
+              PKG_VER="staging-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
 
               # config.json for go-api
               echo ${GO_STAGING_CONFIG} | base64 -i --decode > ./configs/config.json
-              echo ${AWS_CREDENTIALS} | base64 -i --decode > ./aws_credentials
-
-              docker build -t gcr.io/coastal-run-106202/go-api:staging-$PKG_VER .
-              gcloud docker -- push gcr.io/coastal-run-106202/go-api:staging-$PKG_VER
-              kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:staging-$PKG_VER --container=go-api
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
-              # connect to production gke
-              gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
-
               # config.json for go-api
               echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.json
-              echo ${AWS_CREDENTIALS} | base64 -i --decode > ./aws_credentials
-
-              docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
-              gcloud docker -- push gcr.io/coastal-run-106202/go-api:$PKG_VER
-              kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$PKG_VER --container=go-api
             fi
 
+            # aws config
+            echo ${AWS_CREDENTIALS} | base64 -i --decode > ./aws_credentials
+
+            docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
+            gcloud docker -- push gcr.io/coastal-run-106202/go-api:$PKG_VER
+            kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$PKG_VER --container=go-api
 
 workflows:
   version: 2
