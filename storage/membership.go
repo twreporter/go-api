@@ -58,8 +58,9 @@ type MembershipStorage interface {
 	/** Donation methods **/
 	CreateAPayByPrimeDonation(models.PayByPrimeDonation) error
 	UpdateAPayByPrimeDonation(string, models.PayByPrimeDonation) error
-	CreateAPeriodDonation(models.PeriodicDonation) error
-	CreateAPayByCardTokenDonation(models.PayByCardTokenDonation) error
+	CreateAPeriodicDonation(models.PeriodicDonation, models.PayByCardTokenDonation) (uint, error)
+	DeleteAPeriodicDonation(uint, models.PayByCardTokenDonation) error
+	UpdateAPeriodicDonation(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
 	CreateAPayByOtherMethodDonation(models.PayByOtherMethodDonation) error
 	GetDonationsByPayMethods([]string, uint, uint) (models.DonationRecord, error)
 }

@@ -51,7 +51,8 @@ type PayByCardTokenDonation struct {
 	UpdatedAt                time.Time  `json:"updated_at"`
 	DeletedAt                *time.Time `json:"deleted_at"`
 	PeriodicID               uint       `gorm:"not null;index:idx_pay_by_card_token_donations_periodic_id" json:"periodic_id"`
-	Status                   int        `gorm:"not null" json:"status"`
+	Status                   string     `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
+	ThirdPartyStatus         int        `json:"third_party_status"`
 	Msg                      string     `gorm:"type:varchar(100);not null" json:"msg"`
 	RecTradeID               string     `gorm:"type:varchar(20);not null" json:"rec_trade_id"`
 	BankTransactionID        string     `gorm:"type:varchar(50);not null" json:"bank_transaction_id"`
@@ -63,8 +64,8 @@ type PayByCardTokenDonation struct {
 	TransactionTime          *time.Time `json:"transaction_time"`
 	BankTransactionStartTime *time.Time `json:"bank_transaction_start_time"`
 	BankTransactionEndTime   *time.Time `json:"bank_transaction_end_time"`
-	BankResultCode           string     `gorm:"type:varchar(50)" json:"bank_result_code"`
-	BankResultMsg            string     `gorm:"type:varchar(50)" json:"bank_result_msg"`
+	BankResultCode           *string    `gorm:"type:varchar(50)" json:"bank_result_code"`
+	BankResultMsg            *string    `gorm:"type:varchar(50)" json:"bank_result_msg"`
 	Details                  string     `gorm:"type:varchar(50);not null" json:"details"`
 	MerchantID               string     `gorm:"type:varchar(30);not null" json:"merchant_id"`
 }
@@ -87,16 +88,13 @@ type PeriodicDonation struct {
 	CreatedAt             time.Time  `json:"created_at"`
 	UpdatedAt             time.Time  `json:"updated_at"`
 	DeletedAt             *time.Time `json:"deleted_at"`
+	Status                string     `gorm:"type:ENUM('to_pay','paying','paid','fail');not null" json:"status"`
 	CardToken             string     `gorm:"type:varchar(64);not null" json:"card_token"`
 	CardKey               string     `gorm:"type:varchar(64);not null" json:"card_key"`
 	UserID                uint       `gorm:"type:int(10) unsigned;not null" json:"user_id"`
 	Currency              string     `gorm:"type:varchar(3);default:'TWD';not null" json:"currency"`
-	StartDate             time.Time  `gorm:"type:timestamp;default:CURRENT_TIMESTAMP;index:idx_periodic_donations_start_date" json:"start_date"`
-	PaidTimes             uint       `gorm:"type:smallint;default:1;not null" json:"paid_times"`
 	Amount                uint       `gorm:"type:int(10) unsigned;not null;index:idx_periodic_donations_amount" json:"amount"`
-	LastSuccessDate       time.Time  `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"last_success_date"`
-	FailureTimes          uint       `gorm:"type:tinyint unsigned;default:0;not null" json:"failure_times"`
-	IsStopped             bool       `gorm:"type:tinyint(1) unsigned;default:0;not null;index:idx_periodic_donations_is_stopped" json:"is_stopped"`
+	LastSuccessAt         time.Time  `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"last_success_at"`
 	CardholderEmail       string     `gorm:"type:varchar(100);not null" json:"cardholder_email"`
 	CardholderPhoneNumber *string    `gorm:"type:varchar(20)" json:"cardholder_phone_number"`
 	CardholderName        *string    `gorm:"type:varchar(30)" json:"cardholder_name"`
