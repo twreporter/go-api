@@ -1,15 +1,12 @@
 package controllers
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/middlewares"
-	"twreporter.org/go-api/models"
+	// "twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
-	//	log "github.com/Sirupsen/logrus"
+	//log "github.com/Sirupsen/logrus"
 )
 
 // NewMembershipController ...
@@ -31,52 +28,32 @@ func (mc *MembershipController) Close() error {
 	return nil
 }
 
-type wrappedFn func(c *gin.Context) (int, gin.H, error)
-
-// GinResponseWrapper ...
-func GinResponseWrapper(fn wrappedFn) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		statusCode, obj, err := fn(c)
-		if err != nil {
-			switch appErr := err.(type) {
-			case *models.AppError:
-				c.JSON(appErr.StatusCode, gin.H{"status": "error", "message": appErr.Message})
-				return
-			default:
-				c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error. %s", err.Error())})
-				return
-			}
-		}
-		c.JSON(statusCode, obj)
-	}
-}
-
 // SetRoute is the method of Controller interface
 func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
 	// mailSender := utils.NewSMTPEmailSender()                          // use office365 to send mails
 	mailSender := utils.NewAmazonEmailSender() // use Amazon SES to send mails
 
 	// endpoints for account
-	group.POST("/signin", middlewares.SetCacheControl("no-store"), GinResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	group.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.SignIn(c, mailSender)
 	}))
-	group.GET("/activate", middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.Activate))
-	group.GET("/token/:userID", middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.RenewJWT))
+	group.GET("/activate", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.Activate))
+	group.GET("/token/:userID", middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.RenewJWT))
 
 	// endpoints for bookmarks of users
-	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.GetBookmarksOfAUser))
-	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.GetBookmarksOfAUser))
-	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.CreateABookmarkOfAUser))
-	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), GinResponseWrapper(mc.DeleteABookmarkOfAUser))
+	group.GET("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
+	group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
+	group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateABookmarkOfAUser))
+	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.DeleteABookmarkOfAUser))
 
 	// endpoints for donation
-	group.POST("/users/:userID/periodic_donations" /*middlewares.CheckJWT(),*/, GinResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
-	group.POST("/users/:userID/donations/:pay_method" /*middlewares.CheckJWT(),*/, GinResponseWrapper(mc.CreateADonationOfAUser))
-	group.GET("/users/:userID/donations" /*middlewares.CheckJWT(),*/, GinResponseWrapper(mc.GetDonationsOfAUser))
+	group.POST("/users/:userID/periodic_donations" /*middlewares.CheckJWT(),*/, ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
+	group.POST("/users/:userID/donations/:pay_method" /*middlewares.CheckJWT(),*/, ginResponseWrapper(mc.CreateADonationOfAUser))
+	group.GET("/users/:userID/donations" /*middlewares.CheckJWT(),*/, ginResponseWrapper(mc.GetDonationsOfAUser))
 
 	// endpoints for web push subscriptions
-	group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, GinResponseWrapper(mc.SubscribeWebPush))
-	group.GET("/web-push/subscriptions", GinResponseWrapper(mc.IsWebPushSubscribed))
+	group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, ginResponseWrapper(mc.SubscribeWebPush))
+	group.GET("/web-push/subscriptions", ginResponseWrapper(mc.IsWebPushSubscribed))
 
 	/* Comment out these unused endpoints
 	// endpoint for registration

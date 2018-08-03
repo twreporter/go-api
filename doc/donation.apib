@@ -1,0 +1,417 @@
+FORMAT: 1A
+HOST: https://go-api.twreporter.org
+
+# Donation API
+TWReporter Donation API, integrated with Tappay Web Service
+
+## Data Structures
+
+### PayByPrimeRequest
++ prime : test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (required)
++ amount : 500 (required, number)
++ currency : TWD (optional)                                     # default is TWD
++ details : 報導者小額捐款 (optional)                           # System should provide default value
++ cardholder (Cardholder, required)
++ `order_number` : `order_number_we_define` (string, optional)
++ `merchant_id` : `twreporter_CTBC` (optional)                  # System should provide default value
++ result_url (RequestURL, optional)
+
+### RequestURL
++ `frontend_redirect_url` : `https://your.domain.com/transaction_is_done` (required)
++ `backend_notify_url` : `https://your.domain.com/tappay_will_notify_this` (required)
+
+### PayByOthersRequest
++ email : others@email.domain.com (string, optional) 
++ pay_method : atm (string, required)
++ amount : 500 (required, number)
++ currency : TWD (optional)                                     # default is TWD
++ details : 報導者小額捐款 (optional)                           # System should provide default value
++ `order_number` : `order_number_we_define` (string, optional)
++ `merchant_id` : `twreporter_CTBC` (optional)                  # System should provide default value
+
+### PaySuccessResponse
++ id : 11 (required, number)
++ is_periodic : true (required, boolean)
++ `pay_method` : `credit_card` (required)
++ card_info (CardInfo, required) 
++ cardholder (Cardholder, required)
++ amount : 500 (required, number)
++ currency : TWD (required)
++ details : 報導者小額捐款 (required)
++ `order_number` : `order_number_we_define` (optional)
+
+### PeriodicPayResponse
++ id : 10 (required, number)
++ cardholder (Cardholder, required)
++ currency : TWD (required)
++ start_date : 1531899571 (required, number)        # the date the user start to pay periodically
++ paid_times : 1 (required, number)                 # how many times the user already paid
++ amount : 500 (required, number)
++ last_success_at : 1531899571 (required, number) # the date the user paid successfully
++ failure_times : 0 (required)                      # how many times the user paid unsuccessfully
++ `pay_by` : `credit_card` (required)               # enum("credit_card", "line", "apple", "google", "samsung", "others")
+
+### TapPayByPrimeRequest
++ prime : test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (required)
++ partner_key : partner_key_str (required)
++ merchant_id : merchant_id_str (required)
++ amount : 500 (required, number)
++ currency : TWD (optional)
++ details : 報導者定期定額捐款 (required) 
++ cardholder (Cardholder, required)
++ remember: false (required, boolean)                   # We can get `card_secret` in response if `remember` = true
++ `order_number` : `order_number_we_define` (optional)
+
+### TapPayByCardTokenRequest
++ card_token : 99beec9af1bfbd5e3fb9081bba2ba1739ba1e0d76f42db066cdd015e5c9de756 (required)
++ card_key : f0669edae6640dc55987a99530609c42a37c6d0592865a96f4a81ef415f2407b (required)
++ partner_key : partner_key_str (required)
++ merchant_id : merchant_id_str (required)
++ amount : 500 (required, number)
++ currency : TWD (required)
++ details : 報導者定期定額捐款 (required) 
++ `order_number` : `order_number_we_define` (optional)
+
+### TapPayByPrimeResponse
++ status : 0 (required, number)
++ msg : Success (required)
++ rec_trade_id : D20180712Gl0C0w (required)
++ bank_transaction_id : TP20180712Gl0C0w (required)
++ auth_code : 756376 (required)
++ card_secret (CardSecret, optional)
++ amount : 100 (required, number)
++ currency : TWD (required)
++ card_info (CardInfo, required)
++ `order_number` : `order_number_we_define` (required)
++ acquirer : TW_CTBC (required)
++ transaction_time_millis : 1531363227359 (required, number)
++ bank_transaction_time (BankTransactionTime, required)
++ bank_result_code : 0 (required)
++ bank_result_msg : bank_message (required)
+
+### TapPayByTokenResponse
++ status : 0 (required, number)
++ msg : Success (required)
++ rec_trade_id : D20180712Gl0C0w (required)
++ bank_transaction_id : TP20180712Gl0C0w (required)
++ auth_code : 756376 (required)
++ amount : 100 (required, number)
++ currency : TWD (required)
++ card_info (CardInfo, required)
++ `order_number` : `order_number_we_define` (required)
++ acquirer : TW_CTBC (required)
++ transaction_time_millis : 1531363227359 (required, number)
++ bank_transaction_time (BankTransactionTime, required)
++ bank_result_code : 0 (required)
++ bank_result_msg : bank_message (required)
+
+### Cardholder
++ phone_number : +886912345678 (optional)
++ name : 王小明 (optional)
++ email : donator@email.com (required)
++ zip_code : 10410 (optional)
++ address : 台北市南京東路三段30號6樓 (optional)
++ national_id : A123456789 (optional)
+
+### CardSecret
++ card_token : 99beec9af1bfbd5e3fb9081bba2ba1739ba1e0d76f42db066cdd015e5c9de756 (required)
++ card_key : f0669edae6640dc55987a99530609c42a37c6d0592865a96f4a81ef415f2407b (required)
+
+### CardInfo
++ bin_code : 424242 (required)
++ last_four : 4242 (required)
++ issuer : JPMORGAN CHASE BANK NA (required)
++ funding : 0 (required, number)
++ type : 1 (required, number)
++ level : card_level (required)
++ country : UNITED STATES (required)
++ country_code : US (required)
++ expiry_date : 202301 (optional)
+
+### BankTransactionTime
++ start_time_millis : 1531363227382 (required)
++ end_time_millis : 1531363227382 (required)
+
+### CreatePeriodicDonationResponse
++ donation_result (PaySuccessResponse, required)
+
+### PayByPrimeFailResponse
++ prime : Required. Type: <string>. e.g., test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9 (optional)
++ amount : Required. Type: <number>. Condition: bigger than 0. e.g., 500 (optional)
++ cardholder (CardholderFailData, optional)
++ `pay_by` : Required. Type: <string>. e.g., credit_card (optional)
+
+### ResponseMeta
++ total : 1 (required, number)
++ offset : 0 (required, number)
++ limit :  10 (required, number)
+
+### CardholderFailData
++ phone_number : Required. Type: <string>. e.g., +886912345678 (optional)
++ name : Required. Type: <string>. e.g., 王小明 (optional)
++ email : Required. Type: <string>. e.g., test@twreporter.org (optional)
+
+# Donation Endpoints
+endpoints for donation
+
+# Periodic Donation List [/v1/users/{user_id}/periodic_donations]
+Currently, we only create periodic donations for credit card
+
++ Parameters
+    + `user_id`: `1` (required) - User's ID
+
+## Create a Periodic Donation[POST]
+
++ Request with body 
+
+  + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+
+  + Attributes (PayByPrimeRequest)
+
++ Response 201 (application/json)
+
+  + Attributes
+
+        + status : success (required)
+        + data (PaySuccessResponse, required)
+
++ Response 400 (application/json)
+
+  + Attributes
+
+        + status : fail (required)
+        + data (PayByPrimeFailResponse, required)
+
++ Response 401 (application/json)
+  Unauthorized 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "JWT unauthorized"
+            }
+
++ Response 403 (application/json)
+  Forbidden 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "Don't have permission to create this resource"
+            }
+
++ Response 500 (application/json)
+  Unknown error type
+
+    + Body
+
+     	    	{
+            "status": "error",
+            "message": "Unknown server error during create"
+          	}
+
+
+# Donations [/v1/users/{user_id}/donations/{pay_method}]
++ Parameters
+    + `user_id`: `1` (required) - User's ID
+    + `pay_method`: `credit_card` (required) - It could be `credit_card`, `line`, `apple`, `google` or `samsung`.
+
+## Create a Donation[POST]
+Create a donation record
+
+
++ Request with body 
+
+  + Headers
+
+              Content-Type: application/json
+              Authorization: Bearer <jwt>
+
+  + Attributes (PayByPrimeRequest)
+
++ Response 201 (application/json)
+
+
+  + Attributes 
+  
+        + status : success (required)
+        + data (PaySuccessResponse, required)
+
++ Response 400 (application/json)
+
+  + Attributes
+
+        + status : fail (required)
+        + data (PayByPrimeFailResponse, required)
+
++ Response 401 (application/json)
+  Unauthorized 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "JWT unauthorized"
+            }
+
++ Response 403 (application/json)
+  Forbidden 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "Don't have permission to create this resource"
+            }
+
++ Response 404 (application/json)
+  Resource Not Found Error
+
+    + Body
+
+          	{
+            "status": "error",
+            "message": "Resource ${pay_method} is not supported"
+        		}
+
+
++ Response 500 (application/json)
+  Unknown error type
+
+    + Body
+
+          	{
+            "status": "error",
+            "message": "Unknown server error during create"
+        		}
+
+# Donations [/v1/donations/others]
+## Create a Donation by old fashion method[POST]
+Create a donation record with other pay methods
+
+
++ Request with body 
+
+  + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+
+  + Attributes (PayByOthersRequest)
+
++ Response 201 (application/json)
+
+    + Body
+
+            {
+            "status": "success",
+            "data": {
+              "email": "others@email.domain"
+              "pay_method": "atm",
+              "amount": 500,
+              "currency": "TWD",
+              "details": "報導者捐款",
+            }
+            }
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+            "status": "fails",
+            "data": {
+              "pay_method": "Required. Type: <string>. e.g., atm",
+              "amount": "Required. Type: <number>. e.g., 500",
+              "details": "Required. Type: <string>. e.g., 報導者捐款" 
+            }
+            }
+
++ Response 401 (application/json)
+  Unauthorized 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "JWT unauthorized"
+            }
+          
++ Response 500 (application/json)
+  Unknown error type
+
+    + Body
+
+            {
+            "status": "error",
+            "message": "Unknown server error during create"
+            }
+
+# View Donations [/v1/users/{user_id}/donations{?pay_methods,offset,limit}]
+## View Donations of a User by user_id [GET]
++ Parameters
+    + user_id: `1` (required) - User's id.
+    + offset: `0` (optional, unsigned integer) - Default is 0.
+    + limit: `5` (optional, unsigned integer) - The number of donations per request, default to 10 if not specified.
+    + `pay_methods`: `credit_card` (optional, array(string)) - A collection of pay methods. URL will be like `/v1/donations?pay_methods=credit_card&pay_methods=line&pay_methods=apple`.
+
++ Request 
+
+  + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data
+            + records (array[PaySuccessResponse]) (required)
+            + meta (ResponseMeta) (required)
+
++ Response 401 (application/json)
+  Unauthorized 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "JWT unauthorized"
+            }
+
++ Response 403 (application/json)
+  Forbidden 
+  
+    + Body
+
+            {
+            "status": "error",
+            "message": "Don't have permission to access this resource"
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+            "status": "error",
+            "data": {
+                "page": "User {user_id} is not found."
+                }
+            }
+
++ Response 500 (application/json)
+
+    + Body
+            
+            {
+            "status": "Error",
+            "message": "Unknown server error. Cannot fetch dontaion list"
+            }
+

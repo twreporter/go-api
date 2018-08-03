@@ -21,6 +21,9 @@ type NewsStorage interface {
 	GetFullPosts(models.MongoQuery, int, int, string, []string) ([]models.Post, int, error)
 	GetMetaOfTopics(models.MongoQuery, int, int, string, []string) ([]models.Topic, int, error)
 	GetFullTopics(models.MongoQuery, int, int, string, []string) ([]models.Topic, int, error)
+
+	/** Authors methods **/
+	GetFullAuthors(int, int, string) ([]models.FullAuthor, int, error)
 }
 
 // NewMongoStorage initializes the storage connected to Mongo database
