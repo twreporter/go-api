@@ -54,6 +54,14 @@ type MembershipStorage interface {
 	CreateRegistration(string, models.RegistrationJSON) (models.Registration, error)
 	UpdateRegistration(string, models.RegistrationJSON) (models.Registration, error)
 	DeleteRegistration(string, string) error
+
+	/** Donation methods **/
+	CreateAPayByPrimeDonation(models.PayByPrimeDonation) error
+	UpdateAPayByPrimeDonation(string, models.PayByPrimeDonation) error
+	CreateAPeriodDonation(models.PeriodicDonation) error
+	CreateAPayByCardTokenDonation(models.PayByCardTokenDonation) error
+	CreateAPayByOtherMethodDonation(models.PayByOtherMethodDonation) error
+	GetDonationsByPayMethods([]string, uint, uint) (models.DonationRecord, error)
 }
 
 // NewGormStorage initializes the storage connected to MySQL database by gorm library

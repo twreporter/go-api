@@ -100,7 +100,7 @@ func RunMigration() {
 }
 
 func RunGormMigration() {
-	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}, &models.UsersBookmarks{}, &models.WebPushSubscription{}}
+	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}, &models.UsersBookmarks{}, &models.WebPushSubscription{}, &models.PayByPrimeDonation{}, &models.PayByCardTokenDonation{}, &models.PayByOtherMethodDonation{}, &models.PeriodicDonation{}}
 	for _, value := range values {
 		DB.DropTable(value)
 	}
