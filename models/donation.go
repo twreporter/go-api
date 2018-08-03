@@ -89,8 +89,8 @@ type PeriodicDonation struct {
 	UpdatedAt             time.Time  `json:"updated_at"`
 	DeletedAt             *time.Time `json:"deleted_at"`
 	Status                string     `gorm:"type:ENUM('to_pay','paying','paid','fail');not null" json:"status"`
-	CardToken             string     `gorm:"type:varchar(64);not null" json:"card_token"`
-	CardKey               string     `gorm:"type:varchar(64);not null" json:"card_key"`
+	CardToken             string     `gorm:"type:tinyblob" json:"card_token"`
+	CardKey               string     `gorm:"type:tinyblob" json:"card_key"`
 	UserID                uint       `gorm:"type:int(10) unsigned;not null" json:"user_id"`
 	Currency              string     `gorm:"type:varchar(3);default:'TWD';not null" json:"currency"`
 	Amount                uint       `gorm:"type:int(10) unsigned;not null;index:idx_periodic_donations_amount" json:"amount"`

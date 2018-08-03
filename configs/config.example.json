@@ -67,6 +67,7 @@
   },
   "DonationSettings": {
     "TapPayPartnerKey": "YourTapPayPartnerKey",
-    "TapPayUrl": "TapPaySandboxUrl"
+    "TapPayUrl": "TapPaySandboxUrl",
+    "CardSecretKey": "YourCardSecretKey"
   }
 }

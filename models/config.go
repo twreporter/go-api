@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 const (
@@ -64,6 +66,9 @@ const (
 
 	// DonationSettingsDefaultTapPayUrl sets the default Tap Server(Sandbox)
 	DonationSettingsDefaultTapPayUrl = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-token"
+
+	// DonationSettingsDefaultCardSecretKey sets the default secret key
+	DonationSettingsDefaultCardSecretKey = "YourCardSecretKey"
 )
 
 // AppSettings could be defined in configs/config.json
@@ -159,6 +164,7 @@ type CorsSettings struct {
 type DonationSettings struct {
 	TapPayPartnerKey string
 	TapPayUrl        string
+	CardSecretKey    string
 }
 
 // Config contains all the other configs
@@ -234,5 +240,10 @@ func (o *Config) SetDefaults() {
 
 	if o.DonationSettings.TapPayUrl == "" {
 		o.DonationSettings.TapPayUrl = DonationSettingsDefaultTapPayUrl
+	}
+
+	if o.DonationSettings.CardSecretKey == "" {
+		log.Warn("You should define your own secret key. Using default string might suffer from security leak!")
+		o.DonationSettings.CardSecretKey = DonationSettingsDefaultCardSecretKey
 	}
 }

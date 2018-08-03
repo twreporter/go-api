@@ -2,9 +2,14 @@ package controllers
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -201,7 +206,6 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	}
 
 	updateRecord := buildTokenSuccessRecord(tapPayResp)
-	// TODO: aes encrypt cardsecret
 	updatePeriodicDonation := buildSuccessPeriodicDonation(tapPayResp)
 
 	if err = mc.Storage.UpdateAPeriodicDonation(periodicID, updatePeriodicDonation, updateRecord); nil != err {
@@ -225,8 +229,13 @@ func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDon
 	m.CardInfoCountryCode = &resp.CardInfo.CountryCode
 	m.CardInfoExpiryDate = &resp.CardInfo.ExpiryDate
 
-	m.CardToken = resp.CardSecret.CardToken
-	m.CardKey = resp.CardSecret.CardKey
+	var ciphertext string
+
+	ciphertext = encrypt(resp.CardSecret.CardToken, utils.Cfg.DonationSettings.CardSecretKey)
+	m.CardToken = ciphertext
+
+	ciphertext = encrypt(resp.CardSecret.CardKey, utils.Cfg.DonationSettings.CardSecretKey)
+	m.CardKey = ciphertext
 
 	t := time.Now()
 	m.LastSuccessAt = &t
@@ -502,6 +511,47 @@ func buildTokenDraftRecord(req tapPayPrimeReq) models.PayByCardTokenDonation {
 	m.Status = statusPaying
 
 	return m
+}
+
+func createHash(data string) []byte {
+	hash := sha256.Sum256([]byte(data))
+	return hash[:]
+}
+func encrypt(data string, key string) string {
+	hashKey := createHash(key)
+
+	block, _ := aes.NewCipher(hashKey)
+	gcm, err := cipher.NewGCM(block)
+	if nil != err {
+		//fallback to store plaintext instead
+		log.Error("cannot create a block cipher with the given key")
+		return data
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); nil != err {
+		//fallback to store plaintext instead
+		log.Error("cannot generate a nonce")
+		return data
+	}
+
+	return string(gcm.Seal(nonce, nonce, []byte(data), nil))
+}
+
+func decrypt(data string, key string) string {
+	hashKey := createHash(key)
+	block, _ := aes.NewCipher(hashKey)
+	gcm, _ := cipher.NewGCM(block)
+	nonceSize := gcm.NonceSize()
+
+	byteData := []byte(data)
+	nonce, ciphertext := byteData[:nonceSize], byteData[nonceSize:]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if nil != err {
+		log.Error(err.Error())
+	}
+
+	return string(plaintext)
 }
 
 func generateOrderNumber(t payType, payMethodID int) string {
