@@ -142,6 +142,7 @@ var payMethodCollections = []string{
 	"samsung",
 }
 
+// Handler for an authenticated user to create a periodic donation
 func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
 	const errWhere = "MembershipController.CreateAPeriodicDonationOfAUser"
 
@@ -214,34 +215,6 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp, true)
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
-}
-
-func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDonation {
-	m := models.PeriodicDonation{}
-
-	m.CardInfoBinCode = &resp.CardInfo.BinCode
-	m.CardInfoLastFour = &resp.CardInfo.LastFour
-	m.CardInfoIssuer = &resp.CardInfo.Issuer
-	m.CardInfoFunding = &resp.CardInfo.Funding
-	m.CardInfoType = &resp.CardInfo.Type
-	m.CardInfoLevel = &resp.CardInfo.Level
-	m.CardInfoCountry = &resp.CardInfo.Country
-	m.CardInfoCountryCode = &resp.CardInfo.CountryCode
-	m.CardInfoExpiryDate = &resp.CardInfo.ExpiryDate
-
-	var ciphertext string
-
-	ciphertext = encrypt(resp.CardSecret.CardToken, utils.Cfg.DonationSettings.CardSecretKey)
-	m.CardToken = ciphertext
-
-	ciphertext = encrypt(resp.CardSecret.CardKey, utils.Cfg.DonationSettings.CardSecretKey)
-	m.CardKey = ciphertext
-
-	t := time.Now()
-	m.LastSuccessAt = &t
-	m.Status = statusPeriodicPaid
-
-	return m
 }
 
 // Handler for an authenticated user to create an one-time donation
@@ -429,6 +402,34 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 	return m
 }
 
+func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDonation {
+	m := models.PeriodicDonation{}
+
+	m.CardInfoBinCode = &resp.CardInfo.BinCode
+	m.CardInfoLastFour = &resp.CardInfo.LastFour
+	m.CardInfoIssuer = &resp.CardInfo.Issuer
+	m.CardInfoFunding = &resp.CardInfo.Funding
+	m.CardInfoType = &resp.CardInfo.Type
+	m.CardInfoLevel = &resp.CardInfo.Level
+	m.CardInfoCountry = &resp.CardInfo.Country
+	m.CardInfoCountryCode = &resp.CardInfo.CountryCode
+	m.CardInfoExpiryDate = &resp.CardInfo.ExpiryDate
+
+	var ciphertext string
+
+	ciphertext = encrypt(resp.CardSecret.CardToken, utils.Cfg.DonationSettings.CardSecretKey)
+	m.CardToken = ciphertext
+
+	ciphertext = encrypt(resp.CardSecret.CardKey, utils.Cfg.DonationSettings.CardSecretKey)
+	m.CardKey = ciphertext
+
+	t := time.Now()
+	m.LastSuccessAt = &t
+	m.Status = statusPeriodicPaid
+
+	return m
+}
+
 func buildTapPayPrimeReq(pt payType, payMethod string, req clientReq) tapPayPrimeReq {
 	t := &tapPayPrimeReq{}
 
@@ -517,26 +518,6 @@ func createHash(data string) []byte {
 	hash := sha256.Sum256([]byte(data))
 	return hash[:]
 }
-func encrypt(data string, key string) string {
-	hashKey := createHash(key)
-
-	block, _ := aes.NewCipher(hashKey)
-	gcm, err := cipher.NewGCM(block)
-	if nil != err {
-		//fallback to store plaintext instead
-		log.Error("cannot create a block cipher with the given key")
-		return data
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); nil != err {
-		//fallback to store plaintext instead
-		log.Error("cannot generate a nonce")
-		return data
-	}
-
-	return string(gcm.Seal(nonce, nonce, []byte(data), nil))
-}
 
 func decrypt(data string, key string) string {
 	hashKey := createHash(key)
@@ -552,6 +533,33 @@ func decrypt(data string, key string) string {
 	}
 
 	return string(plaintext)
+}
+
+func encrypt(data string, key string) string {
+	hashKey := createHash(key)
+
+	// create a aes block cipher by the hash value of our key
+	block, _ := aes.NewCipher(hashKey)
+
+	// use Galois Counter Mode for better efficiency
+	gcm, err := cipher.NewGCM(block)
+	if nil != err {
+		//fallback to store plaintext instead
+		log.Error("cannot create a block cipher with the given key")
+		return data
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+
+	// generate random nonce for encryption
+	if _, err := io.ReadFull(rand.Reader, nonce); nil != err {
+		//fallback to store plaintext instead
+		log.Error("cannot generate a nonce")
+		return data
+	}
+
+	// prepend the cipher with the random nonce
+	return string(gcm.Seal(nonce, nonce, []byte(data), nil))
 }
 
 func generateOrderNumber(t payType, payMethodID int) string {

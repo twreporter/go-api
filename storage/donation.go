@@ -34,6 +34,7 @@ func (g *GormStorage) UpdateAPayByPrimeDonation(order string, m models.PayByPrim
 	return nil
 }
 
+// CreateAPeriodicDonation creates the draft record along with the first draft tap pay transaction
 func (g *GormStorage) CreateAPeriodicDonation(mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) (uint, error) {
 	errWhere := "GormStorage.CreateAPeriodicDonationWithFirstTransaction"
 
@@ -71,6 +72,7 @@ func (g *GormStorage) CreateAPeriodicDonation(mpd models.PeriodicDonation, mtd m
 	return pd.ID, nil
 }
 
+// DeleteAPeriodicDonation marks the draft tap pay transaction record as 'fail' and then soft delete the periodic donation
 func (g *GormStorage) DeleteAPeriodicDonation(periodicID uint, failData models.PayByCardTokenDonation) error {
 	errWhere := "GormStorage.DeleteAPeriodicDonation"
 
@@ -80,6 +82,7 @@ func (g *GormStorage) DeleteAPeriodicDonation(periodicID uint, failData models.P
 		return g.NewStorageError(err, errWhere, "cannot begin the draft periodic donation deletion transaction")
 	}
 
+	// Updates the draft transaction as fail
 	if err := tx.Model(&failData).Where("periodic_id = ?", periodicID).Updates(failData).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
@@ -88,6 +91,7 @@ func (g *GormStorage) DeleteAPeriodicDonation(periodicID uint, failData models.P
 
 	m := models.PeriodicDonation{ID: periodicID}
 
+	// Then, soft-deletes the periodic donation
 	if err := tx.Delete(&m).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
@@ -101,6 +105,7 @@ func (g *GormStorage) DeleteAPeriodicDonation(periodicID uint, failData models.P
 	return nil
 }
 
+// UpdateAPeriodicDonation updates the draft tap pay transaction with response and fills up the required information in periodic_donations table
 func (g *GormStorage) UpdateAPeriodicDonation(periodicID uint, mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) error {
 	errWhere := "GormStorage.UpdateAPeriodicDonation"
 	tx := g.db.Begin()
@@ -111,6 +116,7 @@ func (g *GormStorage) UpdateAPeriodicDonation(periodicID uint, mpd models.Period
 	}
 	td := mtd
 
+	// Updates the tap pay success respsonse
 	if err := tx.Model(&td).Where("periodic_id = ?", periodicID).Updates(td).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
@@ -118,6 +124,8 @@ func (g *GormStorage) UpdateAPeriodicDonation(periodicID uint, mpd models.Period
 	}
 
 	pd := mpd
+
+	// Then, fills up the required information for later transaction
 	if err := tx.Model(&pd).Where("id = ?", periodicID).Updates(pd).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
