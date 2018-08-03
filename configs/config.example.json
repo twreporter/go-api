@@ -64,5 +64,9 @@
   },
   "EncryptSettings": {
     "Salt": ""
+  },
+  "DonationSettings": {
+    "TapPayPartnerKey": "YourTapPayPartnerKey",
+    "TapPayUrl": "TapPaySandboxUrl"
   }
 }
