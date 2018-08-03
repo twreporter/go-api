@@ -54,6 +54,8 @@ func (g *GormStorage) CreateAPeriodicDonation(mpd models.PeriodicDonation, mtd m
 	}
 
 	td := mtd
+	// Append the periodic ID for the first record
+	td.PeriodicID = pd.ID
 
 	// Create a draft record for the first token transaction
 	if err := tx.Create(&td).Error; nil != err {
