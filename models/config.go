@@ -62,10 +62,10 @@ const (
 	AmazonMailSettingsDefaultCharSet = "UTF-8"
 
 	// DonationSettingsDefaultTapPayPartnerKey sets the default partner key
-	DonationSettingsDefaultTapPayPartnerKey = "YourTapPayPartnerKey"
+	DonationSettingsDefaultTapPayPartnerKey = "partner_6ID1DoDlaPrfHw6HBZsULfTYtDmWs0q0ZZGKMBpp4YICWBxgK97eK3RM"
 
 	// DonationSettingsDefaultTapPayUrl sets the default Tap Server(Sandbox)
-	DonationSettingsDefaultTapPayUrl = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-token"
+	DonationSettingsDefaultTapPayUrl = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
 
 	// DonationSettingsDefaultCardSecretKey sets the default secret key
 	DonationSettingsDefaultCardSecretKey = "YourCardSecretKey"
