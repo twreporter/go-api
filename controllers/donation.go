@@ -107,7 +107,9 @@ const (
 	defaultMerchantID     = "twreporter_CTBC"
 	defaultRequestTimeout = 45 * time.Second
 
-	invalidPayMethodID = -1
+	invalidPayMethodID     = -1
+	invalidCardInfoFunding = ^uint(0)
+	invalidCardInfoType    = ^uint(0)
 
 	orderPrefix = "twreporter"
 
@@ -306,6 +308,11 @@ func (t *tapPayPrimeReq) setDefault() {
 	t.MerchantID = defaultMerchantID
 }
 
+func (t *tapPayTransactionResp) setDefault() {
+	t.CardInfo.Funding = invalidCardInfoFunding
+	t.CardInfo.Type = invalidCardInfoType
+}
+
 func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp, isPeriodic bool) clientResp {
 	c := clientResp{}
 	c.IsPeriodic = isPeriodic
@@ -326,11 +333,11 @@ func buildDraftPeriodicDonation(userID uint, req clientReq) models.PeriodicDonat
 	m := models.PeriodicDonation{}
 
 	m.CardholderEmail = req.Cardholder.Email
-	m.CardholderPhoneNumber = &req.Cardholder.PhoneNumber
-	m.CardholderName = &req.Cardholder.Name
-	m.CardholderZipCode = &req.Cardholder.ZipCode
-	m.CardholderAddress = &req.Cardholder.Address
-	m.CardholderNationalID = &req.Cardholder.NationalID
+	m.CardholderPhoneNumber = req.Cardholder.PhoneNumber
+	m.CardholderName = req.Cardholder.Name
+	m.CardholderZipCode = req.Cardholder.ZipCode
+	m.CardholderAddress = req.Cardholder.Address
+	m.CardholderNationalID = req.Cardholder.NationalID
 
 	m.UserID = userID
 	m.Status = statusPeriodicPaying
@@ -345,11 +352,11 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 	m.PayMethod = payMethod
 
 	m.CardholderEmail = req.Cardholder.Email
-	m.CardholderPhoneNumber = &req.Cardholder.PhoneNumber
-	m.CardholderName = &req.Cardholder.Name
-	m.CardholderZipCode = &req.Cardholder.ZipCode
-	m.CardholderAddress = &req.Cardholder.Address
-	m.CardholderNationalID = &req.Cardholder.NationalID
+	m.CardholderPhoneNumber = req.Cardholder.PhoneNumber
+	m.CardholderName = req.Cardholder.Name
+	m.CardholderZipCode = req.Cardholder.ZipCode
+	m.CardholderAddress = req.Cardholder.Address
+	m.CardholderNationalID = req.Cardholder.NationalID
 
 	m.Details = req.Details
 	m.MerchantID = req.MerchantID
@@ -369,8 +376,8 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 	m.BankTransactionID = resp.BankTransactionID
 	m.AuthCode = resp.AuthCode
 	m.Acquirer = resp.Acquirer
-	m.BankResultCode = &resp.BankResultCode
-	m.BankResultMsg = &resp.BankResultMsg
+	m.BankResultCode = resp.BankResultCode
+	m.BankResultMsg = resp.BankResultMsg
 
 	ttm := time.Unix(resp.TransactionTimeMillis/1000, resp.TransactionTimeMillis%1000)
 	m.TransactionTime = &ttm
@@ -387,15 +394,22 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 		m.BankTransactionEndTime = &etm
 	}
 
-	m.CardInfoBinCode = &resp.CardInfo.BinCode
-	m.CardInfoLastFour = &resp.CardInfo.LastFour
-	m.CardInfoIssuer = &resp.CardInfo.Issuer
-	m.CardInfoFunding = &resp.CardInfo.Funding
-	m.CardInfoType = &resp.CardInfo.Type
-	m.CardInfoLevel = &resp.CardInfo.Level
-	m.CardInfoCountry = &resp.CardInfo.Country
-	m.CardInfoCountryCode = &resp.CardInfo.CountryCode
-	m.CardInfoExpiryDate = &resp.CardInfo.ExpiryDate
+	m.CardInfoBinCode = resp.CardInfo.BinCode
+	m.CardInfoLastFour = resp.CardInfo.LastFour
+	m.CardInfoIssuer = resp.CardInfo.Issuer
+
+	if invalidCardInfoFunding != resp.CardInfo.Funding {
+		m.CardInfoFunding = &resp.CardInfo.Funding
+	}
+
+	if invalidCardInfoType != resp.CardInfo.Type {
+		m.CardInfoType = &resp.CardInfo.Type
+	}
+
+	m.CardInfoLevel = resp.CardInfo.Level
+	m.CardInfoCountry = resp.CardInfo.Country
+	m.CardInfoCountryCode = resp.CardInfo.CountryCode
+	m.CardInfoExpiryDate = resp.CardInfo.ExpiryDate
 
 	m.Status = "paid"
 
@@ -405,15 +419,22 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDonation {
 	m := models.PeriodicDonation{}
 
-	m.CardInfoBinCode = &resp.CardInfo.BinCode
-	m.CardInfoLastFour = &resp.CardInfo.LastFour
-	m.CardInfoIssuer = &resp.CardInfo.Issuer
-	m.CardInfoFunding = &resp.CardInfo.Funding
-	m.CardInfoType = &resp.CardInfo.Type
-	m.CardInfoLevel = &resp.CardInfo.Level
-	m.CardInfoCountry = &resp.CardInfo.Country
-	m.CardInfoCountryCode = &resp.CardInfo.CountryCode
-	m.CardInfoExpiryDate = &resp.CardInfo.ExpiryDate
+	m.CardInfoBinCode = resp.CardInfo.BinCode
+	m.CardInfoLastFour = resp.CardInfo.LastFour
+	m.CardInfoIssuer = resp.CardInfo.Issuer
+
+	if invalidCardInfoFunding != resp.CardInfo.Funding {
+		m.CardInfoFunding = &resp.CardInfo.Funding
+	}
+
+	if invalidCardInfoType != resp.CardInfo.Type {
+		m.CardInfoType = &resp.CardInfo.Type
+	}
+
+	m.CardInfoLevel = resp.CardInfo.Level
+	m.CardInfoCountry = resp.CardInfo.Country
+	m.CardInfoCountryCode = resp.CardInfo.CountryCode
+	m.CardInfoExpiryDate = resp.CardInfo.ExpiryDate
 
 	var ciphertext string
 
@@ -624,8 +645,11 @@ func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
 		return tapPayTransactionResp{}, errors.New("Cannot read response from tap pay server")
 	}
 
-	var resp tapPayTransactionResp
-	err = json.Unmarshal(body, &resp)
+	resp := &tapPayTransactionResp{}
+
+	resp.setDefault()
+
+	err = json.Unmarshal(body, resp)
 
 	switch {
 	case nil != err:
@@ -633,12 +657,12 @@ func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
 		return handleTapPayBodyParseError(body)
 	case tapPayRespStatusSuccess != resp.Status:
 		log.Error("tap pay msg: " + resp.Msg)
-		return resp, errors.New("Cannot make success transaction on tap pay")
+		return *resp, errors.New("Cannot make success transaction on tap pay")
 	default:
 		// Omit intentionally
 	}
 
-	return resp, nil
+	return *resp, nil
 }
 
 func validatePayMethod(payMethod string) error {

@@ -45,31 +45,28 @@ func (g *GormStorage) CreateAPeriodicDonation(mpd models.PeriodicDonation, mtd m
 		return invalidPeriodicID, g.NewStorageError(err, errWhere, "cannot begin the draft periodic donation creation transaction")
 	}
 
-	pd := mpd
-
 	// Create a draft record for periodic donation
-	if err := tx.Create(&pd).Error; nil != err {
+	if err := tx.Create(&mpd).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft periodic donation(%#v)", pd))
+		return invalidPeriodicID, g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft periodic donation(%#v)", mpd))
 	}
 
-	td := mtd
 	// Append the periodic ID for the first record
-	td.PeriodicID = pd.ID
+	mtd.PeriodicID = mpd.ID
 
 	// Create a draft record for the first token transaction
-	if err := tx.Create(&td).Error; nil != err {
+	if err := tx.Create(&mtd).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft card token donation(%#v)", td))
+		return invalidPeriodicID, g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft card token donation(%#v)", mtd))
 	}
 
 	if err := tx.Commit().Error; nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
 		return invalidPeriodicID, g.NewStorageError(err, errWhere, "cannot commit the draft periodic donation creation transaction")
 	}
-	return pd.ID, nil
+	return mpd.ID, nil
 }
 
 // DeleteAPeriodicDonation marks the draft tap pay transaction record as 'fail' and then soft delete the periodic donation
@@ -86,7 +83,7 @@ func (g *GormStorage) DeleteAPeriodicDonation(periodicID uint, failData models.P
 	if err := tx.Model(&failData).Where("periodic_id = ?", periodicID).Updates(failData).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return g.NewStorageError(err, errWhere, fmt.Sprintf("cannot update the token record (id: %d, failData: %#v)", periodicID, failData))
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("cannot update the token record (periodicID: %d, failData: %#v)", periodicID, failData))
 	}
 
 	m := models.PeriodicDonation{ID: periodicID}
@@ -95,7 +92,7 @@ func (g *GormStorage) DeleteAPeriodicDonation(periodicID uint, failData models.P
 	if err := tx.Delete(&m).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return g.NewStorageError(err, errWhere, fmt.Sprintf("cannot delete the periodic donation (id: %d)", periodicID))
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("cannot delete the periodic donation (periodicID: %d)", periodicID))
 	}
 
 	if err := tx.Commit().Error; nil != err {
