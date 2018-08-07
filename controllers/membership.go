@@ -47,8 +47,8 @@ func (mc *MembershipController) SetRoute(group *gin.RouterGroup) *gin.RouterGrou
 	group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.DeleteABookmarkOfAUser))
 
 	// endpoints for donation
-	group.POST("/users/:userID/periodic_donations" /*middlewares.CheckJWT(),*/, ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
-	group.POST("/users/:userID/donations/:pay_method" /*middlewares.CheckJWT(),*/, ginResponseWrapper(mc.CreateADonationOfAUser))
+	group.POST("/users/:userID/periodic_donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
+	group.POST("/users/:userID/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateADonationOfAUser))
 	group.GET("/users/:userID/donations" /*middlewares.CheckJWT(),*/, ginResponseWrapper(mc.GetDonationsOfAUser))
 
 	// endpoints for web push subscriptions
