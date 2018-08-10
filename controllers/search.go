@@ -40,10 +40,10 @@ func (nc *NewsController) _Search(c *gin.Context, indexName string) {
 
 // SearchAuthors - search authors from algolia webservice
 func (nc *NewsController) SearchAuthors(c *gin.Context) {
-	nc._Search(c, "contacts-index")
+	nc._Search(c, "contacts-index-v2")
 }
 
 // SearchPosts - search posts of authors from algolia webservice
 func (nc *NewsController) SearchPosts(c *gin.Context) {
-	nc._Search(c, "posts-index")
+	nc._Search(c, "posts-index-v2")
 }
