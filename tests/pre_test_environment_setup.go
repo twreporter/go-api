@@ -28,7 +28,7 @@ const (
 )
 
 func runGormMigration(gormDB *gorm.DB) {
-	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}, &models.UsersBookmarks{}, &models.WebPushSubscription{}}
+	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}, &models.UsersBookmarks{}, &models.WebPushSubscription{}, &models.PeriodicDonation{}, &models.PayByPrimeDonation{}, &models.PayByCardTokenDonation{}}
 	for _, value := range values {
 		gormDB.DropTable(value)
 	}

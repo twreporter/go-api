@@ -69,7 +69,7 @@ type (
 		Details     string           `json:"details"`
 		Cardholder  cardholder       `json:"cardholder"`
 		OrderNumber string           `json:"order_number"`
-		MerchantID  string           `json:"merchat_id"`
+		MerchantID  string           `json:"merchant_id"`
 		ResultURL   linePayResultURL `json:"result_url"` // Line pay needed only
 	}
 )
@@ -80,7 +80,7 @@ const (
 	testAmount      uint = 500
 	testCurrency         = "TWD"
 	testOrderNumber      = "otd:developer@twreporter.org:1531966435"
-	testMerchatID        = "twreporter_CTBC"
+	testMerchantID       = "GlobalTesting_CTBC"
 	donatorEmail         = "donater@twreporter.org"
 )
 
@@ -292,7 +292,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 		Currency:    testCurrency,
 		Details:     testDetails,
 		OrderNumber: testOrderNumber,
-		MerchantID:  testMerchatID,
+		MerchantID:  testMerchantID,
 		Cardholder:  testCardholder,
 	}
 
@@ -316,8 +316,9 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 	// - Provide minimun required fields
 	// ===========================================
 	reqBody = requestBody{
-		Prime:  testPrime,
-		Amount: testAmount,
+		Prime:      testPrime,
+		Amount:     testAmount,
+		MerchantID: testMerchantID,
 		Cardholder: cardholder{
 			Email: "developer@twreporter.org",
 		},

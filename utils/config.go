@@ -16,6 +16,10 @@ var Cfg = &models.Config{}
 // CfgFileName it is filename of config file
 var CfgFileName string
 
+func init() {
+	Cfg.SetDefaults()
+}
+
 // LoadConfig it will load config file
 func LoadConfig(fileName string) error {
 
