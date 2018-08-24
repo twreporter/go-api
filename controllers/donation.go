@@ -197,9 +197,9 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail' and stop the periodic donation
 			failResp := models.PayByCardTokenDonation{
-				ThirdPartyStatus: tapPayResp.Status,
-				Msg:              tapPayResp.Msg,
-				Status:           statusFail,
+				TappayApiStatus: &tapPayResp.Status,
+				Msg:             tapPayResp.Msg,
+				Status:          statusFail,
 			}
 			err = mc.Storage.DeleteAPeriodicDonation(periodicID, failResp)
 		}
@@ -278,9 +278,9 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail'
 			mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, models.PayByPrimeDonation{
-				ThirdPartyStatus: tapPayResp.Status,
-				Msg:              tapPayResp.Msg,
-				Status:           statusFail,
+				TappayApiStatus: &tapPayResp.Status,
+				Msg:             tapPayResp.Msg,
+				Status:          statusFail,
 			})
 		}
 		return 0, gin.H{}, models.NewAppError(errorWhere, err.Error(), "", http.StatusInternalServerError)
@@ -366,7 +366,7 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonation {
 	m := models.PayByPrimeDonation{}
 
-	m.ThirdPartyStatus = resp.Status
+	m.TappayApiStatus = &resp.Status
 	m.Msg = resp.Msg
 	m.RecTradeID = resp.RecTradeID
 	m.BankTransactionID = resp.BankTransactionID
@@ -477,7 +477,7 @@ func buildTapPayPrimeReq(pt payType, payMethod string, req clientReq) tapPayPrim
 func buildTokenSuccessRecord(resp tapPayTransactionResp) models.PayByCardTokenDonation {
 	m := models.PayByCardTokenDonation{}
 
-	m.ThirdPartyStatus = resp.Status
+	m.TappayApiStatus = &resp.Status
 	m.Msg = resp.Msg
 	m.RecTradeID = resp.RecTradeID
 	m.BankTransactionID = resp.BankTransactionID
