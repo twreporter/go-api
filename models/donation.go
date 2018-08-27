@@ -10,8 +10,9 @@ type PayByPrimeDonation struct {
 	UpdatedAt                time.Time  `json:"updated_at"`
 	DeletedAt                *time.Time `json:"deleted_at"`
 	Status                   string     `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
-	ThirdPartyStatus         int        `json:"third_party_status"`
+	TappayApiStatus          *int       `json:"tappay_api_status"`
 	Msg                      string     `gorm:"type:varchar(100);not null" json:"msg"`
+	TappayRecordStatus       *int       `json:"tappay_record_status"`
 	RecTradeID               string     `gorm:"type:varchar(20);not null" json:"rec_trade_id"`
 	BankTransactionID        string     `gorm:"type:varchar(50);not null" json:"bank_transaction_id"`
 	AuthCode                 string     `gorm:"type:varchar(6);not null" json:"auth_code"`
@@ -52,8 +53,9 @@ type PayByCardTokenDonation struct {
 	DeletedAt                *time.Time `json:"deleted_at"`
 	PeriodicID               uint       `gorm:"not null;index:idx_pay_by_card_token_donations_periodic_id" json:"periodic_id"`
 	Status                   string     `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
-	ThirdPartyStatus         int        `json:"third_party_status"`
+	TappayApiStatus          *int       `json:"tappay_api_status"`
 	Msg                      string     `gorm:"type:varchar(100);not null" json:"msg"`
+	TappayRecordStatus       *int       `json:"tappay_record_status"`
 	RecTradeID               string     `gorm:"type:varchar(20);not null" json:"rec_trade_id"`
 	BankTransactionID        string     `gorm:"type:varchar(50);not null" json:"bank_transaction_id"`
 	AuthCode                 string     `gorm:"type:varchar(6);not null" json:"auth_code"`
