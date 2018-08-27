@@ -3,101 +3,53 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	// "gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/constants"
+	"github.com/jinzhu/gorm"
+	"gopkg.in/mgo.v2"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
-
-	log "github.com/Sirupsen/logrus"
+	//log "github.com/Sirupsen/logrus"
 )
-
-// Controller ...
-type Controller interface {
-	SetRoute(*gin.RouterGroup) *gin.RouterGroup
-	Close() error
-}
 
 // ControllerFactory ...
 type ControllerFactory struct {
-	Controllers map[string]Controller
+	gormDB     *gorm.DB
+	mgoSession *mgo.Session
+	mailSender *utils.EmailContext
 }
 
-// GetController ...
-func (cf *ControllerFactory) GetController(cn string) Controller {
-	return cf.Controllers[cn]
+func (cf *ControllerFactory) GetGoogleController() Google {
+	gs := storage.NewGormStorage(cf.gormDB)
+	return Google{Storage: gs}
 }
 
-// GetControllers returns an array of controllers
-func (cf *ControllerFactory) GetControllers() []Controller {
-	var cons []Controller
-
-	for _, con := range cf.Controllers {
-		cons = append(cons, con)
-	}
-	return cons
+func (cf *ControllerFactory) GetFacebookController() Facebook {
+	gs := storage.NewGormStorage(cf.gormDB)
+	return Facebook{Storage: gs}
 }
 
-// SetController ...
-func (cf *ControllerFactory) SetController(cn string, c Controller) {
-	cf.Controllers[cn] = c
+func (cf *ControllerFactory) GetMembershipController() *MembershipController {
+	gs := storage.NewGormStorage(cf.gormDB)
+	return NewMembershipController(gs)
 }
 
-// Close this func releases the resource appropriately
-func (cf *ControllerFactory) Close() error {
-	var err error
-	for _, controller := range cf.GetControllers() {
-		err = controller.Close()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+func (cf *ControllerFactory) GetNewsController() *NewsController {
+	ms := storage.NewMongoStorage(cf.mgoSession)
+	return NewNewsController(ms)
 }
 
-// SetRoute set route by calling the correspoding controllers.
-func (cf *ControllerFactory) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	for _, v := range cf.Controllers {
-		group = v.SetRoute(group)
-	}
-	return group
+func (cf *ControllerFactory) GetMailSender() *utils.EmailContext {
+	return cf.mailSender
 }
 
 // NewControllerFactory ...
-func NewControllerFactory() (*ControllerFactory, error) {
-	// set up database connection
-	log.Info("Connecting to MySQL cloud")
-	db, err := utils.InitDB(10, 5)
-	if err != nil {
-		return nil, err
+func NewControllerFactory(gormDB *gorm.DB, mgoSession *mgo.Session, mailSender *utils.EmailContext) *ControllerFactory {
+	return &ControllerFactory{
+		gormDB:     gormDB,
+		mgoSession: mgoSession,
+		mailSender: mailSender,
 	}
-
-	log.Info("Connecting to MongoDB replica")
-	session, err := utils.InitMongoDB()
-	if err != nil {
-		return nil, err
-	}
-	// set up data storage
-	gs := storage.NewGormStorage(db)
-
-	// init controllers
-	mc := NewMembershipController(gs)
-	fc := Facebook{Storage: gs}
-	gc := Google{Storage: gs}
-
-	ms := storage.NewMongoStorage(session)
-	nc := NewNewsController(ms)
-
-	cf := &ControllerFactory{
-		Controllers: make(map[string]Controller),
-	}
-	cf.SetController(constants.MembershipController, mc)
-	cf.SetController(constants.FacebookController, fc)
-	cf.SetController(constants.GoogleController, gc)
-	cf.SetController(constants.NewsController, nc)
-
-	return cf, nil
 }
 
 func appErrorTypeAssertion(err error) *models.AppError {

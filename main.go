@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/unrolled/secure"
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/routers"
 	"twreporter.org/go-api/utils"
@@ -30,38 +28,29 @@ func main() {
 		log.Fatal("main.load_config.fatal_error: ", err.Error())
 	}
 
-	// security: no one can put it in an iframe
-	secureMiddleware := secure.New(secure.Options{
-		FrameDeny: true,
-	})
-	secureFunc := func() gin.HandlerFunc {
-		return func(c *gin.Context) {
-			err = secureMiddleware.Process(c.Writer, c.Request)
-
-			// If there was an error, do not continue.
-			if err != nil {
-				c.Abort()
-				return
-			}
-
-			// Avoid header rewrite if response is a redirection.
-			if status := c.Writer.Status(); status > 300 && status < 399 {
-				c.Abort()
-			}
-		}
-	}()
-
-	cf, err = controllers.NewControllerFactory()
-
+	// set up database connection
+	log.Info("Connecting to MySQL cloud")
+	db, err := utils.InitDB(10, 5)
 	if err != nil {
 		panic(err)
 	}
 
-	defer utils.Check(cf.Close)
+	log.Info("Connecting to MongoDB replica")
+	session, err := utils.InitMongoDB()
+	if err != nil {
+		panic(err)
+	}
+
+	// mailSender := utils.NewSMTPEmailSender()                          // use office365 to send mails
+	mailSender := utils.NewAmazonEmailSender() // use Amazon SES to send mails
+
+	cf = controllers.NewControllerFactory(db, session, mailSender)
+
+	defer db.Close()
+	defer session.Close()
 
 	// set up the router
 	router := routers.SetupRouter(cf)
-	router.Use(secureFunc)
 
 	s := &http.Server{
 		Addr:         ":8080",
@@ -69,6 +58,9 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}
-	utils.Check(s.ListenAndServe)
+
+	if err = s.ListenAndServe(); err != nil {
+		log.Error("Fail to start HTTP server", err.Error())
+	}
 
 }

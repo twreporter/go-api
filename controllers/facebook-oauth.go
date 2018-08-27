@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"twreporter.org/go-api/configs/constants"
-	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -26,18 +25,6 @@ import (
 type Facebook struct {
 	Storage   storage.MembershipStorage
 	oauthConf *oauth2.Config
-}
-
-// SetRoute set endpoints for serving facebook oauth
-func (f Facebook) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	group.GET("/auth/facebook", middlewares.SetCacheControl("cache,no-store"), f.BeginAuth)
-	group.GET("/auth/facebook/callback", middlewares.SetCacheControl("no-store"), f.Authenticate)
-	return group
-}
-
-// Close ...
-func (f Facebook) Close() error {
-	return nil
 }
 
 // InitOauthConfig initialize facebook oauth config

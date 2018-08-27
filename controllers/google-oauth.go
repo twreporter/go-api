@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	"twreporter.org/go-api/configs/constants"
-	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -25,18 +24,6 @@ import (
 type Google struct {
 	Storage   storage.MembershipStorage
 	oauthConf *oauth2.Config
-}
-
-// SetRoute set endpoints for serving google oauth
-func (g Google) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	group.GET("/auth/google", middlewares.SetCacheControl("no-store"), g.BeginAuth)
-	group.GET("/auth/google/callback", middlewares.SetCacheControl("no-store"), g.Authenticate)
-	return group
-}
-
-// Close ...
-func (g Google) Close() error {
-	return nil
 }
 
 // InitOauthConfig initialize google oauth config

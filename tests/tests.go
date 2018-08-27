@@ -12,9 +12,9 @@ import (
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/routers"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 )
@@ -275,34 +275,16 @@ func SetGormDefaultRecords() {
 	ms.CreateRegistration(DefaultService, models.RegistrationJSON{Email: DefaultAccount, ActivateToken: DefaultToken})
 }
 
+type mockMailStrategy struct{}
+
+func (s mockMailStrategy) Send(to, subject, body string) error {
+	return nil
+}
+
 func SetupGinServer() {
-	// set up data storage
-	gs := storage.NewGormStorage(DB)
-
-	// init controllers
-	mc := controllers.NewMembershipController(gs)
-	fc := controllers.Facebook{Storage: gs}
-	gc := controllers.Google{Storage: gs}
-
-	ms := storage.NewMongoStorage(MgoDB)
-	nc := controllers.NewNewsController(ms)
-
-	cf := &controllers.ControllerFactory{
-		Controllers: make(map[string]controllers.Controller),
-	}
-	cf.SetController(constants.MembershipController, mc)
-	cf.SetController(constants.FacebookController, fc)
-	cf.SetController(constants.GoogleController, gc)
-	cf.SetController(constants.NewsController, nc)
-
-	Engine = gin.Default()
-	routerGroup := Engine.Group("/v1")
-	{
-		menuitems := new(controllers.MenuItemsController)
-		routerGroup.GET("/ping", menuitems.Retrieve)
-	}
-
-	routerGroup = cf.SetRoute(routerGroup)
+	strategy := mockMailStrategy{}
+	cf := controllers.NewControllerFactory(DB, MgoDB, utils.NewEmailSender(strategy))
+	Engine = routers.SetupRouter(cf)
 }
 
 func RequestWithBody(method, path, body string) (req *http.Request) {
