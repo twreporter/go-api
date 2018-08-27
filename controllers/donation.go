@@ -508,6 +508,7 @@ func buildTokenDraftRecord(req tapPayPrimeReq) models.PayByCardTokenDonation {
 	m.Details = req.Details
 	m.MerchantID = req.MerchantID
 	m.OrderNumber = req.OrderNumber
+	m.Amount = req.Amount
 
 	m.Status = statusPaying
 
