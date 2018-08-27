@@ -125,6 +125,9 @@ const (
 	tapPayRespStatusSuccess = 0
 
 	defaultPeriodicPayMethod = "credit_card"
+
+	secToMsec     = 1000
+	msecToNanosec = 1000000
 )
 
 // pay type Enum
@@ -372,18 +375,18 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 	m.BankResultCode = resp.BankResultCode
 	m.BankResultMsg = resp.BankResultMsg
 
-	ttm := time.Unix(resp.TransactionTimeMillis/1000, resp.TransactionTimeMillis%1000)
+	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
 	m.TransactionTime = &ttm
 
 	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
 	if nil == err {
-		stm := time.Unix(t/1000, t%1000)
+		stm := time.Unix(t/secToMsec, t%secToMsec)
 		m.BankTransactionStartTime = &stm
 	}
 
 	t, err = strconv.ParseInt(resp.BankTransactionTime.EndTimeMillis, 10, strconv.IntSize)
 	if nil == err {
-		etm := time.Unix(t/1000, t%1000)
+		etm := time.Unix(t/secToMsec, t%secToMsec)
 		m.BankTransactionEndTime = &etm
 	}
 
@@ -483,18 +486,18 @@ func buildTokenSuccessRecord(resp tapPayTransactionResp) models.PayByCardTokenDo
 	m.BankResultCode = resp.BankResultCode
 	m.BankResultMsg = resp.BankResultMsg
 
-	ttm := time.Unix(resp.TransactionTimeMillis/1000, resp.TransactionTimeMillis%1000)
+	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
 	m.TransactionTime = &ttm
 
 	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
 	if nil == err {
-		stm := time.Unix(t/1000, t%1000)
+		stm := time.Unix(t/secToMsec, t%secToMsec)
 		m.BankTransactionStartTime = &stm
 	}
 
 	t, err = strconv.ParseInt(resp.BankTransactionTime.EndTimeMillis, 10, strconv.IntSize)
 	if nil == err {
-		etm := time.Unix(t/1000, t%1000)
+		etm := time.Unix(t/secToMsec, t%secToMsec)
 		m.BankTransactionEndTime = &etm
 	}
 
