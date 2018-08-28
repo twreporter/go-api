@@ -1,3 +1,6 @@
+### 2.1.4
+- Update /v1/search/posts and /v1/search/authors to use new algolia indices
+
 ### 2.1.3
 - [feature] /v1/authors{?limit,offset,sort}[GET] endpoint for fetching authors
 
@@ -10,6 +13,9 @@
 ### 2.1.1
 - Update membership_user.sql. Remove soft delete on web_push_subscriptions table
  
+### 2.1.0
+- New endpoint for subscribing webpush notification
+
 ### 2.1.0
 - New endpoint for subscribing webpush notification
 
