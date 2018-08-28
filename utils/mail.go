@@ -59,7 +59,7 @@ func NewSMTPEmailSender() *EmailContext {
 func NewAmazonEmailSender() *EmailContext {
 	var config = viper.GetStringMapString("amazonmailsettings")
 
-	return &EmailContext{&AmazonMailSender{conf: amazonMailSettings{
+	return &EmailContext{&AmazonMailSender{conf: AmazonMailSettings{
 		Sender:    config["sender"],
 		AwsRegion: config["awsregion"],
 		CharSet:   config["charset"],
@@ -179,7 +179,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	return nil, nil
 }
 
-type amazonMailSettings struct {
+type AmazonMailSettings struct {
 	Sender    string
 	AwsRegion string
 	CharSet   string
@@ -187,7 +187,7 @@ type amazonMailSettings struct {
 
 // AmazonMailSender is an email sending method (using Amazon SES to semd mails)
 type AmazonMailSender struct {
-	conf amazonMailSettings
+	conf AmazonMailSettings
 }
 
 // Send sends email using the SMTP

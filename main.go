@@ -10,7 +10,7 @@ import (
 	"twreporter.org/go-api/routers"
 	"twreporter.org/go-api/utils"
 
-	log "github.com/Sirupsen/logrus"
+	//log "github.com/Sirupsen/logrus"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
@@ -21,6 +21,10 @@ func main() {
 	viper.SetConfigType("json")
 	viper.SetConfigFile("./configs/config.json")
 	err = viper.ReadInConfig()
+
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
 
 	viper.SetDefault("consumersettings", map[string]string{
 		"protocol": "http",
@@ -36,6 +40,22 @@ func main() {
 		"token":      "twreporter-token",
 		"expiration": 168,
 	})
+
+	viper.SetDefault("mongodbsettings", map[string]interface{}{
+		"url":     "locahost",
+		"dbname":  "plate",
+		"timeout": 5,
+	})
+
+	viper.SetDefault("dbsettings", map[string]string{
+		"name":     "gorm",
+		"user":     "gorm",
+		"password": "gorm",
+		"address":  "127.0.0.1",
+		"port":     "3306",
+	})
+
+	viper.SetDefault("encryptsettings.salt", "salt")
 
 	viper.SetDefault("mongodbsettings", map[string]interface{}{
 		"url":     "locahost",
