@@ -4,8 +4,6 @@ const (
 	// controller name
 	MembershipController = "membership_controller"
 	NewsController       = "news_controller"
-	FacebookController   = "facebook_controller"
-	GoogleController     = "google_controller"
 
 	RegistrationTable = "registrations"
 
@@ -39,4 +37,8 @@ const (
 	// table name
 	TableUsersBookmarks = "users_bookmarks"
 	TableBookmarks      = "bookmarks"
+
+	// oauth type
+	GoogleOAuth   = "Google"
+	FacebookOAuth = "Facebook"
 )

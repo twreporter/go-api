@@ -6,6 +6,7 @@ import (
 	// "gopkg.in/mgo.v2/bson"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
+	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -29,6 +30,18 @@ func (cf *ControllerFactory) GetFacebookController() Facebook {
 	return Facebook{Storage: gs}
 }
 
+func (cf *ControllerFactory) GetOAuthController(oauthType string) (oauth *OAuth) {
+	gs := storage.NewGormStorage(cf.gormDB)
+	oauth = &OAuth{Storage: gs}
+	if oauthType == constants.GoogleOAuth {
+		oauth.InitGoogleConfig()
+	} else {
+		oauth.InitFacebookConfig()
+	}
+
+	return oauth
+}
+
 func (cf *ControllerFactory) GetMembershipController() *MembershipController {
 	gs := storage.NewGormStorage(cf.gormDB)
 	return NewMembershipController(gs)
@@ -41,6 +54,14 @@ func (cf *ControllerFactory) GetNewsController() *NewsController {
 
 func (cf *ControllerFactory) GetMailSender() *utils.EmailContext {
 	return cf.mailSender
+}
+
+func (cf *ControllerFactory) GetMgoSession() *mgo.Session {
+	return cf.mgoSession
+}
+
+func (cf *ControllerFactory) GetGormDB() *gorm.DB {
+	return cf.gormDB
 }
 
 // NewControllerFactory ...

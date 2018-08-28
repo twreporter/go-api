@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/controllers"
@@ -66,15 +67,15 @@ var (
 func OpenGormConnection() (db *gorm.DB, err error) {
 	dbhost := os.Getenv("GORM_DBADDRESS")
 	if dbhost != "" {
-		utils.Cfg.DBSettings.Address = dbhost
+		viper.SetDefault("dbsettings.address", dbhost)
 	} else {
-		utils.Cfg.DBSettings.Address = "127.0.0.1"
+		viper.SetDefault("dbsettings.address", "127.0.0.1")
 	}
 
-	utils.Cfg.DBSettings.User = "gorm"
-	utils.Cfg.DBSettings.Password = "gorm"
-	utils.Cfg.DBSettings.Port = "3306"
-	utils.Cfg.DBSettings.Name = "gorm"
+	viper.SetDefault("dbsettings.user", "gorm")
+	viper.SetDefault("dbsettings.password", "gorm")
+	viper.SetDefault("dbsettings.port", "3306")
+	viper.SetDefault("dbsettings.name", "gorm")
 
 	db, _ = utils.InitDB(10, 5)
 
@@ -91,6 +92,9 @@ func OpenMgoConnection() (session *mgo.Session, err error) {
 		dbhost = "localhost"
 	}
 	session, err = mgo.Dial(dbhost)
+
+	// set settings
+	viper.SetDefault("mongodbsettings.dbname", MgoDBName)
 
 	return
 }

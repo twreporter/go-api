@@ -8,10 +8,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/utils"
 )
 
 var Defaults = struct {
@@ -43,10 +43,8 @@ func TestPing(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	var err error
-	// set default config
-	utils.Cfg.SetDefaults()
-	// set default mongo database to MgoDBName
-	utils.Cfg.MongoDBSettings.DBName = MgoDBName
+	viper.SetDefault("consumersettings.host", "www.twreporter.org")
+	viper.SetDefault("consumersettings.protocol", "https")
 
 	// Create DB connections
 	if DB, err = OpenGormConnection(); err != nil {

@@ -52,3 +52,6 @@ import:
   - service/ses
   - aws/awserr
 - package: github.com/gin-contrib/sessions
+- package: github.com/spf13/viper
+  version: ^1.1.0
+- package: github.com/kidstuff/mongostore

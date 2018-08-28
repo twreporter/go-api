@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
+	//"github.com/spf13/viper"
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/utils"
@@ -147,8 +148,8 @@ func (mc *MembershipController) ActivateRegistration(c *gin.Context) {
 	token := c.Query("activeToken")
 
 	u := url.URL{
-		Host:   utils.Cfg.ConsumerSettings.Host,
-		Scheme: utils.Cfg.ConsumerSettings.Protocol,
+		Host:   viper.GetString("consumersettings.host"),
+		Scheme: viper.GetString("consumersettings.protocol"),
 		Path:   constants.Activate,
 	}
 

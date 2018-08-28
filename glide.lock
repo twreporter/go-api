@@ -1,5 +1,5 @@
-hash: 80fac25b7386881a7fe20f03643a6a039aa339c7d2ab4c6302fcd5d9269d04b2
-updated: 2018-08-27T18:56:56.864272913+08:00
+hash: fa10809bc54f3a88f30d3f2744834bc8a86fdc6c57383568bfc5e4bc06214ce3
+updated: 2018-08-29T16:37:42.731289761+08:00
 imports:
 - name: cloud.google.com/go
   version: 64a2037ec6be8a4b0c1d1f706ed35b428b989239
@@ -13,7 +13,7 @@ imports:
 - name: github.com/auth0/go-jwt-middleware
   version: 5493cabe49f7bfa6e2ec444a09d334d90cd4e2bd
 - name: github.com/aws/aws-sdk-go
-  version: 4324bc9d8865bdb3e6aa86ec7772ca1272d2750e
+  version: 8b15f938ed215522a37275106e847f6f0be85fe8
   subpackages:
   - aws
   - aws/awserr
@@ -45,10 +45,14 @@ imports:
   - service/sts
 - name: github.com/dgrijalva/jwt-go
   version: 06ea1031745cb8b3dab3f6a236daf2b0aa468b7e
+- name: github.com/fsnotify/fsnotify
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: github.com/gin-contrib/cors
   version: 567de191692713543513692ecba9f6ca08cd660a
 - name: github.com/gin-contrib/sessions
   version: 58cbcf30135cc04c55e4499757142265d58e62d6
+  subpackages:
+  - mongo
 - name: github.com/gin-contrib/sse
   version: 22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae
 - name: github.com/gin-gonic/gin
@@ -65,6 +69,24 @@ imports:
   version: 2402d76f3d41f928c7902a765dfc872356dd3aad
   subpackages:
   - proto
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/securecookie
+  version: 51f47194a536d357035c4ad9304e2fa42dde262a
+- name: github.com/gorilla/sessions
+  version: 03b6f63cc43ef9c7240a635a5e22b13180e822b8
+- name: github.com/hashicorp/hcl
+  version: 8cb6e5b959231cc1119e43259c4a608f9c51a241
+  subpackages:
+  - hcl/ast
+  - hcl/parser
+  - hcl/printer
+  - hcl/scanner
+  - hcl/strconv
+  - hcl/token
+  - json/parser
+  - json/scanner
+  - json/token
 - name: github.com/jinzhu/configor
   version: b7df2005e02e9226447139012db968eda90a4b91
 - name: github.com/jinzhu/copier
@@ -79,14 +101,34 @@ imports:
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
+- name: github.com/kidstuff/mongostore
+  version: db2a8b4fac1f737c75e7fb84cb3fdb07dfc8fbc9
+- name: github.com/magiconair/properties
+  version: c2353362d570a7bfa228149c62842019201cfb71
 - name: github.com/mattn/go-isatty
   version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
+- name: github.com/mitchellh/mapstructure
+  version: fa473d140ef3c6adf42d6b391fe76707f1f243c8
 - name: github.com/modern-go/concurrent
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
   version: 94122c33edd36123c84d5368cfb2b69df93a0ec8
+- name: github.com/pelletier/go-toml
+  version: c2dbbc24a97911339e01bda0b8cabdbd8f13b602
 - name: github.com/Sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
+- name: github.com/spf13/afero
+  version: 787d034dfe70e44075ccc060d346146ef53270ad
+  subpackages:
+  - mem
+- name: github.com/spf13/cast
+  version: 8965335b8c7107321228e3e3702cab9832751bac
+- name: github.com/spf13/jwalterweatherman
+  version: 14d3d4c518341bea657dd8a226f5121c0ff8c9f2
+- name: github.com/spf13/pflag
+  version: d929dcbb10863323c436af3cf76cb16a6dfc9b29
+- name: github.com/spf13/viper
+  version: 907c19d40d9a6c9bb55f040ff4ae45271a4754b9
 - name: github.com/stretchr/testify
   version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
@@ -124,6 +166,11 @@ imports:
   version: 1e99a4f9d247b28c670884b9a8d6801f39a47b77
   subpackages:
   - unix
+- name: golang.org/x/text
+  version: 6e3c4e7365ddcc329f090f96e4348398f6310088
+  subpackages:
+  - transform
+  - unicode/norm
 - name: google.golang.org/appengine
   version: 170382fa85b10b94728989dfcf6cc818b335c952
   subpackages:

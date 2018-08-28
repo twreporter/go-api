@@ -15,6 +15,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
 
 	"golang.org/x/oauth2"
@@ -29,18 +30,18 @@ type Facebook struct {
 
 // InitOauthConfig initialize facebook oauth config
 func (f *Facebook) InitOauthConfig(destination string) {
-	consumerSettings := utils.Cfg.ConsumerSettings
 	if destination == "" {
-		destination = consumerSettings.Protocol + "://" + consumerSettings.Host + ":" + consumerSettings.Port
+		destination = viper.GetString("consumersettings.protocol") + "://" +
+			viper.GetString("consumersettings.host") + ":" + viper.GetString("consumersettings.port")
 	}
 
 	destination = url.QueryEscape(destination)
-	redirectURL := utils.Cfg.OauthSettings.FacebookSettings.URL + "?destination=" + destination
+	redirectURL := fmt.Sprintf("%s://%s:%s/v1/auth/facebook/callback?destination=%s", viper.GetString("appsettings.protocol"), viper.GetString("appsettings.host"), viper.GetString("appsettings.port"), destination)
 
 	if f.oauthConf == nil {
 		f.oauthConf = &oauth2.Config{
-			ClientID:     utils.Cfg.OauthSettings.FacebookSettings.ID,
-			ClientSecret: utils.Cfg.OauthSettings.FacebookSettings.Secret,
+			ClientID:     viper.GetString("oauthsettings.facebooksettings.id"),
+			ClientSecret: viper.GetString("oauthsettings.facebooksettings.secret"),
 			RedirectURL:  redirectURL,
 			Scopes:       []string{"public_profile", "email"},
 			Endpoint:     facebook.Endpoint,
@@ -63,7 +64,7 @@ func (f *Facebook) BeginAuth(c *gin.Context) {
 	parameters.Add("scope", strings.Join(f.oauthConf.Scopes, " "))
 	parameters.Add("redirect_uri", f.oauthConf.RedirectURL)
 	parameters.Add("response_type", "code")
-	parameters.Add("state", utils.Cfg.OauthSettings.FacebookSettings.Statestr)
+	parameters.Add("state", viper.GetString("oauthsettings.facebooksettings.statestr"))
 	URL.RawQuery = parameters.Encode()
 	url := URL.String()
 	http.Redirect(c.Writer, c.Request, url, http.StatusTemporaryRedirect)
@@ -98,13 +99,13 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 	// decode user data returned by Facebook
 	remoteOAuth = models.OAuthAccount{
 		Type:      constants.Facebook,
-		AId:       utils.ToNullString(gjson.Get(fstring, "id").Str),
-		Email:     utils.ToNullString(gjson.Get(fstring, "email").Str),
-		Name:      utils.ToNullString(gjson.Get(fstring, "name").Str),
-		FirstName: utils.ToNullString(gjson.Get(fstring, "first_name").Str),
-		LastName:  utils.ToNullString(gjson.Get(fstring, "last_name").Str),
+		AId:       models.NewNullString(gjson.Get(fstring, "id").Str),
+		Email:     models.NewNullString(gjson.Get(fstring, "email").Str),
+		Name:      models.NewNullString(gjson.Get(fstring, "name").Str),
+		FirstName: models.NewNullString(gjson.Get(fstring, "first_name").Str),
+		LastName:  models.NewNullString(gjson.Get(fstring, "last_name").Str),
 		Gender:    utils.GetGender(gjson.Get(fstring, "gender").Str),
-		Picture:   utils.ToNullString(gjson.Get(fstring, "picture.data.url").Str),
+		Picture:   models.NewNullString(gjson.Get(fstring, "picture.data.url").Str),
 	}
 
 	// get the record from o_auth_accounts table
@@ -134,7 +135,7 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 				// no record in users table with this email
 				// create a record in users table
 				// and create a record in o_auth_accounts table
-				matchUser = f.Storage.InsertUserByOAuth(remoteOAuth)
+				matchUser, err = f.Storage.InsertUserByOAuth(remoteOAuth)
 			} else {
 				// record existed in user table
 				// create record in o_auth_accounts table
@@ -150,7 +151,7 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 			// email is not provided in oAuth response
 			// create a record in users table
 			// and also create a record in o_auth_accounts table
-			matchUser = f.Storage.InsertUserByOAuth(remoteOAuth)
+			matchUser, err = f.Storage.InsertUserByOAuth(remoteOAuth)
 		}
 	} else {
 		// user signed in before
@@ -188,14 +189,14 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
-	c.SetCookie("auth_info", string(authResp), 100, u.Path, utils.Cfg.ConsumerSettings.Domain, secure, true)
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, viper.GetString("consumersettings.domain"), secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
 // GetRemoteUserData fetched user data from Facebook
 func (f *Facebook) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
-	oauthStateString := utils.Cfg.OauthSettings.FacebookSettings.Statestr
+	oauthStateString := viper.GetString("oauthsettings.facebooksettings.statestr")
 
 	// get Facebook OAuth Token
 	state := r.FormValue("state")

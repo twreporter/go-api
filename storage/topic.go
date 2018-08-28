@@ -1,8 +1,8 @@
 package storage
 
 import (
+	"github.com/spf13/viper"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/utils"
 	//log "github.com/Sirupsen/logrus"
 )
 
@@ -10,7 +10,7 @@ import (
 func (m *MongoStorage) _GetTopics(mq models.MongoQuery, limit int, offset int, sort string, embedded []string, isFull bool) ([]models.Topic, int, error) {
 	var topics []models.Topic
 
-	if utils.Cfg.Environment == "production" {
+	if viper.GetString("environment") == "production" {
 		mq.State = "published"
 	}
 

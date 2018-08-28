@@ -3,11 +3,14 @@ package routers
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/mongo"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/utils"
 )
 
 type wrappedFn func(c *gin.Context) (int, gin.H, error)
@@ -31,9 +34,10 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 
 	config := cors.DefaultConfig()
 
-	if utils.Cfg.Environment != "development" {
-		if len(utils.Cfg.CorsSettings.AllowOrigins) > 0 {
-			config.AllowOrigins = utils.Cfg.CorsSettings.AllowOrigins
+	if viper.GetString("environment") != "development" {
+		var allowOrigins = viper.GetStringSlice("corssettings.alloworigins")
+		if len(allowOrigins) > 0 {
+			config.AllowOrigins = allowOrigins
 		} else {
 			config.AllowOrigins = []string{"https://www.twreporter.org"}
 		}
@@ -90,7 +94,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.GET("/search/posts", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchPosts)
 
 	// =============================
-	// oauth endpoints
+	// v1 oauth endpoints
 	// =============================
 	authGroup := v1Group.Group("/auth")
 
@@ -100,6 +104,24 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	fc := cf.GetFacebookController()
 	authGroup.GET("/facebook", middlewares.SetCacheControl("no-store"), fc.BeginAuth)
 	authGroup.GET("/facebook/callback", middlewares.SetCacheControl("no-store"), fc.Authenticate)
+
+	// =============================
+	// v2 oauth endpoints
+	// =============================
+	v2Group := engine.Group("/v2")
+	v2AuthGroup := v2Group.Group("/auth")
+
+	session := cf.GetMgoSession()
+	c := session.DB("go-api").C("sessions")
+	store := mongo.NewStore(c, 3600, true, []byte("secret"))
+	v2AuthGroup.Use(sessions.Sessions("oauth-session", store))
+
+	ogc := cf.GetOAuthController(constants.GoogleOAuth)
+	v2AuthGroup.GET("/google", middlewares.SetCacheControl("no-store"), ogc.BeginOAuth)
+	v2AuthGroup.GET("/google/callback", middlewares.SetCacheControl("no-store"), ogc.Authenticate)
+	ofc := cf.GetOAuthController(constants.FacebookOAuth)
+	v2AuthGroup.GET("/facebook", middlewares.SetCacheControl("no-store"), ofc.BeginOAuth)
+	v2AuthGroup.GET("/facebook/callback", middlewares.SetCacheControl("no-store"), ofc.Authenticate)
 
 	return engine
 }
