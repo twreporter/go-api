@@ -201,7 +201,8 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 				Msg:             tapPayResp.Msg,
 				Status:          statusFail,
 			}
-			err = mc.Storage.DeleteAPeriodicDonation(periodicID, failResp)
+			// Procceed even if the deletion is failed
+			mc.Storage.DeleteAPeriodicDonation(periodicID, failResp)
 		}
 		errMsg := err.Error()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
