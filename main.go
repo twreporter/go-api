@@ -52,12 +52,14 @@ func main() {
 	// set up database connection
 	log.Info("Connecting to MySQL cloud")
 	db, err := utils.InitDB(10, 5)
+	defer db.Close()
 	if err != nil {
 		panic(err)
 	}
 
 	log.Info("Connecting to MongoDB replica")
 	session, err := utils.InitMongoDB()
+	defer session.Close()
 	if err != nil {
 		panic(err)
 	}
@@ -66,9 +68,6 @@ func main() {
 	mailSender := utils.NewAmazonEmailSender() // use Amazon SES to send mails
 
 	cf = controllers.NewControllerFactory(db, session, mailSender)
-
-	defer db.Close()
-	defer session.Close()
 
 	// set up the router
 	router := routers.SetupRouter(cf)

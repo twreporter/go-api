@@ -62,12 +62,10 @@ func beginAuth(c *gin.Context, conf *oauth2.Config) {
 	var state string
 	var err error
 
-	destination := c.Request.URL.Query().Get("destination")
+	destination := c.Query("destination")
 	if destination == "" {
 		destination = defaultDestination
 	}
-
-	log.Infof("destination beginAuth %s", destination)
 
 	if state, err = utils.GenerateRandomString(32); err != nil {
 		state = "twreporter-oauth-state"
@@ -79,7 +77,6 @@ func beginAuth(c *gin.Context, conf *oauth2.Config) {
 	session.Save()
 
 	url := conf.AuthCodeURL(state)
-	log.Infof("url %#v", url)
 
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
@@ -91,13 +88,13 @@ func beginAuth(c *gin.Context, conf *oauth2.Config) {
 func getOauthUserInfo(c *gin.Context, conf *oauth2.Config, userInfoEndpoint string, oauthUser interface{}) error {
 	session := sessions.Default(c)
 	retrievedState := session.Get("state")
-	state := c.Request.URL.Query().Get("state")
+	state := c.Query("state")
 	if state != retrievedState {
 		log.Warnf("expect state is %s, but actual state is %s", retrievedState, state)
 		return models.NewAppError("getOauthUserInfo", "oauth fails", "Invalid oauth state", 500)
 	}
 
-	code := c.Request.URL.Query().Get("code")
+	code := c.Query("code")
 	token, err := conf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		return models.NewAppError("getOauthUserInfo", "oauth code exchange failed", err.Error(), http.StatusInternalServerError)
@@ -113,7 +110,6 @@ func getOauthUserInfo(c *gin.Context, conf *oauth2.Config, userInfoEndpoint stri
 	defer response.Body.Close()
 
 	userInfo, err := ioutil.ReadAll(response.Body)
-	log.Infof("userInfo: %#v", string(userInfo))
 
 	if err != nil {
 		return models.NewAppError("getOauthUserInfo", "error parsing user data", err.Error(), http.StatusInternalServerError)
@@ -280,8 +276,6 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 		return
 	}
 
-	log.Infof("oauthUser: %#v", oauthUser)
-
 	oauthUser.Type = oauthType
 
 	if matchUser, err = findOrCreateUser(oauthUser, o.Storage); err != nil {
@@ -298,7 +292,6 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 
 	var u *url.URL
 	var secure = false
-	log.Infof(" destination: %s", destination)
 	u, err = url.Parse(destination)
 
 	if u.Scheme == "https" {
@@ -310,8 +303,6 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 
 	u.RawQuery = parameters.Encode()
 	destination = u.String()
-
-	log.Infof("authenticate destination: %s", destination)
 
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege,
 		FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String,

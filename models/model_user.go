@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	// log "github.com/Sirupsen/logrus"
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -35,7 +35,6 @@ func (v *NullString) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
-	log.Infof("s: %#v", *s)
 	if s != nil {
 		v.Valid = true
 		v.String = *s
