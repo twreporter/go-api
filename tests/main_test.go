@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/models"
@@ -42,6 +43,9 @@ func TestPing(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	var err error
+	viper.SetDefault("consumersettings.host", "www.twreporter.org")
+	viper.SetDefault("consumersettings.protocol", "https")
+
 	// Create DB connections
 	if DB, err = OpenGormConnection(); err != nil {
 		panic(fmt.Sprintf("No error should happen when connecting to test database, but got err=%+v", err))

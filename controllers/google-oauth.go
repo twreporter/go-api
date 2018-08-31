@@ -2,18 +2,19 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	"twreporter.org/go-api/configs/constants"
-	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
 
 	"golang.org/x/oauth2"
@@ -26,32 +27,20 @@ type Google struct {
 	oauthConf *oauth2.Config
 }
 
-// SetRoute set endpoints for serving google oauth
-func (g Google) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	group.GET("/auth/google", middlewares.SetCacheControl("no-store"), g.BeginAuth)
-	group.GET("/auth/google/callback", middlewares.SetCacheControl("no-store"), g.Authenticate)
-	return group
-}
-
-// Close ...
-func (g Google) Close() error {
-	return nil
-}
-
 // InitOauthConfig initialize google oauth config
 func (g *Google) InitOauthConfig(destination string) {
-	consumerSettings := utils.Cfg.ConsumerSettings
 	if destination == "" {
-		destination = consumerSettings.Protocol + "://" + consumerSettings.Host + ":" + consumerSettings.Port + "/activate"
+		destination = viper.GetString("consumersettings.protocol") + "://" +
+			viper.GetString("consumersettings.host") + ":" + viper.GetString("consumersettings.port") + "/activate"
 	}
 
 	destination = url.QueryEscape(destination)
-	redirectURL := utils.Cfg.OauthSettings.GoogleSettings.URL + "?destination=" + destination
+	redirectURL := fmt.Sprintf("%s://%s:%s/v1/auth/google/callback?destination=%s", viper.GetString("appsettings.protocol"), viper.GetString("appsettings.host"), viper.GetString("appsettings.port"), destination)
 
 	if g.oauthConf == nil {
 		g.oauthConf = &oauth2.Config{
-			ClientID:     utils.Cfg.OauthSettings.GoogleSettings.ID,
-			ClientSecret: utils.Cfg.OauthSettings.GoogleSettings.Secret,
+			ClientID:     viper.GetString("oauthsettings.googlesettings.id"),
+			ClientSecret: viper.GetString("oauthsettings.googlesettings.secret"),
 			RedirectURL:  redirectURL,
 			Scopes: []string{
 				"profile", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
@@ -71,24 +60,34 @@ func (g *Google) BeginAuth(c *gin.Context) {
 
 	g.InitOauthConfig(destination)
 
-	url := g.oauthConf.AuthCodeURL(utils.Cfg.OauthSettings.GoogleSettings.Statestr)
+	url := g.oauthConf.AuthCodeURL(viper.GetString("oauthsettings.googlesettings.statestr"))
 
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // Authenticate requests the user profile from Google
 func (g *Google) Authenticate(c *gin.Context) {
-	var appErr models.AppError
+	var appErr *models.AppError
+	var destination string
 	var err error
+	var fstring string
 	var matchUser models.User
 	var remoteOAuth models.OAuthAccount
+	var token string
 
-	destination := c.Query("destination")
+	defer func() {
+		// for better ux, redirect users to destination due to internal server error
+		if err != nil {
+			appErr = appErrorTypeAssertion(err)
+			log.Error(appErr.Error())
+			c.Redirect(http.StatusTemporaryRedirect, destination)
+		}
+	}()
+
+	destination = c.Query("destination")
 
 	// get user data from Google
-	fstring, err := g.GetRemoteUserData(c.Request, c.Writer)
-	if err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, destination)
+	if fstring, err = g.GetRemoteUserData(c.Request, c.Writer); err != nil {
 		return
 	}
 
@@ -110,12 +109,10 @@ func (g *Google) Authenticate(c *gin.Context) {
 	// oAuth account is not existed
 	// sign in by oauth for the first time
 	if err != nil {
-		appErr = err.(models.AppError)
+		appErr = appErrorTypeAssertion(err)
 
 		// return internal server error
 		if appErr.StatusCode != http.StatusNotFound {
-			c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
-
 			return
 		}
 
@@ -126,18 +123,17 @@ func (g *Google) Authenticate(c *gin.Context) {
 
 			// record is not existed in users table
 			if err != nil {
-				appErr = err.(models.AppError)
+				appErr = err.(*models.AppError)
 
 				// return internal server error
 				if appErr.StatusCode != http.StatusNotFound {
-					c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
 					return
 				}
 
 				// no record in users table with this email
 				// create a record in users table
 				// and create a record in o_auth_accounts table
-				matchUser = g.Storage.InsertUserByOAuth(remoteOAuth)
+				matchUser, err = g.Storage.InsertUserByOAuth(remoteOAuth)
 			} else {
 				// record existed in user table
 				// create record in o_auth_accounts table
@@ -145,9 +141,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 				remoteOAuth.UserID = matchUser.ID
 				err = g.Storage.InsertOAuthAccount(remoteOAuth)
 
-				// return internal server error
 				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 					return
 				}
 			}
@@ -155,27 +149,24 @@ func (g *Google) Authenticate(c *gin.Context) {
 			// email is not provided in oAuth response
 			// create a record in users table
 			// and also create a record in o_auth_accounts table
-			matchUser = g.Storage.InsertUserByOAuth(remoteOAuth)
+			matchUser, err = g.Storage.InsertUserByOAuth(remoteOAuth)
 		}
 	} else {
 		// user signed in before
 		matchUser, err = g.Storage.GetUserDataByOAuth(remoteOAuth)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 			return
 		}
 
 		// update existing OAuth data
 		_, err = g.Storage.UpdateOAuthData(remoteOAuth)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 			return
 		}
 	}
 
-	token, err := utils.RetrieveToken(matchUser.ID, matchUser.Email.String)
+	token, err = utils.RetrieveToken(matchUser.ID, matchUser.Email.String)
 	if err != nil {
-		c.JSON(appErr.StatusCode, gin.H{"status": "error", "error": appErr.Error()})
 		return
 	}
 
@@ -196,7 +187,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
-	c.SetCookie("auth_info", string(authResp), 100, u.Path, utils.Cfg.ConsumerSettings.Domain, secure, true)
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, viper.GetString("consumersettings.domain"), secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
@@ -204,31 +195,29 @@ func (g *Google) Authenticate(c *gin.Context) {
 func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
 	state := r.FormValue("state")
-	if state != utils.Cfg.OauthSettings.GoogleSettings.Statestr {
-		log.Warnf("controllers.oauth.google.getRemoteUserData. Invalid oauth state, expected '%s', got '%s'\n", utils.Cfg.OauthSettings.GoogleSettings.Statestr, state)
+	if state != viper.GetString("oauthsettings.googlesettings.statestr") {
+		log.Warnf("controllers.oauth.google.getRemoteUserData. Invalid oauth state, expected '%s', got '%s'\n", viper.GetString("oauthsettings.googlesettings.statestr"), state)
 		return "", models.NewAppError("OAuth state", "controllers.oauth.google", "Invalid oauth state", 500)
 	}
 
 	code := r.FormValue("code")
+
 	token, err := g.oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		log.Warnf("controllers.oauth.google.getRemoteUserData. Code exchange failed with '%s'\n", err)
-		return "", models.NewAppError("Code exchange failed", "controllers.oauth.google", err.Error(), 500)
+		return "", models.NewAppError("Google.GetRemoteUserData", "code exchange failed", err.Error(), http.StatusInternalServerError)
 	}
 
 	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
-		log.Warn("controllers.oauth.google.getRemoteUserData. Cannot get user info using Google API")
-		return "", models.NewAppError("Cannot get user info using Google API", "controllers.oauth.google", err.Error(), 500)
+		return "", models.NewAppError("Google.GetRemoteUserData", "cannot get user info using Google API", err.Error(), http.StatusInternalServerError)
 	}
 
 	defer utils.Check(response.Body.Close)
+
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Warn("controllers.oauth.google.getRemoteUserData. Error parsing Google user data")
-		return "", models.NewAppError("Error parsing Google user data", "controllers.oauth.google", err.Error(), 500)
+		return "", models.NewAppError("Google.GetRemoteUserData", "error parsing Google user data", err.Error(), http.StatusInternalServerError)
 	}
-	// fmt.Fprintf(w, "Content: %s\n", contents)
 
 	return string(contents), nil
 }

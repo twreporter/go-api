@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/jinzhu/copier"
+	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/utils"
 	//	log "github.com/Sirupsen/logrus"
 )
 
@@ -39,7 +39,7 @@ func (m *MongoStorage) GetFullAuthors(limit int, offset int, sort string) ([]mod
 		bson.M{"$lookup": bson.M{"from": "images", "localField": "image", "foreignField": "_id", "as": "thumbnails"}},
 	}
 
-	collection := m.db.DB(utils.Cfg.MongoDBSettings.DBName).C("contacts")
+	collection := m.db.DB(viper.GetString("mongodbsettings.dbname")).C("contacts")
 	if total, err = collection.Count(); err != nil {
 		return authors, 0, m.NewStorageError(err, "MongoStorage.GetFullAuthors", "can not get total count of authors")
 	}

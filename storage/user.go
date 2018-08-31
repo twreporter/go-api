@@ -1,14 +1,13 @@
 package storage
 
 import (
-	"database/sql"
+	"fmt"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/go-sql-driver/mysql"
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/utils"
 )
 
 // GetUserByID gets the user by its ID
@@ -17,7 +16,7 @@ func (gs *GormStorage) GetUserByID(userID string) (models.User, error) {
 
 	// SELECT * FROM users WHERE ID = $userID
 	if err := gs.db.First(&user, "id = ?", userID).Error; err != nil {
-		return user, gs.NewStorageError(err, "GormStorage.GetUserByID", "storage.user.get_user_by_id.error")
+		return user, gs.NewStorageError(err, "GormStorage.GetUserByID", fmt.Sprintf("get user(id: %s) error", userID))
 	}
 
 	return user, nil
@@ -30,18 +29,18 @@ func (gs *GormStorage) GetUserByEmail(email string) (models.User, error) {
 	// SELECT * FROM users WHERE email = $email
 	err := gs.db.First(&user, "email = ?", email).Error
 	if err != nil {
-		return user, gs.NewStorageError(err, "GormStorage.GetOAuthData", "storage.user.get_o_auth_data.error")
+		return user, gs.NewStorageError(err, "GormStorage.GetOAuthData", fmt.Sprintf("get user(email: %s) error", email))
 	}
 	return user, err
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
-func (gs *GormStorage) GetOAuthData(aid sql.NullString, aType string) (models.OAuthAccount, error) {
+func (gs *GormStorage) GetOAuthData(aid models.NullString, aType string) (models.OAuthAccount, error) {
 	log.Info("Getting the matching OAuth data", aid)
 	oac := models.OAuthAccount{}
 	err := gs.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).Last(&oac).Error
 	if err != nil {
-		return oac, gs.NewStorageError(err, "GormStorage.GetOAuthData", "storage.user.get_o_auth_data.error")
+		return oac, gs.NewStorageError(err, "GormStorage.GetOAuthData", "get oauth account error")
 	}
 	return oac, err
 }
@@ -72,7 +71,7 @@ func (gs *GormStorage) GetReporterAccountData(email string) (models.ReporterAcco
 
 	ra := models.ReporterAccount{}
 	err := gs.db.Where(&models.ReporterAccount{Email: email}).Find(&ra).Error
-	return ra, gs.NewStorageError(err, "GormStorage.GetReporterAccountData", "Getting account from reporter_accounts table occurs error")
+	return ra, gs.NewStorageError(err, "GormStorage.GetReporterAccountData", fmt.Sprintf("get reporter account(email: %s) error", email))
 }
 
 // GetUserDataByReporterAccount get user data from user table by providing its reporter account data
@@ -87,7 +86,7 @@ func (gs *GormStorage) GetUserDataByReporterAccount(ra models.ReporterAccount) (
 func (gs *GormStorage) InsertOAuthAccount(account models.OAuthAccount) error {
 	err := gs.db.Create(&account).Error
 	if err != nil {
-		return gs.NewStorageError(err, "GormStorage.InsertOAuthAccount", "storage.user.create_oauth_account.error")
+		return gs.NewStorageError(err, "GormStorage.InsertOAuthAccount", fmt.Sprint("create oauth account error"))
 	}
 	return nil
 }
@@ -96,15 +95,15 @@ func (gs *GormStorage) InsertOAuthAccount(account models.OAuthAccount) error {
 func (gs *GormStorage) InsertReporterAccount(account models.ReporterAccount) error {
 	err := gs.db.Create(&account).Error
 	if err != nil {
-		return gs.NewStorageError(err, "GormStorage.InsertReporterAccount", "storage.user.create_reporter_account.error")
+		return gs.NewStorageError(err, "GormStorage.InsertReporterAccount", fmt.Sprint("create reporter account error"))
 	}
 	return nil
 }
 
 // InsertUserByOAuth insert a new user into db after the oath loginin
-func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
+func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user models.User, err error) {
 	log.Info("Inserting user data")
-	user := models.User{
+	user = models.User{
 		OAuthAccounts:    []models.OAuthAccount{omodel},
 		Email:            omodel.Email,
 		FirstName:        omodel.FirstName,
@@ -113,15 +112,15 @@ func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User
 		Privilege:        constants.PrivilegeRegistered,
 		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
 	}
-	gs.db.Create(&user)
-	return user
+	err = gs.db.Create(&user).Error
+	return user, err
 }
 
 // InsertUserByReporterAccount insert a new user into db after the sign up
 func (gs *GormStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
 	user := models.User{
 		ReporterAccount:  raModel,
-		Email:            utils.ToNullString(raModel.Email),
+		Email:            models.NewNullString(raModel.Email),
 		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
 	}
 	err := gs.db.Create(&user).Error

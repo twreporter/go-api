@@ -10,11 +10,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/routers"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 )
@@ -66,15 +67,15 @@ var (
 func OpenGormConnection() (db *gorm.DB, err error) {
 	dbhost := os.Getenv("GORM_DBADDRESS")
 	if dbhost != "" {
-		utils.Cfg.DBSettings.Address = dbhost
+		viper.SetDefault("dbsettings.address", dbhost)
 	} else {
-		utils.Cfg.DBSettings.Address = "127.0.0.1"
+		viper.SetDefault("dbsettings.address", "127.0.0.1")
 	}
 
-	utils.Cfg.DBSettings.User = "gorm"
-	utils.Cfg.DBSettings.Password = "gorm"
-	utils.Cfg.DBSettings.Port = "3306"
-	utils.Cfg.DBSettings.Name = "gorm"
+	viper.SetDefault("dbsettings.user", "gorm")
+	viper.SetDefault("dbsettings.password", "gorm")
+	viper.SetDefault("dbsettings.port", "3306")
+	viper.SetDefault("dbsettings.name", "gorm")
 
 	db, _ = utils.InitDB(10, 5)
 
@@ -93,7 +94,7 @@ func OpenMgoConnection() (session *mgo.Session, err error) {
 	session, err = mgo.Dial(dbhost)
 
 	// set settings
-	utils.Cfg.MongoDBSettings.DBName = MgoDBName
+	viper.SetDefault("mongodbsettings.dbname", MgoDBName)
 
 	return
 }
@@ -278,34 +279,16 @@ func SetGormDefaultRecords() {
 	ms.CreateRegistration(DefaultService, models.RegistrationJSON{Email: DefaultAccount, ActivateToken: DefaultToken})
 }
 
+type mockMailStrategy struct{}
+
+func (s mockMailStrategy) Send(to, subject, body string) error {
+	return nil
+}
+
 func SetupGinServer() {
-	// set up data storage
-	gs := storage.NewGormStorage(DB)
-
-	// init controllers
-	mc := controllers.NewMembershipController(gs)
-	fc := controllers.Facebook{Storage: gs}
-	gc := controllers.Google{Storage: gs}
-
-	ms := storage.NewMongoStorage(MgoDB)
-	nc := controllers.NewNewsController(ms)
-
-	cf := &controllers.ControllerFactory{
-		Controllers: make(map[string]controllers.Controller),
-	}
-	cf.SetController(constants.MembershipController, mc)
-	cf.SetController(constants.FacebookController, fc)
-	cf.SetController(constants.GoogleController, gc)
-	cf.SetController(constants.NewsController, nc)
-
-	Engine = gin.Default()
-	routerGroup := Engine.Group("/v1")
-	{
-		menuitems := new(controllers.MenuItemsController)
-		routerGroup.GET("/ping", menuitems.Retrieve)
-	}
-
-	routerGroup = cf.SetRoute(routerGroup)
+	strategy := mockMailStrategy{}
+	cf := controllers.NewControllerFactory(DB, MgoDB, utils.NewEmailSender(strategy))
+	Engine = routers.SetupRouter(cf)
 }
 
 func RequestWithBody(method, path, body string) (req *http.Request) {

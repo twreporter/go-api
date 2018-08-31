@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"twreporter.org/go-api/storage"
-	"twreporter.org/go-api/utils"
 )
 
 type UserJSON struct {
@@ -32,6 +32,11 @@ type RegistrationResponse struct {
 	Status        string             `json:"status"`
 	Registrations []RegistrationJSON `json:"records"`
 	Count         int                `json:"count"`
+}
+
+func init() {
+	viper.SetDefault("consumersettings.host", "www.twreporter.org")
+	viper.SetDefault("consumersettings.protocol", "https")
 }
 
 func TestRegisterAndDeregister(t *testing.T) {
@@ -100,8 +105,6 @@ func TestGetRegisterUsers(t *testing.T) {
 }
 
 func TestActivateRegistration(t *testing.T) {
-	utils.Cfg.ConsumerSettings.Host = "www.twreporter.org"
-	utils.Cfg.ConsumerSettings.Protocol = "https"
 	resp := ServeHTTP("GET", fmt.Sprintf("/v1/activation/default_service/%v?activeToken=default_token", DefaultAccount), "", "", "")
 	assert.Equal(t, resp.Code, 307)
 

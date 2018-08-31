@@ -9,12 +9,12 @@ import (
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/utils"
+	"github.com/spf13/viper"
 )
 
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-		return []byte(utils.Cfg.AppSettings.Token), nil
+		return []byte(viper.GetString("appsettings.token")), nil
 	},
 	SigningMethod: jwt.SigningMethodHS256,
 })

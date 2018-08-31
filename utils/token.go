@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/spf13/viper"
 	"twreporter.org/go-api/models"
 	//log "github.com/Sirupsen/logrus"
 )
@@ -17,15 +19,14 @@ type ReporterJWTClaims struct {
 
 // RetrieveToken - generate jwt token according to user's info
 func RetrieveToken(userID uint, email string) (string, error) {
-
 	// Create the Claims
 	claims := ReporterJWTClaims{
 		userID,
 		email,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * Cfg.AppSettings.Expiration).Unix(),
-			Issuer:    Cfg.AppSettings.Protocol + "://" + Cfg.AppSettings.Host + ":" + Cfg.AppSettings.Port,
-			Audience:  Cfg.ConsumerSettings.Protocol + "://" + Cfg.ConsumerSettings.Host + ":" + Cfg.ConsumerSettings.Port,
+			ExpiresAt: time.Now().Add(time.Hour * viper.GetDuration("appsettings.expiration")).Unix(),
+			Issuer:    viper.GetString("appsettings.protocol") + "://" + viper.GetString("appsettings.host") + ":" + viper.GetString("appsettings.port"),
+			Audience:  viper.GetString("consumersettings.protocol") + "://" + viper.GetString("consumersettings.host") + ":" + viper.GetString("consumersettings.port"),
 		},
 	}
 
@@ -33,10 +34,10 @@ func RetrieveToken(userID uint, email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/* Sign the token with our secret */
-	tokenString, err := token.SignedString([]byte(Cfg.AppSettings.Token))
+	tokenString, err := token.SignedString([]byte(viper.GetString("appsettings.token")))
 
 	if err != nil {
-		return "", models.NewAppError("RetrieveToken", "utils.token.retrieve_token", err.Error(), 500)
+		return "", models.NewAppError("RetrieveToken", "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)
 	}
 
 	return tokenString, nil
