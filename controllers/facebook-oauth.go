@@ -9,18 +9,20 @@ import (
 	"strings"
 
 	"twreporter.org/go-api/configs/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
 )
+
+const oauthState = "twreporter-state"
 
 // Facebook ...
 type Facebook struct {
@@ -31,17 +33,16 @@ type Facebook struct {
 // InitOauthConfig initialize facebook oauth config
 func (f *Facebook) InitOauthConfig(destination string) {
 	if destination == "" {
-		destination = viper.GetString("consumersettings.protocol") + "://" +
-			viper.GetString("consumersettings.host") + ":" + viper.GetString("consumersettings.port")
+		destination = "https://www.twreporter.org:443"
 	}
 
 	destination = url.QueryEscape(destination)
-	redirectURL := fmt.Sprintf("%s://%s:%s/v1/auth/facebook/callback?destination=%s", viper.GetString("appsettings.protocol"), viper.GetString("appsettings.host"), viper.GetString("appsettings.port"), destination)
+	redirectURL := fmt.Sprintf("%s://%s:%s/v1/auth/facebook/callback?destination=%s", globals.Conf.App.Protocol, globals.Conf.App.Host, globals.Conf.App.Port, destination)
 
 	if f.oauthConf == nil {
 		f.oauthConf = &oauth2.Config{
-			ClientID:     viper.GetString("oauthsettings.facebooksettings.id"),
-			ClientSecret: viper.GetString("oauthsettings.facebooksettings.secret"),
+			ClientID:     globals.Conf.Oauth.Facebook.ID,
+			ClientSecret: globals.Conf.Oauth.Facebook.Secret,
 			RedirectURL:  redirectURL,
 			Scopes:       []string{"public_profile", "email"},
 			Endpoint:     facebook.Endpoint,
@@ -64,7 +65,7 @@ func (f *Facebook) BeginAuth(c *gin.Context) {
 	parameters.Add("scope", strings.Join(f.oauthConf.Scopes, " "))
 	parameters.Add("redirect_uri", f.oauthConf.RedirectURL)
 	parameters.Add("response_type", "code")
-	parameters.Add("state", viper.GetString("oauthsettings.facebooksettings.statestr"))
+	parameters.Add("state", oauthState)
 	URL.RawQuery = parameters.Encode()
 	url := URL.String()
 	http.Redirect(c.Writer, c.Request, url, http.StatusTemporaryRedirect)
@@ -189,14 +190,14 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
-	c.SetCookie("auth_info", string(authResp), 100, u.Path, viper.GetString("consumersettings.domain"), secure, true)
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
 // GetRemoteUserData fetched user data from Facebook
 func (f *Facebook) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
-	oauthStateString := viper.GetString("oauthsettings.facebooksettings.statestr")
+	oauthStateString := oauthState
 
 	// get Facebook OAuth Token
 	state := r.FormValue("state")

@@ -67,15 +67,15 @@ var (
 func OpenGormConnection() (db *gorm.DB, err error) {
 	dbhost := os.Getenv("GORM_DBADDRESS")
 	if dbhost != "" {
-		viper.SetDefault("dbsettings.address", dbhost)
+		viper.SetDefault("db.mysql.address", dbhost)
 	} else {
-		viper.SetDefault("dbsettings.address", "127.0.0.1")
+		viper.SetDefault("db.mysql.address", "127.0.0.1")
 	}
 
-	viper.SetDefault("dbsettings.user", "gorm")
-	viper.SetDefault("dbsettings.password", "gorm")
-	viper.SetDefault("dbsettings.port", "3306")
-	viper.SetDefault("dbsettings.name", "gorm")
+	viper.SetDefault("db.mysql.user", "gorm")
+	viper.SetDefault("db.mysql.password", "gorm")
+	viper.SetDefault("db.mysql.port", "3306")
+	viper.SetDefault("db.mysql.name", "gorm")
 
 	db, _ = utils.InitDB(10, 5)
 
@@ -94,7 +94,7 @@ func OpenMgoConnection() (session *mgo.Session, err error) {
 	session, err = mgo.Dial(dbhost)
 
 	// set settings
-	viper.SetDefault("mongodbsettings.dbname", MgoDBName)
+	viper.SetDefault("db.mongo.dbname", MgoDBName)
 
 	return
 }

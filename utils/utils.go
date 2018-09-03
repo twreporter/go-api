@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"html/template"
 
-	"github.com/spf13/viper"
 	"golang.org/x/crypto/scrypt"
+
+	"twreporter.org/go-api/globals"
 	//log "github.com/Sirupsen/logrus"
 )
 
 // GenerateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
 func GenerateActivateMailBody(mailAddress, activeToken, destination string) string {
-	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", viper.GetString("consumersettings.protocol"), viper.GetString("consumersettings.host"), viper.GetString("consumersettings.port"), mailAddress, activeToken, destination)
+	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", globals.Conf.App.Protocol, globals.Conf.App.Host, globals.Conf.App.Port, mailAddress, activeToken, destination)
 
 	var defaultBody = fmt.Sprintf("<a href=\"%s\" target=\"_blank\">啟動報導者帳號</a>", href)
 
@@ -82,7 +83,7 @@ func GenerateRandomString(s int) (string, error) {
 // GenerateEncryptedPassword returns encryptedly
 // securely generated string.
 func GenerateEncryptedPassword(password []byte) (string, error) {
-	salt := []byte(viper.GetString("encryptsettings.salt"))
+	salt := []byte(globals.Conf.Encrypt.Salt)
 	key, err := scrypt.Key(password, salt, 16384, 8, 1, 32)
 	return fmt.Sprintf("%x", key), err
 }

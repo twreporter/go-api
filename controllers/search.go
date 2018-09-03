@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"twreporter.org/go-api/globals"
+
 	"github.com/algolia/algoliasearch-client-go/algoliasearch"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 // _Search - search records from algolia webservice
@@ -21,7 +22,7 @@ func (nc *NewsController) _Search(c *gin.Context, indexName string) {
 	page, err = strconv.Atoi(c.Query("page"))
 	keywords := c.Query("keywords")
 
-	client := algoliasearch.NewClient(viper.GetString("algoliasettings.applicationid"), viper.GetString("algoliasettings.apikey"))
+	client := algoliasearch.NewClient(globals.Conf.Algolia.ApplicationID, globals.Conf.Algolia.APIKey)
 	index := client.InitIndex(indexName)
 
 	res, err = index.Search(keywords, algoliasearch.Map{

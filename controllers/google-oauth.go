@@ -8,13 +8,13 @@ import (
 	"net/url"
 
 	"twreporter.org/go-api/configs/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
 
 	"golang.org/x/oauth2"
@@ -30,17 +30,16 @@ type Google struct {
 // InitOauthConfig initialize google oauth config
 func (g *Google) InitOauthConfig(destination string) {
 	if destination == "" {
-		destination = viper.GetString("consumersettings.protocol") + "://" +
-			viper.GetString("consumersettings.host") + ":" + viper.GetString("consumersettings.port") + "/activate"
+		destination = "https://www.twreporter.org/"
 	}
 
 	destination = url.QueryEscape(destination)
-	redirectURL := fmt.Sprintf("%s://%s:%s/v1/auth/google/callback?destination=%s", viper.GetString("appsettings.protocol"), viper.GetString("appsettings.host"), viper.GetString("appsettings.port"), destination)
+	redirectURL := fmt.Sprintf("%s://%s:%s/v1/auth/google/callback?destination=%s", globals.Conf.App.Protocol, globals.Conf.App.Host, globals.Conf.App.Port, destination)
 
 	if g.oauthConf == nil {
 		g.oauthConf = &oauth2.Config{
-			ClientID:     viper.GetString("oauthsettings.googlesettings.id"),
-			ClientSecret: viper.GetString("oauthsettings.googlesettings.secret"),
+			ClientID:     globals.Conf.Oauth.Google.ID,
+			ClientSecret: globals.Conf.Oauth.Google.Secret,
 			RedirectURL:  redirectURL,
 			Scopes: []string{
 				"profile", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
@@ -60,7 +59,7 @@ func (g *Google) BeginAuth(c *gin.Context) {
 
 	g.InitOauthConfig(destination)
 
-	url := g.oauthConf.AuthCodeURL(viper.GetString("oauthsettings.googlesettings.statestr"))
+	url := g.oauthConf.AuthCodeURL(oauthState)
 
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
@@ -187,7 +186,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
-	c.SetCookie("auth_info", string(authResp), 100, u.Path, viper.GetString("consumersettings.domain"), secure, true)
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
@@ -195,8 +194,8 @@ func (g *Google) Authenticate(c *gin.Context) {
 func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
 	state := r.FormValue("state")
-	if state != viper.GetString("oauthsettings.googlesettings.statestr") {
-		log.Warnf("controllers.oauth.google.getRemoteUserData. Invalid oauth state, expected '%s', got '%s'\n", viper.GetString("oauthsettings.googlesettings.statestr"), state)
+	if state != oauthState {
+		log.Warnf("controllers.oauth.google.getRemoteUserData. Invalid oauth state, expected '%s', got '%s'\n", oauthState, state)
 		return "", models.NewAppError("OAuth state", "controllers.oauth.google", "Invalid oauth state", 500)
 	}
 

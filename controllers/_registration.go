@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/spf13/viper"
 	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/utils"
 )

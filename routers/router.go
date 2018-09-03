@@ -6,9 +6,10 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/mongo"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
+
 	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/controllers"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 )
@@ -36,8 +37,8 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 
 	config := cors.DefaultConfig()
 
-	if viper.GetString("environment") != "development" {
-		var allowOrigins = viper.GetStringSlice("corssettings.alloworigins")
+	if globals.Conf.Environment != "development" {
+		var allowOrigins = globals.Conf.Cors.AllowOrigins
 		if len(allowOrigins) > 0 {
 			config.AllowOrigins = allowOrigins
 		} else {

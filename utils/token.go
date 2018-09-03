@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/spf13/viper"
+
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	//log "github.com/Sirupsen/logrus"
 )
@@ -24,9 +25,9 @@ func RetrieveToken(userID uint, email string) (string, error) {
 		userID,
 		email,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * viper.GetDuration("appsettings.expiration")).Unix(),
-			Issuer:    viper.GetString("appsettings.protocol") + "://" + viper.GetString("appsettings.host") + ":" + viper.GetString("appsettings.port"),
-			Audience:  viper.GetString("consumersettings.protocol") + "://" + viper.GetString("consumersettings.host") + ":" + viper.GetString("consumersettings.port"),
+			ExpiresAt: time.Now().Add(time.Second * time.Duration(globals.Conf.App.JwtExpiration)).Unix(),
+			Issuer:    globals.Conf.App.JwtIssuer,
+			Audience:  globals.Conf.App.JwtAudience,
 		},
 	}
 
@@ -34,7 +35,7 @@ func RetrieveToken(userID uint, email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/* Sign the token with our secret */
-	tokenString, err := token.SignedString([]byte(viper.GetString("appsettings.token")))
+	tokenString, err := token.SignedString([]byte(globals.Conf.App.JwtSecret))
 
 	if err != nil {
 		return "", models.NewAppError("RetrieveToken", "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)

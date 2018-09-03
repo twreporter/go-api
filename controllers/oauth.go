@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -16,7 +17,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
-	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/google"
@@ -200,11 +200,11 @@ type OAuth struct {
 
 // InitGoogleConfig initiates facebook oauth config
 func (o *OAuth) InitFacebookConfig() {
-	appsettings := viper.GetStringMap("appsettings")
-	redirectURL := fmt.Sprintf("%s://%s:%s/v2/auth/facebook/callback", appsettings["protocol"], appsettings["host"], appsettings["port"])
+	appsettings := globals.Conf.App
+	redirectURL := fmt.Sprintf("%s://%s:%s/v2/auth/facebook/callback", appsettings.Protocol, appsettings.Host, appsettings.Port)
 	o.oauthConf = &oauth2.Config{
-		ClientID:     viper.GetString("oauthsettings.facebooksettings.id"),
-		ClientSecret: viper.GetString("oauthsettings.facebooksettings.secret"),
+		ClientID:     globals.Conf.Oauth.Facebook.ID,
+		ClientSecret: globals.Conf.Oauth.Facebook.Secret,
 		RedirectURL:  redirectURL,
 		Scopes:       []string{"public_profile", "email"},
 		Endpoint:     facebook.Endpoint,
@@ -213,11 +213,11 @@ func (o *OAuth) InitFacebookConfig() {
 
 // InitGoogleConfig initiates google oauth config
 func (o *OAuth) InitGoogleConfig() {
-	appsettings := viper.GetStringMap("appsettings")
-	redirectURL := fmt.Sprintf("%s://%s:%s/v2/auth/google/callback", appsettings["protocol"], appsettings["host"], appsettings["port"])
+	appsettings := globals.Conf.App
+	redirectURL := fmt.Sprintf("%s://%s:%s/v2/auth/google/callback", appsettings.Protocol, appsettings.Host, appsettings.Port)
 	o.oauthConf = &oauth2.Config{
-		ClientID:     viper.GetString("oauthsettings.googlesettings.id"),
-		ClientSecret: viper.GetString("oauthsettings.googlesettings.secret"),
+		ClientID:     globals.Conf.Oauth.Google.ID,
+		ClientSecret: globals.Conf.Oauth.Google.Secret,
 		RedirectURL:  redirectURL,
 		Scopes: []string{
 			"profile", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
@@ -309,12 +309,12 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 		Email: matchUser.Email.String}
 
 	// hours to seconds
-	maxAge := viper.GetInt("appsettings.expiration") * 60 * 60
+	maxAge := globals.Conf.App.JwtExpiration
 	authResp, _ := json.Marshal(authJSON)
 
 	// set domain to .twreporter.org
 	// so each hostname of [www|support|tsai-tracker].twreporter.org will be applied
-	c.SetCookie("auth_info", string(authResp), maxAge, "/", ".twreporter.org", secure, false)
-	c.SetCookie("access_token", token, maxAge, "/", ".twreporter.org", secure, true)
+	c.SetCookie("auth_info", string(authResp), maxAge, "/", "."+globals.Conf.App.Domain, secure, false)
+	c.SetCookie("access_token", token, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
