@@ -133,5 +133,13 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v2AuthGroup.GET("/facebook", middlewares.SetCacheControl("no-store"), ofc.BeginOAuth)
 	v2AuthGroup.GET("/facebook/callback", middlewares.SetCacheControl("no-store"), ofc.Authenticate)
 
+	// =============================
+	// v2 membership service endpoints
+	// =============================
+	v2Group.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.SignInV2(c, cf.GetMailSender())
+	}))
+	v2Group.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
+
 	return engine
 }
