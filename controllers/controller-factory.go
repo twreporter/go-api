@@ -6,7 +6,7 @@ import (
 	// "gopkg.in/mgo.v2/bson"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
-	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -33,7 +33,7 @@ func (cf *ControllerFactory) GetFacebookController() Facebook {
 func (cf *ControllerFactory) GetOAuthController(oauthType string) (oauth *OAuth) {
 	gs := storage.NewGormStorage(cf.gormDB)
 	oauth = &OAuth{Storage: gs}
-	if oauthType == constants.GoogleOAuth {
+	if oauthType == globals.GoogleOAuth {
 		oauth.InitGoogleConfig()
 	} else {
 		oauth.InitFacebookConfig()

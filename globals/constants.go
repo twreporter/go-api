@@ -1,4 +1,4 @@
-package constants
+package globals
 
 const (
 	// controller name

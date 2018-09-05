@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
@@ -261,13 +260,13 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 		userInfoEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo"
 		getOauthUserInfo(c, o.oauthConf, userInfoEndpoint, &oauthInfo)
 		copier.Copy(&oauthUser, &oauthInfo)
-		oauthType = constants.GoogleOAuth
+		oauthType = globals.GoogleOAuth
 	} else {
 		var oauthInfo facebookOauthInfoRaw
 		userInfoEndpoint = "https://graph.facebook.com/v2.8/me?fields=id,name,email,picture,birthday,first_name,last_name,gender"
 		err = getOauthUserInfo(c, o.oauthConf, userInfoEndpoint, &oauthInfo)
 		copier.Copy(&oauthUser, &oauthInfo)
-		oauthType = constants.FacebookOAuth
+		oauthType = globals.FacebookOAuth
 	}
 
 	if err != nil {

@@ -9,7 +9,6 @@ import (
 	"gopkg.in/matryer/try.v1"
 	"gopkg.in/mgo.v2"
 
-	"twreporter.org/go-api/constants"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 )
@@ -38,7 +37,7 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.SetJoinTableHandler(&models.User{}, constants.TableBookmarks, &models.UsersBookmarks{})
+	db.SetJoinTableHandler(&models.User{}, globals.TableBookmarks, &models.UsersBookmarks{})
 
 	//db.LogMode(true)
 

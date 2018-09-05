@@ -8,7 +8,7 @@ import (
 
 	//log "github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/globals"
 )
 
 type IndexPageResponse struct {
@@ -28,19 +28,19 @@ func TestIndexPage(t *testing.T) {
 	res := IndexPageResponse{}
 	json.Unmarshal(body, &res)
 
-	latest, ok1 := res.Records[constants.LastestSection]
+	latest, ok1 := res.Records[globals.LastestSection]
 	assert.True(t, ok1)
 	assert.Equal(t, len(latest), 2)
 
-	picks, ok2 := res.Records[constants.EditorPicksSection]
+	picks, ok2 := res.Records[globals.EditorPicksSection]
 	assert.True(t, ok2)
 	assert.Equal(t, len(picks), 1)
 
-	topic, ok3 := res.Records[constants.LatestTopicSection]
+	topic, ok3 := res.Records[globals.LatestTopicSection]
 	assert.True(t, ok3)
 	assert.Equal(t, len(topic), 1)
 
-	reviews, ok4 := res.Records[constants.ReviewsSection]
+	reviews, ok4 := res.Records[globals.ReviewsSection]
 	assert.True(t, ok4)
 	assert.Equal(t, len(reviews), 1)
 	// End -- Get four sections in the index page first screen //

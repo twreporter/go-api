@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/utils"
@@ -107,20 +107,20 @@ func (mc *MembershipController) GetRegisteredUsers(c *gin.Context) {
 
 	limit, err = strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		limit = constants.DefaultLimit
+		limit = globals.DefaultLimit
 	}
 	offset, err = strconv.Atoi(c.Query("offset"))
 	if err != nil {
-		offset = constants.DefaultOffset
+		offset = globals.DefaultOffset
 	}
 	activeCode, err = strconv.Atoi(c.Query("active_code"))
 	if err != nil {
-		activeCode = constants.DefaultActiveCode
+		activeCode = globals.DefaultActiveCode
 	}
 	orderBy := c.Query("order_by")
 
 	if orderBy == "" {
-		orderBy = constants.DefaultOrderBy
+		orderBy = globals.DefaultOrderBy
 	}
 
 	count, err = mc.Storage.GetRegistrationsAmountByService(service, activeCode)
@@ -150,7 +150,7 @@ func (mc *MembershipController) ActivateRegistration(c *gin.Context) {
 	u := url.URL{
 		Host:   viper.GetString("consumersettings.host"),
 		Scheme: viper.GetString("consumersettings.protocol"),
-		Path:   constants.Activate,
+		Path:   globals.Activate,
 	}
 
 	reg, err := mc.Storage.GetRegistration(email, service)
