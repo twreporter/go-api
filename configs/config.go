@@ -45,7 +45,7 @@ db:
         port: '3306'
     mongo:
         url: localhost
-        dbname: plate
+        dbname: gorm
         timeout: 5
 oauth:
     facebook:
@@ -152,38 +152,14 @@ type EncryptConfig struct {
 	Salt string `yaml:"salt"`
 }
 
-// LoadConf load config from file and read in environment variables that match
-func LoadConf(confPath string) (ConfYaml, error) {
-	var conf ConfYaml
-
+func init() {
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()        // read in environment variables that match
 	viper.SetEnvPrefix("goapi") // will be uppercased automatically
+}
 
-	if confPath != "" {
-		content, err := ioutil.ReadFile(confPath)
-
-		if err != nil {
-			return conf, err
-		}
-
-		if err := viper.ReadConfig(bytes.NewBuffer(content)); err != nil {
-			return conf, err
-		}
-	} else {
-		viper.AddConfigPath(".")
-		viper.SetConfigName("config")
-
-		// If a config file is found, read it in.
-		if err := viper.ReadInConfig(); err == nil {
-			log.Infof("Using config file: %s", viper.ConfigFileUsed())
-		} else {
-			// load default config
-			if err := viper.ReadConfig(bytes.NewBuffer(defaultConf)); err != nil {
-				return conf, err
-			}
-		}
-	}
+func buildConf() ConfYaml {
+	var conf ConfYaml
 
 	// Environemt
 	conf.Environment = viper.GetString("environment")
@@ -243,7 +219,51 @@ func LoadConf(confPath string) (ConfYaml, error) {
 	// Encrypt
 	conf.Encrypt.Salt = viper.GetString("encrypt.salt")
 
-	log.Infof("%#v", conf)
+	return conf
+}
+
+// LoadDefaultConf loads default config
+func LoadDefaultConf() (ConfYaml, error) {
+	var conf ConfYaml
+
+	// load default config
+	if err := viper.ReadConfig(bytes.NewBuffer(defaultConf)); err != nil {
+		return conf, err
+	}
+
+	conf = buildConf()
+
+	return conf, nil
+}
+
+// LoadConf load config from file and read in environment variables that match
+func LoadConf(confPath string) (ConfYaml, error) {
+	var conf ConfYaml
+
+	if confPath != "" {
+		content, err := ioutil.ReadFile(confPath)
+
+		if err != nil {
+			return conf, err
+		}
+
+		if err := viper.ReadConfig(bytes.NewBuffer(content)); err != nil {
+			return conf, err
+		}
+	} else {
+		viper.AddConfigPath(".")
+		viper.SetConfigName("config")
+
+		// If a config file is found, read it in.
+		if err := viper.ReadInConfig(); err == nil {
+			log.Infof("Using config file: %s", viper.ConfigFileUsed())
+		} else {
+			// load default config
+			return LoadDefaultConf()
+		}
+	}
+
+	conf = buildConf()
 
 	return conf, nil
 }

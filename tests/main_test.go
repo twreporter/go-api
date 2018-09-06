@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 )
@@ -42,6 +43,11 @@ func TestPing(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	var err error
+
+	fmt.Println("load default config")
+	if globals.Conf, err = configs.LoadDefaultConf(); err != nil {
+		panic(fmt.Sprintf("Can not load default config, but got err=%+v", err))
+	}
 
 	// Create DB connections
 	if DB, err = OpenGormConnection(); err != nil {
