@@ -52,6 +52,10 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	config.AddAllowHeaders("Authorization")
 	config.AddAllowMethods("DELETE")
 
+	// Enable Access-Control-Allow-Credentials header for axios pre-flight(OPTION) request
+	// so that the subsequent request could carry cookie
+	config.AllowCredentials = true
+
 	engine.Use(cors.New(config))
 
 	v1Group := engine.Group("/v1")
@@ -141,6 +145,6 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 		return mc.SignInV2(c, cf.GetMailSender())
 	}))
 	v2Group.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
-
+	v2Group.POST("/token", middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
 	return engine
 }

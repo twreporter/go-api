@@ -424,3 +424,63 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	})
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
+
+func (mc *MembershipController) TokenDispatch(c *gin.Context) {
+	errorWhere := "MembershipController.TokenDispatch"
+	// Validate the access token
+
+	// Retrieve from cookie
+	tokenName := "access_token"
+
+	cookieToken, err := c.Cookie(tokenName)
+	if nil != err {
+		log.Error(errorWhere + "(): " + err.Error())
+		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+			"access_token": "cannot be retrived from cookie",
+		}})
+		return
+	}
+
+	// Retrieve from session
+	session := sessions.Default(c)
+	sessionToken := session.Get(tokenName).(string)
+
+	if sessionToken != cookieToken {
+		errMsg := "Invalid access token"
+		log.Error(errorWhere + "():" + errMsg)
+		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+			"access_token": "invalid",
+		}})
+		return
+	}
+
+	userCookieName := "user_id"
+	userID, err := c.Cookie(userCookieName)
+	if nil != err {
+		log.Error(errorWhere + "(): " + err.Error())
+		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+			"user_id": "cannot be retrived from cookie",
+		}})
+		return
+	}
+
+	user, err := mc.Storage.GetUserByID(fmt.Sprint(userID))
+	if nil != err {
+		appErr := err.(*models.AppError)
+		log.Error(appErr.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "cannot get user data"})
+		return
+	}
+
+	jwt, err := utils.RetrieveToken(user.ID, user.Email.String)
+	if err != nil {
+		appErr := err.(*models.AppError)
+		log.Error(appErr.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Error occurs during generating JWT  "})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{
+		"jwt": jwt,
+	}})
+}
