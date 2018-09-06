@@ -313,17 +313,12 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	u.RawQuery = parameters.Encode()
 	destination = u.String()
 
-	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege,
-		FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String,
-		Email: matchUser.Email.String}
-
 	// hours to seconds
 	maxAge := globals.Conf.App.JwtExpiration
-	authResp, _ := json.Marshal(authJSON)
 
 	// set domain to .twreporter.org
 	// so each hostname of [www|support|tsai-tracker].twreporter.org will be applied
-	c.SetCookie("auth_info", string(authResp), maxAge, "/", "."+globals.Conf.App.Domain, secure, false)
+	c.SetCookie("user_id", fmt.Sprint(matchUser.ID), maxAge, "/", "."+globals.Conf.App.Domain, secure, false)
 	c.SetCookie("access_token", token, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }

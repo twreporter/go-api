@@ -11,6 +11,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/utils"
 )
@@ -328,7 +329,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	const errorWhere = "MembershipController.Activate"
 	const userIDMaxAge = 60 * 60 * 24 * 30
 	const accessTokenMaxAge = 60 * 15
-	const defaultDomain = ".twreporter.org"
+	var defaultDomain = "." + globals.Conf.App.Domain
 	var err error
 	var ra models.ReporterAccount
 	var user models.User
