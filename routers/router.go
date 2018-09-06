@@ -136,6 +136,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// =============================
 	// v2 membership service endpoints
 	// =============================
+	v2Group.Use(sessions.Sessions("auth-session", store))
 	v2Group.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.SignInV2(c, cf.GetMailSender())
 	}))

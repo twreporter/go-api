@@ -8,6 +8,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
 	"twreporter.org/go-api/models"
@@ -384,6 +385,17 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 		return
 	}
 
+	// Create access token for jwt endpoint retrival
+	accessToken, err := utils.GenerateRandomString(32)
+	if nil != err {
+		log.Error(errorWhere + "(): " + err.Error())
+		accessToken = "twreporter-access-token"
+	}
+
+	session := sessions.Default(c)
+	session.Set("access_token", accessToken)
+	session.Save()
+
 	// Setup Set-Cookie header in response header
 
 	// Determine cookie property
@@ -404,7 +416,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "access_token",
-		Value:    token,
+		Value:    accessToken,
 		Domain:   defaultDomain,
 		MaxAge:   accessTokenMaxAge,
 		Secure:   secure,
