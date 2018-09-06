@@ -5,16 +5,17 @@ import (
 	"net/http"
 	//"time"
 
+	"twreporter.org/go-api/globals"
+
 	//log "github.com/Sirupsen/logrus"
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-		return []byte(viper.GetString("appsettings.token")), nil
+		return []byte(globals.Conf.App.JwtSecret), nil
 	},
 	SigningMethod: jwt.SigningMethodHS256,
 })

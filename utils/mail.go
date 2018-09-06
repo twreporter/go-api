@@ -10,13 +10,13 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/spf13/viper"
 )
 
 // EmailStrategy defines an interface to send emails
@@ -41,28 +41,28 @@ func NewEmailSender(email EmailStrategy) *EmailContext {
 
 // NewSMTPEmailSender use smtp email sending strategy to send email
 func NewSMTPEmailSender() *EmailContext {
-	var config = viper.GetStringMapString("emailsettings")
+	var config = globals.Conf.Email.SMTP
 
 	return &EmailContext{&SMTPEmailSender{conf: SmtpEmailSettings{
-		SMTPUsername:       config["smtpusername"],
-		SMTPPassword:       config["smtppassword"],
-		SMTPServer:         config["smtpserver"],
-		SMTPPort:           config["smtpport"],
-		ConnectionSecurity: config["connectionsecurity"],
-		SMTPServerOwner:    config["smtpserverowner"],
-		FeedbackName:       config["feedbackname"],
-		FeedbackEmail:      config["feedbackemail"],
+		SMTPUsername:       config.Username,
+		SMTPPassword:       config.Password,
+		SMTPServer:         config.Server,
+		SMTPPort:           config.Port,
+		ConnectionSecurity: config.ConnectionSecurity,
+		SMTPServerOwner:    config.ServerOwner,
+		FeedbackName:       config.FeedbackName,
+		FeedbackEmail:      config.FeedbackEmail,
 	}, send: smtp.SendMail}}
 }
 
 // NewAmazonEmailSender use Amazon SES email sending strategy to send email
 func NewAmazonEmailSender() *EmailContext {
-	var config = viper.GetStringMapString("amazonmailsettings")
+	var config = globals.Conf.Email.Amazon
 
-	return &EmailContext{&AmazonMailSender{conf: amazonMailSettings{
-		Sender:    config["sender"],
-		AwsRegion: config["awsregion"],
-		CharSet:   config["charset"],
+	return &EmailContext{&AmazonMailSender{conf: AmazonMailSettings{
+		Sender:    config.Sender,
+		AwsRegion: config.AwsRegion,
+		CharSet:   config.Charset,
 	}}}
 }
 
@@ -179,7 +179,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	return nil, nil
 }
 
-type amazonMailSettings struct {
+type AmazonMailSettings struct {
 	Sender    string
 	AwsRegion string
 	CharSet   string
@@ -187,7 +187,7 @@ type amazonMailSettings struct {
 
 // AmazonMailSender is an email sending method (using Amazon SES to semd mails)
 type AmazonMailSender struct {
-	conf amazonMailSettings
+	conf AmazonMailSettings
 }
 
 // Send sends email using the SMTP

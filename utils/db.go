@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/jinzhu/gorm"
-	"github.com/spf13/viper"
 	"gopkg.in/matryer/try.v1"
 	"gopkg.in/mgo.v2"
-	"twreporter.org/go-api/constants"
-	"twreporter.org/go-api/models"
 
-	log "github.com/Sirupsen/logrus"
+	"twreporter.org/go-api/globals"
+	"twreporter.org/go-api/models"
 )
 
 // InitDB initiates the MySQL database connection
@@ -19,10 +18,10 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 	var db *gorm.DB
 	err := try.Do(func(attempt int) (bool, error) {
 		var err error
-		var config = viper.GetStringMapString("dbsettings")
+		var config = globals.Conf.DB.MySQL
 
 		// connect to MySQL database
-		var endpoint = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", config["user"], config["password"], config["address"], config["port"], config["name"])
+		var endpoint = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", config.User, config.Password, config.Address, config.Port, config.Name)
 		log.Info("connect to mysql ", endpoint)
 		db, err = gorm.Open("mysql", endpoint)
 
@@ -38,7 +37,7 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.SetJoinTableHandler(&models.User{}, constants.TableBookmarks, &models.UsersBookmarks{})
+	db.SetJoinTableHandler(&models.User{}, globals.TableBookmarks, &models.UsersBookmarks{})
 
 	//db.LogMode(true)
 
@@ -47,9 +46,9 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 
 // InitMongoDB initiates the Mongo DB connection
 func InitMongoDB() (*mgo.Session, error) {
-	var timeout = viper.GetDuration("mongodbsettings.timeout")
+	var timeout = globals.Conf.DB.Mongo.Timeout
 	// Set connection timeout
-	session, err := mgo.DialWithTimeout(viper.GetString("mongodbsettings.url"), timeout*time.Second)
+	session, err := mgo.DialWithTimeout(globals.Conf.DB.Mongo.URL, time.Duration(timeout)*time.Second)
 
 	if err != nil {
 		log.Error("Establishing a new session to the mongo occurs error: ", err.Error())
@@ -57,7 +56,7 @@ func InitMongoDB() (*mgo.Session, error) {
 	}
 
 	// Set operation timeout
-	session.SetSyncTimeout(timeout * time.Second)
+	session.SetSyncTimeout(time.Duration(timeout) * time.Second)
 
 	// Set socket timeout to 3 mins
 	session.SetSocketTimeout(3 * time.Minute)

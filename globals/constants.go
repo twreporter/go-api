@@ -1,4 +1,4 @@
-package constants
+package globals
 
 const (
 	// controller name
@@ -8,7 +8,7 @@ const (
 	RegistrationTable = "registrations"
 
 	DefaultOrderBy        = "updated_at desc"
-	DefaultLimit      int = 0
+	DefaultLimit      int = 10
 	DefaultOffset     int = 0
 	DefaultActiveCode int = 2
 

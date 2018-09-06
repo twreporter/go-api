@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/spf13/viper"
+	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/controllers"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/routers"
 	"twreporter.org/go-api/utils"
 
@@ -18,33 +19,7 @@ func main() {
 	var err error
 	var cf *controllers.ControllerFactory
 
-	viper.SetConfigType("json")
-	viper.SetConfigFile("./configs/config.json")
-	err = viper.ReadInConfig()
-
-	viper.SetDefault("consumersettings", map[string]string{
-		"protocol": "http",
-		"host":     "testtest.twreporter.org",
-		"port":     "3000",
-	})
-
-	viper.SetDefault("appsettings", map[string]interface{}{
-		"host":       "localhost",
-		"port":       "8080",
-		"protocol":   "http",
-		"version":    "v1",
-		"token":      "twreporter-token",
-		"expiration": 168,
-	})
-
-	viper.SetDefault("mongodbsettings", map[string]interface{}{
-		"url":     "locahost",
-		"dbname":  "plate",
-		"timeout": 5,
-	})
-
-	viper.SetDefault("encryptsettings.salt", "salt")
-
+	globals.Conf, err = configs.LoadConf("")
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}

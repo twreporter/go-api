@@ -6,9 +6,9 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/mongo"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
-	"twreporter.org/go-api/constants"
+
 	"twreporter.org/go-api/controllers"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 )
@@ -36,8 +36,8 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 
 	config := cors.DefaultConfig()
 
-	if viper.GetString("environment") != "development" {
-		var allowOrigins = viper.GetStringSlice("corssettings.alloworigins")
+	if globals.Conf.Environment != "development" {
+		var allowOrigins = globals.Conf.Cors.AllowOrigins
 		if len(allowOrigins) > 0 {
 			config.AllowOrigins = allowOrigins
 		} else {
@@ -118,10 +118,10 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	store := mongo.NewStore(c, maxAge, true, []byte("secret"))
 	v2AuthGroup.Use(sessions.Sessions("oauth-session", store))
 
-	ogc := cf.GetOAuthController(constants.GoogleOAuth)
+	ogc := cf.GetOAuthController(globals.GoogleOAuth)
 	v2AuthGroup.GET("/google", middlewares.SetCacheControl("no-store"), ogc.BeginOAuth)
 	v2AuthGroup.GET("/google/callback", middlewares.SetCacheControl("no-store"), ogc.Authenticate)
-	ofc := cf.GetOAuthController(constants.FacebookOAuth)
+	ofc := cf.GetOAuthController(globals.FacebookOAuth)
 	v2AuthGroup.GET("/facebook", middlewares.SetCacheControl("no-store"), ofc.BeginOAuth)
 	v2AuthGroup.GET("/facebook/callback", middlewares.SetCacheControl("no-store"), ofc.Authenticate)
 
