@@ -236,7 +236,7 @@ func (o *OAuth) BeginOAuth(c *gin.Context) {
 // Authenticate handles [google|facebook] oauth of users and redirect them to specific URL they want
 // with Set-Cookie response header which contains JWT
 func (o *OAuth) Authenticate(c *gin.Context) {
-	var destination = "http://testtest.twreporter.org:3000/"
+	var destination string
 	var err error
 	var matchUser models.User
 	var oauthType string
@@ -250,15 +250,16 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 
 	if retrievedDestination = session.Get("destination"); retrievedDestination != nil {
 		destination = retrievedDestination.(string)
-		if destination == "" {
-			destination = defaultDestination
-		}
+	}
+
+	if destination == "" {
+		destination = defaultDestination
 	}
 
 	if o.oauthConf.Endpoint == google.Endpoint {
 		var oauthInfo googleOauthInfoRaw
 		userInfoEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo"
-		getOauthUserInfo(c, o.oauthConf, userInfoEndpoint, &oauthInfo)
+		err = getOauthUserInfo(c, o.oauthConf, userInfoEndpoint, &oauthInfo)
 		copier.Copy(&oauthUser, &oauthInfo)
 		oauthType = globals.GoogleOAuth
 	} else {
