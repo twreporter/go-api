@@ -444,6 +444,18 @@ func buildTapPayPrimeReq(pt payType, payMethod string, req clientReq) tapPayPrim
 	t.Amount = req.Amount
 	t.Cardholder = req.Cardholder
 
+	// Per required fields (even empty) of cardholder of tappay documents,
+	// use empty strings for name and phonenumber fields instead of empty.
+	if nil == t.Cardholder.Name {
+		e := ""
+		t.Cardholder.Name = &e
+	}
+
+	if nil == t.Cardholder.PhoneNumber {
+		e := ""
+		t.Cardholder.PhoneNumber = &e
+	}
+
 	// Fill up optional fields
 	if "" != req.Currency {
 		t.Currency = req.Currency
