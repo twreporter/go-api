@@ -24,14 +24,14 @@ import (
 const defaultDestination = "https://www.twreporter.org/"
 
 type basicInfo struct {
-	AId    models.NullString `json:"id"`
 	Email  models.NullString `json:"email"`
 	Name   models.NullString `json:"name"`
-	Gender models.NullString `json:"gender"`
+	Gender string            `json:"gender"`
 }
 
 type facebookOauthInfoRaw struct {
 	basicInfo
+	AId        models.NullString `json:"id"`
 	FirstName  models.NullString `json:"first_name"`
 	LastName   models.NullString `json:"last_name"`
 	PictureObj struct {
@@ -46,11 +46,20 @@ func (info *facebookOauthInfoRaw) Picture() models.NullString {
 	return info.PictureObj.Data.URL
 }
 
+func (info *facebookOauthInfoRaw) Gender() models.NullString {
+	return utils.GetGender(info.basicInfo.Gender)
+}
+
 type googleOauthInfoRaw struct {
 	basicInfo
+	AId       models.NullString `json:"sub"`
 	FirstName models.NullString `json:"given_name"`
 	LastName  models.NullString `json:"family_name"`
 	Picture   models.NullString `json:"picture"`
+}
+
+func (info *googleOauthInfoRaw) Gender() models.NullString {
+	return utils.GetGender(info.basicInfo.Gender)
 }
 
 // beginAuth uses sessions to store users'
