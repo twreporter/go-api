@@ -318,7 +318,15 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 
 	// set domain to .twreporter.org
 	// so each hostname of [www|support|tsai-tracker].twreporter.org will be applied
-	c.SetCookie("user_id", fmt.Sprint(matchUser.ID), maxAge, "/", "."+globals.Conf.App.Domain, secure, false)
+
+	// build auth_info cookie
+	a := authInfo{}
+	a.ID = matchUser.ID
+	a.Email = matchUser.Email.String
+
+	authInfoJson, _ := json.Marshal(&a)
+
+	c.SetCookie("auth_info", string(authInfoJson), maxAge, "/", "."+globals.Conf.App.Domain, secure, false)
 	c.SetCookie("access_token", token, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }

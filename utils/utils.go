@@ -16,7 +16,7 @@ import (
 // GenerateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
 func GenerateActivateMailBody(mailAddress, activeToken, destination, host string) string {
 	if "" == host {
-		host = "go-api.twreporter.org"
+		host = globals.Conf.App.Host
 	}
 
 	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", globals.Conf.App.Protocol, host, globals.Conf.App.Port, mailAddress, activeToken, destination)

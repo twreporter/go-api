@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/mail"
@@ -21,6 +22,13 @@ const (
 	authErrorPage = "https://www.twreporter.org/"
 
 	defaultRedirectPage = "https://www.twreporter.org/"
+)
+
+type (
+	authInfo struct {
+		ID    uint   `json:"id"`
+		Email string `json:"email"`
+	}
 )
 
 // SignIn - send email containing sign-in information to the client
@@ -222,7 +230,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.Email
 		Destination string `json:"destination" form:"destination"`
 	}
 
-	const errorWhere = "MembershipController.SignIn"
+	const errorWhere = "MembershipController.SignInV2"
 	const SignInMailSubject = "登入報導者"
 	const activateHost = "go-api.twreporter.org"
 	var activeToken string
@@ -326,10 +334,11 @@ func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.Email
 // if validated, then sign in successfully,
 // otherwise, sign in unsuccessfully.
 func (mc *MembershipController) ActivateV2(c *gin.Context) {
-	const errorWhere = "MembershipController.Activate"
-	const userIDMaxAge = 60 * 60 * 24 * 30
-	const accessTokenMaxAge = 60 * 15
+	const errorWhere = "MembershipController.ActivateV2"
+	const authInfoMaxAge = 60 * 60 * 24 * 30
+	const accessTokenMaxAge = 60 * 60 * 24 * 30
 	var defaultDomain = "." + globals.Conf.App.Domain
+	var defaultPath = "/"
 	var err error
 	var ra models.ReporterAccount
 	var user models.User
@@ -406,28 +415,33 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 		secure = true
 	}
 
-	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "user_id",
-		Value:    fmt.Sprint(user.ID),
-		Domain:   defaultDomain,
-		MaxAge:   userIDMaxAge,
-		Secure:   secure,
-		HttpOnly: true,
-	})
+	a := authInfo{}
+	a.ID = user.ID
+	a.Email = user.Email.String
 
-	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "access_token",
-		Value:    accessToken,
-		Domain:   defaultDomain,
-		MaxAge:   accessTokenMaxAge,
-		Secure:   secure,
-		HttpOnly: true,
-	})
+	authInfoJson, _ := json.Marshal(&a)
+
+	c.SetCookie("auth_info", string(authInfoJson), authInfoMaxAge, defaultPath, defaultDomain, secure, true)
+	c.SetCookie("access_token", accessToken, accessTokenMaxAge, defaultPath, defaultDomain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
 func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	errorWhere := "MembershipController.TokenDispatch"
+
+	type reqBody struct {
+		UserID uint `json:"userID"`
+	}
+
+	// Validate the request body
+	body := reqBody{}
+	if err := c.Bind(&body); nil != err {
+		log.Error(errorWhere + "():" + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
+			"user_id": "invalid",
+		}})
+	}
+
 	// Validate the access token
 
 	// Retrieve from cookie
@@ -455,17 +469,7 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 		return
 	}
 
-	userCookieName := "user_id"
-	userID, err := c.Cookie(userCookieName)
-	if nil != err {
-		log.Error(errorWhere + "(): " + err.Error())
-		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
-			"user_id": "cannot be retrived from cookie",
-		}})
-		return
-	}
-
-	user, err := mc.Storage.GetUserByID(fmt.Sprint(userID))
+	user, err := mc.Storage.GetUserByID(fmt.Sprint(body.UserID))
 	if nil != err {
 		appErr := err.(*models.AppError)
 		log.Error(appErr.Error())

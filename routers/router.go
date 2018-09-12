@@ -140,11 +140,10 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// =============================
 	// v2 membership service endpoints
 	// =============================
-	v2Group.Use(sessions.Sessions("auth-session", store))
-	v2Group.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v2AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.SignInV2(c, cf.GetMailSender())
 	}))
-	v2Group.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
-	v2Group.POST("/token", middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
+	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
+	v2AuthGroup.POST("/token", middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
 	return engine
 }
