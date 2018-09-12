@@ -15,9 +15,9 @@ cors:
         - '*'
 app:
     protocol: http
-    host: testtest.twreporter.org
+    host: localhost
     port: '8080'
-    domain: twreporter.org
+    domain: localhost
     jwt_secret: secret_token
     jwt_expiration: 604800
     jwt_issuer: 'http://testtest.twreporter.org:8080' # used for issuer claim
@@ -252,6 +252,7 @@ func LoadConf(confPath string) (ConfYaml, error) {
 		}
 	} else {
 		viper.AddConfigPath(".")
+		viper.AddConfigPath("./configs/")
 		viper.SetConfigName("config")
 
 		// If a config file is found, read it in.
