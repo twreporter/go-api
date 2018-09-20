@@ -24,6 +24,9 @@ const (
 	idTokenExpiration = 60 * 60 * 24 * 30 * 6
 )
 
+var defaultDomain = "." + globals.Conf.App.Domain
+var defaultPath = "/"
+
 // SignIn - send email containing sign-in information to the client
 func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
 	// SignInBody is to store POST body
@@ -215,7 +218,7 @@ func (mc *MembershipController) RenewJWT(c *gin.Context) (int, gin.H, error) {
 	}}, nil
 }
 
-// SignIn - send email containing sign-in information to the client
+// SignInV2 - send email containing sign-in information to the client
 func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
@@ -323,13 +326,11 @@ func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.Email
 	}}, nil
 }
 
-// Activate - validate the reporter account
+// ActivateV2 - validate the reporter account
 // if validated, then sign in successfully,
 // otherwise, sign in unsuccessfully.
 func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	const errorWhere = "MembershipController.ActivateV2"
-	var defaultDomain = "." + globals.Conf.App.Domain
-	var defaultPath = "/"
 	var err error
 	var ra models.ReporterAccount
 	var user models.User
@@ -406,6 +407,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
+// TokenDispatch returns the `access_token` in payload for frontend server
 func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	const acccessTokenExpiration = 60 * 60 * 24 * 14 // 2week
 
@@ -443,4 +445,23 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{
 		"jwt": jwt,
 	}})
+}
+
+// TokenInvalidate deletes the id_token stored in the client side
+func (mc *MembershipController) TokenInvalidate(c *gin.Context) {
+	cookieName := "id_token"
+	invalidateExp := -1
+
+	defer func() {
+		c.JSON(http.StatusNoContent, gin.H{})
+	}()
+
+	idToken, err := c.Request.Cookie(cookieName)
+
+	// If no valid `id_token` cookie provide, ignore it
+	if nil != err {
+		return
+	}
+
+	c.SetCookie(cookieName, idToken.Value, invalidateExp, defaultPath, defaultDomain, false, true)
 }
