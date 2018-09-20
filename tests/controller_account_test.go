@@ -76,7 +76,7 @@ func TestActivate(t *testing.T) {
 	// START - test activate endpoint v2//
 
 	// test activate
-	resp = ServeHTTP("GET", fmt.Sprintf("/v2/activate?email=%v&token=%v", DefaultAccount, activateToken), "", "", "")
+	resp = ServeHTTP("GET", fmt.Sprintf("/v2/auth/activate?email=%v&token=%v", DefaultAccount, activateToken), "", "", "")
 	fmt.Print(resp.Body)
 
 	// validate status code
@@ -88,11 +88,10 @@ func TestActivate(t *testing.T) {
 		cookieMap[cookie.Name] = *cookie
 	}
 	// validate Set-Cookie header
-	assert.Contains(t, cookieMap, "user_id")
-	assert.Contains(t, cookieMap, "access_token")
+	assert.Contains(t, cookieMap, "id_token")
 
 	// test activate fails
-	resp = ServeHTTP("GET", fmt.Sprintf("/v2/activate?email=%v&token=%v", DefaultAccount, ""), "", "", "")
+	resp = ServeHTTP("GET", fmt.Sprintf("/v2/auth/activate?email=%v&token=%v", DefaultAccount, ""), "", "", "")
 	assert.Equal(t, resp.Code, http.StatusTemporaryRedirect)
 	// END - test activate endpoint v2//
 
@@ -101,7 +100,7 @@ func TestActivate(t *testing.T) {
 func TestRenewJWT(t *testing.T) {
 	as := storage.NewGormStorage(DB)
 	user, _ := as.GetReporterAccountData(DefaultAccount)
-	jwt, _ := utils.RetrieveToken(user.ID, user.Email)
+	jwt, _ := utils.RetrieveV1Token(user.ID, user.Email)
 
 	// START - test renew jwt endpoint //
 	// renew jwt successfully

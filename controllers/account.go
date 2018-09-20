@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/mail"
@@ -9,7 +8,6 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
 	"twreporter.org/go-api/globals"
@@ -22,13 +20,8 @@ const (
 	authErrorPage = "https://www.twreporter.org/"
 
 	defaultRedirectPage = "https://www.twreporter.org/"
-)
 
-type (
-	authInfo struct {
-		ID    uint   `json:"id"`
-		Email string `json:"email"`
-	}
+	idTokenExpiration = 60 * 60 * 24 * 30 * 6
 )
 
 // SignIn - send email containing sign-in information to the client
@@ -181,7 +174,7 @@ func (mc *MembershipController) Activate(c *gin.Context) (int, gin.H, error) {
 		}
 
 		// handle internal server error - cannot generate JWT
-		if jwt, err = utils.RetrieveToken(user.ID, user.Email.String); err != nil {
+		if jwt, err = utils.RetrieveV1Token(user.ID, user.Email.String); err != nil {
 			return 0, gin.H{}, models.NewAppError(errorWhere, "Generating JWT occurs error", err.Error(), http.StatusInternalServerError)
 		}
 
@@ -209,7 +202,7 @@ func (mc *MembershipController) RenewJWT(c *gin.Context) (int, gin.H, error) {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Renewing JWT occurs error", appErr.Error(), appErr.StatusCode)
 	}
 
-	if jwt, err = utils.RetrieveToken(user.ID, user.Email.String); err != nil {
+	if jwt, err = utils.RetrieveV1Token(user.ID, user.Email.String); err != nil {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Generating JWT occurs error", err.Error(), http.StatusInternalServerError)
 	}
 
@@ -335,8 +328,6 @@ func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.Email
 // otherwise, sign in unsuccessfully.
 func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	const errorWhere = "MembershipController.ActivateV2"
-	const authInfoMaxAge = 60 * 60 * 24 * 30
-	const accessTokenMaxAge = 60 * 60 * 24 * 30
 	var defaultDomain = "." + globals.Conf.App.Domain
 	var defaultPath = "/"
 	var err error
@@ -395,16 +386,12 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 		return
 	}
 
-	// Create access token for jwt endpoint retrival
-	accessToken, err := utils.GenerateRandomString(32)
+	// Create id token for jwt endpoint retrival
+	idToken, err := utils.RetrieveV2Token(utils.AuthV2IDToken, user.ID, user.Email.String, idTokenExpiration)
 	if nil != err {
 		log.Error(errorWhere + "(): " + err.Error())
-		accessToken = "twreporter-access-token"
+		idToken = "twreporter-id-token"
 	}
-
-	session := sessions.Default(c)
-	session.Set("access_token", accessToken)
-	session.Save()
 
 	// Setup Set-Cookie header in response header
 
@@ -415,18 +402,13 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 		secure = true
 	}
 
-	a := authInfo{}
-	a.ID = user.ID
-	a.Email = user.Email.String
-
-	authInfoJson, _ := json.Marshal(&a)
-
-	c.SetCookie("auth_info", string(authInfoJson), authInfoMaxAge, defaultPath, defaultDomain, secure, true)
-	c.SetCookie("access_token", accessToken, accessTokenMaxAge, defaultPath, defaultDomain, secure, true)
+	c.SetCookie("id_token", idToken, idTokenExpiration, defaultPath, defaultDomain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
 func (mc *MembershipController) TokenDispatch(c *gin.Context) {
+	const acccessTokenExpiration = 60 * 60 * 24 * 14 // 2week
+
 	errorWhere := "MembershipController.TokenDispatch"
 
 	type reqBody struct {
@@ -442,33 +424,6 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 		}})
 	}
 
-	// Validate the access token
-
-	// Retrieve from cookie
-	tokenName := "access_token"
-
-	cookieToken, err := c.Cookie(tokenName)
-	if nil != err {
-		log.Error(errorWhere + "(): " + err.Error())
-		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
-			"access_token": "cannot be retrived from cookie",
-		}})
-		return
-	}
-
-	// Retrieve from session
-	session := sessions.Default(c)
-	sessionToken := session.Get(tokenName).(string)
-
-	if sessionToken != cookieToken {
-		errMsg := "Invalid access token"
-		log.Error(errorWhere + "():" + errMsg)
-		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
-			"access_token": "invalid",
-		}})
-		return
-	}
-
 	user, err := mc.Storage.GetUserByID(fmt.Sprint(body.UserID))
 	if nil != err {
 		appErr := err.(*models.AppError)
@@ -477,11 +432,11 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 		return
 	}
 
-	jwt, err := utils.RetrieveToken(user.ID, user.Email.String)
+	jwt, err := utils.RetrieveV2Token(utils.AuthV2AccessToken, user.ID, user.Email.String, acccessTokenExpiration)
 	if err != nil {
 		appErr := err.(*models.AppError)
 		log.Error(appErr.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Error occurs during generating JWT  "})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Error occurs during generating access_token JWT"})
 		return
 	}
 

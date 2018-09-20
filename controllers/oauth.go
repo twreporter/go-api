@@ -293,7 +293,7 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 		return
 	}
 
-	if token, err = utils.RetrieveToken(matchUser.ID, matchUser.Email.String); err != nil {
+	if token, err = utils.RetrieveV2Token(utils.AuthV2IDToken, matchUser.ID, matchUser.Email.String, idTokenExpiration); err != nil {
 		log.Errorf("oauth fails due to generate JWT error:\n%s", err.Error())
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
@@ -314,19 +314,11 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	destination = u.String()
 
 	// hours to seconds
-	maxAge := globals.Conf.App.JwtExpiration
+	maxAge := idTokenExpiration
 
 	// set domain to .twreporter.org
 	// so each hostname of [www|support|tsai-tracker].twreporter.org will be applied
 
-	// build auth_info cookie
-	a := authInfo{}
-	a.ID = matchUser.ID
-	a.Email = matchUser.Email.String
-
-	authInfoJson, _ := json.Marshal(&a)
-
-	c.SetCookie("auth_info", string(authInfoJson), maxAge, "/", "."+globals.Conf.App.Domain, secure, false)
-	c.SetCookie("access_token", token, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
+	c.SetCookie("id_token", token, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }

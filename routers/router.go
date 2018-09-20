@@ -144,6 +144,6 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 		return mc.SignInV2(c, cf.GetMailSender())
 	}))
 	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
-	v2AuthGroup.POST("/token", middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
+	v2AuthGroup.POST("/token", middlewares.CheckJWT(), middlewares.ValidateIDToken(), middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
 	return engine
 }
