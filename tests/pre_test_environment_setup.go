@@ -8,7 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -136,7 +136,7 @@ func setUpDBEnvironment() (*gorm.DB, *mgo.Session) {
 		panic(fmt.Sprintf("No error should happen when connecting to test database, but got err=%+v", err))
 	}
 
-	gormDB.SetJoinTableHandler(&models.User{}, constants.TableBookmarks, &models.UsersBookmarks{})
+	gormDB.SetJoinTableHandler(&models.User{}, globals.TableBookmarks, &models.UsersBookmarks{})
 
 	// Create Mongo DB connections
 	if mgoDB, err = openMgoConnection(); err != nil {

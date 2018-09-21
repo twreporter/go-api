@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -11,16 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
-<<<<<<< HEAD
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/constants"
-	"twreporter.org/go-api/controllers"
-=======
 	"twreporter.org/go-api/configs"
+	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/globals"
->>>>>>> master
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/routers"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 )
@@ -229,33 +227,9 @@ func serveHTTP(method, path, body, contentType, authorization string) (resp *htt
 }
 
 func setupGinServer(gormDB *gorm.DB, mgoDB *mgo.Session) *gin.Engine {
-	// set up data storage
-	gs := storage.NewGormStorage(gormDB)
-
-	// init controllers
-	mc := controllers.NewMembershipController(gs)
-	fc := controllers.Facebook{Storage: gs}
-	gc := controllers.Google{Storage: gs}
-
-	ms := storage.NewMongoStorage(mgoDB)
-	nc := controllers.NewNewsController(ms)
-
-	cf := &controllers.ControllerFactory{
-		Controllers: make(map[string]controllers.Controller),
-	}
-	cf.SetController(constants.MembershipController, mc)
-	cf.SetController(constants.FacebookController, fc)
-	cf.SetController(constants.GoogleController, gc)
-	cf.SetController(constants.NewsController, nc)
-
-	engine := gin.Default()
-	routerGroup := engine.Group("/v1")
-	{
-		menuitems := new(controllers.MenuItemsController)
-		routerGroup.GET("/ping", menuitems.Retrieve)
-	}
-
-	routerGroup = cf.SetRoute(routerGroup)
+	strategy := mockMailStrategy{}
+	cf := controllers.NewControllerFactory(gormDB, mgoDB, utils.NewEmailSender(strategy))
+	engine := routers.SetupRouter(cf)
 
 	return engine
 }
@@ -268,26 +242,12 @@ func TestPing(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-<<<<<<< HEAD
-	// set default config
-	utils.Cfg.SetDefaults()
-	// set default mongo database to 'mgo'
-	utils.Cfg.MongoDBSettings.DBName = mgoDBName
-=======
 	var err error
 
 	fmt.Println("load default config")
 	if globals.Conf, err = configs.LoadDefaultConf(); err != nil {
 		panic(fmt.Sprintf("Can not load default config, but got err=%+v", err))
 	}
-
-	// Create DB connections
-	if DB, err = OpenGormConnection(); err != nil {
-		panic(fmt.Sprintf("No error should happen when connecting to test database, but got err=%+v", err))
-	}
-
-	DB.SetJoinTableHandler(&models.User{}, globals.TableBookmarks, &models.UsersBookmarks{})
->>>>>>> master
 
 	// set up DB environment
 	gormDB, mgoDB := setUpDBEnvironment()

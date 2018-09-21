@@ -478,9 +478,11 @@ func TestGetDonations(t *testing.T) {
 	path = "/v1/users/1000/donations"
 	jwt = generateJWT(models.User{
 		ID: 1000,
-		Email: sql.NullString{
-			String: "unknown@twreporter.org",
-			Valid:  true,
+		Email: models.NullString{
+			sql.NullString{
+				String: "unknown@twreporter.org",
+				Valid:  true,
+			},
 		},
 	})
 
