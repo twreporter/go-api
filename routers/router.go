@@ -13,7 +13,9 @@ import (
 	"twreporter.org/go-api/models"
 )
 
-const maxAge = 3600
+const (
+	maxAge = 3600
+)
 
 type wrappedFn func(c *gin.Context) (int, gin.H, error)
 
@@ -117,6 +119,12 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	c := session.DB("go-api").C("sessions")
 	store := mongo.NewStore(c, maxAge, true, []byte("secret"))
 	v2AuthGroup.Use(sessions.Sessions("go-api-session", store))
+	store.Options(sessions.Options{
+		Domain:   globals.Conf.App.Domain,
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   globals.Conf.Environment != "development",
+	})
 
 	ogc := cf.GetOAuthController(globals.GoogleOAuth)
 	v2AuthGroup.GET("/google", middlewares.SetCacheControl("no-store"), ogc.BeginOAuth)
