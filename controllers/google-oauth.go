@@ -8,7 +8,7 @@ import (
 	"net/url"
 
 	"twreporter.org/go-api/configs/constants"
-	"twreporter.org/go-api/middlewares"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -27,32 +27,19 @@ type Google struct {
 	oauthConf *oauth2.Config
 }
 
-// SetRoute set endpoints for serving google oauth
-func (g Google) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	group.GET("/auth/google", middlewares.SetCacheControl("no-store"), g.BeginAuth)
-	group.GET("/auth/google/callback", middlewares.SetCacheControl("no-store"), g.Authenticate)
-	return group
-}
-
-// Close ...
-func (g Google) Close() error {
-	return nil
-}
-
 // InitOauthConfig initialize google oauth config
 func (g *Google) InitOauthConfig(destination string) {
-	consumerSettings := utils.Cfg.ConsumerSettings
 	if destination == "" {
-		destination = consumerSettings.Protocol + "://" + consumerSettings.Host + ":" + consumerSettings.Port + "/activate"
+		destination = "https://www.twreporter.org/"
 	}
 
 	destination = url.QueryEscape(destination)
-	redirectURL := utils.Cfg.OauthSettings.GoogleSettings.URL + "?destination=" + destination
+	redirectURL := fmt.Sprintf("%s://%s:%s/v1/auth/google/callback?destination=%s", globals.Conf.App.Protocol, globals.Conf.App.Host, globals.Conf.App.Port, destination)
 
 	if g.oauthConf == nil {
 		g.oauthConf = &oauth2.Config{
-			ClientID:     utils.Cfg.OauthSettings.GoogleSettings.ID,
-			ClientSecret: utils.Cfg.OauthSettings.GoogleSettings.Secret,
+			ClientID:     globals.Conf.Oauth.Google.ID,
+			ClientSecret: globals.Conf.Oauth.Google.Secret,
 			RedirectURL:  redirectURL,
 			Scopes: []string{
 				"profile", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
@@ -72,7 +59,7 @@ func (g *Google) BeginAuth(c *gin.Context) {
 
 	g.InitOauthConfig(destination)
 
-	url := g.oauthConf.AuthCodeURL(utils.Cfg.OauthSettings.GoogleSettings.Statestr)
+	url := g.oauthConf.AuthCodeURL(oauthState)
 
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
@@ -145,7 +132,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 				// no record in users table with this email
 				// create a record in users table
 				// and create a record in o_auth_accounts table
-				matchUser = g.Storage.InsertUserByOAuth(remoteOAuth)
+				matchUser, err = g.Storage.InsertUserByOAuth(remoteOAuth)
 			} else {
 				// record existed in user table
 				// create record in o_auth_accounts table
@@ -161,7 +148,7 @@ func (g *Google) Authenticate(c *gin.Context) {
 			// email is not provided in oAuth response
 			// create a record in users table
 			// and also create a record in o_auth_accounts table
-			matchUser = g.Storage.InsertUserByOAuth(remoteOAuth)
+			matchUser, err = g.Storage.InsertUserByOAuth(remoteOAuth)
 		}
 	} else {
 		// user signed in before
@@ -199,18 +186,17 @@ func (g *Google) Authenticate(c *gin.Context) {
 	authJSON := &models.AuthenticatedResponse{ID: matchUser.ID, Privilege: matchUser.Privilege, FirstName: matchUser.FirstName.String, LastName: matchUser.LastName.String, Email: matchUser.Email.String, Jwt: token}
 	authResp, _ := json.Marshal(authJSON)
 
-	c.SetCookie("auth_info", string(authResp), 100, u.Path, utils.Cfg.ConsumerSettings.Domain, secure, true)
+	c.SetCookie("auth_info", string(authResp), 100, u.Path, "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
 
 // GetRemoteUserData fetched user data from Google
 func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
-	oauthStateString := utils.Cfg.OauthSettings.GoogleSettings.Statestr
-
 	state := r.FormValue("state")
-	if state != oauthStateString {
-		return "", models.NewAppError("Google.GetRemoteUserData", "invalid oauth state", fmt.Sprintf("invalid oauth state, expected '%s', actual '%s'\n", oauthStateString, state), http.StatusInternalServerError)
+	if state != oauthState {
+		log.Warnf("controllers.oauth.google.getRemoteUserData. Invalid oauth state, expected '%s', got '%s'\n", oauthState, state)
+		return "", models.NewAppError("OAuth state", "controllers.oauth.google", "Invalid oauth state", 500)
 	}
 
 	code := r.FormValue("code")
@@ -231,7 +217,6 @@ func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (stri
 	if err != nil {
 		return "", models.NewAppError("Google.GetRemoteUserData", "error parsing Google user data", err.Error(), http.StatusInternalServerError)
 	}
-	// fmt.Fprintf(w, "Content: %s\n", contents)
 
 	return string(contents), nil
 }

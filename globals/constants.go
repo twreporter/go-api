@@ -1,16 +1,14 @@
-package constants
+package globals
 
 const (
 	// controller name
 	MembershipController = "membership_controller"
 	NewsController       = "news_controller"
-	FacebookController   = "facebook_controller"
-	GoogleController     = "google_controller"
 
 	RegistrationTable = "registrations"
 
 	DefaultOrderBy        = "updated_at desc"
-	DefaultLimit      int = 0
+	DefaultLimit      int = 10
 	DefaultOffset     int = 0
 	DefaultActiveCode int = 2
 
@@ -39,4 +37,8 @@ const (
 	// table name
 	TableUsersBookmarks = "users_bookmarks"
 	TableBookmarks      = "bookmarks"
+
+	// oauth type
+	GoogleOAuth   = "Google"
+	FacebookOAuth = "Facebook"
 )

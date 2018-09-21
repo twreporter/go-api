@@ -7,22 +7,21 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"twreporter.org/go-api/models"
 )
 
 type EmailTestSuite struct {
 	suite.Suite
 }
 
-var settings models.EmailSettings
+var settings SmtpEmailSettings
 
 func (suite *EmailTestSuite) SetupTest() {
-	settings = models.EmailSettings{
+	settings = SmtpEmailSettings{
 		SMTPUsername:       "fakeUser",
 		SMTPPassword:       "fakePassword",
 		SMTPServer:         "fakeServer",
 		SMTPPort:           "fakePort",
-		ConnectionSecurity: models.ConnSecurityStarttls,
+		ConnectionSecurity: "STARTTLS",
 		SMTPServerOwner:    "fakeOwner",
 		FeedbackName:       "fakeName",
 		FeedbackEmail:      "fakeAddress",

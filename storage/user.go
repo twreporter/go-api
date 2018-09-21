@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/utils"
 )
 
 // GetUserByID gets the user by its ID
@@ -37,7 +35,7 @@ func (gs *GormStorage) GetUserByEmail(email string) (models.User, error) {
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
-func (gs *GormStorage) GetOAuthData(aid sql.NullString, aType string) (models.OAuthAccount, error) {
+func (gs *GormStorage) GetOAuthData(aid models.NullString, aType string) (models.OAuthAccount, error) {
 	log.Info("Getting the matching OAuth data", aid)
 	oac := models.OAuthAccount{}
 	err := gs.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).Last(&oac).Error
@@ -103,9 +101,9 @@ func (gs *GormStorage) InsertReporterAccount(account models.ReporterAccount) err
 }
 
 // InsertUserByOAuth insert a new user into db after the oath loginin
-func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User {
+func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user models.User, err error) {
 	log.Info("Inserting user data")
-	user := models.User{
+	user = models.User{
 		OAuthAccounts:    []models.OAuthAccount{omodel},
 		Email:            omodel.Email,
 		FirstName:        omodel.FirstName,
@@ -114,15 +112,15 @@ func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) models.User
 		Privilege:        constants.PrivilegeRegistered,
 		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
 	}
-	gs.db.Create(&user)
-	return user
+	err = gs.db.Create(&user).Error
+	return user, err
 }
 
 // InsertUserByReporterAccount insert a new user into db after the sign up
 func (gs *GormStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
 	user := models.User{
 		ReporterAccount:  raModel,
-		Email:            utils.ToNullString(raModel.Email),
+		Email:            models.NewNullString(raModel.Email),
 		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
 	}
 	err := gs.db.Create(&user).Error

@@ -1,3 +1,6 @@
+### 2.1.4
+- Update /v1/search/posts and /v1/search/authors to use new algolia indices
+
 ### 2.1.3
 - [feature] /v1/authors{?limit,offset,sort}[GET] endpoint for fetching authors
 
