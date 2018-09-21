@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 )
@@ -42,7 +46,7 @@ func TestSignIn(t *testing.T) {
 func TestActivate(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 
-	// START - test activate endpoint //
+	// START - test activate endpoint v1//
 	as := storage.NewGormStorage(DB)
 	user, _ := as.GetReporterAccountData(DefaultAccount)
 
@@ -55,13 +59,48 @@ func TestActivate(t *testing.T) {
 	// test activate fails
 	resp = ServeHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", DefaultAccount, ""), "", "", "")
 	assert.Equal(t, resp.Code, 401)
-	// END - test activate endpoint //
+	// END - test activate endpoint v1//
+
+	// Renew token for v2 endpoint validation
+	activateToken = "Activate_Token_2"
+	expTime := time.Now().Add(time.Duration(15) * time.Minute)
+
+	if err := as.UpdateReporterAccount(models.ReporterAccount{
+		ID:            user.ID,
+		ActivateToken: activateToken,
+		ActExpTime:    expTime,
+	}); nil != err {
+		fmt.Println(err.Error())
+	}
+
+	// START - test activate endpoint v2//
+
+	// test activate
+	resp = ServeHTTP("GET", fmt.Sprintf("/v2/auth/activate?email=%v&token=%v", DefaultAccount, activateToken), "", "", "")
+	fmt.Print(resp.Body)
+
+	// validate status code
+	assert.Equal(t, resp.Code, http.StatusTemporaryRedirect)
+	cookies := resp.Result().Cookies()
+
+	cookieMap := make(map[string]http.Cookie)
+	for _, cookie := range cookies {
+		cookieMap[cookie.Name] = *cookie
+	}
+	// validate Set-Cookie header
+	assert.Contains(t, cookieMap, "id_token")
+
+	// test activate fails
+	resp = ServeHTTP("GET", fmt.Sprintf("/v2/auth/activate?email=%v&token=%v", DefaultAccount, ""), "", "", "")
+	assert.Equal(t, resp.Code, http.StatusTemporaryRedirect)
+	// END - test activate endpoint v2//
+
 }
 
 func TestRenewJWT(t *testing.T) {
 	as := storage.NewGormStorage(DB)
 	user, _ := as.GetReporterAccountData(DefaultAccount)
-	jwt, _ := utils.RetrieveToken(user.ID, user.Email)
+	jwt, _ := utils.RetrieveV1Token(user.ID, user.Email)
 
 	// START - test renew jwt endpoint //
 	// renew jwt successfully

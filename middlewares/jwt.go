@@ -3,7 +3,6 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
-	//"time"
 
 	"twreporter.org/go-api/globals"
 
@@ -38,6 +37,23 @@ func ValidateUserID() gin.HandlerFunc {
 		userID := c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
 			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+	}
+}
+
+func ValidateIDToken() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := c.Request.Context().Value("user")
+
+		claims := user.(*jwt.Token).Claims
+
+		if err := claims.Valid(); nil != err {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status": "fail",
+				"data": gin.H{
+					"id_token": err.Error(),
+				},
+			})
 		}
 	}
 }

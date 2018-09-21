@@ -97,7 +97,7 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 
 	// user is not existed
 	var fakeID uint = 100
-	jwt, _ = utils.RetrieveToken(fakeID, "test@twreporter.org")
+	jwt, _ = utils.RetrieveV1Token(fakeID, "test@twreporter.org")
 	log.Info("jwt:", jwt)
 	resp = ServeHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), bookmarkJSON,
 		"application/json", fmt.Sprintf("Bearer %v", jwt))
@@ -140,7 +140,7 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 	/** START - Fail to list bookmark **/
 	// user is not existed
 	var fakeID uint = 100
-	jwt, _ = utils.RetrieveToken(fakeID, "test@twreporter.org")
+	jwt, _ = utils.RetrieveV1Token(fakeID, "test@twreporter.org")
 
 	resp = ServeHTTP("GET", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), "", "", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 404)
@@ -208,7 +208,7 @@ func TestDeleteBookmark(t *testing.T) {
 
 	// user is not existed
 	var fakeID uint = 100
-	jwt, _ = utils.RetrieveToken(fakeID, "test@twreporter.org")
+	jwt, _ = utils.RetrieveV1Token(fakeID, "test@twreporter.org")
 	resp = ServeHTTP("DELETE", fmt.Sprintf("/v1/users/%v/bookmarks/1", fakeID), "", "", fmt.Sprintf("Bearer %v", jwt))
 	assert.Equal(t, resp.Code, 404)
 	/** END - Fail to list bookmark **/

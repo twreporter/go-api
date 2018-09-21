@@ -52,6 +52,10 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	config.AddAllowHeaders("Authorization")
 	config.AddAllowMethods("DELETE")
 
+	// Enable Access-Control-Allow-Credentials header for axios pre-flight(OPTION) request
+	// so that the subsequent request could carry cookie
+	config.AllowCredentials = true
+
 	engine.Use(cors.New(config))
 
 	v1Group := engine.Group("/v1")
@@ -133,5 +137,14 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v2AuthGroup.GET("/facebook", middlewares.SetCacheControl("no-store"), ofc.BeginOAuth)
 	v2AuthGroup.GET("/facebook/callback", middlewares.SetCacheControl("no-store"), ofc.Authenticate)
 
+	// =============================
+	// v2 membership service endpoints
+	// =============================
+	v2AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.SignInV2(c, cf.GetMailSender())
+	}))
+	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
+	v2AuthGroup.POST("/token", middlewares.CheckJWT(), middlewares.ValidateIDToken(), middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
+	v2AuthGroup.GET("/logout", mc.TokenInvalidate)
 	return engine
 }

@@ -6,6 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/go-sql-driver/mysql"
+
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
 )
@@ -147,6 +148,6 @@ func (gs *GormStorage) UpdateOAuthData(newData models.OAuthAccount) (models.OAut
 
 // UpdateReporterAccount update a reporter account
 func (gs *GormStorage) UpdateReporterAccount(ra models.ReporterAccount) error {
-	err := gs.db.Save(&ra).Error
+	err := gs.db.Model(&ra).Updates(&ra).Error
 	return err
 }

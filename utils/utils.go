@@ -14,8 +14,12 @@ import (
 )
 
 // GenerateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
-func GenerateActivateMailBody(mailAddress, activeToken, destination string) string {
-	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", globals.Conf.App.Protocol, globals.Conf.App.Host, globals.Conf.App.Port, mailAddress, activeToken, destination)
+func GenerateActivateMailBody(mailAddress, activeToken, destination, host string) string {
+	if "" == host {
+		host = globals.Conf.App.Host
+	}
+
+	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", globals.Conf.App.Protocol, host, globals.Conf.App.Port, mailAddress, activeToken, destination)
 
 	var defaultBody = fmt.Sprintf("<a href=\"%s\" target=\"_blank\">啟動報導者帳號</a>", href)
 
