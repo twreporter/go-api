@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/middlewares"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 )
@@ -15,17 +14,8 @@ type NewsController struct {
 }
 
 // NewNewsController ...
-func NewNewsController(s storage.NewsStorage) Controller {
+func NewNewsController(s storage.NewsStorage) *NewsController {
 	return &NewsController{s}
-}
-
-// Close is the method of Controller interface
-func (nc *NewsController) Close() error {
-	err := nc.Storage.Close()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // GetQueryParam pares url param
@@ -56,25 +46,4 @@ func (nc *NewsController) GetQueryParam(c *gin.Context) (mq models.MongoQuery, l
 	_ = models.GetQuery(where, &mq)
 
 	return
-}
-
-// SetRoute is the method of Controller interface
-func (nc *NewsController) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ginResponseWrapper(nc.GetAuthors))
-
-	// endpoints for posts
-	group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), nc.GetPosts)
-	group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), nc.GetAPost)
-
-	// endpoints for topics
-	group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), nc.GetTopics)
-	group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), nc.GetATopic)
-
-	group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), nc.GetIndexPageContents)
-	group.GET("/index_page_categories", middlewares.SetCacheControl("public,max-age=1800"), nc.GetCategoriesPosts)
-
-	// endpoints for search
-	group.GET("/search/authors", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchAuthors)
-	group.GET("/search/posts", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchPosts)
-	return group
 }

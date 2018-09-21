@@ -10,6 +10,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -40,17 +41,45 @@ func NewEmailSender(email EmailStrategy) *EmailContext {
 
 // NewSMTPEmailSender use smtp email sending strategy to send email
 func NewSMTPEmailSender() *EmailContext {
-	return &EmailContext{&SMTPEmailSender{conf: Cfg.EmailSettings, send: smtp.SendMail}}
+	var config = globals.Conf.Email.SMTP
+
+	return &EmailContext{&SMTPEmailSender{conf: SmtpEmailSettings{
+		SMTPUsername:       config.Username,
+		SMTPPassword:       config.Password,
+		SMTPServer:         config.Server,
+		SMTPPort:           config.Port,
+		ConnectionSecurity: config.ConnectionSecurity,
+		SMTPServerOwner:    config.ServerOwner,
+		FeedbackName:       config.FeedbackName,
+		FeedbackEmail:      config.FeedbackEmail,
+	}, send: smtp.SendMail}}
 }
 
 // NewAmazonEmailSender use Amazon SES email sending strategy to send email
 func NewAmazonEmailSender() *EmailContext {
-	return &EmailContext{&AmazonMailSender{conf: Cfg.AmazonMailSettings}}
+	var config = globals.Conf.Email.Amazon
+
+	return &EmailContext{&AmazonMailSender{conf: AmazonMailSettings{
+		Sender:    config.Sender,
+		AwsRegion: config.AwsRegion,
+		CharSet:   config.Charset,
+	}}}
+}
+
+type SmtpEmailSettings struct {
+	SMTPUsername       string
+	SMTPPassword       string
+	SMTPServer         string
+	SMTPPort           string
+	ConnectionSecurity string
+	SMTPServerOwner    string
+	FeedbackName       string
+	FeedbackEmail      string
 }
 
 // SMTPEmailSender is an email sending method
 type SMTPEmailSender struct {
-	conf models.EmailSettings
+	conf SmtpEmailSettings
 	send func(string, smtp.Auth, string, []string, []byte) error
 }
 
@@ -150,9 +179,15 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	return nil, nil
 }
 
+type AmazonMailSettings struct {
+	Sender    string
+	AwsRegion string
+	CharSet   string
+}
+
 // AmazonMailSender is an email sending method (using Amazon SES to semd mails)
 type AmazonMailSender struct {
-	conf models.AmazonMailSettings
+	conf AmazonMailSettings
 }
 
 // Send sends email using the SMTP
