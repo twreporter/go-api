@@ -1,3 +1,12 @@
+### 2.2.0
+- Add the new /v2/auth/ group endpoints
+  - /v2/auth/facbook /v2/auth/facebook/callback for facebook login
+  - /v2/auth/google /v2/auth/google/callback for google login
+  - /v2/auth/signin /v2/auth/activate for email login
+  - /v2/auth/token for access_token retrieval
+  - /v2/auth/logout for logging out service
+- Use viper to manage project configuration
+
 ### 2.1.4
 - Update /v1/search/posts and /v1/search/authors to use new algolia indices
 
