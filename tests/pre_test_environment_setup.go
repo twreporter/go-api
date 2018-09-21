@@ -93,35 +93,17 @@ func setMgoDefaultRecords(mgoDB *mgo.Session) {
 }
 
 func openGormConnection() (db *gorm.DB, err error) {
-	// CREATE USER 'gorm'@'localhost' IDENTIFIED BY 'gorm';
-	// CREATE DATABASE gorm;
-	// GRANT ALL ON gorm.* TO 'gorm'@'localhost';
-	dbhost := os.Getenv("GORM_DBADDRESS")
-	if dbhost != "" {
-		dbhost = fmt.Sprintf("tcp(%v)", dbhost)
-	} else {
-		dbhost = "tcp(127.0.0.1:3306)"
-	}
-	db, err = gorm.Open("mysql", fmt.Sprintf("gorm:gorm@%v/gorm?charset=utf8&parseTime=True", dbhost))
+	db, _ = utils.InitDB(10, 5)
 
 	if os.Getenv("DEBUG") == "true" {
 		db.LogMode(true)
 	}
 
-	db.DB().SetMaxIdleConns(10)
-
 	return
 }
 
 func openMgoConnection() (session *mgo.Session, err error) {
-	dbhost := os.Getenv("MGO_DBADDRESS")
-	if dbhost == "" {
-		dbhost = "localhost"
-	}
-	session, err = mgo.Dial(dbhost)
-
-	// set settings
-	utils.Cfg.MongoDBSettings.DBName = mgoDBName
+	session, err = utils.InitMongoDB()
 
 	return
 }

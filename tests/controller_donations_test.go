@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"database/sql"
+	//"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"twreporter.org/go-api/models"
+	//"twreporter.org/go-api/models"
 )
 
 type (
@@ -439,7 +439,7 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	testCreateADonationRecord(t, path, true, authorization)
 }
 
-func TestGetDonations(t *testing.T) {
+/*func TestGetDonations(t *testing.T) {
 	var resBody responseBodyForList
 	var resp *httptest.ResponseRecorder
 	var path string
@@ -609,4 +609,4 @@ func TestGetDonations(t *testing.T) {
 	assert.Equal(t, 200, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
 	assert.Equal(t, 3, len(resBody.Data.Records))
-}
+}*/
