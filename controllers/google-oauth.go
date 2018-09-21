@@ -193,10 +193,11 @@ func (g *Google) Authenticate(c *gin.Context) {
 // GetRemoteUserData fetched user data from Google
 func (g *Google) GetRemoteUserData(r *http.Request, w http.ResponseWriter) (string, error) {
 
+	oauthStateString := oauthState
+
 	state := r.FormValue("state")
-	if state != oauthState {
-		log.Warnf("controllers.oauth.google.getRemoteUserData. Invalid oauth state, expected '%s', got '%s'\n", oauthState, state)
-		return "", models.NewAppError("OAuth state", "controllers.oauth.google", "Invalid oauth state", 500)
+	if state != oauthStateString {
+		return "", models.NewAppError("Google.GetRemoteUserData", "invalid oauth state", fmt.Sprintf("invalid oauth state, expected '%s', actual '%s'\n", oauthStateString, state), http.StatusInternalServerError)
 	}
 
 	code := r.FormValue("code")

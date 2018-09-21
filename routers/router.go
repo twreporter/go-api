@@ -79,6 +79,12 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
 	v1Group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateABookmarkOfAUser))
 	v1Group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.DeleteABookmarkOfAUser))
+
+	// endpoints for donation
+	v1Group.POST("/users/:userID/periodic_donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
+	v1Group.POST("/users/:userID/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateADonationOfAUser))
+	// v1Group.GET("/users/:userID/donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))
+
 	// endpoints for web push subscriptions
 	v1Group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, ginResponseWrapper(mc.SubscribeWebPush))
 	v1Group.GET("/web-push/subscriptions", ginResponseWrapper(mc.IsWebPushSubscribed))

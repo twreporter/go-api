@@ -37,7 +37,7 @@ type facebookOauthInfoRaw struct {
 	PictureObj struct {
 		Data struct {
 			URL models.NullString `json:"url"`
-		} `json:data`
+		} `json:"data"`
 	} `json:"picture"`
 }
 

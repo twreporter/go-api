@@ -36,7 +36,7 @@ func ValidateUserID() gin.HandlerFunc {
 		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["userID"]
 		userID := c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 		}
 	}
 }
