@@ -116,7 +116,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	session := cf.GetMgoSession()
 	c := session.DB("go-api").C("sessions")
 	store := mongo.NewStore(c, maxAge, true, []byte("secret"))
-	v2AuthGroup.Use(sessions.Sessions("oauth-session", store))
+	v2AuthGroup.Use(sessions.Sessions("go-api-session", store))
 
 	ogc := cf.GetOAuthController(globals.GoogleOAuth)
 	v2AuthGroup.GET("/google", middlewares.SetCacheControl("no-store"), ogc.BeginOAuth)
