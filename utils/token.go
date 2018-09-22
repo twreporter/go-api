@@ -27,7 +27,7 @@ const (
 
 // ReporterJWTClaims JWT claims we used
 type ReporterJWTClaims struct {
-	UserID uint   `json:"userID"`
+	UserID uint   `json:"user_id"`
 	Email  string `json:"email"`
 	jwt.StandardClaims
 }
