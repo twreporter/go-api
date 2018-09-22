@@ -109,13 +109,13 @@ jobs:
               # pkg version for staging
               PKG_VER="staging-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
 
-              # config.yaml for go-api
-              echo ${GO_STAGING_CONFIG} | base64 -i --decode > ./configs/config.yaml
+              # config.yml for go-api
+              echo ${GO_STAGING_CONFIG} | base64 -i --decode > ./configs/config.yml
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
-              # config.yaml for go-api
-              echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.yaml
+              # config.yml for go-api
+              echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.yml
             fi
 
             # aws config
