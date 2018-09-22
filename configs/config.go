@@ -267,7 +267,7 @@ func LoadConf(confPath string) (ConfYaml, error) {
 			return conf, err
 		}
 	} else {
-		viper.AddConfigPath(".")
+		viper.AddConfigPath("$GOPATH/src/twreporter.org/go-api/configs/")
 		viper.AddConfigPath("./configs/")
 		viper.SetConfigName("config")
 
