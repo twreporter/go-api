@@ -1,3 +1,28 @@
+### 3.0.0
+#### Improve authentication and authorization protocol 
+  1. A user signs in through the login form or social account
+  2. After authentication,  /v2/auth/activate or /v2/auth/{google,
+  facebook}/callback will set `id_token` cookie in jwt format.
+  3. Frontend server will then launch another request to
+  /v2/auth/token along with the bear token in Authorization header
+  from `id_token` to get the `access_token`.
+  4. After validating the `id_token`, go-api returns the `access_token`
+  5. When users want to sign out, the frontend server should redirect users to
+  /v2/auth/logout endpoint, which will unset `id_token` cookie.
+  
+  Besides protocol improvement, there are some refactors as well,
+  - refactor the token generation utilties for backward compatibility.
+  - enable sessions while doing google|facebook oAuth.
+
+#### New Feature: Donation endpoints
+  - /v1/users/:userID/periodic_donations endpoint with POST method
+  - /v1/users/:userID/:pay_method endpoint with POST method
+  The above endpoints allow users to contribute monthly(the upper one) or one-time(the lower one).
+
+#### Configuration refactoring
+  - use `viper` to load the config
+  - change config file format from json to yaml
+
 ### 2.1.4
 - Update /v1/search/posts and /v1/search/authors to use new algolia indices
 

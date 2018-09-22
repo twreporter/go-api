@@ -1,13 +1,16 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"mime"
+	"net/http"
 	"net/mail"
 	"net/smtp"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -38,17 +41,45 @@ func NewEmailSender(email EmailStrategy) *EmailContext {
 
 // NewSMTPEmailSender use smtp email sending strategy to send email
 func NewSMTPEmailSender() *EmailContext {
-	return &EmailContext{&SMTPEmailSender{conf: Cfg.EmailSettings, send: smtp.SendMail}}
+	var config = globals.Conf.Email.SMTP
+
+	return &EmailContext{&SMTPEmailSender{conf: SmtpEmailSettings{
+		SMTPUsername:       config.Username,
+		SMTPPassword:       config.Password,
+		SMTPServer:         config.Server,
+		SMTPPort:           config.Port,
+		ConnectionSecurity: config.ConnectionSecurity,
+		SMTPServerOwner:    config.ServerOwner,
+		FeedbackName:       config.FeedbackName,
+		FeedbackEmail:      config.FeedbackEmail,
+	}, send: smtp.SendMail}}
 }
 
 // NewAmazonEmailSender use Amazon SES email sending strategy to send email
 func NewAmazonEmailSender() *EmailContext {
-	return &EmailContext{&AmazonMailSender{conf: Cfg.AmazonMailSettings}}
+	var config = globals.Conf.Email.Amazon
+
+	return &EmailContext{&AmazonMailSender{conf: AmazonMailSettings{
+		Sender:    config.Sender,
+		AwsRegion: config.AwsRegion,
+		CharSet:   config.Charset,
+	}}}
+}
+
+type SmtpEmailSettings struct {
+	SMTPUsername       string
+	SMTPPassword       string
+	SMTPServer         string
+	SMTPPort           string
+	ConnectionSecurity string
+	SMTPServerOwner    string
+	FeedbackName       string
+	FeedbackEmail      string
 }
 
 // SMTPEmailSender is an email sending method
 type SMTPEmailSender struct {
-	conf models.EmailSettings
+	conf SmtpEmailSettings
 	send func(string, smtp.Auth, string, []string, []byte) error
 }
 
@@ -79,7 +110,7 @@ func (s *SMTPEmailSender) Send(to, subject, body string) error {
 	err := s.send(addr, auth, emailSettings.SMTPUsername, []string{to}, []byte(message))
 
 	if err != nil {
-		return models.NewAppError("Send", "utils.mail.send_mail", err.Error(), 500)
+		return models.NewAppError("SMTPEmailSender.Send", "internal server error: fail to send email", err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
@@ -142,15 +173,21 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 		case "Password:":
 			return []byte(a.password), nil
 		default:
-			return nil, models.NewAppError("Next", "utils.mail.smtp_authentication_machanism", "SMTP client aborts the authentication attempt and close the connection", 500)
+			return nil, errors.New("Unkown fromServer")
 		}
 	}
 	return nil, nil
 }
 
+type AmazonMailSettings struct {
+	Sender    string
+	AwsRegion string
+	CharSet   string
+}
+
 // AmazonMailSender is an email sending method (using Amazon SES to semd mails)
 type AmazonMailSender struct {
-	conf models.AmazonMailSettings
+	conf AmazonMailSettings
 }
 
 // Send sends email using the SMTP
@@ -221,7 +258,7 @@ func (s *AmazonMailSender) Send(to, subject, body string) error {
 				ec = ses.ErrCodeConfigurationSetDoesNotExistException + ": "
 			}
 		}
-		return models.NewAppError("Send", "utils.mail.send_mail", ec+err.Error(), 500)
+		return models.NewAppError("AmazonMailSender.Send", "internal server error: fail to send email", ec+err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

@@ -5,14 +5,21 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"golang.org/x/crypto/scrypt"
 	"html/template"
+
+	"golang.org/x/crypto/scrypt"
+
+	"twreporter.org/go-api/globals"
 	//log "github.com/Sirupsen/logrus"
 )
 
 // GenerateActivateMailBody generate the html a tag which can link to /active enpoint to activate the account
-func GenerateActivateMailBody(mailAddress, activeToken, destination string) string {
-	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", Cfg.ConsumerSettings.Protocol, Cfg.ConsumerSettings.Host, Cfg.ConsumerSettings.Port, mailAddress, activeToken, destination)
+func GenerateActivateMailBody(mailAddress, activeToken, destination, host string) string {
+	if "" == host {
+		host = globals.Conf.App.Host
+	}
+
+	href := fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s", globals.Conf.App.Protocol, host, globals.Conf.App.Port, mailAddress, activeToken, destination)
 
 	var defaultBody = fmt.Sprintf("<a href=\"%s\" target=\"_blank\">啟動報導者帳號</a>", href)
 
@@ -80,7 +87,7 @@ func GenerateRandomString(s int) (string, error) {
 // GenerateEncryptedPassword returns encryptedly
 // securely generated string.
 func GenerateEncryptedPassword(password []byte) (string, error) {
-	salt := []byte(Cfg.EncryptSettings.Salt)
+	salt := []byte(globals.Conf.Encrypt.Salt)
 	key, err := scrypt.Key(password, salt, 16384, 8, 1, 32)
 	return fmt.Sprintf("%x", key), err
 }

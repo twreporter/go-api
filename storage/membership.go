@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"database/sql"
-
 	"github.com/jinzhu/gorm"
 	"twreporter.org/go-api/models"
 	//log "github.com/Sirupsen/logrus"
@@ -18,13 +16,13 @@ type MembershipStorage interface {
 	/** User methods **/
 	GetUserByID(string) (models.User, error)
 	GetUserByEmail(string) (models.User, error)
-	GetOAuthData(sql.NullString, string) (models.OAuthAccount, error)
+	GetOAuthData(models.NullString, string) (models.OAuthAccount, error)
 	GetUserDataByOAuth(models.OAuthAccount) (models.User, error)
 	GetReporterAccountData(string) (models.ReporterAccount, error)
 	GetUserDataByReporterAccount(models.ReporterAccount) (models.User, error)
 	InsertOAuthAccount(models.OAuthAccount) error
 	InsertReporterAccount(models.ReporterAccount) error
-	InsertUserByOAuth(models.OAuthAccount) models.User
+	InsertUserByOAuth(models.OAuthAccount) (models.User, error)
 	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
 	UpdateOAuthData(models.OAuthAccount) (models.OAuthAccount, error)
 	UpdateReporterAccount(models.ReporterAccount) error
@@ -54,6 +52,15 @@ type MembershipStorage interface {
 	CreateRegistration(string, models.RegistrationJSON) (models.Registration, error)
 	UpdateRegistration(string, models.RegistrationJSON) (models.Registration, error)
 	DeleteRegistration(string, string) error
+
+	/** Donation methods **/
+	CreateAPayByPrimeDonation(models.PayByPrimeDonation) error
+	UpdateAPayByPrimeDonation(string, models.PayByPrimeDonation) error
+	CreateAPeriodicDonation(models.PeriodicDonation, models.PayByCardTokenDonation) (uint, error)
+	DeleteAPeriodicDonation(uint, models.PayByCardTokenDonation) error
+	UpdateAPeriodicDonation(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
+	CreateAPayByOtherMethodDonation(models.PayByOtherMethodDonation) error
+	GetDonationsByPayMethods([]string, uint, uint) (models.DonationRecord, error)
 }
 
 // NewGormStorage initializes the storage connected to MySQL database by gorm library

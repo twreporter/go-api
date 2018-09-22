@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/configs"
-	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 
 	log "github.com/Sirupsen/logrus"
@@ -86,7 +86,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 	var rtn map[string]interface{}
 	var ch = make(chan map[string]interface{})
 	var parts = map[string]IndexPageQueryStruct{
-		constants.LastestSection: {
+		globals.LastestSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 			},
@@ -95,7 +95,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Sort:         "-publishedDate",
 			ResourceType: "posts",
 		},
-		constants.EditorPicksSection: {
+		globals.EditorPicksSection: {
 			MongoQuery: models.MongoQuery{
 				State:      "published",
 				IsFeatured: true,
@@ -105,7 +105,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Sort:         "-updatedAt",
 			ResourceType: "posts",
 		},
-		constants.LatestTopicSection: {
+		globals.LatestTopicSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 			},
@@ -115,7 +115,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			ResourceType: "topics",
 			Full:         true,
 		},
-		constants.ReviewsSection: {
+		globals.ReviewsSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 				Style: "review",
@@ -125,7 +125,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Sort:         "-publishedDate",
 			ResourceType: "posts",
 		},
-		constants.TopicsSection: {
+		globals.TopicsSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 			},
@@ -135,7 +135,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			ResourceType: "topics",
 			Full:         false,
 		},
-		constants.PhotoSection: {
+		globals.PhotoSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 				Style: "photography",
@@ -145,7 +145,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 			Sort:         "-publishedDate",
 			ResourceType: "posts",
 		},
-		constants.InfographicSection: {
+		globals.InfographicSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 				Style: "interactive",
@@ -175,12 +175,12 @@ func (nc *NewsController) GetCategoriesPosts(c *gin.Context) {
 	var rtn map[string]interface{}
 	var ch = make(chan map[string]interface{})
 	var cats = map[string]string{
-		constants.HumanRightsAndSociety:   configs.HumanRightsAndSocietyListID,
-		constants.EnvironmentAndEducation: configs.EnvironmentAndEducationListID,
-		constants.PoliticsAndEconomy:      configs.PoliticsAndEconomyListID,
-		constants.CultureAndArt:           configs.CultureAndArtListID,
-		constants.International:           configs.InternationalListID,
-		constants.LivingAndMedicalCare:    configs.LivingAndMedicalCareListID,
+		globals.HumanRightsAndSociety:   configs.HumanRightsAndSocietyListID,
+		globals.EnvironmentAndEducation: configs.EnvironmentAndEducationListID,
+		globals.PoliticsAndEconomy:      configs.PoliticsAndEconomyListID,
+		globals.CultureAndArt:           configs.CultureAndArtListID,
+		globals.International:           configs.InternationalListID,
+		globals.LivingAndMedicalCare:    configs.LivingAndMedicalCareListID,
 	}
 
 	var parts = make(map[string]IndexPageQueryStruct)

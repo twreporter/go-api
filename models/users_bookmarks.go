@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	//"twreporter.org/go-api/constants"
+	//"twreporter.org/go-api/globals"
 	//log "github.com/Sirupsen/logrus"
 )
 

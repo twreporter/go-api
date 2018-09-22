@@ -3,18 +3,18 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
-	//"time"
+
+	"twreporter.org/go-api/globals"
 
 	//log "github.com/Sirupsen/logrus"
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/utils"
 )
 
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-		return []byte(utils.Cfg.AppSettings.Token), nil
+		return []byte(globals.Conf.App.JwtSecret), nil
 	},
 	SigningMethod: jwt.SigningMethodHS256,
 })
@@ -36,7 +36,24 @@ func ValidateUserID() gin.HandlerFunc {
 		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["userID"]
 		userID := c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
+		}
+	}
+}
+
+func ValidateIDToken() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := c.Request.Context().Value("user")
+
+		claims := user.(*jwt.Token).Claims
+
+		if err := claims.Valid(); nil != err {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status": "fail",
+				"data": gin.H{
+					"id_token": err.Error(),
+				},
+			})
 		}
 	}
 }
