@@ -13,7 +13,9 @@ import (
 	"twreporter.org/go-api/models"
 )
 
-const maxAge = 3600
+const (
+	maxAge = 3600
+)
 
 type wrappedFn func(c *gin.Context) (int, gin.H, error)
 
@@ -50,6 +52,10 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	config.AddAllowHeaders("Authorization")
 	config.AddAllowMethods("DELETE")
 
+	// Enable Access-Control-Allow-Credentials header for axios pre-flight(OPTION) request
+	// so that the subsequent request could carry cookie
+	config.AllowCredentials = true
+
 	engine.Use(cors.New(config))
 
 	v1Group := engine.Group("/v1")
@@ -73,6 +79,12 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
 	v1Group.POST("/users/:userID/bookmarks", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateABookmarkOfAUser))
 	v1Group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.DeleteABookmarkOfAUser))
+
+	// endpoints for donation
+	v1Group.POST("/users/:userID/periodic_donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
+	v1Group.POST("/users/:userID/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateADonationOfAUser))
+	// v1Group.GET("/users/:userID/donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))
+
 	// endpoints for web push subscriptions
 	v1Group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, ginResponseWrapper(mc.SubscribeWebPush))
 	v1Group.GET("/web-push/subscriptions", ginResponseWrapper(mc.IsWebPushSubscribed))
@@ -117,6 +129,12 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	c := session.DB("go-api").C("sessions")
 	store := mongo.NewStore(c, maxAge, true, []byte("secret"))
 	v2AuthGroup.Use(sessions.Sessions("go-api-session", store))
+	store.Options(sessions.Options{
+		Domain:   globals.Conf.App.Domain,
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   globals.Conf.Environment != "development",
+	})
 
 	ogc := cf.GetOAuthController(globals.GoogleOAuth)
 	v2AuthGroup.GET("/google", middlewares.SetCacheControl("no-store"), ogc.BeginOAuth)
@@ -125,5 +143,14 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v2AuthGroup.GET("/facebook", middlewares.SetCacheControl("no-store"), ofc.BeginOAuth)
 	v2AuthGroup.GET("/facebook/callback", middlewares.SetCacheControl("no-store"), ofc.Authenticate)
 
+	// =============================
+	// v2 membership service endpoints
+	// =============================
+	v2AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.SignInV2(c, cf.GetMailSender())
+	}))
+	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
+	v2AuthGroup.POST("/token", middlewares.CheckJWT(), middlewares.ValidateIDToken(), middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
+	v2AuthGroup.GET("/logout", mc.TokenInvalidate)
 	return engine
 }

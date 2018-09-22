@@ -168,7 +168,7 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 		}
 	}
 
-	token, err = utils.RetrieveToken(matchUser.ID, matchUser.Email.String)
+	token, err = utils.RetrieveV1Token(matchUser.ID, matchUser.Email.String)
 	if err != nil {
 		return
 	}

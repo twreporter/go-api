@@ -54,6 +54,10 @@ oauth:
     google:
         id: "" # provide your own ID
         secret: "" # provide your own secret
+donation:
+    card_secret_key: test_card_secret_key
+    tappay_url: 'https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime'
+    tappay_partner_key: 'partner_6ID1DoDlaPrfHw6HBZsULfTYtDmWs0q0ZZGKMBpp4YICWBxgK97eK3RM'
 algolia:
     application_id: "" # provide your own application ID
     api_key: "" # provide your own api key
@@ -62,14 +66,15 @@ encrypt:
 `)
 
 type ConfYaml struct {
-	Environment string        `yaml:"environment"`
-	Cors        CorsConfig    `yaml:"cors"`
-	App         AppConfig     `yaml:"app"`
-	Email       EmailConfig   `yaml:"email"`
-	DB          DBConfig      `yaml:"db"`
-	Oauth       OauthConfig   `yaml:"oauth"`
-	Algolia     AlgoliaConfig `ymal:"algolia"`
-	Encrypt     EncryptConfig `yaml:"encrypt"`
+	Environment string         `yaml:"environment"`
+	Cors        CorsConfig     `yaml:"cors"`
+	App         AppConfig      `yaml:"app"`
+	Email       EmailConfig    `yaml:"email"`
+	DB          DBConfig       `yaml:"db"`
+	Oauth       OauthConfig    `yaml:"oauth"`
+	Donation    DonationConfig `yaml:"donation"`
+	Algolia     AlgoliaConfig  `ymal:"algolia"`
+	Encrypt     EncryptConfig  `yaml:"encrypt"`
 }
 
 type CorsConfig struct {
@@ -143,6 +148,12 @@ type GoogleConfig struct {
 	Secret string `yaml:"secret"`
 }
 
+type DonationConfig struct {
+	CardSecretKey    string `yaml:"card_secret_key"`
+	TapPayURL        string `yaml:"tappay_url"`
+	TapPayPartnerKey string `yaml:"tappay_partner_key"`
+}
+
 type AlgoliaConfig struct {
 	ApplicationID string `yaml:"application_id"`
 	APIKey        string `yaml:"api_key"`
@@ -211,6 +222,11 @@ func buildConf() ConfYaml {
 	// Oauth - Google
 	conf.Oauth.Google.ID = viper.GetString("oauth.google.id")
 	conf.Oauth.Google.Secret = viper.GetString("oauth.google.secret")
+
+	// TapPay
+	conf.Donation.CardSecretKey = viper.GetString("donation.card_secret_key")
+	conf.Donation.TapPayURL = viper.GetString("donation.tappay_url")
+	conf.Donation.TapPayPartnerKey = viper.GetString("donation.tappay_partner_key")
 
 	// Algolia
 	conf.Algolia.ApplicationID = viper.GetString("algolia.application_id")
