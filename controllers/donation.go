@@ -102,9 +102,10 @@ type (
 )
 
 const (
-	defaultDetails        = "報導者小額捐款"
-	defaultCurrency       = "TWD"
-	defaultMerchantID     = "twreporter_CTBC"
+	defaultDetails  = "報導者小額捐款"
+	defaultCurrency = "TWD"
+	//defaultMerchantID     = "twreporter_CTBC"
+	defaultMerchantID     = "GlobalTesting_CTBC"
 	defaultRequestTimeout = 45 * time.Second
 
 	invalidPayMethodID = -1
