@@ -1,19 +1,19 @@
-hash: fa10809bc54f3a88f30d3f2744834bc8a86fdc6c57383568bfc5e4bc06214ce3
-updated: 2018-08-29T16:37:42.731289761+08:00
+hash: 2f8b4f0d6800da4322d085afb7e417a82270b936b830ce7026c80bc75382de98
+updated: 2018-09-26T19:24:29.041010934+08:00
 imports:
 - name: cloud.google.com/go
-  version: 64a2037ec6be8a4b0c1d1f706ed35b428b989239
+  version: 97efc2c9ffd9fe8ef47f7f3203dc60bbca547374
   subpackages:
   - compute/metadata
 - name: github.com/algolia/algoliasearch-client-go
-  version: ba82b950b87b683a252b81c26b8478fcbcc9fa55
+  version: 68149ecd478242b4323aa535fe0fadca0d98912e
   subpackages:
   - algoliasearch
   - algoliasearch/call
 - name: github.com/auth0/go-jwt-middleware
   version: 5493cabe49f7bfa6e2ec444a09d334d90cd4e2bd
 - name: github.com/aws/aws-sdk-go
-  version: 8b15f938ed215522a37275106e847f6f0be85fe8
+  version: cbd7ed8b82dac1de35d67e576f0b3faf215e1ae9
   subpackages:
   - aws
   - aws/awserr
@@ -46,7 +46,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: 06ea1031745cb8b3dab3f6a236daf2b0aa468b7e
 - name: github.com/fsnotify/fsnotify
-  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+  version: ccc981bf80385c528a65fbfdd49bf2d8da22aa23
 - name: github.com/gin-contrib/cors
   version: 567de191692713543513692ecba9f6ca08cd660a
 - name: github.com/gin-contrib/sessions
@@ -72,11 +72,11 @@ imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/securecookie
-  version: 51f47194a536d357035c4ad9304e2fa42dde262a
+  version: bb1ab76598893258e90f45d8a708a2505a95af2a
 - name: github.com/gorilla/sessions
   version: 03b6f63cc43ef9c7240a635a5e22b13180e822b8
 - name: github.com/hashicorp/hcl
-  version: 8cb6e5b959231cc1119e43259c4a608f9c51a241
+  version: 65a6292f0157eff210d03ed1bf6c59b190b8b906
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -100,7 +100,7 @@ imports:
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/json-iterator/go
-  version: 1624edc4454b8682399def8740d46db5e4362ba4
+  version: 2433035e513208b0f7bd5b50d0aecd889b2c1ff8
 - name: github.com/kidstuff/mongostore
   version: db2a8b4fac1f737c75e7fb84cb3fdb07dfc8fbc9
 - name: github.com/magiconair/properties
@@ -114,21 +114,21 @@ imports:
 - name: github.com/modern-go/reflect2
   version: 94122c33edd36123c84d5368cfb2b69df93a0ec8
 - name: github.com/pelletier/go-toml
-  version: c2dbbc24a97911339e01bda0b8cabdbd8f13b602
+  version: 78b76feda6f35b2c5c1d283513f6419e59086729
 - name: github.com/Sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/afero
-  version: 787d034dfe70e44075ccc060d346146ef53270ad
+  version: d40851caa0d747393da1ffb28f7f9d8b4eeffebd
   subpackages:
   - mem
 - name: github.com/spf13/cast
   version: 8965335b8c7107321228e3e3702cab9832751bac
 - name: github.com/spf13/jwalterweatherman
-  version: 14d3d4c518341bea657dd8a226f5121c0ff8c9f2
+  version: 4a4406e478ca629068e7768fc33f3f044173c0a6
 - name: github.com/spf13/pflag
-  version: d929dcbb10863323c436af3cf76cb16a6dfc9b29
+  version: 298182f68c66c05229eb03ac171abe6e309ee79a
 - name: github.com/spf13/viper
-  version: 907c19d40d9a6c9bb55f040ff4ae45271a4754b9
+  version: 8fb642006536c8d3760c99d4fa2389f5e2205631
 - name: github.com/stretchr/testify
   version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
@@ -167,7 +167,7 @@ imports:
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 6e3c4e7365ddcc329f090f96e4348398f6310088
+  version: 905a57155faa8230500121607930ebb9dd8e139c
   subpackages:
   - transform
   - unicode/norm
@@ -188,6 +188,8 @@ imports:
   version: 8050b9cbc271307e5a716a9d782803d09b0d6f2d
 - name: gopkg.in/go-playground/validator.v8
   version: c193cecd124b5cc722d7ee5538e945bdb3348435
+- name: gopkg.in/guregu/null.v3
+  version: 80515d440932108546bcade467bb7d6968e812e2
 - name: gopkg.in/matryer/try.v1
   version: 312d2599e12e89ca89b52a09597394f449235d80
 - name: gopkg.in/mgo.v2

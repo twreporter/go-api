@@ -2,6 +2,7 @@ package storage
 
 import (
 	"github.com/jinzhu/gorm"
+	"gopkg.in/guregu/null.v3"
 	"twreporter.org/go-api/models"
 	//log "github.com/Sirupsen/logrus"
 )
@@ -16,7 +17,7 @@ type MembershipStorage interface {
 	/** User methods **/
 	GetUserByID(string) (models.User, error)
 	GetUserByEmail(string) (models.User, error)
-	GetOAuthData(models.NullString, string) (models.OAuthAccount, error)
+	GetOAuthData(null.String, string) (models.OAuthAccount, error)
 	GetUserDataByOAuth(models.OAuthAccount) (models.User, error)
 	GetReporterAccountData(string) (models.ReporterAccount, error)
 	GetUserDataByReporterAccount(models.ReporterAccount) (models.User, error)
