@@ -480,7 +480,7 @@ func TestGetDonations(t *testing.T) {
 	path = "/v1/users/1000/donations"
 	jwt = generateJWT(models.User{
 		ID:    1000,
-		Email: models.NewNullString("unknown@twreporter.org"),
+		Email: null.StringFrom("unknown@twreporter.org"),
 	})
 
 	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %s", jwt))

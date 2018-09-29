@@ -19,6 +19,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/go-playground/validator.v8"
+	"gopkg.in/guregu/null.v3"
 
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
@@ -76,7 +77,7 @@ type (
 	}
 
 	tapPayTransactionResp struct {
-		Status                int                 `json:"status"`
+		Status                int64               `json:"status"`
 		Msg                   string              `json:"msg"`
 		RecTradeID            string              `json:"rec_trade_id"`
 		BankTransactionID     string              `json:"bank_transaction_id"`
@@ -89,12 +90,12 @@ type (
 		Acquirer              string              `json:"acquirer"`
 		TransactionTimeMillis int64               `json:"transaction_time_millis"`
 		BankTransactionTime   bankTransactionTime `json:"bank_transaction_time"`
-		BankResultCode        *string             `json:"bank_result_code"`
-		BankResultMsg         *string             `json:"bank_result_msg"`
+		BankResultCode        null.String         `json:"bank_result_code"`
+		BankResultMsg         null.String         `json:"bank_result_msg"`
 	}
 
 	tapPayMinTransactionResp struct {
-		Status int    `json:"status"`
+		Status int64  `json:"status"`
 		Msg    string `json:"msg"`
 	}
 
@@ -197,7 +198,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail' and stop the periodic donation
 			failResp := models.PayByCardTokenDonation{
-				TappayApiStatus: &tapPayResp.Status,
+				TappayApiStatus: null.IntFrom(tapPayResp.Status),
 				Msg:             tapPayResp.Msg,
 				Status:          statusFail,
 			}
@@ -279,7 +280,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail'
 			mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, models.PayByPrimeDonation{
-				TappayApiStatus: &tapPayResp.Status,
+				TappayApiStatus: null.IntFrom(tapPayResp.Status),
 				Msg:             tapPayResp.Msg,
 				Status:          statusFail,
 			})
@@ -367,7 +368,7 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonation {
 	m := models.PayByPrimeDonation{}
 
-	m.TappayApiStatus = &resp.Status
+	m.TappayApiStatus = null.IntFrom(resp.Status)
 	m.Msg = resp.Msg
 	m.RecTradeID = resp.RecTradeID
 	m.BankTransactionID = resp.BankTransactionID
@@ -377,18 +378,18 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 	m.BankResultMsg = resp.BankResultMsg
 
 	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
-	m.TransactionTime = &ttm
+	m.TransactionTime = null.TimeFrom(ttm)
 
 	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
 	if nil == err {
 		stm := time.Unix(t/secToMsec, t%secToMsec)
-		m.BankTransactionStartTime = &stm
+		m.BankTransactionStartTime = null.TimeFrom(stm)
 	}
 
 	t, err = strconv.ParseInt(resp.BankTransactionTime.EndTimeMillis, 10, strconv.IntSize)
 	if nil == err {
 		etm := time.Unix(t/secToMsec, t%secToMsec)
-		m.BankTransactionEndTime = &etm
+		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
 	m.CardInfoBinCode = resp.CardInfo.BinCode
@@ -428,7 +429,7 @@ func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDon
 	m.CardKey = ciphertext
 
 	t := time.Now()
-	m.LastSuccessAt = &t
+	m.LastSuccessAt = null.TimeFrom(t)
 	m.Status = statusPeriodicPaid
 
 	return m
@@ -446,14 +447,12 @@ func buildTapPayPrimeReq(pt payType, payMethod string, req clientReq) tapPayPrim
 
 	// Per required fields (even empty) of cardholder of tappay documents,
 	// use empty strings for name and phonenumber fields instead of empty.
-	if nil == t.Cardholder.Name {
-		e := ""
-		t.Cardholder.Name = &e
+	if !t.Cardholder.Name.Valid {
+		t.Cardholder.Name = null.StringFrom("")
 	}
 
-	if nil == t.Cardholder.PhoneNumber {
-		e := ""
-		t.Cardholder.PhoneNumber = &e
+	if !t.Cardholder.PhoneNumber.Valid {
+		t.Cardholder.PhoneNumber = null.StringFrom("")
 	}
 
 	// Fill up optional fields
@@ -490,7 +489,7 @@ func buildTapPayPrimeReq(pt payType, payMethod string, req clientReq) tapPayPrim
 func buildTokenSuccessRecord(resp tapPayTransactionResp) models.PayByCardTokenDonation {
 	m := models.PayByCardTokenDonation{}
 
-	m.TappayApiStatus = &resp.Status
+	m.TappayApiStatus = null.IntFrom(resp.Status)
 	m.Msg = resp.Msg
 	m.RecTradeID = resp.RecTradeID
 	m.BankTransactionID = resp.BankTransactionID
@@ -500,18 +499,18 @@ func buildTokenSuccessRecord(resp tapPayTransactionResp) models.PayByCardTokenDo
 	m.BankResultMsg = resp.BankResultMsg
 
 	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
-	m.TransactionTime = &ttm
+	m.TransactionTime = null.TimeFrom(ttm)
 
 	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
 	if nil == err {
 		stm := time.Unix(t/secToMsec, t%secToMsec)
-		m.BankTransactionStartTime = &stm
+		m.BankTransactionStartTime = null.TimeFrom(stm)
 	}
 
 	t, err = strconv.ParseInt(resp.BankTransactionTime.EndTimeMillis, 10, strconv.IntSize)
 	if nil == err {
 		etm := time.Unix(t/secToMsec, t%secToMsec)
-		m.BankTransactionEndTime = &etm
+		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
 	m.Status = statusPaid

@@ -19,6 +19,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"gopkg.in/guregu/null.v3"
 )
 
 // Google ...
@@ -93,13 +94,13 @@ func (g *Google) Authenticate(c *gin.Context) {
 	// decode user data returned by Google oAuth
 	remoteOAuth = models.OAuthAccount{
 		Type:      constants.Google,
-		AId:       utils.ToNullString(gjson.Get(fstring, "id").Str),
-		Email:     utils.ToNullString(gjson.Get(fstring, "email").Str),
-		Name:      utils.ToNullString(gjson.Get(fstring, "name").Str),
-		FirstName: utils.ToNullString(gjson.Get(fstring, "given_name").Str),
-		LastName:  utils.ToNullString(gjson.Get(fstring, "family_name").Str),
+		AId:       null.StringFrom(gjson.Get(fstring, "id").Str),
+		Email:     null.StringFrom(gjson.Get(fstring, "email").Str),
+		Name:      null.StringFrom(gjson.Get(fstring, "name").Str),
+		FirstName: null.StringFrom(gjson.Get(fstring, "given_name").Str),
+		LastName:  null.StringFrom(gjson.Get(fstring, "family_name").Str),
 		Gender:    utils.GetGender(gjson.Get(fstring, "gender").Str),
-		Picture:   utils.ToNullString(gjson.Get(fstring, "picture").Str),
+		Picture:   null.StringFrom(gjson.Get(fstring, "picture").Str),
 	}
 
 	// get the record from o_auth_accounts table

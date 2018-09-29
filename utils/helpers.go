@@ -1,37 +1,27 @@
 package utils
 
 import (
+	"gopkg.in/guregu/null.v3"
 	"twreporter.org/go-api/configs/constants"
-	"twreporter.org/go-api/models"
 
 	log "github.com/Sirupsen/logrus"
 )
 
-// ToNullString invalidates a sql.NullString if empty, validates if not empty
-func ToNullString(s string) models.NullString {
-	return models.NewNullString(s)
-}
-
-// GetNullString returns a invalid NullString
-func GetNullString() models.NullString {
-	return models.NewNullString("")
-}
-
 // GetGender format the gender string
-func GetGender(s string) models.NullString {
-	var ngender models.NullString
+func GetGender(s string) null.String {
+	var gender string
 	switch s {
 	case "":
-		ngender = GetNullString()
+		gender = s
 	case "male":
-		ngender = ToNullString(constants.GenderMale)
+		gender = constants.GenderMale
 	case "female":
-		ngender = ToNullString(constants.GenderFemale)
+		gender = constants.GenderFemale
 	default:
 		// Other gender
-		ngender = ToNullString(constants.GenderOthers)
+		gender = constants.GenderOthers
 	}
-	return ngender
+	return null.StringFrom(gender)
 }
 
 // Check - use to fix GoMetaLinter warning of error not check

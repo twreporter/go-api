@@ -20,6 +20,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
+	"gopkg.in/guregu/null.v3"
 )
 
 const oauthState = "twreporter-state"
@@ -100,13 +101,13 @@ func (f *Facebook) Authenticate(c *gin.Context) {
 	// decode user data returned by Facebook
 	remoteOAuth = models.OAuthAccount{
 		Type:      constants.Facebook,
-		AId:       models.NewNullString(gjson.Get(fstring, "id").Str),
-		Email:     models.NewNullString(gjson.Get(fstring, "email").Str),
-		Name:      models.NewNullString(gjson.Get(fstring, "name").Str),
-		FirstName: models.NewNullString(gjson.Get(fstring, "first_name").Str),
-		LastName:  models.NewNullString(gjson.Get(fstring, "last_name").Str),
+		AId:       null.StringFrom(gjson.Get(fstring, "id").Str),
+		Email:     null.StringFrom(gjson.Get(fstring, "email").Str),
+		Name:      null.StringFrom(gjson.Get(fstring, "name").Str),
+		FirstName: null.StringFrom(gjson.Get(fstring, "first_name").Str),
+		LastName:  null.StringFrom(gjson.Get(fstring, "last_name").Str),
 		Gender:    utils.GetGender(gjson.Get(fstring, "gender").Str),
-		Picture:   models.NewNullString(gjson.Get(fstring, "picture.data.url").Str),
+		Picture:   null.StringFrom(gjson.Get(fstring, "picture.data.url").Str),
 	}
 
 	// get the record from o_auth_accounts table
