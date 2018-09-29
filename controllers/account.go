@@ -414,7 +414,7 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	errorWhere := "MembershipController.TokenDispatch"
 
 	type reqBody struct {
-		UserID uint `json:"userID"`
+		UserID uint `json:"user_id"`
 	}
 
 	// Validate the request body

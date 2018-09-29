@@ -27,7 +27,7 @@ const (
 
 // ReporterJWTClaims JWT claims we used
 type ReporterJWTClaims struct {
-	UserID uint   `json:"userID"`
+	UserID uint   `json:"user_id"`
 	Email  string `json:"email"`
 	jwt.StandardClaims
 }
@@ -40,6 +40,8 @@ type IDTokenJWTClaims struct {
 }
 
 type AccessTokenJWTClaims struct {
+	UserID uint   `json:"user_id"`
+	Email  string `json:"email"`
 	jwt.StandardClaims
 }
 
@@ -100,6 +102,8 @@ func genToken(tokenType AuthTokenType, userID uint, email string, expiration int
 		}
 	case AuthV2AccessToken:
 		claims = AccessTokenJWTClaims{
+			userID,
+			email,
 			jwt.StandardClaims{
 				IssuedAt:  time.Now().Unix(),
 				ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),
