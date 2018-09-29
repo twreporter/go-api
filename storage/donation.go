@@ -8,43 +8,39 @@ import (
 	"twreporter.org/go-api/models"
 )
 
-const (
-	invalidPeriodicID = 0
-)
-
 // CreateAPeriodicDonation creates the draft record along with the first draft tap pay transaction
-func (g *GormStorage) CreateAPeriodicDonation(mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) (uint, error) {
+func (g *GormStorage) CreateAPeriodicDonation(mpd *models.PeriodicDonation, mtd *models.PayByCardTokenDonation) error {
 	errWhere := "GormStorage.CreateAPeriodicDonationWithFirstTransaction"
 
 	tx := g.db.Begin()
 
 	if err := tx.Error; nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, "cannot begin the draft periodic donation creation transaction")
+		return g.NewStorageError(err, errWhere, "cannot begin the draft periodic donation creation transaction")
 	}
 
 	// Create a draft record for periodic donation
-	if err := tx.Create(&mpd).Error; nil != err {
+	if err := tx.Create(mpd).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft periodic donation(%#v)", mpd))
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft periodic donation(%#v)", mpd))
 	}
 
 	// Append the periodic ID for the first record
 	mtd.PeriodicID = mpd.ID
 
 	// Create a draft record for the first token transaction
-	if err := tx.Create(&mtd).Error; nil != err {
+	if err := tx.Create(mtd).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft card token donation(%#v)", mtd))
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft card token donation(%#v)", mtd))
 	}
 
 	if err := tx.Commit().Error; nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, "cannot commit the draft periodic donation creation transaction")
+		return g.NewStorageError(err, errWhere, "cannot commit the draft periodic donation creation transaction")
 	}
-	return mpd.ID, nil
+	return nil
 }
 
 // DeleteAPeriodicDonation marks the draft tap pay transaction record as 'fail' and then soft delete the periodic donation

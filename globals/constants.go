@@ -41,4 +41,9 @@ const (
 	// oauth type
 	GoogleOAuth   = "Google"
 	FacebookOAuth = "Facebook"
+
+	// donation
+	PeriodicDonationType = "periodic_donation"
+	PrimeDonaitionType   = "prime"
+	TokenDonationType    = "token"
 )

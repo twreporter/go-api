@@ -50,48 +50,48 @@ type PayByPrimeDonation struct {
 }
 
 type PayByCardTokenDonation struct {
-	ID                       uint        `gorm:"primary_key" json:"id"`
-	CreatedAt                time.Time   `json:"created_at"`
-	UpdatedAt                time.Time   `json:"updated_at"`
-	DeletedAt                *time.Time  `json:"deleted_at"`
-	PeriodicID               uint        `gorm:"not null;index:idx_pay_by_card_token_donations_periodic_id" json:"periodic_id"`
-	Status                   string      `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
-	TappayApiStatus          null.Int    `json:"tappay_api_status"`
-	Msg                      string      `gorm:"type:varchar(100);not null" json:"msg"`
-	TappayRecordStatus       null.Int    `json:"tappay_record_status"`
-	RecTradeID               string      `gorm:"type:varchar(20);not null" json:"rec_trade_id"`
-	BankTransactionID        string      `gorm:"type:varchar(50);not null" json:"bank_transaction_id"`
-	AuthCode                 string      `gorm:"type:varchar(6);not null" json:"auth_code"`
-	Amount                   uint        `gorm:"not null;index:idx_pay_by_card_token_donations_amount" json:"amount"`
-	Currency                 string      `gorm:"type:varchar(3);default:'TWD';not null" json:"currency"`
-	OrderNumber              string      `gorm:"type:varchar(50);not null" json:"order_number"`
 	Acquirer                 string      `gorm:"type:varchar(50);not null" json:"acquirer"`
-	TransactionTime          null.Time   `json:"transaction_time"`
-	BankTransactionStartTime null.Time   `json:"bank_transaction_start_time"`
-	BankTransactionEndTime   null.Time   `json:"bank_transaction_end_time"`
+	Amount                   uint        `gorm:"not null;index:idx_pay_by_card_token_donations_amount" json:"amount"`
+	AuthCode                 string      `gorm:"type:varchar(6);not null" json:"auth_code"`
 	BankResultCode           null.String `gorm:"type:varchar(50)" json:"bank_result_code"`
 	BankResultMsg            null.String `gorm:"type:varchar(50)" json:"bank_result_msg"`
+	BankTransactionEndTime   null.Time   `json:"bank_transaction_end_time"`
+	BankTransactionID        string      `gorm:"type:varchar(50);not null" json:"bank_transaction_id"`
+	BankTransactionStartTime null.Time   `json:"bank_transaction_start_time"`
+	CreatedAt                time.Time   `json:"created_at"`
+	Currency                 string      `gorm:"type:varchar(3);default:'TWD';not null" json:"currency"`
+	DeletedAt                *time.Time  `json:"deleted_at"`
 	Details                  string      `gorm:"type:varchar(50);not null" json:"details"`
+	ID                       uint        `gorm:"primary_key" json:"id"`
 	MerchantID               string      `gorm:"type:varchar(30);not null" json:"merchant_id"`
+	Msg                      string      `gorm:"type:varchar(100);not null" json:"msg"`
+	OrderNumber              string      `gorm:"type:varchar(50);not null" json:"order_number"`
+	PeriodicID               uint        `gorm:"not null;index:idx_pay_by_card_token_donations_periodic_id" json:"periodic_id"`
+	RecTradeID               string      `gorm:"type:varchar(20);not null" json:"rec_trade_id"`
+	Status                   string      `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
+	TappayApiStatus          null.Int    `json:"tappay_api_status"`
+	TappayRecordStatus       null.Int    `json:"tappay_record_status"`
+	TransactionTime          null.Time   `json:"transaction_time"`
+	UpdatedAt                time.Time   `json:"updated_at"`
 }
 
 type PayByOtherMethodDonation struct {
-	ID          uint       `gorm:"primary_key" json:"id"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	DeletedAt   *time.Time `json:"deleted_at"`
-	Email       string     `gorm:"type:varchar(100);not null" json:"email"`
-	PayMethod   string     `gorm:"type:varchar(50);not null;index:idx_pay_by_other_donations_pay_method" json:"pay_method"`
+	Address     string     `gorm:"type:varchar(100)" json:"address"`
 	Amount      uint       `gorm:"type:int(10) unsigned;index:idx_pay_by_other_donations_amount" json:"amount"`
+	CreatedAt   time.Time  `json:"created_at"`
 	Curreny     string     `gorm:"type:char(3);default:'TWD';not null" json:"currency"`
-	OrderNumber string     `gorm:"type:varchar(50);not null" json:"order_number"`
+	DeletedAt   *time.Time `json:"deleted_at"`
 	Details     string     `gorm:"type:varchar(50);not null" json:"details"`
+	Email       string     `gorm:"type:varchar(100);not null" json:"email"`
+	ID          uint       `gorm:"primary_key" json:"id"`
 	MerchantID  string     `gorm:"type:varchar(30);not null" json:"merchant_id"`
 	Name        string     `gorm:"type:varchar(30)" json:"name"`
-	ZipCode     string     `gorm:"type:varchar(10)" json:"zip_code"`
-	Address     string     `gorm:"type:varchar(100)" json:"address"`
 	NationalID  string     `gorm:"type:varchar(20)" json:"national_id"`
+	OrderNumber string     `gorm:"type:varchar(50);not null" json:"order_number"`
+	PayMethod   string     `gorm:"type:varchar(50);not null;index:idx_pay_by_other_donations_pay_method" json:"pay_method"`
 	SendReceipt string     `gorm:"type:ENUM('no', 'monthly');" json:"send_receipt"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	ZipCode     string     `gorm:"type:varchar(10)" json:"zip_code"`
 }
 
 type PeriodicDonation struct {
@@ -127,31 +127,31 @@ type PeriodicDonation struct {
 
 type CardInfo struct {
 	BinCode     null.String `json:"bin_code"`
-	LastFour    null.String `json:"last_four"`
-	Issuer      null.String `json:"issuer"`
-	Funding     null.Int    `json:"funding"`
-	Type        null.Int    `json:"type"`
-	Level       null.String `json:"level"`
 	Country     null.String `json:"country"`
 	CountryCode null.String `json:"country_code"`
 	ExpiryDate  null.String `json:"expiry_date"`
+	Funding     null.Int    `json:"funding"`
+	Issuer      null.String `json:"issuer"`
+	LastFour    null.String `json:"last_four"`
+	Level       null.String `json:"level"`
+	Type        null.Int    `json:"type"`
 }
 
 type Cardholder struct {
-	PhoneNumber null.String `json:"phone_number"`
-	Name        null.String `json:"name"`
-	Email       string      `json:"email" binding:"required,email"`
-	ZipCode     null.String `json:"zip_code"`
 	Address     null.String `json:"address"`
+	Email       string      `json:"email" binding:"required,email"`
+	Name        null.String `json:"name"`
 	NationalID  null.String `json:"national_id"`
+	PhoneNumber null.String `json:"phone_number"`
+	ZipCode     null.String `json:"zip_code"`
 }
 
 type DonationRecord struct {
-	IsPeriodic  bool       `json:"is_periodic"`
+	Amount      uint       `json:"amount"`
 	CardInfo    CardInfo   `json:"card_info"`
 	Cardholder  Cardholder `json:"cardholder"`
-	Amount      uint       `json:"amount"`
 	Currency    string     `json:"currency"`
 	Details     string     `json:"details"`
+	IsPeriodic  bool       `json:"is_periodic"`
 	OrderNumber string     `json:"order_number"`
 }

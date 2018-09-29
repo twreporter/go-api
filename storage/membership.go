@@ -21,7 +21,6 @@ type MembershipStorage interface {
 	Create(interface{}) error
 	Get(uint, interface{}) error
 	GetByConditions(map[string]interface{}, interface{}) error
-	Update(interface{}) error
 	UpdateByConditions(map[string]interface{}, interface{}) error
 	Delete(uint, interface{}) error
 
@@ -52,7 +51,7 @@ type MembershipStorage interface {
 	GetAWebPushSubscription(uint32, string) (models.WebPushSubscription, error)
 
 	/** Donation methods **/
-	CreateAPeriodicDonation(models.PeriodicDonation, models.PayByCardTokenDonation) (uint, error)
+	CreateAPeriodicDonation(*models.PeriodicDonation, *models.PayByCardTokenDonation) error
 	DeleteAPeriodicDonation(uint, models.PayByCardTokenDonation) error
 	UpdatePeriodicAndCardTokenDonationInTRX(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
 	GetDonationsByPayMethods([]string, uint, uint) (models.DonationRecord, error)
@@ -107,30 +106,13 @@ func (gs *GormStorage) GetByConditions(cond map[string]interface{}, m interface{
 	return nil
 }
 
-// Update method of MembershipStorage interface
-func (gs *GormStorage) Update(m interface{}) error {
-	var err error
-	var errWhere string = "GormStorage.Update"
-
-	// caution:
-	// batch updates if primary key of m is zero value
-	err = gs.db.Model(m).Updates(m).Error
-
-	if err != nil {
-		log.Error(err.Error())
-		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not update the record(%#v)", m))
-	}
-
-	return nil
-}
-
 // UpdateByConditions method of MembershipStorage interface
 func (gs *GormStorage) UpdateByConditions(cond map[string]interface{}, m interface{}) error {
 	var err error
 	var errWhere string = "GormStorage.UpdateByConditions"
 
 	// caution:
-	// batch updates if cond is zero value and primary key of m is zero value
+	// it will perform batch updates if cond is zero value and primary key of m is zero value
 	err = gs.db.Model(m).Where(cond).Updates(m).Error
 
 	if err != nil {

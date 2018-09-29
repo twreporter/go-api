@@ -18,6 +18,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
 
@@ -38,7 +39,7 @@ type (
 	}
 
 	clientResp struct {
-		IsPeriodic  bool              `json:"is_periodic"`
+		PeriodicID  null.Int          `json:"periodic_id"`
 		PayMethod   string            `json:"pay_method"`
 		CardInfo    models.CardInfo   `json:"card_info"`
 		Cardholder  models.Cardholder `json:"cardholder"`
@@ -46,6 +47,7 @@ type (
 		Currency    string            `json:"currency"`
 		Details     string            `json:"details"`
 		OrderNumber string            `json:"order_number"`
+		ID          uint              `json:"id"`
 	}
 
 	bankTransactionTime struct {
@@ -100,7 +102,48 @@ type (
 	}
 
 	payType int
+
+	patchBody struct {
+		Address     null.String `json:"address"`
+		Details     null.String `json:"details"`
+		Name        null.String `json:"name"`
+		NationalID  null.String `json:"national_id"`
+		PhoneNumber null.String `json:"phone_number"`
+		SendReceipt null.String `json:"send_receipt"`
+		ToFeedback  null.Bool   `json:"to_feedback"`
+		ZipCode     null.String `json:"zip_code"`
+	}
 )
+
+// CardholderName method is used by copier
+// which will copy `Name` to `CardholderName`
+func (p *patchBody) CardholderName() null.String {
+	return p.Name
+}
+
+// CardholderNationID method is used by copier
+// which will copy `NationalID` to `CardholderNationalID`
+func (p *patchBody) CardholderNationalID() null.String {
+	return p.NationalID
+}
+
+// CardholderPhoneNumber method is used by copier
+// which will copy `PhoneNumber` to `CardholderPhoneNumber`
+func (p *patchBody) CardholderPhoneNumber() null.String {
+	return p.PhoneNumber
+}
+
+// CardholderZipCode method is used by copier
+// which will copy `ZipCode` to `CardholderZipCode`
+func (p *patchBody) CardholderZipCode() null.String {
+	return p.ZipCode
+}
+
+// CardholderAddress method is used by copier
+// which will copy `Address` to `CardholderAddress`
+func (p *patchBody) CardholderAddress() null.String {
+	return p.Address
+}
 
 const (
 	defaultDetails        = "報導者小額捐款"
@@ -190,7 +233,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	draftRecord := buildTokenDraftRecord(tapPayReq)
 
 	// Create a draft periodic donation along with the first token donation record of that periodic donation
-	periodicID, err := mc.Storage.CreateAPeriodicDonation(draftPeriodicDonation, draftRecord)
+	err := mc.Storage.CreateAPeriodicDonation(&draftPeriodicDonation, &draftRecord)
 	if nil != err {
 		errMsg := "Unable to create a draft periodic donation and the first card token transaction record"
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
@@ -211,7 +254,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 				Status:          statusFail,
 			}
 			// Procceed even if the deletion is failed
-			mc.Storage.DeleteAPeriodicDonation(periodicID, failResp)
+			mc.Storage.DeleteAPeriodicDonation(draftPeriodicDonation.ID, failResp)
 		}
 		errMsg := err.Error()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
@@ -221,12 +264,16 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	updateRecord := buildTokenSuccessRecord(tapPayResp)
 	updatePeriodicDonation := buildSuccessPeriodicDonation(tapPayResp)
+	updateRecord.ID = draftRecord.ID
 
-	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicID, updatePeriodicDonation, updateRecord); nil != err {
+	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(draftPeriodicDonation.ID, updatePeriodicDonation, updateRecord); nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
 	}
 
-	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp, true)
+	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp)
+	resp.PeriodicID = null.IntFrom(int64(draftPeriodicDonation.ID))
+	resp.ID = draftRecord.ID
+
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
 
@@ -276,7 +323,6 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 			mc.Storage.UpdateByConditions(map[string]interface{}{
 				"order_number": tapPayReq.OrderNumber,
 			}, models.PayByPrimeDonation{
-				ID:              draftRecord.ID,
 				TappayApiStatus: null.IntFrom(tapPayResp.Status),
 				Msg:             tapPayResp.Msg,
 				Status:          statusFail,
@@ -287,7 +333,6 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	// Update the transaction status to 'paid' if transaction succeeds
 	updateRecord := buildPrimeSuccessRecord(tapPayResp)
-	updateRecord.ID = draftRecord.ID
 
 	if err := mc.Storage.UpdateByConditions(map[string]interface{}{
 		"order_number": tapPayReq.OrderNumber,
@@ -295,9 +340,58 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		log.Error(err.Error())
 	}
 
-	resp := buildClientResp(payMethod, tapPayReq, tapPayResp, false)
+	resp := buildClientResp(payMethod, tapPayReq, tapPayResp)
+	resp.ID = draftRecord.ID
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
+}
+
+// PatchADonationOfAUser method
+// Handler for an authenticated user to patch an prime/token/periodic donation
+func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
+	var d interface{}
+	var err error
+	var recordID uint64
+	var userID uint64
+	var failData gin.H
+	var valid bool
+	var reqBody patchBody
+
+	if userID, err = strconv.ParseUint(c.Param("userID"), 10, strconv.IntSize); err != nil {
+		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, user id should be provided in the url"}, err
+	}
+
+	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
+		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, err
+	}
+
+	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
+	}
+
+	switch donationType {
+	case globals.PeriodicDonationType:
+		pd := models.PeriodicDonation{}
+		copier.Copy(&pd, &reqBody)
+		d = pd
+	case globals.PrimeDonaitionType:
+		pd := models.PayByPrimeDonation{}
+		copier.Copy(&pd, &reqBody)
+		d = pd
+	default:
+		return http.StatusInternalServerError,
+			gin.H{"status": "error", "message": fmt.Sprintf("donation type(%s) not supported", donationType)},
+			nil
+	}
+
+	if err = mc.Storage.UpdateByConditions(map[string]interface{}{
+		"user_id": userID,
+		"id":      recordID,
+	}, d); err != nil {
+		return 0, gin.H{}, err
+	}
+
+	return http.StatusNoContent, gin.H{}, nil
 }
 
 //TODO
@@ -311,9 +405,8 @@ func (t *tapPayPrimeReq) setDefault() {
 	t.MerchantID = defaultMerchantID
 }
 
-func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp, isPeriodic bool) clientResp {
+func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp) clientResp {
 	c := clientResp{}
-	c.IsPeriodic = isPeriodic
 	c.PayMethod = payMethod
 
 	c.CardInfo = resp.CardInfo

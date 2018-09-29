@@ -50,7 +50,9 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	}
 
 	config.AddAllowHeaders("Authorization")
+	config.AddAllowHeaders("ContentType")
 	config.AddAllowMethods("DELETE")
+	config.AddAllowMethods("PATCH")
 
 	// Enable Access-Control-Allow-Credentials header for axios pre-flight(OPTION) request
 	// so that the subsequent request could carry cookie
@@ -82,9 +84,13 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 
 	// endpoints for donation
 	v1Group.POST("/users/:userID/periodic_donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
-	//v1Group.PATCH("/users/:userID/periodic_donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.PatchAPeriodicDonationOfAUser))
+	v1Group.PATCH("/users/:userID/periodic_donations/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.PatchADonationOfAUser(c, globals.PeriodicDonationType)
+	}))
 	v1Group.POST("/users/:userID/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateADonationOfAUser))
-	//v1Group.PATCH("/users/:userID/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.PatchADonationOfAUser))
+	v1Group.PATCH("/users/:userID/donations/prime/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.PatchADonationOfAUser(c, globals.PrimeDonaitionType)
+	}))
 	// v1Group.GET("/users/:userID/donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))
 
 	// endpoints for web push subscriptions
