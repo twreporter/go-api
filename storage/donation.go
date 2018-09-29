@@ -12,28 +12,6 @@ const (
 	invalidPeriodicID = 0
 )
 
-// CreateAPayByPrimeDonation creates a draft order in database
-func (g *GormStorage) CreateAPayByPrimeDonation(m models.PayByPrimeDonation) error {
-	errWhere := "GormStorage.CreateAPayByPrimeDonation"
-	err := g.db.Create(&m).Error
-	if nil != err {
-		log.Error(err.Error())
-		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not create the record(%#v)", m))
-	}
-	return nil
-}
-
-// UpdateAPayByPrimeDonation updates the draft record with the Tappay response data by order
-func (g *GormStorage) UpdateAPayByPrimeDonation(order string, m models.PayByPrimeDonation) error {
-	errWhere := "GormStorage.UpdateAPayByPrimeDonation"
-	err := g.db.Model(&m).Where("order_number = ?", order).Updates(m).Error
-	if nil != err {
-		log.Error(err.Error())
-		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not update prime donation(order: %s, record: %#v)", order, m))
-	}
-	return nil
-}
-
 // CreateAPeriodicDonation creates the draft record along with the first draft tap pay transaction
 func (g *GormStorage) CreateAPeriodicDonation(mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) (uint, error) {
 	errWhere := "GormStorage.CreateAPeriodicDonationWithFirstTransaction"
@@ -102,9 +80,9 @@ func (g *GormStorage) DeleteAPeriodicDonation(periodicID uint, failData models.P
 	return nil
 }
 
-// UpdateAPeriodicDonation updates the draft tap pay transaction with response and fills up the required information in periodic_donations table
-func (g *GormStorage) UpdateAPeriodicDonation(periodicID uint, mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) error {
-	errWhere := "GormStorage.UpdateAPeriodicDonation"
+// UpdatePeriodicAndCardTokenDonationInTRX updates the draft tap pay transaction with response and fills up the required information in periodic_donations table
+func (g *GormStorage) UpdatePeriodicAndCardTokenDonationInTRX(periodicID uint, mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) error {
+	errWhere := "GormStorage.UpdatePeriodicAndCardTokenDonationInTRX"
 	tx := g.db.Begin()
 
 	if err := tx.Error; nil != err {

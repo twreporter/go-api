@@ -146,15 +146,9 @@ var payMethodCollections = []string{
 	"samsung",
 }
 
-// Handler for an authenticated user to create a periodic donation
-func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
-	const errWhere = "MembershipController.CreateAPeriodicDonationOfAUser"
-
-	// Validate client request
-	var reqBody clientReq
-
+func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	// Validate request body
-	if err := c.Bind(&reqBody); nil != err {
+	if err := c.Bind(reqBody); nil != err {
 		log.Error("parse model error: " + err.Error())
 		failData := gin.H{}
 
@@ -168,6 +162,20 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		default:
 			// Omit intentionally
 		}
+		return failData, false
+	}
+
+	return gin.H{}, true
+}
+
+// Handler for an authenticated user to create a periodic donation
+func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
+	const errWhere = "MembershipController.CreateAPeriodicDonationOfAUser"
+
+	// Validate client request
+	var reqBody clientReq
+
+	if failData, valid := bindRequestBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -214,7 +222,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	updateRecord := buildTokenSuccessRecord(tapPayResp)
 	updatePeriodicDonation := buildSuccessPeriodicDonation(tapPayResp)
 
-	if err = mc.Storage.UpdateAPeriodicDonation(periodicID, updatePeriodicDonation, updateRecord); nil != err {
+	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicID, updatePeriodicDonation, updateRecord); nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
 	}
 
@@ -236,21 +244,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	var reqBody clientReq
 
-	// Validate request body
-	if err := c.Bind(&reqBody); nil != err {
-		log.Error("parse model error: " + err.Error())
-		failData := gin.H{}
-
-		switch e := err.(type) {
-		case *json.UnmarshalTypeError:
-			failData[e.Field] = fmt.Sprintf("Cannot unmarshal %s into %s", e.Value, e.Type)
-		case validator.ValidationErrors:
-			for _, errField := range e {
-				failData[errField.Name] = "cannot be empty"
-			}
-		default:
-			// Omit intentionally
-		}
+	if failData, valid := bindRequestBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -263,7 +257,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	draftRecord := buildPrimeDraftRecord(uint(userID), payMethod, tapPayReq)
 
-	if err := mc.Storage.CreateAPayByPrimeDonation(draftRecord); nil != err {
+	if err := mc.Storage.Create(&draftRecord); nil != err {
 		switch appErr := err.(type) {
 		case *models.AppError:
 			return 0, gin.H{}, models.NewAppError(errorWhere, "Fails to create a draft prime record", appErr.Error(), appErr.StatusCode)
@@ -279,7 +273,10 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail'
-			mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, models.PayByPrimeDonation{
+			mc.Storage.UpdateByConditions(map[string]interface{}{
+				"order_number": tapPayReq.OrderNumber,
+			}, models.PayByPrimeDonation{
+				ID:              draftRecord.ID,
 				TappayApiStatus: null.IntFrom(tapPayResp.Status),
 				Msg:             tapPayResp.Msg,
 				Status:          statusFail,
@@ -290,8 +287,11 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	// Update the transaction status to 'paid' if transaction succeeds
 	updateRecord := buildPrimeSuccessRecord(tapPayResp)
+	updateRecord.ID = draftRecord.ID
 
-	if err := mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, updateRecord); nil != err {
+	if err := mc.Storage.UpdateByConditions(map[string]interface{}{
+		"order_number": tapPayReq.OrderNumber,
+	}, updateRecord); nil != err {
 		log.Error(err.Error())
 	}
 
