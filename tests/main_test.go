@@ -2,13 +2,16 @@ package tests
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
 
+	//log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
@@ -42,6 +45,8 @@ func init() {
 
 		MockPostSlug1: "mock-post-slug-1",
 		MockTopicSlug: "mock-topic-slug",
+
+		ErrorEmailAddress: "error@twreporter.org",
 	}
 
 	img1 := models.MongoImage{
@@ -229,12 +234,15 @@ func serveHTTP(method, path, body, contentType, authorization string) (resp *htt
 type mockMailStrategy struct{}
 
 func (s mockMailStrategy) Send(to, subject, body string) error {
+	if to == Globs.Defaults.ErrorEmailAddress {
+		return errors.New("mail service works abnormally")
+	}
 	return nil
 }
 
 func setupGinServer(gormDB *gorm.DB, mgoDB *mgo.Session) *gin.Engine {
-	strategy := mockMailStrategy{}
-	cf := controllers.NewControllerFactory(gormDB, mgoDB, utils.NewEmailSender(strategy))
+	mailSvc := mockMailStrategy{}
+	cf := controllers.NewControllerFactory(gormDB, mgoDB, mailSvc)
 	engine := routers.SetupRouter(cf)
 	return engine
 }
@@ -248,6 +256,7 @@ func TestPing(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	var err error
+	var l net.Listener
 
 	fmt.Println("load default config")
 	if globals.Conf, err = configs.LoadDefaultConf(); err != nil {
@@ -262,10 +271,22 @@ func TestMain(m *testing.M) {
 
 	// set up gin server
 	engine := setupGinServer(gormDB, mgoDB)
+
 	Globs.GinEngine = engine
 
 	defer Globs.GormDB.Close()
 	defer Globs.MgoDB.Close()
+
+	// start server for testing
+	// the reason why we start the server
+	// is because we send HTTP request internally between controllers
+	ts := httptest.NewUnstartedServer(engine)
+	if l, err = net.Listen("tcp", "127.0.0.1:8080"); err != nil {
+		panic(err)
+	}
+	ts.Listener = l
+	ts.Start()
+	defer ts.Close()
 
 	retCode := m.Run()
 	os.Exit(retCode)
