@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"gopkg.in/guregu/null.v3"
+
 	"github.com/stretchr/testify/assert"
 	// "twreporter.org/go-api/models"
 )
@@ -37,7 +39,7 @@ type (
 	}
 	donationRecord struct {
 		ID          uint       `json:"id"`
-		IsPeriodic  bool       `json:"is_periodic"`
+		PeriodicID  null.Int   `json:"periodic_id"`
 		PayMethod   string     `json:"pay_method"`
 		CardInfo    cardInfo   `json:"card_info"`
 		Cardholder  cardholder `json:"cardholder"`
@@ -301,11 +303,12 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 	json.Unmarshal(resBodyInBytes, &resBody)
 
 	fmt.Printf("response: %#v", string(resBodyInBytes))
+	fmt.Printf("resBody: %#v", resBody)
 
 	assert.Equal(t, 201, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
 	assert.Equal(t, testAmount, resBody.Data.Amount)
-	assert.Equal(t, isPeriodic, resBody.Data.IsPeriodic)
+	assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
 	assert.Equal(t, testCurrency, resBody.Data.Currency)
 	assert.Equal(t, testDetails, resBody.Data.Details)
 	assert.Equal(t, testOrderNumber, resBody.Data.OrderNumber)
@@ -333,7 +336,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 	assert.Equal(t, 201, resp.Code)
 	assert.Equal(t, "success", resBody.Status)
 	assert.Equal(t, testAmount, resBody.Data.Amount)
-	assert.Equal(t, isPeriodic, resBody.Data.IsPeriodic)
+	assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
 	assert.Equal(t, testCurrency, resBody.Data.Currency)
 	assert.Equal(t, testDetails, resBody.Data.Details)
 
