@@ -24,6 +24,7 @@ import (
 
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/storage"
 )
 
 type (
@@ -189,6 +190,14 @@ var payMethodCollections = []string{
 	"samsung",
 }
 
+var cardInfoTypes = map[int64]string{
+	1: "VISA",
+	2: "MasterCard",
+	3: "JCB",
+	4: "Union Pay",
+	5: "AMEX",
+}
+
 func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	// Validate request body
 	if err := c.Bind(reqBody); nil != err {
@@ -274,6 +283,35 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	resp.PeriodicID = null.IntFrom(int64(draftPeriodicDonation.ID))
 	resp.ID = draftRecord.ID
 
+	// send success mail asynchronously
+	go func(storage storage.MembershipStorage, pdID, userID uint, orderNumber string) {
+		user := models.User{}
+		storage.GetByConditions(map[string]interface{}{
+			"id": userID,
+		}, &user)
+		pd := models.PeriodicDonation{}
+		if err = storage.GetByConditions(map[string]interface{}{
+			"id": pdID,
+		}, &pd); err == nil {
+			if err := postMailServiceEndpoint(donationSuccessReqBody{
+				Address:          pd.CardholderAddress.ValueOrZero(),
+				Amount:           pd.Amount,
+				CardInfoLastFour: pd.CardInfoLastFour.ValueOrZero(),
+				CardInfoType:     cardInfoTypes[pd.CardInfoType.ValueOrZero()],
+				Currency:         pd.Currency,
+				DonationMethod:   "信用卡支付",
+				DonationType:     "定期定額",
+				Email:            user.Email.ValueOrZero(),
+				Name:             pd.CardholderName.ValueOrZero(),
+				NationalID:       pd.CardholderNationalID.ValueOrZero(),
+				OrderNumber:      orderNumber,
+				PhoneNumber:      pd.CardholderPhoneNumber.ValueOrZero(),
+			}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {
+				log.Warnf("fail to send success donation mail, %s", err.Error())
+			}
+		}
+	}(mc.Storage, draftPeriodicDonation.ID, uint(userID), draftRecord.OrderNumber)
+
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
 
@@ -342,6 +380,35 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	resp := buildClientResp(payMethod, tapPayReq, tapPayResp)
 	resp.ID = draftRecord.ID
+
+	// send success mail asynchronously
+	go func(storage storage.MembershipStorage, dID, userID uint) {
+		user := models.User{}
+		storage.GetByConditions(map[string]interface{}{
+			"id": userID,
+		}, &user)
+		d := models.PayByPrimeDonation{}
+		if err = storage.GetByConditions(map[string]interface{}{
+			"id": dID,
+		}, &d); err == nil {
+			if err := postMailServiceEndpoint(donationSuccessReqBody{
+				Address:          d.CardholderAddress.ValueOrZero(),
+				Amount:           d.Amount,
+				CardInfoLastFour: d.CardInfoLastFour.ValueOrZero(),
+				CardInfoType:     cardInfoTypes[d.CardInfoType.ValueOrZero()],
+				Currency:         d.Currency,
+				DonationMethod:   "信用卡支付",
+				DonationType:     "單筆捐款",
+				Email:            user.Email.ValueOrZero(),
+				Name:             d.CardholderName.ValueOrZero(),
+				NationalID:       d.CardholderNationalID.ValueOrZero(),
+				OrderNumber:      d.OrderNumber,
+				PhoneNumber:      d.CardholderPhoneNumber.ValueOrZero(),
+			}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {
+				log.Warnf("fail to send success donation mail, %s", err.Error())
+			}
+		}
+	}(mc.Storage, draftRecord.ID, uint(userID))
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -430,6 +497,7 @@ func buildDraftPeriodicDonation(userID uint, req clientReq) models.PeriodicDonat
 	m.CardholderAddress = req.Cardholder.Address
 	m.CardholderNationalID = req.Cardholder.NationalID
 
+	m.Amount = req.Amount
 	m.UserID = userID
 	m.Status = statusPeriodicPaying
 
