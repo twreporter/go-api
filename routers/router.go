@@ -1,6 +1,8 @@
 package routers
 
 import (
+	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -71,9 +73,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// =============================
 	mc := cf.GetMembershipController()
 	// endpoints for account
-	v1Group.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
-		return mc.SignIn(c, cf.GetMailSender())
-	}))
+	v1Group.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SignIn))
 	v1Group.GET("/activate", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.Activate))
 	v1Group.GET("/token/:userID", middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.RenewJWT))
 	// endpoints for bookmarks of users
@@ -128,6 +128,14 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	authGroup.GET("/facebook/callback", middlewares.SetCacheControl("no-store"), fc.Authenticate)
 
 	// =============================
+	// mail service endpoints
+	// =============================
+
+	mailContrl := cf.GetMailController()
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), ginResponseWrapper(mailContrl.SendActivation))
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendSuccessDonationRoutePath), ginResponseWrapper(mailContrl.SendDonationSuccessMail))
+
+	// =============================
 	// v2 oauth endpoints
 	// =============================
 	v2Group := engine.Group("/v2")
@@ -154,9 +162,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// =============================
 	// v2 membership service endpoints
 	// =============================
-	v2AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
-		return mc.SignInV2(c, cf.GetMailSender())
-	}))
+	v2AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SignInV2))
 	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
 	v2AuthGroup.POST("/token", middlewares.CheckJWT(), middlewares.ValidateIDToken(), middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
 	v2AuthGroup.GET("/logout", mc.TokenInvalidate)

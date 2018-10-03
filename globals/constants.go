@@ -1,6 +1,12 @@
 package globals
 
 const (
+	LocalhostPort = "8080"
+
+	// route path
+	SendActivationRoutePath      = "mail/send_activation"
+	SendSuccessDonationRoutePath = "mail/send_success_donation"
+
 	// controller name
 	MembershipController = "membership_controller"
 	NewsController       = "news_controller"
