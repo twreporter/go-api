@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -44,6 +45,8 @@ func init() {
 
 		MockPostSlug1: "mock-post-slug-1",
 		MockTopicSlug: "mock-topic-slug",
+
+		ErrorEmailAddress: "error@twreporter.org",
 	}
 
 	img1 := models.MongoImage{
@@ -231,6 +234,9 @@ func serveHTTP(method, path, body, contentType, authorization string) (resp *htt
 type mockMailStrategy struct{}
 
 func (s mockMailStrategy) Send(to, subject, body string) error {
+	if to == Globs.Defaults.ErrorEmailAddress {
+		return errors.New("mail service works abnormally")
+	}
 	return nil
 }
 

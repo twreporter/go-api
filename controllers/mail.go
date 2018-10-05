@@ -100,15 +100,18 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	var reqBody donationSuccessReqBody
 	var valid bool
 
+	// parse requst JSON into struct
 	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
 	if reqBody.Currency == "" {
+		// give default Currency
 		reqBody.Currency = "TWD"
 	}
 
 	if reqBody.DonationDatetime == "" {
+		// give default DonationDatetime
 		reqBody.DonationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	}
 
@@ -119,6 +122,7 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 
 	mailBody = out.String()
 
+	// send email through mail service
 	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
 		log.Error(err)
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send donation success mail to %s", reqBody.Email)}, nil
