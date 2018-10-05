@@ -1,3 +1,15 @@
+### 3.0.1
+#### New Feature: Mail endpoints
+  - /v1/mail/send_activation (POST method)
+  - /v1/mail/send_success_donation (POST method)
+
+#### Code refactoring
+  - add controllers/mail.go to handle HTTP request/response
+  - replace utils/mail.go by services/mail.go
+  - use template/signin.tmpl to generate activation mail HTML
+  - use template/success-donation.tmpl to generate success donation mail HTML
+  - send HTTP POST request to mail endpoints after signin and donation
+
 ### 3.0.0
 #### Improve authentication and authorization protocol 
   1. A user signs in through the login form or social account
