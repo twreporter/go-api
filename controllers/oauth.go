@@ -19,46 +19,47 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/google"
+	"gopkg.in/guregu/null.v3"
 )
 
 const defaultDestination = "https://www.twreporter.org/"
 
 type basicInfo struct {
-	Email  models.NullString `json:"email"`
-	Name   models.NullString `json:"name"`
-	Gender string            `json:"gender"`
+	Email  null.String `json:"email"`
+	Name   null.String `json:"name"`
+	Gender string      `json:"gender"`
 }
 
 type facebookOauthInfoRaw struct {
 	basicInfo
-	AId        models.NullString `json:"id"`
-	FirstName  models.NullString `json:"first_name"`
-	LastName   models.NullString `json:"last_name"`
+	AId        null.String `json:"id"`
+	FirstName  null.String `json:"first_name"`
+	LastName   null.String `json:"last_name"`
 	PictureObj struct {
 		Data struct {
-			URL models.NullString `json:"url"`
+			URL null.String `json:"url"`
 		} `json:"data"`
 	} `json:"picture"`
 }
 
 // Picture is used by copier to copy PictureObj.Data.URL field to Picture field
-func (info *facebookOauthInfoRaw) Picture() models.NullString {
+func (info *facebookOauthInfoRaw) Picture() null.String {
 	return info.PictureObj.Data.URL
 }
 
-func (info *facebookOauthInfoRaw) Gender() models.NullString {
+func (info *facebookOauthInfoRaw) Gender() null.String {
 	return utils.GetGender(info.basicInfo.Gender)
 }
 
 type googleOauthInfoRaw struct {
 	basicInfo
-	AId       models.NullString `json:"sub"`
-	FirstName models.NullString `json:"given_name"`
-	LastName  models.NullString `json:"family_name"`
-	Picture   models.NullString `json:"picture"`
+	AId       null.String `json:"sub"`
+	FirstName null.String `json:"given_name"`
+	LastName  null.String `json:"family_name"`
+	Picture   null.String `json:"picture"`
 }
 
-func (info *googleOauthInfoRaw) Gender() models.NullString {
+func (info *googleOauthInfoRaw) Gender() null.String {
 	return utils.GetGender(info.basicInfo.Gender)
 }
 

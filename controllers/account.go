@@ -28,7 +28,7 @@ var defaultDomain = "." + globals.Conf.App.Domain
 var defaultPath = "/"
 
 // SignIn - send email containing sign-in information to the client
-func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
+func (mc *MembershipController) SignIn(c *gin.Context) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
 		Email       string `json:"email" form:"email" binding:"required"`
@@ -124,7 +124,12 @@ func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailCo
 	}
 
 	// send activation email
-	err = mailSender.Send(email, SignInMailSubject, utils.GenerateActivateMailBody(email, activeToken, signIn.Destination, activateHost))
+	err = postMailServiceEndpoint(activationReqBody{
+		Email: email,
+		ActivateLink: fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s",
+			globals.Conf.App.Protocol, activateHost, globals.Conf.App.Port, email, activeToken, signIn.Destination),
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
+
 	if err != nil {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
 	}
@@ -219,7 +224,7 @@ func (mc *MembershipController) RenewJWT(c *gin.Context) (int, gin.H, error) {
 }
 
 // SignInV2 - send email containing sign-in information to the client
-func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
+func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
 		Email       string `json:"email" form:"email" binding:"required"`
@@ -315,7 +320,12 @@ func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.Email
 	}
 
 	// send activation email
-	err = mailSender.Send(email, SignInMailSubject, utils.GenerateActivateMailBody(email, activeToken, signIn.Destination, activateHost))
+	err = postMailServiceEndpoint(activationReqBody{
+		Email: email,
+		ActivateLink: fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s",
+			globals.Conf.App.Protocol, activateHost, globals.Conf.App.Port, email, activeToken, signIn.Destination),
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath))
+
 	if err != nil {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
 	}
@@ -414,7 +424,7 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	errorWhere := "MembershipController.TokenDispatch"
 
 	type reqBody struct {
-		UserID uint `json:"userID"`
+		UserID uint `json:"user_id"`
 	}
 
 	// Validate the request body

@@ -31,7 +31,7 @@ TWReporter Donation API, integrated with Tappay Web Service
 
 ### PaySuccessResponse
 + id : 11 (required, number)
-+ is_periodic : true (required, boolean)
++ periodic_id : 5 (required, number)
 + `pay_method` : `credit_card` (required)
 + card_info (CardInfo, required) 
 + cardholder (Cardholder, required)
@@ -39,6 +39,8 @@ TWReporter Donation API, integrated with Tappay Web Service
 + currency : TWD (required)
 + details : 報導者小額捐款 (required)
 + `order_number` : `order_number_we_define` (optional)
++ send_receipt: `monthly` (required)
++ to_feedback: true (required, boolean) 
 
 ### PeriodicPayResponse
 + id : 10 (required, number)
