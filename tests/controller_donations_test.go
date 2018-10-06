@@ -149,128 +149,130 @@ func testDonationDataValidation(t *testing.T, path string, authorization string)
 	var reqBody requestBody
 	var reqBodyInBytes []byte
 
-	// ===========================================
-	// Failure (Data Validation)
-	// - Create a Donation by Credit Card
-	// - Lack of Prime
-	// ===========================================
-	reqBody = requestBody{
-		Amount: testAmount,
-		Cardholder: cardholder{
-			Email: "developer@twreporter.org",
-		},
-	}
+	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
+		// ===========================================
+		// Failure (Data Validation)
+		// - Create a Donation by Credit Card
+		// - Lack of Prime
+		// ===========================================
+		reqBody = requestBody{
+			Amount: testAmount,
+			Cardholder: cardholder{
+				Email: "developer@twreporter.org",
+			},
+		}
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-	assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, 400, resp.Code)
 
-	// ===========================================
-	// Failure (Data Validation)
-	// - Create a Donation by Credit Card
-	// - Lack of Cardholder
-	// ===========================================
-	reqBody = requestBody{
-		Prime:  testPrime,
-		Amount: testAmount,
-	}
+		// ===========================================
+		// Failure (Data Validation)
+		// - Create a Donation by Credit Card
+		// - Lack of Cardholder
+		// ===========================================
+		reqBody = requestBody{
+			Prime:  testPrime,
+			Amount: testAmount,
+		}
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-	assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, 400, resp.Code)
 
-	// ===========================================
-	// Failure (Data Validation)
-	// - Create a Donation by Credit Card
-	// - Lack of Cardholder.Email
-	// ===========================================
-	reqBody = requestBody{
-		Prime:  testPrime,
-		Amount: testAmount,
-		Cardholder: cardholder{
-			Name:        "王小明",
-			PhoneNumber: "+886912345678",
-		},
-	}
+		// ===========================================
+		// Failure (Data Validation)
+		// - Create a Donation by Credit Card
+		// - Lack of Cardholder.Email
+		// ===========================================
+		reqBody = requestBody{
+			Prime:  testPrime,
+			Amount: testAmount,
+			Cardholder: cardholder{
+				Name:        "王小明",
+				PhoneNumber: "+886912345678",
+			},
+		}
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-	assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, 400, resp.Code)
 
-	// ===========================================
-	// Failure (Data Validation)
-	// - Create a Donation by Credit Card
-	// - Lack of Amount
-	// ===========================================
-	reqBody = requestBody{
-		Prime: testPrime,
-		Cardholder: cardholder{
-			Email: "developer@twreporter.org",
-		},
-	}
+		// ===========================================
+		// Failure (Data Validation)
+		// - Create a Donation by Credit Card
+		// - Lack of Amount
+		// ===========================================
+		reqBody = requestBody{
+			Prime: testPrime,
+			Cardholder: cardholder{
+				Email: "developer@twreporter.org",
+			},
+		}
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-	assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, 400, resp.Code)
 
-	// ===========================================
-	// Failure (Data Validation)
-	// - Create a Donation by Credit Card
-	// - Malformed Email
-	// ===========================================
-	reqBody = requestBody{
-		Prime:  testPrime,
-		Amount: testAmount,
-		Cardholder: cardholder{
-			Email: "developer-twreporter,org",
-		},
-	}
+		// ===========================================
+		// Failure (Data Validation)
+		// - Create a Donation by Credit Card
+		// - Malformed Email
+		// ===========================================
+		reqBody = requestBody{
+			Prime:  testPrime,
+			Amount: testAmount,
+			Cardholder: cardholder{
+				Email: "developer-twreporter,org",
+			},
+		}
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-	assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, 400, resp.Code)
 
-	// ===========================================
-	// Failure (Data Validation)
-	// - Create a Donation by Credit Card
-	// - Amount is less than 1(minimum value)
-	// ===========================================
-	reqBody = requestBody{
-		Prime:  testPrime,
-		Amount: 0,
-		Cardholder: cardholder{
-			Email: "developer@twreporter.org",
-		},
-	}
+		// ===========================================
+		// Failure (Data Validation)
+		// - Create a Donation by Credit Card
+		// - Amount is less than 1(minimum value)
+		// ===========================================
+		reqBody = requestBody{
+			Prime:  testPrime,
+			Amount: 0,
+			Cardholder: cardholder{
+				Email: "developer@twreporter.org",
+			},
+		}
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-	assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, 400, resp.Code)
 
-	// ===========================================
-	// Failure (Data Validation)
-	// - Create a Donation by Credit Card
-	// - Malformed Cardholder.PhoneNumber (E.164 format)
-	// ===========================================
-	reqBody = requestBody{
-		Prime:  testPrime,
-		Amount: 0,
-		Cardholder: cardholder{
-			Email:       "developer@twreporter.org",
-			PhoneNumber: "0912345678",
-		},
-	}
+		// ===========================================
+		// Failure (Data Validation)
+		// - Create a Donation by Credit Card
+		// - Malformed Cardholder.PhoneNumber (E.164 format)
+		// ===========================================
+		reqBody = requestBody{
+			Prime:  testPrime,
+			Amount: 0,
+			Cardholder: cardholder{
+				Email:       "developer@twreporter.org",
+				PhoneNumber: "0912345678",
+			},
+		}
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-	assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, 400, resp.Code)
+	})
 }
 
 func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, authorization string) {
@@ -286,77 +288,80 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 	// - Provide all the fields except `result_url`
 	//   in request body
 	// ===========================================
+	t.Run("StatusCode=StatusCreated", func(t *testing.T) {
+		reqBody = requestBody{
+			Prime:       testPrime,
+			Amount:      testAmount,
+			Currency:    testCurrency,
+			Details:     testDetails,
+			OrderNumber: testOrderNumber,
+			MerchantID:  testMerchantID,
+			Cardholder:  testCardholder,
+		}
 
-	reqBody = requestBody{
-		Prime:       testPrime,
-		Amount:      testAmount,
-		Currency:    testCurrency,
-		Details:     testDetails,
-		OrderNumber: testOrderNumber,
-		MerchantID:  testMerchantID,
-		Cardholder:  testCardholder,
-	}
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
+		json.Unmarshal(resBodyInBytes, &resBody)
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
-	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
-	json.Unmarshal(resBodyInBytes, &resBody)
+		fmt.Printf("response: %#v", string(resBodyInBytes))
+		fmt.Printf("resBody: %#v", resBody)
 
-	fmt.Printf("response: %#v", string(resBodyInBytes))
-	fmt.Printf("resBody: %#v", resBody)
+		assert.Equal(t, 201, resp.Code)
+		assert.Equal(t, "success", resBody.Status)
+		assert.Equal(t, testAmount, resBody.Data.Amount)
+		assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
+		assert.Equal(t, testCurrency, resBody.Data.Currency)
+		assert.Equal(t, testDetails, resBody.Data.Details)
+		assert.Equal(t, testOrderNumber, resBody.Data.OrderNumber)
+		testCardholderWithDefaultValue(t, resBody.Data.Cardholder)
 
-	assert.Equal(t, 201, resp.Code)
-	assert.Equal(t, "success", resBody.Status)
-	assert.Equal(t, testAmount, resBody.Data.Amount)
-	assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
-	assert.Equal(t, testCurrency, resBody.Data.Currency)
-	assert.Equal(t, testDetails, resBody.Data.Details)
-	assert.Equal(t, testOrderNumber, resBody.Data.OrderNumber)
-	testCardholderWithDefaultValue(t, resBody.Data.Cardholder)
+		// ===========================================
+		// Success
+		// - Create a Donation by Credit Card
+		// - Provide minimun required fields
+		// ===========================================
+		reqBody = requestBody{
+			Prime:      testPrime,
+			Amount:     testAmount,
+			MerchantID: testMerchantID,
+			Cardholder: cardholder{
+				Email: "developer@twreporter.org",
+			},
+		}
 
-	// ===========================================
-	// Success
-	// - Create a Donation by Credit Card
-	// - Provide minimun required fields
-	// ===========================================
-	reqBody = requestBody{
-		Prime:      testPrime,
-		Amount:     testAmount,
-		MerchantID: testMerchantID,
-		Cardholder: cardholder{
-			Email: "developer@twreporter.org",
-		},
-	}
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
+		json.Unmarshal(resBodyInBytes, &resBody)
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
-	resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
-	json.Unmarshal(resBodyInBytes, &resBody)
-
-	assert.Equal(t, 201, resp.Code)
-	assert.Equal(t, "success", resBody.Status)
-	assert.Equal(t, testAmount, resBody.Data.Amount)
-	assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
-	assert.Equal(t, testCurrency, resBody.Data.Currency)
-	assert.Equal(t, testDetails, resBody.Data.Details)
+		assert.Equal(t, 201, resp.Code)
+		assert.Equal(t, "success", resBody.Status)
+		assert.Equal(t, testAmount, resBody.Data.Amount)
+		assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
+		assert.Equal(t, testCurrency, resBody.Data.Currency)
+		assert.Equal(t, testDetails, resBody.Data.Details)
+	})
 
 	// ===========================================
 	// Failure (Server Error)
 	// - Create a Donation by Credit Card
 	// - Invalid Prime
 	// ===========================================
-	reqBody = requestBody{
-		Prime:  "test_prime_which_will_occurs_error",
-		Amount: testAmount,
-		Cardholder: cardholder{
-			Email: "developer@twreporter.org",
-		},
-	}
+	t.Run("StatusCode=StatusInternalServerError", func(t *testing.T) {
+		reqBody = requestBody{
+			Prime:  "test_prime_which_will_occurs_error",
+			Amount: testAmount,
+			Cardholder: cardholder{
+				Email: "developer@twreporter.org",
+			},
+		}
 
-	reqBodyInBytes, _ = json.Marshal(reqBody)
-	resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-	assert.Equal(t, 500, resp.Code)
+		assert.Equal(t, 500, resp.Code)
+	})
 
 	// ===========================================
 	// Failures (Client Error)
@@ -379,29 +384,35 @@ func TestCreateADonation(t *testing.T) {
 	// - Create a Donation Without Authorization Header
 	// - 401 Unauthorized
 	// ===========================================
-	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
-	resp = serveHTTP("POST", path, "", "application/json", "")
-	assert.Equal(t, 401, resp.Code)
+	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
+		path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
+		resp = serveHTTP("POST", path, "", "application/json", "")
+		assert.Equal(t, 401, resp.Code)
+	})
 
 	// ===========================================
 	// Failure (Client Error)
 	// - Create a Donation on Unauthenticated Resource
 	// - 403 Forbidden
 	// ===========================================
-	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", 2)
-	resp = serveHTTP("POST", path, "", "application/json", authorization)
-	assert.Equal(t, 403, resp.Code)
+	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
+		path = fmt.Sprintf("/v1/users/%d/donations/credit_card", 2)
+		resp = serveHTTP("POST", path, "", "application/json", authorization)
+		assert.Equal(t, 403, resp.Code)
+	})
 
 	// ===========================================
 	// Failure (Client Error)
 	// - Create a Donation by Unrecognized Pay Method
 	// - 404 Not Found Error
 	// ===========================================
-	path = fmt.Sprintf("/v1/users/%d/donations/unknown_pay_method", user.ID)
+	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
+		path = fmt.Sprintf("/v1/users/%d/donations/unknown_pay_method", user.ID)
 
-	resp = serveHTTP("POST", path, "", "application/json", authorization)
+		resp = serveHTTP("POST", path, "", "application/json", authorization)
 
-	assert.Equal(t, 404, resp.Code)
+		assert.Equal(t, 404, resp.Code)
+	})
 
 	// ==========================================
 	// Test One Time Donation Creation
@@ -423,18 +434,23 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// - Create a Periodic Donation Without Authorization Header
 	// - 401 Unauthorized
 	// ===========================================
-	path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
-	resp = serveHTTP("POST", path, "", "application/json", "")
-	assert.Equal(t, 401, resp.Code)
+	t.Run("StatusCode=StatusUnauthrorized", func(t *testing.T) {
+		path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
+		resp = serveHTTP("POST", path, "", "application/json", "")
+		assert.Equal(t, 401, resp.Code)
+	})
 
 	// ===========================================
 	// Failure (Client Error)
 	// - Create a Periodic Donation on Unauthenticated Resource
 	// - 403 Forbidden
 	// ===========================================
-	path = fmt.Sprintf("/v1/users/%d/periodic_donations", 2)
-	resp = serveHTTP("POST", path, "", "application/json", authorization)
-	assert.Equal(t, 403, resp.Code)
+	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
+		path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
+		path = fmt.Sprintf("/v1/users/%d/periodic_donations", 2)
+		resp = serveHTTP("POST", path, "", "application/json", authorization)
+		assert.Equal(t, 403, resp.Code)
+	})
 
 	// ==========================================
 	// Test Periodic Donation Creation
