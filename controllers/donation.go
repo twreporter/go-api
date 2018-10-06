@@ -449,6 +449,7 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 	m.CardholderAddress = req.Cardholder.Address
 	m.CardholderNationalID = req.Cardholder.NationalID
 
+	m.Amount = req.Amount
 	m.Details = req.Details
 	m.MerchantID = req.MerchantID
 	m.OrderNumber = req.OrderNumber
