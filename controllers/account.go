@@ -468,11 +468,6 @@ func (mc *MembershipController) TokenInvalidate(c *gin.Context) {
 		destination = "https://accounts.twreporter.org/signin"
 	}
 
-	// If no valid `id_token` cookie provide, ignore it
-	if nil != err {
-		return
-	}
-
 	c.SetCookie(cookieName, "", invalidateExp, defaultPath, defaultDomain, false, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
