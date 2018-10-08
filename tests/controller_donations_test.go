@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/stretchr/testify/assert"
-	// "twreporter.org/go-api/models"
+	"twreporter.org/go-api/models"
 )
 
 type (
@@ -82,7 +83,6 @@ const (
 	testCurrency         = "TWD"
 	testOrderNumber      = "otd:developer@twreporter.org:1531966435"
 	testMerchantID       = "GlobalTesting_CTBC"
-	donatorEmail         = "donater@twreporter.org"
 )
 
 var testCardholder = cardholder{
@@ -104,35 +104,6 @@ var defaults = struct {
 	Offset:     0,
 	Limit:      10,
 	CreditCard: "credit_card",
-}
-
-func setUpBeforeDonationsTest() {
-	user := createUser(donatorEmail)
-
-	reqBody := requestBody{
-		Prime:  testPrime,
-		Amount: testAmount,
-		Cardholder: cardholder{
-			Email: donatorEmail,
-		},
-	}
-
-	// insert three default records
-	// first, insert a periodic donation
-	path := fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
-	reqBodyInBytes, _ := json.Marshal(reqBody)
-	serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
-
-	// second, insert a one time donation
-	path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
-	serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
-
-	// third, insert a periodic donation
-	path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
-	serveHTTP("POST", path, string(reqBodyInBytes), "application/json", "")
-
-	// set default total to 3
-	defaults.Total = 3
 }
 
 func testCardholderWithDefaultValue(t *testing.T, ch cardholder) {
@@ -165,7 +136,7 @@ func testDonationDataValidation(t *testing.T, path string, authorization string)
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-		assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// ===========================================
 		// Failure (Data Validation)
@@ -180,7 +151,7 @@ func testDonationDataValidation(t *testing.T, path string, authorization string)
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-		assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// ===========================================
 		// Failure (Data Validation)
@@ -199,7 +170,7 @@ func testDonationDataValidation(t *testing.T, path string, authorization string)
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-		assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// ===========================================
 		// Failure (Data Validation)
@@ -216,7 +187,7 @@ func testDonationDataValidation(t *testing.T, path string, authorization string)
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-		assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// ===========================================
 		// Failure (Data Validation)
@@ -234,7 +205,7 @@ func testDonationDataValidation(t *testing.T, path string, authorization string)
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-		assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// ===========================================
 		// Failure (Data Validation)
@@ -252,7 +223,7 @@ func testDonationDataValidation(t *testing.T, path string, authorization string)
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-		assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// ===========================================
 		// Failure (Data Validation)
@@ -271,7 +242,7 @@ func testDonationDataValidation(t *testing.T, path string, authorization string)
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-		assert.Equal(t, 400, resp.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 }
 
@@ -307,7 +278,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 		fmt.Printf("response: %#v", string(resBodyInBytes))
 		fmt.Printf("resBody: %#v", resBody)
 
-		assert.Equal(t, 201, resp.Code)
+		assert.Equal(t, http.StatusCreated, resp.Code)
 		assert.Equal(t, "success", resBody.Status)
 		assert.Equal(t, testAmount, resBody.Data.Amount)
 		assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
@@ -335,7 +306,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 		json.Unmarshal(resBodyInBytes, &resBody)
 
-		assert.Equal(t, 201, resp.Code)
+		assert.Equal(t, http.StatusCreated, resp.Code)
 		assert.Equal(t, "success", resBody.Status)
 		assert.Equal(t, testAmount, resBody.Data.Amount)
 		assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
@@ -360,7 +331,7 @@ func testCreateADonationRecord(t *testing.T, path string, isPeriodic bool, autho
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 
-		assert.Equal(t, 500, resp.Code)
+		assert.Equal(t, http.StatusInternalServerError, resp.Code)
 	})
 
 	// ===========================================
@@ -387,7 +358,7 @@ func TestCreateADonation(t *testing.T) {
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
 		path = fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
 		resp = serveHTTP("POST", path, "", "application/json", "")
-		assert.Equal(t, 401, resp.Code)
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	// ===========================================
@@ -398,7 +369,7 @@ func TestCreateADonation(t *testing.T) {
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
 		path = fmt.Sprintf("/v1/users/%d/donations/credit_card", 2)
 		resp = serveHTTP("POST", path, "", "application/json", authorization)
-		assert.Equal(t, 403, resp.Code)
+		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	// ===========================================
@@ -411,7 +382,7 @@ func TestCreateADonation(t *testing.T) {
 
 		resp = serveHTTP("POST", path, "", "application/json", authorization)
 
-		assert.Equal(t, 404, resp.Code)
+		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	// ==========================================
@@ -437,7 +408,7 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	t.Run("StatusCode=StatusUnauthrorized", func(t *testing.T) {
 		path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
 		resp = serveHTTP("POST", path, "", "application/json", "")
-		assert.Equal(t, 401, resp.Code)
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	// ===========================================
@@ -449,7 +420,7 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 		path = fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
 		path = fmt.Sprintf("/v1/users/%d/periodic_donations", 2)
 		resp = serveHTTP("POST", path, "", "application/json", authorization)
-		assert.Equal(t, 403, resp.Code)
+		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	// ==========================================
@@ -457,6 +428,178 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// =========================================
 	path = "/v1/users/1/periodic_donations"
 	testCreateADonationRecord(t, path, true, authorization)
+}
+
+func createDefaultPostBody(email string) (reqBody requestBody) {
+	reqBody = requestBody{
+		Prime:  testPrime,
+		Amount: testAmount,
+		Cardholder: cardholder{
+			Email: email,
+		},
+		MerchantID: "GlobalTesting_CTBC",
+	}
+
+	return reqBody
+}
+
+func createDefaultDonationRecord(user models.User, endpoint string) responseBody {
+	// create jwt of this user
+	jwt := generateJWT(user)
+	// prepare jwt authorization string
+	authorization := fmt.Sprintf("Bearer %s", jwt)
+
+	// create a donation by HTTP POST request
+	reqBody := createDefaultPostBody(user.Email.ValueOrZero())
+	reqBodyInBytes, _ := json.Marshal(reqBody)
+	resp := serveHTTP("POST", endpoint, string(reqBodyInBytes), "application/json", authorization)
+	respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+	defer resp.Result().Body.Close()
+
+	// parse response into struct
+	resBody := responseBody{}
+	json.Unmarshal(respInBytes, &resBody)
+	return resBody
+}
+
+func createDefaultPeriodicDonationRecord(user models.User) responseBody {
+	// create a default periodic donation record
+	path := fmt.Sprintf("/v1/users/%d/periodic_donations", user.ID)
+	return createDefaultDonationRecord(user, path)
+}
+
+func createDefaultPrimeDonationRecord(user models.User) responseBody {
+	// create a default periodic donation record
+	path := fmt.Sprintf("/v1/users/%d/donations/credit_card", user.ID)
+	return createDefaultDonationRecord(user, path)
+}
+
+func TestPatchAPeriodicDonation(t *testing.T) {
+	// setup before test
+	donatorEmail := "prime-donator@twreporter.org"
+	// create a new user
+	user := createUser(donatorEmail)
+
+	// get record to patch
+	res := createDefaultPeriodicDonationRecord(user)
+
+	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
+		path := fmt.Sprintf("/v1/users/%d/periodic_donations/1", user.ID)
+		resp := serveHTTP("PATCH", path, "", "application/json", "")
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
+		path := fmt.Sprintf("/v1/users/%d/periodic_donations/1", getUser(Globs.Defaults.Account).ID)
+		jwt := generateJWT(user)
+		authorization := fmt.Sprintf("Bearer %s", jwt)
+		resp := serveHTTP("PATCH", path, "", "application/json", authorization)
+		assert.Equal(t, http.StatusForbidden, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
+		path := fmt.Sprintf("/v1/users/%d/periodic_donations/1", user.ID)
+		reqBody := map[string]interface{}{
+			// to_feedback should be boolean
+			"to_feedback": "true",
+			// national_id should be string
+			"national_id": true,
+		}
+		jwt := generateJWT(user)
+		authorization := fmt.Sprintf("Bearer %s", jwt)
+		reqBodyInBytes, _ := json.Marshal(reqBody)
+		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
+		recordIDNotFound := 1000
+		path := fmt.Sprintf("/v1/users/%d/periodic_donations/%d", user.ID, recordIDNotFound)
+		reqBody := map[string]interface{}{
+			"to_feedback":  true,
+			"send_receipt": "no",
+		}
+		jwt := generateJWT(user)
+		authorization := fmt.Sprintf("Bearer %s", jwt)
+		reqBodyInBytes, _ := json.Marshal(reqBody)
+		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		assert.Equal(t, http.StatusNotFound, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
+		path := fmt.Sprintf("/v1/users/%d/periodic_donations/%d", user.ID, res.Data.ID)
+		reqBody := map[string]interface{}{
+			"to_feedback":  true,
+			"send_receipt": "no",
+		}
+		jwt := generateJWT(user)
+		authorization := fmt.Sprintf("Bearer %s", jwt)
+		reqBodyInBytes, _ := json.Marshal(reqBody)
+		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		assert.Equal(t, http.StatusNoContent, resp.Code)
+	})
+}
+
+func TestPatchAPrimeDonation(t *testing.T) {
+	// setup before test
+	donatorEmail := "periodic-donator@twreporter.org"
+	// create a new user
+	user := createUser(donatorEmail)
+
+	// get record to patch
+	res := createDefaultPrimeDonationRecord(user)
+
+	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
+		path := fmt.Sprintf("/v1/users/%d/donations/prime/1", user.ID)
+		resp := serveHTTP("PATCH", path, "", "application/json", "")
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
+		path := fmt.Sprintf("/v1/users/%d/donations/prime/1", getUser(Globs.Defaults.Account).ID)
+		jwt := generateJWT(user)
+		authorization := fmt.Sprintf("Bearer %s", jwt)
+		resp := serveHTTP("PATCH", path, "", "application/json", authorization)
+		assert.Equal(t, http.StatusForbidden, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
+		path := fmt.Sprintf("/v1/users/%d/donations/prime/1", user.ID)
+		reqBody := map[string]interface{}{
+			// national_id should be string
+			"national_id": true,
+		}
+		jwt := generateJWT(user)
+		authorization := fmt.Sprintf("Bearer %s", jwt)
+		reqBodyInBytes, _ := json.Marshal(reqBody)
+		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
+		recordIDNotFound := 1000
+		path := fmt.Sprintf("/v1/users/%d/donations/prime/%d", user.ID, recordIDNotFound)
+		reqBody := map[string]interface{}{
+			"send_receipt": "no",
+		}
+		jwt := generateJWT(user)
+		authorization := fmt.Sprintf("Bearer %s", jwt)
+		reqBodyInBytes, _ := json.Marshal(reqBody)
+		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		assert.Equal(t, http.StatusNotFound, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
+		path := fmt.Sprintf("/v1/users/%d/donations/prime/%d", user.ID, res.Data.ID)
+		reqBody := map[string]interface{}{
+			"send_receipt": "no",
+		}
+		jwt := generateJWT(user)
+		authorization := fmt.Sprintf("Bearer %s", jwt)
+		reqBodyInBytes, _ := json.Marshal(reqBody)
+		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		assert.Equal(t, http.StatusNoContent, resp.Code)
+	})
 }
 
 /* GetDonationsOfAUser is not implemented yet

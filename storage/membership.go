@@ -107,7 +107,7 @@ func (gs *GormStorage) GetByConditions(cond map[string]interface{}, m interface{
 }
 
 // UpdateByConditions method of MembershipStorage interface
-func (gs *GormStorage) UpdateByConditions(cond map[string]interface{}, m interface{}) (err error, rowsEffected int64) {
+func (gs *GormStorage) UpdateByConditions(cond map[string]interface{}, m interface{}) (err error, rowsAffected int64) {
 	var errWhere string = "GormStorage.UpdateByConditions"
 
 	// caution:
@@ -120,9 +120,9 @@ func (gs *GormStorage) UpdateByConditions(cond map[string]interface{}, m interfa
 		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not update the record(where: %v)", cond)), 0
 	}
 
-	rowsEffected = updates.RowsAffected
+	rowsAffected = updates.RowsAffected
 
-	return nil, rowsEffected
+	return nil, rowsAffected
 }
 
 // Delete method of MembershipStorage interface

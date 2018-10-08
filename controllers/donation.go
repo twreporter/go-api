@@ -354,7 +354,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	var failData gin.H
 	var recordID uint64
 	var reqBody patchBody
-	var rowsEffected int64
+	var rowsAffected int64
 	var userID uint64
 	var valid bool
 
@@ -385,15 +385,17 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 			nil
 	}
 
-	if err, rowsEffected = mc.Storage.UpdateByConditions(map[string]interface{}{
+	if err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"user_id": userID,
 		"id":      recordID,
 	}, d); err != nil {
 		return 0, gin.H{}, err
 	}
 
-	if rowsEffected == 0 {
-		return http.StatusNotFound, gin.H{"status": "error", "message": fmt.Sprintf("record(id: %d) not found", recordID)}, nil
+	if rowsAffected == 0 {
+		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
+			"uri": fmt.Sprintf("%s can not address a resource", c.Request.RequestURI)},
+		}, nil
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
