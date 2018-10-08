@@ -21,7 +21,7 @@ type MembershipStorage interface {
 	Create(interface{}) error
 	Get(uint, interface{}) error
 	GetByConditions(map[string]interface{}, interface{}) error
-	UpdateByConditions(map[string]interface{}, interface{}) error
+	UpdateByConditions(map[string]interface{}, interface{}) (error, int64)
 	Delete(uint, interface{}) error
 
 	/** User methods **/
@@ -107,20 +107,22 @@ func (gs *GormStorage) GetByConditions(cond map[string]interface{}, m interface{
 }
 
 // UpdateByConditions method of MembershipStorage interface
-func (gs *GormStorage) UpdateByConditions(cond map[string]interface{}, m interface{}) error {
-	var err error
+func (gs *GormStorage) UpdateByConditions(cond map[string]interface{}, m interface{}) (err error, rowsEffected int64) {
 	var errWhere string = "GormStorage.UpdateByConditions"
 
 	// caution:
 	// it will perform batch updates if cond is zero value and primary key of m is zero value
-	err = gs.db.Model(m).Where(cond).Updates(m).Error
+	updates := gs.db.Model(m).Where(cond).Updates(m)
+	err = updates.Error
 
 	if err != nil {
 		log.Error(err.Error())
-		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not update the record(where: %v)", cond))
+		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not update the record(where: %v)", cond)), 0
 	}
 
-	return nil
+	rowsEffected = updates.RowsAffected
+
+	return nil, rowsEffected
 }
 
 // Delete method of MembershipStorage interface
