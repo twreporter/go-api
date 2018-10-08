@@ -462,9 +462,11 @@ func (mc *MembershipController) TokenInvalidate(c *gin.Context) {
 	cookieName := "id_token"
 	invalidateExp := -1
 
-	defer func() {
-		c.JSON(http.StatusNoContent, gin.H{})
-	}()
+	destination := c.Query("destination")
+
+	if destination == "" {
+		destination = "https://accounts.twreporter.org/signin"
+	}
 
 	idToken, err := c.Request.Cookie(cookieName)
 
@@ -474,4 +476,5 @@ func (mc *MembershipController) TokenInvalidate(c *gin.Context) {
 	}
 
 	c.SetCookie(cookieName, idToken.Value, invalidateExp, defaultPath, defaultDomain, false, true)
+	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
