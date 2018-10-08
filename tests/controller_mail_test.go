@@ -104,7 +104,9 @@ func TestSendDonationSuccessMail(t *testing.T) {
 
 	// successful case
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		reqBody = defaultReqBody
+		for key, value := range defaultReqBody {
+			reqBody[key] = value
+		}
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
 		assert.Equal(t, http.StatusNoContent, resp.Code)
@@ -183,7 +185,6 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		for key, value := range defaultReqBody {
 			reqBody[key] = value
 		}
-		reqBody = defaultReqBody
 		reqBody["email"] = Globs.Defaults.ErrorEmailAddress
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
