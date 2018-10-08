@@ -8,7 +8,8 @@ help:
 		@echo "make test to run the functional test"
 
 env-up:
-		@docker-compose -f $(DOCKER_COMPOSE_FILE) up -d
+		@cp ./membership_user.sql $(DEV_ENV_SETUP_FOLDER)/mysql/initdb.sql
+		@docker-compose -f $(DOCKER_COMPOSE_FILE) up --build -d
 
 env-down: 
 		@docker-compose -f $(DOCKER_COMPOSE_FILE) down
