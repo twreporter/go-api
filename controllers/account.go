@@ -459,15 +459,24 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 
 // TokenInvalidate deletes the id_token stored in the client side
 func (mc *MembershipController) TokenInvalidate(c *gin.Context) {
+	const signInPage = "https://accounts.twreporter.org/signin"
+
 	cookieName := "id_token"
 	invalidateExp := -1
 
 	destination := c.Query("destination")
 
 	if destination == "" {
-		destination = "https://accounts.twreporter.org/signin"
+		destination = signInPage
 	}
 
-	c.SetCookie(cookieName, "", invalidateExp, defaultPath, defaultDomain, false, true)
+	// If destination is unavailable or invalid, redirect back to signin page
+	u, err := url.Parse(destination)
+	if nil != err {
+		destination = signInPage
+		u, _ = url.Parse(destination)
+	}
+
+	c.SetCookie(cookieName, "", invalidateExp, defaultPath, defaultDomain, u.Scheme == "https", true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
