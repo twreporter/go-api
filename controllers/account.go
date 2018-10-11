@@ -324,7 +324,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 		Email: email,
 		ActivateLink: fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s",
 			globals.Conf.App.Protocol, activateHost, globals.Conf.App.Port, email, activeToken, signIn.Destination),
-	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath))
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
 
 	if err != nil {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)

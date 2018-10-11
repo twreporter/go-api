@@ -57,7 +57,7 @@ func (contrl *MailController) LoadTemplateFiles(filenames ...string) {
 	contrl.HTMLTemplate = template.Must(template.ParseFiles(filenames...))
 }
 
-// SendActivation retreives email and activation link from rqeuest body,
+// SendActivation retrieves email and activation link from rqeuest body,
 // and invoke MailService to send activation mail
 func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error) {
 	const subject = "登入報導者"
@@ -135,13 +135,14 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	var body []byte
 	var err error
 	var rawResp *http.Response
+	var timeout = 10 * time.Second
 
 	if body, err = json.Marshal(reqBody); err != nil {
 		return err
 	}
 
 	// Setup HTTP client with timeout
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: timeout}
 
 	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")

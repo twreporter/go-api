@@ -49,6 +49,9 @@ func (s *AmazonMailStrategy) Send(to, subject, body string) error {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(emailSettings.AwsRegion)},
 	)
+	if err != nil {
+		return models.NewAppError("AmazonMailSender.Send", "cannot create a session to AWS", err.Error(), http.StatusInternalServerError)
+	}
 
 	// Create an SES client in the session.
 	svc := ses.New(sess)
