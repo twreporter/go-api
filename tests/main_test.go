@@ -181,6 +181,11 @@ func generateJWT(user models.User) (jwt string) {
 	return
 }
 
+func generateIDToken(user models.User) (jwt string) {
+	jwt, _ = utils.RetrieveV2IDToken(user.ID, user.Email.ValueOrZero(), user.FirstName.ValueOrZero(), user.LastName.ValueOrZero(), 3600)
+	return
+}
+
 func getReporterAccount(email string) (ra models.ReporterAccount) {
 	as := storage.NewGormStorage(Globs.GormDB)
 	ra, _ = as.GetReporterAccountData(email)
@@ -218,6 +223,29 @@ func serveHTTP(method, path, body, contentType, authorization string) (resp *htt
 
 	if authorization != "" {
 		req.Header.Add("Authorization", authorization)
+	}
+
+	resp = httptest.NewRecorder()
+	Globs.GinEngine.ServeHTTP(resp, req)
+
+	return
+}
+
+func serveHTTPWithCookies(method, path, body, contentType, authorization string, cookies ...http.Cookie) (resp *httptest.ResponseRecorder) {
+	var req *http.Request
+
+	req = requestWithBody(method, path, body)
+
+	if contentType != "" {
+		req.Header.Add("Content-Type", contentType)
+	}
+
+	if authorization != "" {
+		req.Header.Add("Authorization", authorization)
+	}
+
+	for _, cookie := range cookies {
+		req.AddCookie(&cookie)
 	}
 
 	resp = httptest.NewRecorder()

@@ -35,8 +35,11 @@ const (
 	LivingAndMedicalCare    = "living_medical_care"
 
 	// table name
-	TableUsersBookmarks = "users_bookmarks"
-	TableBookmarks      = "bookmarks"
+	TableUsersBookmarks            = "users_bookmarks"
+	TableBookmarks                 = "bookmarks"
+	TablePayByPrimeDonations       = "pay_by_prime_donations"
+	TablePayByCardTokenDonations   = "pay_by_card_token_donations"
+	TablePayByOtherMethodDonations = "pay_by_other_method_donations"
 
 	// oauth type
 	GoogleOAuth   = "Google"
@@ -46,4 +49,5 @@ const (
 	PeriodicDonationType = "periodic_donation"
 	PrimeDonaitionType   = "prime"
 	TokenDonationType    = "token"
+	OthersDonationType   = "others"
 )

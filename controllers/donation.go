@@ -39,15 +39,18 @@ type (
 	}
 
 	clientResp struct {
-		PeriodicID  null.Int          `json:"periodic_id"`
-		PayMethod   string            `json:"pay_method"`
-		CardInfo    models.CardInfo   `json:"card_info"`
-		Cardholder  models.Cardholder `json:"cardholder"`
 		Amount      uint              `json:"amount"`
+		CardInfo    models.CardInfo   `json:"card_info,omitempty"`
+		Cardholder  models.Cardholder `json:"cardholder,omitempty"`
 		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		OrderNumber string            `json:"order_number"`
+		Details     string            `json:"details,omitempty"`
 		ID          uint              `json:"id"`
+		Notes       string            `json:"notes"`
+		OrderNumber string            `json:"order_number,omitempty"`
+		PayMethod   string            `json:"pay_method"`
+		PeriodicID  uint              `json:"periodic_id,omitempty"`
+		SendReceipt string            `json:"send_receipt"`
+		ToFeedback  bool              `json:"to_feedback"`
 	}
 
 	bankTransactionTime struct {
@@ -108,6 +111,7 @@ type (
 		Details     null.String `json:"details"`
 		Name        null.String `json:"name"`
 		NationalID  null.String `json:"national_id"`
+		Notes       null.String `json:"notes"`
 		PhoneNumber null.String `json:"phone_number"`
 		SendReceipt null.String `json:"send_receipt"`
 		ToFeedback  null.Bool   `json:"to_feedback"`
@@ -115,34 +119,31 @@ type (
 	}
 )
 
-// CardholderName method is used by copier
-// which will copy `Name` to `CardholderName`
-func (p *patchBody) CardholderName() null.String {
-	return p.Name
+func (cr *clientResp) BuildFromPeriodicDonationModel(pd models.PeriodicDonation) {
+	cardInfo := models.CardInfo{}
+	cardholder := models.Cardholder{}
+
+	copier.Copy(&cardInfo, &pd)
+	copier.Copy(&cardholder, &pd)
+	copier.Copy(cr, &pd)
+	cr.Cardholder = cardholder
+	cr.CardInfo = cardInfo
+	cr.PayMethod = defaultPeriodicPayMethod
 }
 
-// CardholderNationID method is used by copier
-// which will copy `NationalID` to `CardholderNationalID`
-func (p *patchBody) CardholderNationalID() null.String {
-	return p.NationalID
+func (cr *clientResp) BuildFromPrimeDonationModel(pd models.PayByPrimeDonation) {
+	cardInfo := models.CardInfo{}
+	cardholder := models.Cardholder{}
+
+	copier.Copy(&cardInfo, &pd)
+	copier.Copy(&cardholder, &pd)
+	copier.Copy(cr, &pd)
+	cr.Cardholder = cardholder
+	cr.CardInfo = cardInfo
 }
 
-// CardholderPhoneNumber method is used by copier
-// which will copy `PhoneNumber` to `CardholderPhoneNumber`
-func (p *patchBody) CardholderPhoneNumber() null.String {
-	return p.PhoneNumber
-}
-
-// CardholderZipCode method is used by copier
-// which will copy `ZipCode` to `CardholderZipCode`
-func (p *patchBody) CardholderZipCode() null.String {
-	return p.ZipCode
-}
-
-// CardholderAddress method is used by copier
-// which will copy `Address` to `CardholderAddress`
-func (p *patchBody) CardholderAddress() null.String {
-	return p.Address
+func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {
+	copier.Copy(cr, &d)
 }
 
 const (
@@ -271,7 +272,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	}
 
 	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp)
-	resp.PeriodicID = null.IntFrom(int64(draftPeriodicDonation.ID))
+	resp.PeriodicID = draftPeriodicDonation.ID
 	resp.ID = draftRecord.ID
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
@@ -401,9 +402,72 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	return http.StatusNoContent, gin.H{}, nil
 }
 
-//TODO
+// TODO
+// GetDonationsOfAUser returns the donations list of a user
 func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H, error) {
 	return 0, gin.H{}, nil
+}
+
+// GetADonationOfAUser returns a donation of a user
+func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
+	var err error
+	var recordID uint64
+	var userID uint64
+	var _userID uint
+	var resp = new(clientResp)
+
+	if userID, err = strconv.ParseUint(c.Query("user_id"), 10, strconv.IntSize); err != nil {
+		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
+			"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
+		}}, err
+	}
+
+	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
+		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
+			"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
+		}}, err
+	}
+
+	switch donationType {
+	case globals.PeriodicDonationType:
+		pd := models.PeriodicDonation{}
+		if err = mc.Storage.Get(uint(recordID), &pd); err != nil {
+			return 0, gin.H{}, err
+		}
+		resp.BuildFromPeriodicDonationModel(pd)
+		_userID = uint(pd.UserID)
+		break
+	case globals.PrimeDonaitionType:
+		pd := models.PayByPrimeDonation{}
+		if err = mc.Storage.Get(uint(recordID), &pd); err != nil {
+			return 0, gin.H{}, err
+		}
+		resp.BuildFromPrimeDonationModel(pd)
+		_userID = uint(pd.UserID)
+		break
+	case globals.OthersDonationType:
+		d := models.PayByOtherMethodDonation{}
+		if err = mc.Storage.Get(uint(recordID), &d); err != nil {
+			return 0, gin.H{}, err
+		}
+		resp.BuildFromOtherMethodDonationModel(d)
+		_userID = uint(d.UserID)
+		break
+
+	// TODO
+	// case globasl.PayByCardTokenDonation:
+
+	default:
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("donation type %s is not supported", donationType)}, nil
+	}
+
+	if _userID != uint(userID) {
+		return http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+			"authorization": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI),
+		}}, nil
+	}
+
+	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
 
 func (t *tapPayPrimeReq) setDefault() {
@@ -430,13 +494,9 @@ func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactio
 func buildDraftPeriodicDonation(userID uint, req clientReq) models.PeriodicDonation {
 	m := models.PeriodicDonation{}
 
-	m.CardholderEmail = req.Cardholder.Email
-	m.CardholderPhoneNumber = req.Cardholder.PhoneNumber
-	m.CardholderName = req.Cardholder.Name
-	m.CardholderZipCode = req.Cardholder.ZipCode
-	m.CardholderAddress = req.Cardholder.Address
-	m.CardholderNationalID = req.Cardholder.NationalID
+	copier.Copy(&m, &req.Cardholder)
 
+	m.Amount = req.Amount
 	m.UserID = userID
 	m.Status = statusPeriodicPaying
 
@@ -449,17 +509,8 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 	m.UserID = userID
 	m.PayMethod = payMethod
 
-	m.CardholderEmail = req.Cardholder.Email
-	m.CardholderPhoneNumber = req.Cardholder.PhoneNumber
-	m.CardholderName = req.Cardholder.Name
-	m.CardholderZipCode = req.Cardholder.ZipCode
-	m.CardholderAddress = req.Cardholder.Address
-	m.CardholderNationalID = req.Cardholder.NationalID
-
-	m.Amount = req.Amount
-	m.Details = req.Details
-	m.MerchantID = req.MerchantID
-	m.OrderNumber = req.OrderNumber
+	copier.Copy(&m, &req)
+	copier.Copy(&m, &req.Cardholder)
 
 	m.Status = statusPaying
 
@@ -469,14 +520,10 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonation {
 	m := models.PayByPrimeDonation{}
 
+	copier.Copy(&m, &resp)
+	copier.Copy(&m, &resp.CardInfo)
+
 	m.TappayApiStatus = null.IntFrom(resp.Status)
-	m.Msg = resp.Msg
-	m.RecTradeID = resp.RecTradeID
-	m.BankTransactionID = resp.BankTransactionID
-	m.AuthCode = resp.AuthCode
-	m.Acquirer = resp.Acquirer
-	m.BankResultCode = resp.BankResultCode
-	m.BankResultMsg = resp.BankResultMsg
 
 	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
 	m.TransactionTime = null.TimeFrom(ttm)
@@ -493,16 +540,6 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
-	m.CardInfoBinCode = resp.CardInfo.BinCode
-	m.CardInfoLastFour = resp.CardInfo.LastFour
-	m.CardInfoIssuer = resp.CardInfo.Issuer
-	m.CardInfoFunding = resp.CardInfo.Funding
-	m.CardInfoType = resp.CardInfo.Type
-	m.CardInfoLevel = resp.CardInfo.Level
-	m.CardInfoCountry = resp.CardInfo.Country
-	m.CardInfoCountryCode = resp.CardInfo.CountryCode
-	m.CardInfoExpiryDate = resp.CardInfo.ExpiryDate
-
 	m.Status = "paid"
 
 	return m
@@ -511,15 +548,7 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDonation {
 	m := models.PeriodicDonation{}
 
-	m.CardInfoBinCode = resp.CardInfo.BinCode
-	m.CardInfoLastFour = resp.CardInfo.LastFour
-	m.CardInfoIssuer = resp.CardInfo.Issuer
-	m.CardInfoFunding = resp.CardInfo.Funding
-	m.CardInfoType = resp.CardInfo.Type
-	m.CardInfoLevel = resp.CardInfo.Level
-	m.CardInfoCountry = resp.CardInfo.Country
-	m.CardInfoCountryCode = resp.CardInfo.CountryCode
-	m.CardInfoExpiryDate = resp.CardInfo.ExpiryDate
+	copier.Copy(&m, &resp.CardInfo)
 
 	var ciphertext string
 
@@ -590,14 +619,8 @@ func buildTapPayPrimeReq(pt payType, payMethod string, req clientReq) tapPayPrim
 func buildTokenSuccessRecord(resp tapPayTransactionResp) models.PayByCardTokenDonation {
 	m := models.PayByCardTokenDonation{}
 
+	copier.Copy(&m, &resp)
 	m.TappayApiStatus = null.IntFrom(resp.Status)
-	m.Msg = resp.Msg
-	m.RecTradeID = resp.RecTradeID
-	m.BankTransactionID = resp.BankTransactionID
-	m.AuthCode = resp.AuthCode
-	m.Acquirer = resp.Acquirer
-	m.BankResultCode = resp.BankResultCode
-	m.BankResultMsg = resp.BankResultMsg
 
 	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
 	m.TransactionTime = null.TimeFrom(ttm)
@@ -621,10 +644,7 @@ func buildTokenSuccessRecord(resp tapPayTransactionResp) models.PayByCardTokenDo
 func buildTokenDraftRecord(req tapPayPrimeReq) models.PayByCardTokenDonation {
 	m := models.PayByCardTokenDonation{}
 
-	m.Details = req.Details
-	m.MerchantID = req.MerchantID
-	m.OrderNumber = req.OrderNumber
-	m.Amount = req.Amount
+	copier.Copy(&m, &req)
 
 	m.Status = statusPaying
 
