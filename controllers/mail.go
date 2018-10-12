@@ -57,7 +57,7 @@ func (contrl *MailController) LoadTemplateFiles(filenames ...string) {
 	contrl.HTMLTemplate = template.Must(template.ParseFiles(filenames...))
 }
 
-// SendActivation retreives email and activation link from rqeuest body,
+// SendActivation retrieves email and activation link from rqeuest body,
 // and invoke MailService to send activation mail
 func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error) {
 	const subject = "登入報導者"
@@ -100,15 +100,18 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	var reqBody donationSuccessReqBody
 	var valid bool
 
+	// parse requst JSON into struct
 	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
 	if reqBody.Currency == "" {
+		// give default Currency
 		reqBody.Currency = "TWD"
 	}
 
 	if reqBody.DonationDatetime == "" {
+		// give default DonationDatetime
 		reqBody.DonationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	}
 
@@ -119,6 +122,7 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 
 	mailBody = out.String()
 
+	// send email through mail service
 	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
 		log.Error(err)
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send donation success mail to %s", reqBody.Email)}, nil
@@ -131,13 +135,14 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	var body []byte
 	var err error
 	var rawResp *http.Response
+	var timeout = 10 * time.Second
 
 	if body, err = json.Marshal(reqBody); err != nil {
 		return err
 	}
 
 	// Setup HTTP client with timeout
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: timeout}
 
 	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
