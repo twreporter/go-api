@@ -48,11 +48,13 @@ func main() {
 	// set up the router
 	router := routers.SetupRouter(cf)
 
+	readTimeout := 5 * time.Second
+	writeTimeout := 10 * time.Second
 	s := &http.Server{
 		Addr:         fmt.Sprintf(":%s", globals.LocalhostPort),
 		Handler:      router,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
 	}
 
 	if err = s.ListenAndServe(); err != nil {
