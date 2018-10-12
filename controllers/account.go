@@ -388,7 +388,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	}
 
 	// Create id token for jwt endpoint retrival
-	idToken, err := utils.RetrieveV2Token(utils.AuthV2IDToken, user.ID, user.Email.String, idTokenExpiration)
+	idToken, err := utils.RetrieveV2IDToken(user.ID, user.Email.ValueOrZero(), user.FirstName.ValueOrZero(), user.LastName.ValueOrZero(), idTokenExpiration)
 	if nil != err {
 		log.Error(errorWhere + "(): " + err.Error())
 		idToken = "twreporter-id-token"
@@ -434,7 +434,7 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 		return
 	}
 
-	jwt, err := utils.RetrieveV2Token(utils.AuthV2AccessToken, user.ID, user.Email.String, acccessTokenExpiration)
+	jwt, err := utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), acccessTokenExpiration)
 	if err != nil {
 		appErr := err.(*models.AppError)
 		log.Error(appErr.Error())
