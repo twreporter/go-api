@@ -334,7 +334,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// Update the transaction status to 'paid' if transaction succeeds
 	updateRecord := buildPrimeSuccessRecord(tapPayResp)
 
-	if err := mc.Storage.UpdateByConditions(map[string]interface{}{
+	if err, _ := mc.Storage.UpdateByConditions(map[string]interface{}{
 		"order_number": tapPayReq.OrderNumber,
 	}, updateRecord); nil != err {
 		log.Error(err.Error())
@@ -351,11 +351,12 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
 	var d interface{}
 	var err error
-	var recordID uint64
-	var userID uint64
 	var failData gin.H
-	var valid bool
+	var recordID uint64
 	var reqBody patchBody
+	var rowsAffected int64
+	var userID uint64
+	var valid bool
 
 	if userID, err = strconv.ParseUint(c.Param("userID"), 10, strconv.IntSize); err != nil {
 		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, user id should be provided in the url"}, err
@@ -384,11 +385,17 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 			nil
 	}
 
-	if err = mc.Storage.UpdateByConditions(map[string]interface{}{
+	if err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"user_id": userID,
 		"id":      recordID,
 	}, d); err != nil {
 		return 0, gin.H{}, err
+	}
+
+	if rowsAffected == 0 {
+		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
+			"uri": fmt.Sprintf("%s can not address a resource", c.Request.RequestURI)},
+		}, nil
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
@@ -449,6 +456,7 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 	m.CardholderAddress = req.Cardholder.Address
 	m.CardholderNationalID = req.Cardholder.NationalID
 
+	m.Amount = req.Amount
 	m.Details = req.Details
 	m.MerchantID = req.MerchantID
 	m.OrderNumber = req.OrderNumber
