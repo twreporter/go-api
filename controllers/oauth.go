@@ -294,7 +294,7 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 		return
 	}
 
-	if token, err = utils.RetrieveV2Token(utils.AuthV2IDToken, matchUser.ID, matchUser.Email.String, idTokenExpiration); err != nil {
+	if token, err = utils.RetrieveV2IDToken(matchUser.ID, matchUser.Email.ValueOrZero(), matchUser.FirstName.ValueOrZero(), matchUser.LastName.ValueOrZero(), idTokenExpiration); err != nil {
 		log.Errorf("oauth fails due to generate JWT error:\n%s", err.Error())
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
