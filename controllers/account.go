@@ -24,7 +24,6 @@ const (
 	idTokenExpiration = 60 * 60 * 24 * 30 * 6
 )
 
-var defaultDomain = "." + globals.Conf.App.Domain
 var defaultPath = "/"
 
 // SignIn - send email containing sign-in information to the client
@@ -331,6 +330,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.Email
 // otherwise, sign in unsuccessfully.
 func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	const errorWhere = "MembershipController.ActivateV2"
+	var defaultDomain = globals.Conf.App.Domain
 	var err error
 	var ra models.ReporterAccount
 	var user models.User
@@ -449,19 +449,25 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 
 // TokenInvalidate deletes the id_token stored in the client side
 func (mc *MembershipController) TokenInvalidate(c *gin.Context) {
+	const signInPage = "https://accounts.twreporter.org/signin"
+	var defaultDomain = globals.Conf.App.Domain
+
 	cookieName := "id_token"
 	invalidateExp := -1
 
-	defer func() {
-		c.JSON(http.StatusNoContent, gin.H{})
-	}()
+	destination := c.Query("destination")
 
-	idToken, err := c.Request.Cookie(cookieName)
-
-	// If no valid `id_token` cookie provide, ignore it
-	if nil != err {
-		return
+	if destination == "" {
+		destination = signInPage
 	}
 
-	c.SetCookie(cookieName, idToken.Value, invalidateExp, defaultPath, defaultDomain, false, true)
+	// If destination is unavailable or invalid, redirect back to signin page
+	u, err := url.Parse(destination)
+	if nil != err {
+		destination = signInPage
+		u, _ = url.Parse(destination)
+	}
+
+	c.SetCookie(cookieName, "", invalidateExp, defaultPath, defaultDomain, u.Scheme == "https", true)
+	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
