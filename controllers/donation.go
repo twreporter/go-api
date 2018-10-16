@@ -190,6 +190,14 @@ var payMethodCollections = []string{
 	"samsung",
 }
 
+var cardInfoTypes = map[int64]string{
+	1: "VISA",
+	2: "MasterCard",
+	3: "JCB",
+	4: "Union Pay",
+	5: "AMEX",
+}
+
 func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	// Validate request body
 	if err := c.Bind(reqBody); nil != err {
@@ -210,6 +218,28 @@ func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	}
 
 	return gin.H{}, true
+}
+
+func (mc *MembershipController) sendDonationThankYouMail(body clientResp, donationType string) {
+	reqBody := donationSuccessReqBody{
+		Address:          body.Cardholder.Address.ValueOrZero(),
+		Amount:           body.Amount,
+		CardInfoLastFour: body.CardInfo.LastFour.ValueOrZero(),
+		CardInfoType:     cardInfoTypes[body.CardInfo.Type.ValueOrZero()],
+		Currency:         body.Currency,
+		DonationMethod:   "信用卡支付",
+		DonationType:     donationType,
+		Email:            body.Cardholder.Email,
+		Name:             body.Cardholder.Name.ValueOrZero(),
+		OrderNumber:      body.OrderNumber,
+		NationalID:       body.Cardholder.NationalID.ValueOrZero(),
+		PhoneNumber:      body.Cardholder.PhoneNumber.ValueOrZero(),
+	}
+
+	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {
+		log.Warnf("fail to send %s donation(order_number: %s) thank you mail due to %s", donationType, body.OrderNumber, err.Error())
+	}
+
 }
 
 // Handler for an authenticated user to create a periodic donation
@@ -274,6 +304,9 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp)
 	resp.PeriodicID = draftPeriodicDonation.ID
 	resp.ID = draftRecord.ID
+
+	// send success mail asynchronously
+	go mc.sendDonationThankYouMail(resp, "定期定額")
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -343,6 +376,9 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	resp := buildClientResp(payMethod, tapPayReq, tapPayResp)
 	resp.ID = draftRecord.ID
+
+	// send success mail asynchronously
+	go mc.sendDonationThankYouMail(resp, "單筆捐款")
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
