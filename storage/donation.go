@@ -114,8 +114,3 @@ func (g *GormStorage) UpdatePeriodicAndCardTokenDonationInTRX(periodicID uint, m
 func (g *GormStorage) CreateAPayByOtherMethodDonation(m models.PayByOtherMethodDonation) error {
 	return nil
 }
-
-//TODO
-func (g *GormStorage) GetDonationsByPayMethods(filters []string, offset uint, limit uint) (models.DonationRecord, error) {
-	return models.DonationRecord{}, nil
-}
