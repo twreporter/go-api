@@ -24,11 +24,10 @@ const (
 	idTokenExpiration = 60 * 60 * 24 * 30 * 6
 )
 
-var defaultDomain = "." + globals.Conf.App.Domain
 var defaultPath = "/"
 
 // SignIn - send email containing sign-in information to the client
-func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
+func (mc *MembershipController) SignIn(c *gin.Context) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
 		Email       string `json:"email" form:"email" binding:"required"`
@@ -124,7 +123,12 @@ func (mc *MembershipController) SignIn(c *gin.Context, mailSender *utils.EmailCo
 	}
 
 	// send activation email
-	err = mailSender.Send(email, SignInMailSubject, utils.GenerateActivateMailBody(email, activeToken, signIn.Destination, activateHost))
+	err = postMailServiceEndpoint(activationReqBody{
+		Email: email,
+		ActivateLink: fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s",
+			globals.Conf.App.Protocol, activateHost, globals.Conf.App.Port, email, activeToken, signIn.Destination),
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
+
 	if err != nil {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
 	}
@@ -219,7 +223,7 @@ func (mc *MembershipController) RenewJWT(c *gin.Context) (int, gin.H, error) {
 }
 
 // SignInV2 - send email containing sign-in information to the client
-func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.EmailContext) (int, gin.H, error) {
+func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
 		Email       string `json:"email" form:"email" binding:"required"`
@@ -315,7 +319,12 @@ func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.Email
 	}
 
 	// send activation email
-	err = mailSender.Send(email, SignInMailSubject, utils.GenerateActivateMailBody(email, activeToken, signIn.Destination, activateHost))
+	err = postMailServiceEndpoint(activationReqBody{
+		Email: email,
+		ActivateLink: fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s",
+			globals.Conf.App.Protocol, activateHost, globals.Conf.App.Port, email, activeToken, signIn.Destination),
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
+
 	if err != nil {
 		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
 	}
@@ -331,6 +340,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context, mailSender *utils.Email
 // otherwise, sign in unsuccessfully.
 func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	const errorWhere = "MembershipController.ActivateV2"
+	var defaultDomain = globals.Conf.App.Domain
 	var err error
 	var ra models.ReporterAccount
 	var user models.User
@@ -388,7 +398,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	}
 
 	// Create id token for jwt endpoint retrival
-	idToken, err := utils.RetrieveV2Token(utils.AuthV2IDToken, user.ID, user.Email.String, idTokenExpiration)
+	idToken, err := utils.RetrieveV2IDToken(user.ID, user.Email.ValueOrZero(), user.FirstName.ValueOrZero(), user.LastName.ValueOrZero(), idTokenExpiration)
 	if nil != err {
 		log.Error(errorWhere + "(): " + err.Error())
 		idToken = "twreporter-id-token"
@@ -414,7 +424,7 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	errorWhere := "MembershipController.TokenDispatch"
 
 	type reqBody struct {
-		UserID uint `json:"userID"`
+		UserID uint `json:"user_id"`
 	}
 
 	// Validate the request body
@@ -434,7 +444,7 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 		return
 	}
 
-	jwt, err := utils.RetrieveV2Token(utils.AuthV2AccessToken, user.ID, user.Email.String, acccessTokenExpiration)
+	jwt, err := utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), acccessTokenExpiration)
 	if err != nil {
 		appErr := err.(*models.AppError)
 		log.Error(appErr.Error())
@@ -449,19 +459,25 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 
 // TokenInvalidate deletes the id_token stored in the client side
 func (mc *MembershipController) TokenInvalidate(c *gin.Context) {
+	const signInPage = "https://accounts.twreporter.org/signin"
+	var defaultDomain = globals.Conf.App.Domain
+
 	cookieName := "id_token"
 	invalidateExp := -1
 
-	defer func() {
-		c.JSON(http.StatusNoContent, gin.H{})
-	}()
+	destination := c.Query("destination")
 
-	idToken, err := c.Request.Cookie(cookieName)
-
-	// If no valid `id_token` cookie provide, ignore it
-	if nil != err {
-		return
+	if destination == "" {
+		destination = signInPage
 	}
 
-	c.SetCookie(cookieName, idToken.Value, invalidateExp, defaultPath, defaultDomain, false, true)
+	// If destination is unavailable or invalid, redirect back to signin page
+	u, err := url.Parse(destination)
+	if nil != err {
+		destination = signInPage
+		u, _ = url.Parse(destination)
+	}
+
+	c.SetCookie(cookieName, "", invalidateExp, defaultPath, defaultDomain, u.Scheme == "https", true)
+	c.Redirect(http.StatusTemporaryRedirect, destination)
 }

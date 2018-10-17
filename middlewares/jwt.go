@@ -1,10 +1,12 @@
 package middlewares
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"twreporter.org/go-api/globals"
+	"twreporter.org/go-api/utils"
 
 	//log "github.com/Sirupsen/logrus"
 	"github.com/auth0/go-jwt-middleware"
@@ -33,7 +35,7 @@ func CheckJWT() gin.HandlerFunc {
 func ValidateUserID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := c.Request.Context().Value("user")
-		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["userID"]
+		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
 		userID := c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
 			c.AbortWithStatus(http.StatusForbidden)
@@ -41,17 +43,52 @@ func ValidateUserID() gin.HandlerFunc {
 	}
 }
 
+// ValidateAuthentication validates `req.Cookies.id_token`
+// if id_token, which is a JWT, is invalid, and then return 401 status code
+func ValidateAuthentication() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var tokenString string
+		var err error
+		var token *jwt.Token
+
+		defer func() {
+			if r := recover(); r != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"status": "fail",
+					"data": gin.H{
+						"req.cookies.id_token": err.Error(),
+					},
+				})
+				return
+			}
+		}()
+
+		if tokenString, err = c.Cookie("id_token"); err != nil {
+			panic(err)
+		}
+
+		if token, err = jwt.ParseWithClaims(tokenString, &utils.IDTokenJWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return []byte(globals.Conf.App.JwtSecret), nil
+		}); err != nil {
+			panic(err)
+		}
+
+		if !token.Valid {
+			panic(errors.New("id_token is not valid"))
+		}
+	}
+}
+
 func ValidateIDToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := c.Request.Context().Value("user")
-
-		claims := user.(*jwt.Token).Claims
+		claims := user.(*jwt.Token).Claims.(utils.IDTokenJWTClaims)
 
 		if err := claims.Valid(); nil != err {
-			c.JSON(http.StatusUnauthorized, gin.H{
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"status": "fail",
 				"data": gin.H{
-					"id_token": err.Error(),
+					"req.Headers.Authorization": err.Error(),
 				},
 			})
 		}

@@ -1,0 +1,16 @@
+# general client configuration
+[client]
+default-character-set=utf8mb4
+
+[mysqld]
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+
+# SET character_set_client = utf8mb4
+# SET character_set_results = utf8mb4
+# SET character_set_connection = utf8mb4
+init_connect='SET NAMES utf8mb4'
+
+# "mysql" client configuration
+[mysql]
+default-character-set=utf8mb4

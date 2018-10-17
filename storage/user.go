@@ -5,8 +5,8 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/go-sql-driver/mysql"
 
+	"gopkg.in/guregu/null.v3"
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
 )
@@ -36,7 +36,7 @@ func (gs *GormStorage) GetUserByEmail(email string) (models.User, error) {
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
-func (gs *GormStorage) GetOAuthData(aid models.NullString, aType string) (models.OAuthAccount, error) {
+func (gs *GormStorage) GetOAuthData(aid null.String, aType string) (models.OAuthAccount, error) {
 	log.Info("Getting the matching OAuth data", aid)
 	oac := models.OAuthAccount{}
 	err := gs.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).Last(&oac).Error
@@ -111,7 +111,7 @@ func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user model
 		LastName:         omodel.LastName,
 		Gender:           omodel.Gender,
 		Privilege:        constants.PrivilegeRegistered,
-		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
+		RegistrationDate: null.TimeFrom(time.Now()),
 	}
 	err = gs.db.Create(&user).Error
 	return user, err
@@ -121,8 +121,8 @@ func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user model
 func (gs *GormStorage) InsertUserByReporterAccount(raModel models.ReporterAccount) (models.User, error) {
 	user := models.User{
 		ReporterAccount:  raModel,
-		Email:            models.NewNullString(raModel.Email),
-		RegistrationDate: mysql.NullTime{Time: time.Now(), Valid: true},
+		Email:            null.StringFrom(raModel.Email),
+		RegistrationDate: null.NewTime(time.Now(), true),
 	}
 	err := gs.db.Create(&user).Error
 	return user, err

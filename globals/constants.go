@@ -1,6 +1,12 @@
 package globals
 
 const (
+	LocalhostPort = "8080"
+
+	// route path
+	SendActivationRoutePath      = "mail/send_activation"
+	SendSuccessDonationRoutePath = "mail/send_success_donation"
+
 	// controller name
 	MembershipController = "membership_controller"
 	NewsController       = "news_controller"
@@ -35,10 +41,19 @@ const (
 	LivingAndMedicalCare    = "living_medical_care"
 
 	// table name
-	TableUsersBookmarks = "users_bookmarks"
-	TableBookmarks      = "bookmarks"
+	TableUsersBookmarks            = "users_bookmarks"
+	TableBookmarks                 = "bookmarks"
+	TablePayByPrimeDonations       = "pay_by_prime_donations"
+	TablePayByCardTokenDonations   = "pay_by_card_token_donations"
+	TablePayByOtherMethodDonations = "pay_by_other_method_donations"
 
 	// oauth type
 	GoogleOAuth   = "Google"
 	FacebookOAuth = "Facebook"
+
+	// donation
+	PeriodicDonationType = "periodic_donation"
+	PrimeDonaitionType   = "prime"
+	TokenDonationType    = "token"
+	OthersDonationType   = "others"
 )

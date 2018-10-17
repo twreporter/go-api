@@ -1,9 +1,13 @@
 package storage
 
 import (
+	"fmt"
+
+	log "github.com/Sirupsen/logrus"
 	"github.com/jinzhu/gorm"
+	"gopkg.in/guregu/null.v3"
+
 	"twreporter.org/go-api/models"
-	//log "github.com/Sirupsen/logrus"
 )
 
 // MembershipStorage defines the methods we need to implement,
@@ -13,10 +17,17 @@ type MembershipStorage interface {
 	/** Close DB Connection **/
 	Close() error
 
+	/** Default CRUD **/
+	Create(interface{}) error
+	Get(uint, interface{}) error
+	GetByConditions(map[string]interface{}, interface{}) error
+	UpdateByConditions(map[string]interface{}, interface{}) (error, int64)
+	Delete(uint, interface{}) error
+
 	/** User methods **/
 	GetUserByID(string) (models.User, error)
 	GetUserByEmail(string) (models.User, error)
-	GetOAuthData(models.NullString, string) (models.OAuthAccount, error)
+	GetOAuthData(null.String, string) (models.OAuthAccount, error)
 	GetUserDataByOAuth(models.OAuthAccount) (models.User, error)
 	GetReporterAccountData(string) (models.ReporterAccount, error)
 	GetUserDataByReporterAccount(models.ReporterAccount) (models.User, error)
@@ -39,28 +50,10 @@ type MembershipStorage interface {
 	CreateAWebPushSubscription(models.WebPushSubscription) error
 	GetAWebPushSubscription(uint32, string) (models.WebPushSubscription, error)
 
-	/** Service methods **/
-	GetService(string) (models.Service, error)
-	CreateService(models.ServiceJSON) (models.Service, error)
-	UpdateService(string, models.ServiceJSON) (models.Service, error)
-	DeleteService(string) error
-
-	/** Registration methods **/
-	GetRegistration(string, string) (models.Registration, error)
-	GetRegistrationsByService(string, int, int, string, int) ([]models.Registration, error)
-	GetRegistrationsAmountByService(string, int) (uint, error)
-	CreateRegistration(string, models.RegistrationJSON) (models.Registration, error)
-	UpdateRegistration(string, models.RegistrationJSON) (models.Registration, error)
-	DeleteRegistration(string, string) error
-
 	/** Donation methods **/
-	CreateAPayByPrimeDonation(models.PayByPrimeDonation) error
-	UpdateAPayByPrimeDonation(string, models.PayByPrimeDonation) error
-	CreateAPeriodicDonation(models.PeriodicDonation, models.PayByCardTokenDonation) (uint, error)
+	CreateAPeriodicDonation(*models.PeriodicDonation, *models.PayByCardTokenDonation) error
 	DeleteAPeriodicDonation(uint, models.PayByCardTokenDonation) error
-	UpdateAPeriodicDonation(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
-	CreateAPayByOtherMethodDonation(models.PayByOtherMethodDonation) error
-	GetDonationsByPayMethods([]string, uint, uint) (models.DonationRecord, error)
+	UpdatePeriodicAndCardTokenDonationInTRX(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
 }
 
 // NewGormStorage initializes the storage connected to MySQL database by gorm library
@@ -79,5 +72,74 @@ func (gs *GormStorage) Close() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// Get method of MembershipStorage interface
+func (gs *GormStorage) Get(id uint, m interface{}) error {
+	var err error
+	var errWhere string = "GormStorage.Get"
+
+	err = gs.db.Where("id = ?", id).Find(m).Error
+
+	if err != nil {
+		log.Error(err.Error())
+		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not get the record(id: %d)", id))
+	}
+
+	return nil
+}
+
+// GetByConditions method of MembershipStorage interface
+func (gs *GormStorage) GetByConditions(cond map[string]interface{}, m interface{}) error {
+	var err error
+	var errWhere string = "GormStorage.GetByConditions"
+
+	err = gs.db.Where(cond).Find(m).Error
+
+	if err != nil {
+		log.Error(err.Error())
+		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not get the record(where: %v)", cond))
+	}
+
+	return nil
+}
+
+// UpdateByConditions method of MembershipStorage interface
+func (gs *GormStorage) UpdateByConditions(cond map[string]interface{}, m interface{}) (err error, rowsAffected int64) {
+	var errWhere string = "GormStorage.UpdateByConditions"
+
+	// caution:
+	// it will perform batch updates if cond is zero value and primary key of m is zero value
+	updates := gs.db.Model(m).Where(cond).Updates(m)
+	err = updates.Error
+
+	if err != nil {
+		log.Error(err.Error())
+		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not update the record(where: %v)", cond)), 0
+	}
+
+	rowsAffected = updates.RowsAffected
+
+	return nil, rowsAffected
+}
+
+// Delete method of MembershipStorage interface
+func (gs *GormStorage) Delete(id uint, m interface{}) error {
+	return nil
+}
+
+// Create method of MembershipStorage interface
+func (gs *GormStorage) Create(m interface{}) error {
+	var err error
+	var errWhere string = "GormStorage.Create"
+
+	err = gs.db.Create(m).Error
+
+	if nil != err {
+		log.Error(err.Error())
+		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not create the record(%#v)", m))
+	}
+
 	return nil
 }

@@ -8,65 +8,39 @@ import (
 	"twreporter.org/go-api/models"
 )
 
-const (
-	invalidPeriodicID = 0
-)
-
-// CreateAPayByPrimeDonation creates a draft order in database
-func (g *GormStorage) CreateAPayByPrimeDonation(m models.PayByPrimeDonation) error {
-	errWhere := "GormStorage.CreateAPayByPrimeDonation"
-	err := g.db.Create(&m).Error
-	if nil != err {
-		log.Error(err.Error())
-		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not create the record(%#v)", m))
-	}
-	return nil
-}
-
-// UpdateAPayByPrimeDonation updates the draft record with the Tappay response data by order
-func (g *GormStorage) UpdateAPayByPrimeDonation(order string, m models.PayByPrimeDonation) error {
-	errWhere := "GormStorage.UpdateAPayByPrimeDonation"
-	err := g.db.Model(&m).Where("order_number = ?", order).Updates(m).Error
-	if nil != err {
-		log.Error(err.Error())
-		return g.NewStorageError(err, errWhere, fmt.Sprintf("can not update prime donation(order: %s, record: %#v)", order, m))
-	}
-	return nil
-}
-
 // CreateAPeriodicDonation creates the draft record along with the first draft tap pay transaction
-func (g *GormStorage) CreateAPeriodicDonation(mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) (uint, error) {
+func (g *GormStorage) CreateAPeriodicDonation(mpd *models.PeriodicDonation, mtd *models.PayByCardTokenDonation) error {
 	errWhere := "GormStorage.CreateAPeriodicDonationWithFirstTransaction"
 
 	tx := g.db.Begin()
 
 	if err := tx.Error; nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, "cannot begin the draft periodic donation creation transaction")
+		return g.NewStorageError(err, errWhere, "cannot begin the draft periodic donation creation transaction")
 	}
 
 	// Create a draft record for periodic donation
-	if err := tx.Create(&mpd).Error; nil != err {
+	if err := tx.Create(mpd).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft periodic donation(%#v)", mpd))
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft periodic donation(%#v)", mpd))
 	}
 
 	// Append the periodic ID for the first record
 	mtd.PeriodicID = mpd.ID
 
 	// Create a draft record for the first token transaction
-	if err := tx.Create(&mtd).Error; nil != err {
+	if err := tx.Create(mtd).Error; nil != err {
 		tx.Rollback()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft card token donation(%#v)", mtd))
+		return g.NewStorageError(err, errWhere, fmt.Sprintf("cannot create a draft card token donation(%#v)", mtd))
 	}
 
 	if err := tx.Commit().Error; nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
-		return invalidPeriodicID, g.NewStorageError(err, errWhere, "cannot commit the draft periodic donation creation transaction")
+		return g.NewStorageError(err, errWhere, "cannot commit the draft periodic donation creation transaction")
 	}
-	return mpd.ID, nil
+	return nil
 }
 
 // DeleteAPeriodicDonation marks the draft tap pay transaction record as 'fail' and then soft delete the periodic donation
@@ -102,9 +76,9 @@ func (g *GormStorage) DeleteAPeriodicDonation(periodicID uint, failData models.P
 	return nil
 }
 
-// UpdateAPeriodicDonation updates the draft tap pay transaction with response and fills up the required information in periodic_donations table
-func (g *GormStorage) UpdateAPeriodicDonation(periodicID uint, mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) error {
-	errWhere := "GormStorage.UpdateAPeriodicDonation"
+// UpdatePeriodicAndCardTokenDonationInTRX updates the draft tap pay transaction with response and fills up the required information in periodic_donations table
+func (g *GormStorage) UpdatePeriodicAndCardTokenDonationInTRX(periodicID uint, mpd models.PeriodicDonation, mtd models.PayByCardTokenDonation) error {
+	errWhere := "GormStorage.UpdatePeriodicAndCardTokenDonationInTRX"
 	tx := g.db.Begin()
 
 	if err := tx.Error; nil != err {
@@ -139,9 +113,4 @@ func (g *GormStorage) UpdateAPeriodicDonation(periodicID uint, mpd models.Period
 //TODO
 func (g *GormStorage) CreateAPayByOtherMethodDonation(m models.PayByOtherMethodDonation) error {
 	return nil
-}
-
-//TODO
-func (g *GormStorage) GetDonationsByPayMethods(filters []string, offset uint, limit uint) (models.DonationRecord, error) {
-	return models.DonationRecord{}, nil
 }
