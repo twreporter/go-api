@@ -25,10 +25,13 @@ type (
 		Cardholder  models.Cardholder `json:"cardholder"`
 		Currency    string            `json:"currency"`
 		Details     string            `json:"details"`
+		Frequency   string            `json:"frequency"`
 		ID          uint              `json:"id"`
+		Notes       string            `json:"notes"`
 		OrderNumber string            `json:"order_number"`
 		PayMethod   string            `json:"pay_method"`
-		PeriodicID  null.Int          `json:"periodic_id"`
+		SendReceipt string            `json:"send_receipt"`
+		ToFeedback  bool              `json:"to_feedback"`
 	}
 	responseBody struct {
 		Status string         `json:"status"`
@@ -46,25 +49,34 @@ type (
 		} `json:"data"`
 	}
 	requestBody struct {
-		Amount      uint              `json:"amount"`
-		Cardholder  models.Cardholder `json:"cardholder"`
-		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		MerchantID  string            `json:"merchant_id"`
-		OrderNumber string            `json:"order_number"`
-		Prime       string            `json:"prime"`
-		ResultURL   linePayResultURL  `json:"result_url"` // Line pay needed only
-		UserID      uint              `json:"user_id"`
+		Amount     uint              `json:"amount"`
+		Cardholder models.Cardholder `json:"donator"`
+		Currency   string            `json:"currency"`
+		Details    string            `json:"details"`
+		Frequency  string            `json:"frequency"`
+		MerchantID string            `json:"merchant_id"`
+		Prime      string            `json:"prime"`
+		ResultURL  linePayResultURL  `json:"result_url"` // Line pay needed only
+		UserID     uint              `json:"user_id"`
 	}
 )
 
 const (
-	testPrime            = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
-	testDetails          = "報導者小額捐款"
-	testAmount      uint = 500
-	testCurrency         = "TWD"
-	testOrderNumber      = "otd:developer@twreporter.org:1531966435"
-	testMerchantID       = "GlobalTesting_CTBC"
+	testPrime           = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
+	testDetails         = "報導者小額捐款"
+	testAmount     uint = 500
+	testCurrency        = "TWD"
+	testMerchantID      = "GlobalTesting_CTBC"
+
+	testName        = "報導者測試者"
+	testAddress     = "台北市南京東路一段32巷100號10樓"
+	testNationalID  = "A12345678"
+	testPhoneNumber = "+886912345678"
+	testZipCode     = "101"
+
+	monthlyFrequency = "monthly"
+	yearlyFrequency  = "yearly"
+	oneTimeFrequency = "one_time"
 )
 
 var testCardholder = models.Cardholder{
@@ -252,7 +264,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 	})
 }
 
-func testCreateADonationRecord(t *testing.T, path string, userID uint, isPeriodic bool, authorization string) {
+func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency string, authorization string) {
 	var resp *httptest.ResponseRecorder
 	var reqBody requestBody
 	var resBody responseBody
@@ -267,14 +279,14 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, isPeriodi
 	// ===========================================
 	t.Run("StatusCode=StatusCreated", func(t *testing.T) {
 		reqBody = requestBody{
-			Prime:       testPrime,
-			Amount:      testAmount,
-			Currency:    testCurrency,
-			Details:     testDetails,
-			OrderNumber: testOrderNumber,
-			MerchantID:  testMerchantID,
-			Cardholder:  testCardholder,
-			UserID:      userID,
+			Prime:      testPrime,
+			Amount:     testAmount,
+			Currency:   testCurrency,
+			Details:    testDetails,
+			MerchantID: testMerchantID,
+			Cardholder: testCardholder,
+			Frequency:  frequency,
+			UserID:     userID,
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -285,10 +297,11 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, isPeriodi
 		assert.Equal(t, http.StatusCreated, resp.Code)
 		assert.Equal(t, "success", resBody.Status)
 		assert.Equal(t, testAmount, resBody.Data.Amount)
-		assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
+		assert.Equal(t, frequency, resBody.Data.Frequency)
 		assert.Equal(t, testCurrency, resBody.Data.Currency)
 		assert.Equal(t, testDetails, resBody.Data.Details)
-		assert.Equal(t, testOrderNumber, resBody.Data.OrderNumber)
+		assert.NotEmpty(t, resBody.Data.OrderNumber)
+		assert.Empty(t, resBody.Data.Notes)
 		testCardholderWithDefaultValue(t, resBody.Data.Cardholder)
 
 		// ===========================================
@@ -297,26 +310,27 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, isPeriodi
 		// - Provide minimun required fields
 		// ===========================================
 		reqBody = requestBody{
-			Prime:      testPrime,
-			Amount:     testAmount,
-			MerchantID: testMerchantID,
+			Amount: testAmount,
 			Cardholder: models.Cardholder{
 				Email: "developer@twreporter.org",
 			},
-			UserID: userID,
+			Frequency:  frequency,
+			MerchantID: testMerchantID,
+			Prime:      testPrime,
+			UserID:     userID,
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
+		fmt.Print(string(resBodyInBytes))
 		json.Unmarshal(resBodyInBytes, &resBody)
 
 		assert.Equal(t, http.StatusCreated, resp.Code)
 		assert.Equal(t, "success", resBody.Status)
 		assert.Equal(t, testAmount, resBody.Data.Amount)
-		assert.Equal(t, isPeriodic, resBody.Data.PeriodicID.Valid)
+		assert.Equal(t, frequency, resBody.Data.Frequency)
 		assert.Equal(t, testCurrency, resBody.Data.Currency)
-		assert.Equal(t, testDetails, resBody.Data.Details)
 	})
 
 	// ===========================================
@@ -331,7 +345,8 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, isPeriodi
 			Cardholder: models.Cardholder{
 				Email: "developer@twreporter.org",
 			},
-			UserID: userID,
+			UserID:    userID,
+			Frequency: frequency,
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -395,7 +410,7 @@ func TestCreateADonation(t *testing.T) {
 	// Test One Time Donation Creation
 	// =========================================
 	path = "/v1/donations/credit_card"
-	testCreateADonationRecord(t, path, user.ID, false, authorization)
+	testCreateADonationRecord(t, path, user.ID, oneTimeFrequency, authorization)
 }
 
 func TestCreateAPeriodicDonation(t *testing.T) {
@@ -432,31 +447,41 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// Test Periodic Donation Creation
 	// =========================================
 	path = "/v1/periodic-donations"
-	testCreateADonationRecord(t, path, user.ID, true, authorization)
+	testCreateADonationRecord(t, path, user.ID, monthlyFrequency, authorization)
 }
 
-func createDefaultPostBody(userID uint, email string) (reqBody requestBody) {
+func createDefaultPostBody(userID uint, email string, frequency string) (reqBody requestBody) {
 	reqBody = requestBody{
 		Prime:  testPrime,
 		Amount: testAmount,
 		Cardholder: models.Cardholder{
-			Email: email,
+			Email:       email,
+			Name:        null.StringFrom(testName),
+			Address:     null.StringFrom(testAddress),
+			NationalID:  null.StringFrom(testNationalID),
+			PhoneNumber: null.StringFrom(testPhoneNumber),
+			ZipCode:     null.StringFrom(testZipCode),
 		},
 		MerchantID: testMerchantID,
 		UserID:     userID,
+		Details:    testDetails,
+	}
+
+	if frequency != "" {
+		reqBody.Frequency = frequency
 	}
 
 	return reqBody
 }
 
-func createDefaultDonationRecord(user models.User, endpoint string) responseBody {
+func createDefaultDonationRecord(user models.User, endpoint string, frequency string) responseBody {
 	// create jwt of this user
 	jwt := generateJWT(user)
 	// prepare jwt authorization string
 	authorization := fmt.Sprintf("Bearer %s", jwt)
 
 	// create a donation by HTTP POST request
-	reqBody := createDefaultPostBody(user.ID, user.Email.ValueOrZero())
+	reqBody := createDefaultPostBody(user.ID, user.Email.ValueOrZero(), frequency)
 	reqBodyInBytes, _ := json.Marshal(reqBody)
 	resp := serveHTTP("POST", endpoint, string(reqBodyInBytes), "application/json", authorization)
 	respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
@@ -471,18 +496,18 @@ func createDefaultDonationRecord(user models.User, endpoint string) responseBody
 func createDefaultPeriodicDonationRecord(user models.User) responseBody {
 	// create a default periodic donation record
 	path := "/v1/periodic-donations"
-	return createDefaultDonationRecord(user, path)
+	return createDefaultDonationRecord(user, path, monthlyFrequency)
 }
 
 func createDefaultPrimeDonationRecord(user models.User) responseBody {
 	// create a default prime donation record
 	path := "/v1/donations/credit_card"
-	return createDefaultDonationRecord(user, path)
+	return createDefaultDonationRecord(user, path, "")
 }
 
 func TestPatchAPeriodicDonation(t *testing.T) {
 	// setup before test
-	donatorEmail := "prime-donator@twreporter.org"
+	donatorEmail := "periodic-donator@twreporter.org"
 	// create a new user
 	user := createUser(donatorEmail)
 
@@ -493,20 +518,20 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	authorization := fmt.Sprintf("Bearer %s", jwt)
 
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.PeriodicID.ValueOrZero())
+		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 		resp := serveHTTP("PATCH", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
 		otherUserID := 100
-		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.PeriodicID.ValueOrZero())
+		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 		resp := serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.PeriodicID.ValueOrZero())
+		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 		reqBody := map[string]interface{}{
 			"user_id": user.ID,
 			// to_feedback should be boolean
@@ -533,13 +558,18 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	})
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.PeriodicID.ValueOrZero())
+		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 		reqBody := map[string]interface{}{
 			"user_id":      user.ID,
 			"to_feedback":  true,
 			"send_receipt": "no",
+			"donator": map[string]interface{}{
+				"name":    "test-name",
+				"address": "test-addres",
+			},
 		}
 		reqBodyInBytes, _ := json.Marshal(reqBody)
+		fmt.Print(string(reqBodyInBytes))
 		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
 	})
@@ -547,7 +577,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 
 func TestPatchAPrimeDonation(t *testing.T) {
 	// setup before test
-	donatorEmail := "periodic-donator@twreporter.org"
+	donatorEmail := "prime-donator@twreporter.org"
 	// create a new user
 	user := createUser(donatorEmail)
 
@@ -575,7 +605,9 @@ func TestPatchAPrimeDonation(t *testing.T) {
 		reqBody := map[string]interface{}{
 			"user_id": user.ID,
 			// national_id should be string
-			"national_id": true,
+			"donator": map[string]interface{}{
+				"national_id": true,
+			},
 		}
 		reqBodyInBytes, _ := json.Marshal(reqBody)
 		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
@@ -599,6 +631,10 @@ func TestPatchAPrimeDonation(t *testing.T) {
 		reqBody := map[string]interface{}{
 			"user_id":      user.ID,
 			"send_receipt": "no",
+			"donator": map[string]interface{}{
+				"name":    "test-name",
+				"address": "test-addres",
+			},
 		}
 		reqBodyInBytes, _ := json.Marshal(reqBody)
 		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
@@ -649,6 +685,7 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 		path := fmt.Sprintf("/v1/donations/prime/%d?user_id=%d", primeRes.Data.ID, user.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
 		respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+		fmt.Print(string(respInBytes))
 		defer resp.Result().Body.Close()
 
 		// parse response into struct
@@ -656,12 +693,22 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 		json.Unmarshal(respInBytes, &resBody)
 		assert.Equal(t, http.StatusOK, resp.Code)
 		assert.Equal(t, testAmount, resBody.Data.Amount)
+		assert.Equal(t, testDetails, resBody.Data.Details)
 		assert.Equal(t, donatorEmail, resBody.Data.Cardholder.Email)
+		assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
+		assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
+		assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
+		assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
+		assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
 		assert.Equal(t, "4242", resBody.Data.CardInfo.LastFour.ValueOrZero())
 		assert.Equal(t, "424242", resBody.Data.CardInfo.BinCode.ValueOrZero())
 		assert.Equal(t, int64(0), resBody.Data.CardInfo.Funding.ValueOrZero())
 		assert.Equal(t, testCurrency, resBody.Data.Currency)
 		assert.Equal(t, "credit_card", resBody.Data.PayMethod)
+		assert.Equal(t, "monthly", resBody.Data.SendReceipt)
+		assert.Equal(t, false, resBody.Data.ToFeedback)
+		assert.Equal(t, oneTimeFrequency, resBody.Data.Frequency)
+		assert.Empty(t, resBody.Data.Notes)
 		assert.NotEmpty(t, resBody.Data.OrderNumber)
 	})
 }
@@ -717,9 +764,22 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 		json.Unmarshal(respInBytes, &resBody)
 		assert.Equal(t, http.StatusOK, resp.Code)
 		assert.Equal(t, testAmount, resBody.Data.Amount)
+		assert.Equal(t, testDetails, resBody.Data.Details)
 		assert.Equal(t, donatorEmail, resBody.Data.Cardholder.Email)
+		assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
+		assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
+		assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
+		assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
+		assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
+		assert.Equal(t, "4242", resBody.Data.CardInfo.LastFour.ValueOrZero())
+		assert.Equal(t, "424242", resBody.Data.CardInfo.BinCode.ValueOrZero())
+		assert.Equal(t, int64(0), resBody.Data.CardInfo.Funding.ValueOrZero())
 		assert.Equal(t, testCurrency, resBody.Data.Currency)
-		assert.Empty(t, resBody.Data.OrderNumber)
+		assert.Equal(t, "monthly", resBody.Data.SendReceipt)
+		assert.Equal(t, true, resBody.Data.ToFeedback)
+		assert.Equal(t, monthlyFrequency, resBody.Data.Frequency)
+		assert.Empty(t, resBody.Data.Notes)
+		assert.NotEmpty(t, resBody.Data.OrderNumber)
 	})
 }
 
