@@ -83,15 +83,15 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.DeleteABookmarkOfAUser))
 
 	// endpoints for donation
-	v1Group.POST("/users/:userID/periodic_donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
-	v1Group.PATCH("/users/:userID/periodic_donations/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.POST("/periodic-donations", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
+	v1Group.PATCH("/periodic-donations/:id", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
 	v1Group.GET("/periodic-donations/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
-	v1Group.POST("/users/:userID/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateADonationOfAUser))
-	v1Group.PATCH("/users/:userID/donations/prime/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.POST("/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), ginResponseWrapper(mc.CreateADonationOfAUser))
+	v1Group.PATCH("/donations/prime/:id", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PrimeDonaitionType)
 	}))
 	// v1Group.GET("/users/:userID/donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))

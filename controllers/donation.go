@@ -18,6 +18,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/jinzhu/copier"
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
@@ -28,14 +29,15 @@ import (
 
 type (
 	clientReq struct {
-		Prime       string            `json:"prime" form:"prime" binding:"required"`
 		Amount      uint              `json:"amount" form:"amount" binding:"required"`
+		Cardholder  models.Cardholder `json:"cardholder" form:"cardholder" binding:"required,dive"`
 		Currency    string            `json:"currency" form:"currency"`
 		Details     string            `json:"details" form:"details"`
-		Cardholder  models.Cardholder `json:"cardholder" form:"cardholder" binding:"required,dive"`
-		OrderNumber string            `json:"order_number" form:"order_number"`
 		MerchantID  string            `json:"merchant_id" form:"merchant_id"`
+		OrderNumber string            `json:"order_number" form:"order_number"`
+		Prime       string            `json:"prime" form:"prime" binding:"required"`
 		ResultUrl   linePayResultUrl  `json:"result_url" form:"result_url"`
+		UserID      uint              `json:"user_id" form:"user_id" binding:"required"`
 	}
 
 	clientResp struct {
@@ -115,6 +117,7 @@ type (
 		PhoneNumber null.String `json:"phone_number"`
 		SendReceipt null.String `json:"send_receipt"`
 		ToFeedback  null.Bool   `json:"to_feedback"`
+		UserID      uint        `json:"user_id" binding:"required"`
 		ZipCode     null.String `json:"zip_code"`
 	}
 )
@@ -199,22 +202,28 @@ var cardInfoTypes = map[int64]string{
 }
 
 func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
+	var err error
 	// Validate request body
-	if err := c.Bind(reqBody); nil != err {
-		log.Error("parse model error: " + err.Error())
-		failData := gin.H{}
+	// gin.Context.Bind does not support to bind `JSON` body multiple times
+	// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
+	if err = c.ShouldBindBodyWith(reqBody, binding.JSON); nil != err {
 
-		switch e := err.(type) {
-		case *json.UnmarshalTypeError:
-			failData[e.Field] = fmt.Sprintf("Cannot unmarshal %s into %s", e.Value, e.Type)
-		case validator.ValidationErrors:
-			for _, errField := range e {
-				failData[errField.Name] = "cannot be empty"
+		// bind other format rather than JSON
+		if err = c.Bind(reqBody); nil != err {
+			failData := gin.H{}
+
+			switch e := err.(type) {
+			case *json.UnmarshalTypeError:
+				failData[e.Field] = fmt.Sprintf("Cannot unmarshal %s into %s", e.Value, e.Type)
+			case validator.ValidationErrors:
+				for _, errField := range e {
+					failData[errField.Name] = "cannot be empty"
+				}
+			default:
+				// Omit intentionally
 			}
-		default:
-			// Omit intentionally
+			return failData, false
 		}
-		return failData, false
 	}
 
 	return gin.H{}, true
@@ -253,10 +262,10 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
-	userID, _ := strconv.ParseUint(c.Param("userID"), 10, strconv.IntSize)
+	userID := reqBody.UserID
 
 	// Build a draft periodic donation record
-	draftPeriodicDonation := buildDraftPeriodicDonation(uint(userID), reqBody)
+	draftPeriodicDonation := buildDraftPeriodicDonation(userID, reqBody)
 
 	// Build Tappay prime request
 	tapPayReq := buildTapPayPrimeReq(periodic, defaultPeriodicPayMethod, reqBody)
@@ -329,14 +338,14 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
-	userID, _ := strconv.ParseUint(c.Param("userID"), 10, strconv.IntSize)
+	userID := reqBody.UserID
 
 	// Start Tappay transaction
 
 	// Build Tappay pay by prime request
 	tapPayReq := buildTapPayPrimeReq(oneTime, payMethod, reqBody)
 
-	draftRecord := buildPrimeDraftRecord(uint(userID), payMethod, tapPayReq)
+	draftRecord := buildPrimeDraftRecord(userID, payMethod, tapPayReq)
 
 	if err := mc.Storage.Create(&draftRecord); nil != err {
 		switch appErr := err.(type) {
@@ -392,12 +401,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	var recordID uint64
 	var reqBody patchBody
 	var rowsAffected int64
-	var userID uint64
 	var valid bool
-
-	if userID, err = strconv.ParseUint(c.Param("userID"), 10, strconv.IntSize); err != nil {
-		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, user id should be provided in the url"}, err
-	}
 
 	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
 		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, err
@@ -423,7 +427,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	}
 
 	if err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
-		"user_id": userID,
+		"user_id": reqBody.UserID,
 		"id":      recordID,
 	}, d); err != nil {
 		return 0, gin.H{}, err
@@ -453,8 +457,8 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 	var resp = new(clientResp)
 
 	if userID, err = strconv.ParseUint(c.Query("user_id"), 10, strconv.IntSize); err != nil {
-		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
-			"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
+			"req.URL.query": "?user_id=:userID, userID should be integer",
 		}}, err
 	}
 
@@ -495,6 +499,16 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 
 	default:
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("donation type %s is not supported", donationType)}, nil
+	}
+
+	if err != nil {
+		appErr, _ := err.(*models.AppError)
+		if appErr.StatusCode == http.StatusNotFound {
+			return appErr.StatusCode, gin.H{"status": "fail", "data": gin.H{
+				"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
+			}}, nil
+		}
+		return 0, gin.H{}, err
 	}
 
 	if _userID != uint(userID) {

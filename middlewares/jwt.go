@@ -12,6 +12,7 @@ import (
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
@@ -39,6 +40,39 @@ func ValidateUserID() gin.HandlerFunc {
 		userID := c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
 			c.AbortWithStatus(http.StatusForbidden)
+		}
+	}
+}
+
+type reqBody struct {
+	UserID uint64 `json:"user_id" form:"user_id" binding:"required"`
+}
+
+func ValidateUserIDInReqBody() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body reqBody
+		var err error
+		user := c.Request.Context().Value("user")
+		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
+
+		// gin.Context.Bind does not support to bind `JSON` body multiple times
+		// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
+		if err = c.ShouldBindBodyWith(&body, binding.JSON); err != nil {
+
+			// bind other format rather than JSON
+			if err = c.Bind(&body); err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
+					"req.Body.user_id": err.Error(),
+				}})
+				return
+			}
+		}
+
+		if fmt.Sprint(body.UserID) != fmt.Sprint(userIDClaim) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+				"req.Headers.Authorization": "the request is not permitted to reach the resource",
+			}})
+			return
 		}
 	}
 }
