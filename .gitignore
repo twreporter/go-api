@@ -11,3 +11,7 @@ gin-bin*
 configs/config.json
 cloud_sql_proxy
 dump.rdb
+
+
+# Builds
+dev-env-setup/mysql/initdb.sql

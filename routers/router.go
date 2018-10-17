@@ -87,11 +87,29 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.PATCH("/users/:userID/periodic_donations/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
+	v1Group.GET("/periodic-donations/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.GetADonationOfAUser(c, globals.PeriodicDonationType)
+	}))
 	v1Group.POST("/users/:userID/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateADonationOfAUser))
 	v1Group.PATCH("/users/:userID/donations/prime/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PrimeDonaitionType)
 	}))
 	// v1Group.GET("/users/:userID/donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))
+	// one-time donation including credit_card, line pay, apple pay, google pay and samsung pay
+	v1Group.GET("/donations/prime/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.GetADonationOfAUser(c, globals.PrimeDonaitionType)
+	}))
+
+	// TODO
+	// donations derived from the periodic donation
+	// v1Group.GET("/users/:userID/donations/token/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	//  return mc.GetADonationOfAUser(c, globals.TokenDonationType)
+	//}))
+
+	// other donations not included in the above endpoints
+	v1Group.GET("/donations/others/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+		return mc.GetADonationOfAUser(c, globals.OthersDonationType)
+	}))
 
 	// endpoints for web push subscriptions
 	v1Group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, ginResponseWrapper(mc.SubscribeWebPush))

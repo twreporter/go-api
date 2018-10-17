@@ -244,6 +244,7 @@ CREATE TABLE `pay_by_prime_donations` (
   `card_info_country` varchar(30) DEFAULT NULL, 
   `card_info_country_code` varchar(10) DEFAULT NULL, 
   `card_info_expiry_date` varchar(6) DEFAULT NULL, 
+  `notes` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_prime_donations_status` (`status`),
   KEY `idx_pay_by_prime_donations_pay_method` (`pay_method`),
@@ -268,6 +269,7 @@ CREATE TABLE `pay_by_other_method_donations` (
   `pay_method` varchar(50) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
   `currency` char(3) DEFAULT 'TWD' NOT NULL,
+  `order_number` varchar(50) NOT NULL,
   `details` varchar(50) NOT NULL,
   `merchant_id` varchar(30) NOT NULL,
   `send_receipt` enum('monthly', 'no'),
@@ -276,9 +278,12 @@ CREATE TABLE `pay_by_other_method_donations` (
   `zip_code` varchar(10) DEFAULT NULL,
   `address` varchar(100) DEFAULT NULL,
   `national_id` varchar(20) DEFAULT NULL,
+  `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_other_method_donations_pay_method` (`pay_method`),
   KEY `idx_pay_by_other_method_donations_amount` (`amount`)
+  KEY `idx_pay_by_other_method_order_number` (`order_number`),
+  CONSTRAINT `fk_pay_by_other_method_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -318,6 +323,7 @@ CREATE TABLE `periodic_donations` (
   `card_info_country` varchar(30) DEFAULT NULL, 
   `card_info_country_code` varchar(10) DEFAULT NULL, 
   `card_info_expiry_date` varchar(6) DEFAULT NULL, 
+  `notes` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_periodic_donations_status` (`status`),
   KEY `idx_periodic_donations_amount` (`amount`),
