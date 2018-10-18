@@ -18,7 +18,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"gopkg.in/go-playground/validator.v8"
+	"gopkg.in/guregu/null.v3"
 
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
@@ -37,14 +39,18 @@ type (
 	}
 
 	clientResp struct {
-		IsPeriodic  bool              `json:"is_periodic"`
-		PayMethod   string            `json:"pay_method"`
-		CardInfo    models.CardInfo   `json:"card_info"`
-		Cardholder  models.Cardholder `json:"cardholder"`
 		Amount      uint              `json:"amount"`
+		CardInfo    models.CardInfo   `json:"card_info,omitempty"`
+		Cardholder  models.Cardholder `json:"cardholder,omitempty"`
 		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		OrderNumber string            `json:"order_number"`
+		Details     string            `json:"details,omitempty"`
+		ID          uint              `json:"id"`
+		Notes       string            `json:"notes"`
+		OrderNumber string            `json:"order_number,omitempty"`
+		PayMethod   string            `json:"pay_method"`
+		PeriodicID  uint              `json:"periodic_id,omitempty"`
+		SendReceipt string            `json:"send_receipt"`
+		ToFeedback  bool              `json:"to_feedback"`
 	}
 
 	bankTransactionTime struct {
@@ -76,7 +82,7 @@ type (
 	}
 
 	tapPayTransactionResp struct {
-		Status                int                 `json:"status"`
+		Status                int64               `json:"status"`
 		Msg                   string              `json:"msg"`
 		RecTradeID            string              `json:"rec_trade_id"`
 		BankTransactionID     string              `json:"bank_transaction_id"`
@@ -89,17 +95,56 @@ type (
 		Acquirer              string              `json:"acquirer"`
 		TransactionTimeMillis int64               `json:"transaction_time_millis"`
 		BankTransactionTime   bankTransactionTime `json:"bank_transaction_time"`
-		BankResultCode        *string             `json:"bank_result_code"`
-		BankResultMsg         *string             `json:"bank_result_msg"`
+		BankResultCode        null.String         `json:"bank_result_code"`
+		BankResultMsg         null.String         `json:"bank_result_msg"`
 	}
 
 	tapPayMinTransactionResp struct {
-		Status int    `json:"status"`
+		Status int64  `json:"status"`
 		Msg    string `json:"msg"`
 	}
 
 	payType int
+
+	patchBody struct {
+		Address     null.String `json:"address"`
+		Details     null.String `json:"details"`
+		Name        null.String `json:"name"`
+		NationalID  null.String `json:"national_id"`
+		Notes       null.String `json:"notes"`
+		PhoneNumber null.String `json:"phone_number"`
+		SendReceipt null.String `json:"send_receipt"`
+		ToFeedback  null.Bool   `json:"to_feedback"`
+		ZipCode     null.String `json:"zip_code"`
+	}
 )
+
+func (cr *clientResp) BuildFromPeriodicDonationModel(pd models.PeriodicDonation) {
+	cardInfo := models.CardInfo{}
+	cardholder := models.Cardholder{}
+
+	copier.Copy(&cardInfo, &pd)
+	copier.Copy(&cardholder, &pd)
+	copier.Copy(cr, &pd)
+	cr.Cardholder = cardholder
+	cr.CardInfo = cardInfo
+	cr.PayMethod = defaultPeriodicPayMethod
+}
+
+func (cr *clientResp) BuildFromPrimeDonationModel(pd models.PayByPrimeDonation) {
+	cardInfo := models.CardInfo{}
+	cardholder := models.Cardholder{}
+
+	copier.Copy(&cardInfo, &pd)
+	copier.Copy(&cardholder, &pd)
+	copier.Copy(cr, &pd)
+	cr.Cardholder = cardholder
+	cr.CardInfo = cardInfo
+}
+
+func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {
+	copier.Copy(cr, &d)
+}
 
 const (
 	defaultDetails        = "報導者小額捐款"
@@ -145,15 +190,17 @@ var payMethodCollections = []string{
 	"samsung",
 }
 
-// Handler for an authenticated user to create a periodic donation
-func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
-	const errWhere = "MembershipController.CreateAPeriodicDonationOfAUser"
+var cardInfoTypes = map[int64]string{
+	1: "VISA",
+	2: "MasterCard",
+	3: "JCB",
+	4: "Union Pay",
+	5: "AMEX",
+}
 
-	// Validate client request
-	var reqBody clientReq
-
+func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	// Validate request body
-	if err := c.Bind(&reqBody); nil != err {
+	if err := c.Bind(reqBody); nil != err {
 		log.Error("parse model error: " + err.Error())
 		failData := gin.H{}
 
@@ -167,6 +214,42 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		default:
 			// Omit intentionally
 		}
+		return failData, false
+	}
+
+	return gin.H{}, true
+}
+
+func (mc *MembershipController) sendDonationThankYouMail(body clientResp, donationType string) {
+	reqBody := donationSuccessReqBody{
+		Address:          body.Cardholder.Address.ValueOrZero(),
+		Amount:           body.Amount,
+		CardInfoLastFour: body.CardInfo.LastFour.ValueOrZero(),
+		CardInfoType:     cardInfoTypes[body.CardInfo.Type.ValueOrZero()],
+		Currency:         body.Currency,
+		DonationMethod:   "信用卡支付",
+		DonationType:     donationType,
+		Email:            body.Cardholder.Email,
+		Name:             body.Cardholder.Name.ValueOrZero(),
+		OrderNumber:      body.OrderNumber,
+		NationalID:       body.Cardholder.NationalID.ValueOrZero(),
+		PhoneNumber:      body.Cardholder.PhoneNumber.ValueOrZero(),
+	}
+
+	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {
+		log.Warnf("fail to send %s donation(order_number: %s) thank you mail due to %s", donationType, body.OrderNumber, err.Error())
+	}
+
+}
+
+// Handler for an authenticated user to create a periodic donation
+func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
+	const errWhere = "MembershipController.CreateAPeriodicDonationOfAUser"
+
+	// Validate client request
+	var reqBody clientReq
+
+	if failData, valid := bindRequestBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -181,7 +264,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	draftRecord := buildTokenDraftRecord(tapPayReq)
 
 	// Create a draft periodic donation along with the first token donation record of that periodic donation
-	periodicID, err := mc.Storage.CreateAPeriodicDonation(draftPeriodicDonation, draftRecord)
+	err := mc.Storage.CreateAPeriodicDonation(&draftPeriodicDonation, &draftRecord)
 	if nil != err {
 		errMsg := "Unable to create a draft periodic donation and the first card token transaction record"
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
@@ -197,12 +280,12 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail' and stop the periodic donation
 			failResp := models.PayByCardTokenDonation{
-				TappayApiStatus: &tapPayResp.Status,
+				TappayApiStatus: null.IntFrom(tapPayResp.Status),
 				Msg:             tapPayResp.Msg,
 				Status:          statusFail,
 			}
 			// Procceed even if the deletion is failed
-			mc.Storage.DeleteAPeriodicDonation(periodicID, failResp)
+			mc.Storage.DeleteAPeriodicDonation(draftPeriodicDonation.ID, failResp)
 		}
 		errMsg := err.Error()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
@@ -212,12 +295,19 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	updateRecord := buildTokenSuccessRecord(tapPayResp)
 	updatePeriodicDonation := buildSuccessPeriodicDonation(tapPayResp)
+	updateRecord.ID = draftRecord.ID
 
-	if err = mc.Storage.UpdateAPeriodicDonation(periodicID, updatePeriodicDonation, updateRecord); nil != err {
+	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(draftPeriodicDonation.ID, updatePeriodicDonation, updateRecord); nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
 	}
 
-	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp, true)
+	resp := buildClientResp(defaultPeriodicPayMethod, tapPayReq, tapPayResp)
+	resp.PeriodicID = draftPeriodicDonation.ID
+	resp.ID = draftRecord.ID
+
+	// send success mail asynchronously
+	go mc.sendDonationThankYouMail(resp, "定期定額")
+
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
 
@@ -235,21 +325,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	var reqBody clientReq
 
-	// Validate request body
-	if err := c.Bind(&reqBody); nil != err {
-		log.Error("parse model error: " + err.Error())
-		failData := gin.H{}
-
-		switch e := err.(type) {
-		case *json.UnmarshalTypeError:
-			failData[e.Field] = fmt.Sprintf("Cannot unmarshal %s into %s", e.Value, e.Type)
-		case validator.ValidationErrors:
-			for _, errField := range e {
-				failData[errField.Name] = "cannot be empty"
-			}
-		default:
-			// Omit intentionally
-		}
+	if failData, valid := bindRequestBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -262,7 +338,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	draftRecord := buildPrimeDraftRecord(uint(userID), payMethod, tapPayReq)
 
-	if err := mc.Storage.CreateAPayByPrimeDonation(draftRecord); nil != err {
+	if err := mc.Storage.Create(&draftRecord); nil != err {
 		switch appErr := err.(type) {
 		case *models.AppError:
 			return 0, gin.H{}, models.NewAppError(errorWhere, "Fails to create a draft prime record", appErr.Error(), appErr.StatusCode)
@@ -278,8 +354,10 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail'
-			mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, models.PayByPrimeDonation{
-				TappayApiStatus: &tapPayResp.Status,
+			mc.Storage.UpdateByConditions(map[string]interface{}{
+				"order_number": tapPayReq.OrderNumber,
+			}, models.PayByPrimeDonation{
+				TappayApiStatus: null.IntFrom(tapPayResp.Status),
 				Msg:             tapPayResp.Msg,
 				Status:          statusFail,
 			})
@@ -290,18 +368,142 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// Update the transaction status to 'paid' if transaction succeeds
 	updateRecord := buildPrimeSuccessRecord(tapPayResp)
 
-	if err := mc.Storage.UpdateAPayByPrimeDonation(tapPayReq.OrderNumber, updateRecord); nil != err {
+	if err, _ := mc.Storage.UpdateByConditions(map[string]interface{}{
+		"order_number": tapPayReq.OrderNumber,
+	}, updateRecord); nil != err {
 		log.Error(err.Error())
 	}
 
-	resp := buildClientResp(payMethod, tapPayReq, tapPayResp, false)
+	resp := buildClientResp(payMethod, tapPayReq, tapPayResp)
+	resp.ID = draftRecord.ID
+
+	// send success mail asynchronously
+	go mc.sendDonationThankYouMail(resp, "單筆捐款")
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
 
-//TODO
+// PatchADonationOfAUser method
+// Handler for an authenticated user to patch an prime/token/periodic donation
+func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
+	var d interface{}
+	var err error
+	var failData gin.H
+	var recordID uint64
+	var reqBody patchBody
+	var rowsAffected int64
+	var userID uint64
+	var valid bool
+
+	if userID, err = strconv.ParseUint(c.Param("userID"), 10, strconv.IntSize); err != nil {
+		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, user id should be provided in the url"}, err
+	}
+
+	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
+		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, err
+	}
+
+	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
+	}
+
+	switch donationType {
+	case globals.PeriodicDonationType:
+		pd := models.PeriodicDonation{}
+		copier.Copy(&pd, &reqBody)
+		d = pd
+	case globals.PrimeDonaitionType:
+		pd := models.PayByPrimeDonation{}
+		copier.Copy(&pd, &reqBody)
+		d = pd
+	default:
+		return http.StatusInternalServerError,
+			gin.H{"status": "error", "message": fmt.Sprintf("donation type(%s) not supported", donationType)},
+			nil
+	}
+
+	if err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
+		"user_id": userID,
+		"id":      recordID,
+	}, d); err != nil {
+		return 0, gin.H{}, err
+	}
+
+	if rowsAffected == 0 {
+		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
+			"uri": fmt.Sprintf("%s can not address a resource", c.Request.RequestURI)},
+		}, nil
+	}
+
+	return http.StatusNoContent, gin.H{}, nil
+}
+
+// TODO
+// GetDonationsOfAUser returns the donations list of a user
 func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H, error) {
 	return 0, gin.H{}, nil
+}
+
+// GetADonationOfAUser returns a donation of a user
+func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
+	var err error
+	var recordID uint64
+	var userID uint64
+	var _userID uint
+	var resp = new(clientResp)
+
+	if userID, err = strconv.ParseUint(c.Query("user_id"), 10, strconv.IntSize); err != nil {
+		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
+			"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
+		}}, err
+	}
+
+	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
+		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
+			"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
+		}}, err
+	}
+
+	switch donationType {
+	case globals.PeriodicDonationType:
+		pd := models.PeriodicDonation{}
+		if err = mc.Storage.Get(uint(recordID), &pd); err != nil {
+			return 0, gin.H{}, err
+		}
+		resp.BuildFromPeriodicDonationModel(pd)
+		_userID = uint(pd.UserID)
+		break
+	case globals.PrimeDonaitionType:
+		pd := models.PayByPrimeDonation{}
+		if err = mc.Storage.Get(uint(recordID), &pd); err != nil {
+			return 0, gin.H{}, err
+		}
+		resp.BuildFromPrimeDonationModel(pd)
+		_userID = uint(pd.UserID)
+		break
+	case globals.OthersDonationType:
+		d := models.PayByOtherMethodDonation{}
+		if err = mc.Storage.Get(uint(recordID), &d); err != nil {
+			return 0, gin.H{}, err
+		}
+		resp.BuildFromOtherMethodDonationModel(d)
+		_userID = uint(d.UserID)
+		break
+
+	// TODO
+	// case globasl.PayByCardTokenDonation:
+
+	default:
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("donation type %s is not supported", donationType)}, nil
+	}
+
+	if _userID != uint(userID) {
+		return http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+			"authorization": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI),
+		}}, nil
+	}
+
+	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
 
 func (t *tapPayPrimeReq) setDefault() {
@@ -310,9 +512,8 @@ func (t *tapPayPrimeReq) setDefault() {
 	t.MerchantID = defaultMerchantID
 }
 
-func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp, isPeriodic bool) clientResp {
+func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactionResp) clientResp {
 	c := clientResp{}
-	c.IsPeriodic = isPeriodic
 	c.PayMethod = payMethod
 
 	c.CardInfo = resp.CardInfo
@@ -329,13 +530,9 @@ func buildClientResp(payMethod string, req tapPayPrimeReq, resp tapPayTransactio
 func buildDraftPeriodicDonation(userID uint, req clientReq) models.PeriodicDonation {
 	m := models.PeriodicDonation{}
 
-	m.CardholderEmail = req.Cardholder.Email
-	m.CardholderPhoneNumber = req.Cardholder.PhoneNumber
-	m.CardholderName = req.Cardholder.Name
-	m.CardholderZipCode = req.Cardholder.ZipCode
-	m.CardholderAddress = req.Cardholder.Address
-	m.CardholderNationalID = req.Cardholder.NationalID
+	copier.Copy(&m, &req.Cardholder)
 
+	m.Amount = req.Amount
 	m.UserID = userID
 	m.Status = statusPeriodicPaying
 
@@ -348,16 +545,8 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 	m.UserID = userID
 	m.PayMethod = payMethod
 
-	m.CardholderEmail = req.Cardholder.Email
-	m.CardholderPhoneNumber = req.Cardholder.PhoneNumber
-	m.CardholderName = req.Cardholder.Name
-	m.CardholderZipCode = req.Cardholder.ZipCode
-	m.CardholderAddress = req.Cardholder.Address
-	m.CardholderNationalID = req.Cardholder.NationalID
-
-	m.Details = req.Details
-	m.MerchantID = req.MerchantID
-	m.OrderNumber = req.OrderNumber
+	copier.Copy(&m, &req)
+	copier.Copy(&m, &req.Cardholder)
 
 	m.Status = statusPaying
 
@@ -367,39 +556,25 @@ func buildPrimeDraftRecord(userID uint, payMethod string, req tapPayPrimeReq) mo
 func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonation {
 	m := models.PayByPrimeDonation{}
 
-	m.TappayApiStatus = &resp.Status
-	m.Msg = resp.Msg
-	m.RecTradeID = resp.RecTradeID
-	m.BankTransactionID = resp.BankTransactionID
-	m.AuthCode = resp.AuthCode
-	m.Acquirer = resp.Acquirer
-	m.BankResultCode = resp.BankResultCode
-	m.BankResultMsg = resp.BankResultMsg
+	copier.Copy(&m, &resp)
+	copier.Copy(&m, &resp.CardInfo)
+
+	m.TappayApiStatus = null.IntFrom(resp.Status)
 
 	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
-	m.TransactionTime = &ttm
+	m.TransactionTime = null.TimeFrom(ttm)
 
 	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
 	if nil == err {
 		stm := time.Unix(t/secToMsec, t%secToMsec)
-		m.BankTransactionStartTime = &stm
+		m.BankTransactionStartTime = null.TimeFrom(stm)
 	}
 
 	t, err = strconv.ParseInt(resp.BankTransactionTime.EndTimeMillis, 10, strconv.IntSize)
 	if nil == err {
 		etm := time.Unix(t/secToMsec, t%secToMsec)
-		m.BankTransactionEndTime = &etm
+		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
-
-	m.CardInfoBinCode = resp.CardInfo.BinCode
-	m.CardInfoLastFour = resp.CardInfo.LastFour
-	m.CardInfoIssuer = resp.CardInfo.Issuer
-	m.CardInfoFunding = resp.CardInfo.Funding
-	m.CardInfoType = resp.CardInfo.Type
-	m.CardInfoLevel = resp.CardInfo.Level
-	m.CardInfoCountry = resp.CardInfo.Country
-	m.CardInfoCountryCode = resp.CardInfo.CountryCode
-	m.CardInfoExpiryDate = resp.CardInfo.ExpiryDate
 
 	m.Status = "paid"
 
@@ -409,15 +584,7 @@ func buildPrimeSuccessRecord(resp tapPayTransactionResp) models.PayByPrimeDonati
 func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDonation {
 	m := models.PeriodicDonation{}
 
-	m.CardInfoBinCode = resp.CardInfo.BinCode
-	m.CardInfoLastFour = resp.CardInfo.LastFour
-	m.CardInfoIssuer = resp.CardInfo.Issuer
-	m.CardInfoFunding = resp.CardInfo.Funding
-	m.CardInfoType = resp.CardInfo.Type
-	m.CardInfoLevel = resp.CardInfo.Level
-	m.CardInfoCountry = resp.CardInfo.Country
-	m.CardInfoCountryCode = resp.CardInfo.CountryCode
-	m.CardInfoExpiryDate = resp.CardInfo.ExpiryDate
+	copier.Copy(&m, &resp.CardInfo)
 
 	var ciphertext string
 
@@ -428,7 +595,7 @@ func buildSuccessPeriodicDonation(resp tapPayTransactionResp) models.PeriodicDon
 	m.CardKey = ciphertext
 
 	t := time.Now()
-	m.LastSuccessAt = &t
+	m.LastSuccessAt = null.TimeFrom(t)
 	m.Status = statusPeriodicPaid
 
 	return m
@@ -446,14 +613,12 @@ func buildTapPayPrimeReq(pt payType, payMethod string, req clientReq) tapPayPrim
 
 	// Per required fields (even empty) of cardholder of tappay documents,
 	// use empty strings for name and phonenumber fields instead of empty.
-	if nil == t.Cardholder.Name {
-		e := ""
-		t.Cardholder.Name = &e
+	if !t.Cardholder.Name.Valid {
+		t.Cardholder.Name = null.StringFrom("")
 	}
 
-	if nil == t.Cardholder.PhoneNumber {
-		e := ""
-		t.Cardholder.PhoneNumber = &e
+	if !t.Cardholder.PhoneNumber.Valid {
+		t.Cardholder.PhoneNumber = null.StringFrom("")
 	}
 
 	// Fill up optional fields
@@ -490,28 +655,22 @@ func buildTapPayPrimeReq(pt payType, payMethod string, req clientReq) tapPayPrim
 func buildTokenSuccessRecord(resp tapPayTransactionResp) models.PayByCardTokenDonation {
 	m := models.PayByCardTokenDonation{}
 
-	m.TappayApiStatus = &resp.Status
-	m.Msg = resp.Msg
-	m.RecTradeID = resp.RecTradeID
-	m.BankTransactionID = resp.BankTransactionID
-	m.AuthCode = resp.AuthCode
-	m.Acquirer = resp.Acquirer
-	m.BankResultCode = resp.BankResultCode
-	m.BankResultMsg = resp.BankResultMsg
+	copier.Copy(&m, &resp)
+	m.TappayApiStatus = null.IntFrom(resp.Status)
 
 	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
-	m.TransactionTime = &ttm
+	m.TransactionTime = null.TimeFrom(ttm)
 
 	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
 	if nil == err {
 		stm := time.Unix(t/secToMsec, t%secToMsec)
-		m.BankTransactionStartTime = &stm
+		m.BankTransactionStartTime = null.TimeFrom(stm)
 	}
 
 	t, err = strconv.ParseInt(resp.BankTransactionTime.EndTimeMillis, 10, strconv.IntSize)
 	if nil == err {
 		etm := time.Unix(t/secToMsec, t%secToMsec)
-		m.BankTransactionEndTime = &etm
+		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
 	m.Status = statusPaid
@@ -521,10 +680,7 @@ func buildTokenSuccessRecord(resp tapPayTransactionResp) models.PayByCardTokenDo
 func buildTokenDraftRecord(req tapPayPrimeReq) models.PayByCardTokenDonation {
 	m := models.PayByCardTokenDonation{}
 
-	m.Details = req.Details
-	m.MerchantID = req.MerchantID
-	m.OrderNumber = req.OrderNumber
-	m.Amount = req.Amount
+	copier.Copy(&m, &req)
 
 	m.Status = statusPaying
 

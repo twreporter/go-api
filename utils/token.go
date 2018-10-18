@@ -27,19 +27,23 @@ const (
 
 // ReporterJWTClaims JWT claims we used
 type ReporterJWTClaims struct {
-	UserID uint   `json:"userID"`
+	UserID uint   `json:"user_id"`
 	Email  string `json:"email"`
 	jwt.StandardClaims
 }
 
 // IDToken
 type IDTokenJWTClaims struct {
-	UserID uint   `json:"user_id"`
-	Email  string `json:"email"`
+	UserID    uint   `json:"user_id"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 	jwt.StandardClaims
 }
 
 type AccessTokenJWTClaims struct {
+	UserID uint   `json:"user_id"`
+	Email  string `json:"email"`
 	jwt.StandardClaims
 }
 
@@ -61,56 +65,53 @@ func (idc IDTokenJWTClaims) Valid() error {
 }
 
 func RetrieveV1Token(userID uint, email string) (string, error) {
-	return genToken(AuthV1Token, userID, email, globals.Conf.App.JwtExpiration)
+	claims := ReporterJWTClaims{
+		userID,
+		email,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Second * time.Duration(globals.Conf.App.JwtExpiration)).Unix(),
+			Issuer:    globals.Conf.App.JwtIssuer,
+			Audience:  globals.Conf.App.JwtAudience,
+		},
+	}
+	return genToken(claims)
 }
 
-func RetrieveV2Token(tokenType AuthTokenType, userID uint, email string, expiration int) (string, error) {
-	return genToken(tokenType, userID, email, expiration)
+func RetrieveV2IDToken(userID uint, email, firstName, lastName string, expiration int) (string, error) {
+	claims := IDTokenJWTClaims{
+		userID,
+		email,
+		firstName,
+		lastName,
+		jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),
+			Issuer:    globals.Conf.App.JwtIssuer,
+			Audience:  globals.Conf.App.JwtAudience,
+			Subject:   IDTokenSubject,
+		},
+	}
+	return genToken(claims)
+}
+
+func RetrieveV2AccessToken(userID uint, email string, expiration int) (string, error) {
+	claims := AccessTokenJWTClaims{
+		userID,
+		email,
+		jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),
+			Issuer:    globals.Conf.App.JwtIssuer,
+			Audience:  globals.Conf.App.JwtAudience,
+			Subject:   AccessTokenSubject,
+		},
+	}
+	return genToken(claims)
 }
 
 // genToken - generate jwt token according to user's info
-func genToken(tokenType AuthTokenType, userID uint, email string, expiration int) (string, error) {
+func genToken(claims jwt.Claims) (string, error) {
 	var errorWhere = "RetrieveToken"
-	var claims jwt.Claims
-
-	// Create the Claims
-	switch tokenType {
-	case AuthV1Token:
-		claims = ReporterJWTClaims{
-			userID,
-			email,
-			jwt.StandardClaims{
-				ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),
-				Issuer:    globals.Conf.App.JwtIssuer,
-				Audience:  globals.Conf.App.JwtAudience,
-			},
-		}
-
-	case AuthV2IDToken:
-		claims = IDTokenJWTClaims{
-			userID,
-			email,
-			jwt.StandardClaims{
-				IssuedAt:  time.Now().Unix(),
-				ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),
-				Issuer:    globals.Conf.App.JwtIssuer,
-				Audience:  globals.Conf.App.JwtAudience,
-				Subject:   IDTokenSubject,
-			},
-		}
-	case AuthV2AccessToken:
-		claims = AccessTokenJWTClaims{
-			jwt.StandardClaims{
-				IssuedAt:  time.Now().Unix(),
-				ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),
-				Issuer:    globals.Conf.App.JwtIssuer,
-				Audience:  globals.Conf.App.JwtAudience,
-				Subject:   AccessTokenSubject,
-			},
-		}
-	default:
-		return "", models.NewAppError(errorWhere, "Invalid token type", "Invalid token type", http.StatusInternalServerError)
-	}
 
 	// create the token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -119,7 +120,7 @@ func genToken(tokenType AuthTokenType, userID uint, email string, expiration int
 	tokenString, err := token.SignedString([]byte(globals.Conf.App.JwtSecret))
 
 	if err != nil {
-		return "", models.NewAppError("RetrieveToken", "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)
+		return "", models.NewAppError(errorWhere, "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)
 	}
 
 	return tokenString, nil

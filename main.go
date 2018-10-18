@@ -9,6 +9,7 @@ import (
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/routers"
+	"twreporter.org/go-api/services"
 	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
@@ -39,19 +40,21 @@ func main() {
 		panic(err)
 	}
 
-	// mailSender := utils.NewSMTPEmailSender()                          // use office365 to send mails
-	mailSender := utils.NewAmazonEmailSender() // use Amazon SES to send mails
+	// mailSender := services.NewSMTPMailService() // use office365 to send mails
+	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails
 
-	cf = controllers.NewControllerFactory(db, session, mailSender)
+	cf = controllers.NewControllerFactory(db, session, mailSvc)
 
 	// set up the router
 	router := routers.SetupRouter(cf)
 
+	readTimeout := 5 * time.Second
+	writeTimeout := 10 * time.Second
 	s := &http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%s", globals.LocalhostPort),
 		Handler:      router,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
 	}
 
 	if err = s.ListenAndServe(); err != nil {

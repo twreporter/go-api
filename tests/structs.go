@@ -37,6 +37,8 @@ type defaultVariables struct {
 
 	MockPostSlug1 string
 	MockTopicSlug string
+
+	ErrorEmailAddress string
 }
 
 type globalVariables struct {

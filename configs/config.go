@@ -38,9 +38,9 @@ email:
         char_set: utf-8
 db:
     mysql:
-        name: gorm
-        user: gorm
-        password: gorm
+        name: test_membership
+        user: test_membership
+        password: test_membership
         address: 127.0.0.1
         port: '3306'
     mongo:
@@ -267,7 +267,7 @@ func LoadConf(confPath string) (ConfYaml, error) {
 			return conf, err
 		}
 	} else {
-		viper.AddConfigPath(".")
+		viper.AddConfigPath("$GOPATH/src/twreporter.org/go-api/configs/")
 		viper.AddConfigPath("./configs/")
 		viper.SetConfigName("config")
 
