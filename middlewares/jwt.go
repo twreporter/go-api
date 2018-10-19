@@ -79,22 +79,6 @@ func ValidateAuthentication() gin.HandlerFunc {
 	}
 }
 
-func ValidateIDToken() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user := c.Request.Context().Value("user")
-		claims := user.(*jwt.Token).Claims.(utils.IDTokenJWTClaims)
-
-		if err := claims.Valid(); nil != err {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"status": "fail",
-				"data": gin.H{
-					"req.Headers.Authorization": err.Error(),
-				},
-			})
-		}
-	}
-}
-
 // SetEmailClaim get email value from jwt, and set it into gin.Context
 func SetEmailClaim() gin.HandlerFunc {
 	return func(c *gin.Context) {
