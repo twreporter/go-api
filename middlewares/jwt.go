@@ -19,6 +19,9 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 		return []byte(globals.Conf.App.JwtSecret), nil
 	},
+	// TODO
+	// add UserProperty 'app-jwt' to replace default 'user'
+
 	SigningMethod: jwt.SigningMethodHS256,
 })
 
@@ -44,28 +47,25 @@ func ValidateUserID() gin.HandlerFunc {
 	}
 }
 
-type reqBody struct {
-	UserID uint64 `json:"user_id" form:"user_id" binding:"required"`
-}
-
 func ValidateUserIDInReqBody() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var body reqBody
+		var body = struct {
+			UserID uint64 `json:"user_id" form:"user_id" binding:"required"`
+		}{}
 		var err error
 		user := c.Request.Context().Value("user")
 		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
 
 		// gin.Context.Bind does not support to bind `JSON` body multiple times
 		// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
-		if err = c.ShouldBindBodyWith(&body, binding.JSON); err != nil {
-
+		if err = c.ShouldBindBodyWith(&body, binding.JSON); err == nil {
+			// omit intentionally
+		} else if err = c.Bind(&body); err != nil {
 			// bind other format rather than JSON
-			if err = c.Bind(&body); err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
-					"req.Body.user_id": err.Error(),
-				}})
-				return
-			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
+				"req.Body.user_id": err.Error(),
+			}})
+			return
 		}
 
 		if fmt.Sprint(body.UserID) != fmt.Sprint(userIDClaim) {

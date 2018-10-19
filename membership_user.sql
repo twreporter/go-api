@@ -331,7 +331,6 @@ CREATE TABLE `periodic_donations` (
   KEY `idx_periodic_donations_status` (`status`),
   KEY `idx_periodic_donations_amount` (`amount`),
   KEY `idx_periodic_donations_order_number` (`order_number`),
-  KEY `idx_periodic_donations_frequency` (`frequency`),
   KEY `idx_periodic_donations_last_success_at` (`last_success_at`),
   CONSTRAINT `fk_periodic_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

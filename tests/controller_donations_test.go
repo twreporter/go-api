@@ -55,6 +55,7 @@ type (
 		Details    string            `json:"details"`
 		Frequency  string            `json:"frequency"`
 		MerchantID string            `json:"merchant_id"`
+		PayMethod  string            `json:"pay_method"`
 		Prime      string            `json:"prime"`
 		ResultURL  linePayResultURL  `json:"result_url"` // Line pay needed only
 		UserID     uint              `json:"user_id"`
@@ -77,6 +78,8 @@ const (
 	monthlyFrequency = "monthly"
 	yearlyFrequency  = "yearly"
 	oneTimeFrequency = "one_time"
+
+	creditCardPayMethod = "credit_card"
 )
 
 var testCardholder = models.Cardholder{
@@ -121,11 +124,12 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		// - Lack of UserID
 		// ===========================================
 		reqBody = requestBody{
-			Prime:  testPrime,
 			Amount: testAmount,
 			Cardholder: models.Cardholder{
 				Email: "developer@twreporter.org",
 			},
+			PayMethod: creditCardPayMethod,
+			Prime:     testPrime,
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -143,7 +147,8 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 			Cardholder: models.Cardholder{
 				Email: "developer@twreporter.org",
 			},
-			UserID: userID,
+			PayMethod: creditCardPayMethod,
+			UserID:    userID,
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -157,9 +162,10 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		// - Lack of Cardholder
 		// ===========================================
 		reqBody = requestBody{
-			Prime:  testPrime,
-			Amount: testAmount,
-			UserID: userID,
+			Amount:    testAmount,
+			PayMethod: creditCardPayMethod,
+			Prime:     testPrime,
+			UserID:    userID,
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -173,13 +179,14 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		// - Lack of Cardholder.Email
 		// ===========================================
 		reqBody = requestBody{
-			Prime:  testPrime,
 			Amount: testAmount,
 			Cardholder: models.Cardholder{
 				Name:        null.StringFrom("王小明"),
 				PhoneNumber: null.StringFrom("+886912345678"),
 			},
-			UserID: userID,
+			PayMethod: creditCardPayMethod,
+			Prime:     testPrime,
+			UserID:    userID,
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -193,10 +200,30 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		// - Lack of Amount
 		// ===========================================
 		reqBody = requestBody{
-			Prime: testPrime,
 			Cardholder: models.Cardholder{
 				Email: "developer@twreporter.org",
 			},
+			PayMethod: creditCardPayMethod,
+			Prime:     testPrime,
+			UserID:    userID,
+		}
+
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+
+		// ===========================================
+		// Failure (Data Validation)
+		// - Create a Donation by Credit Card
+		// - Lack of PayMethod
+		// ===========================================
+		reqBody = requestBody{
+			Amount: testAmount,
+			Cardholder: models.Cardholder{
+				Email: "developer@twreporter.org",
+			},
+			Prime:  testPrime,
 			UserID: userID,
 		}
 
@@ -211,11 +238,12 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		// - Malformed Email
 		// ===========================================
 		reqBody = requestBody{
-			Prime:  testPrime,
 			Amount: testAmount,
 			Cardholder: models.Cardholder{
 				Email: "developer-twreporter,org",
 			},
+			PayMethod: creditCardPayMethod,
+			Prime:     testPrime,
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -229,11 +257,11 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		// - Amount is less than 1(minimum value)
 		// ===========================================
 		reqBody = requestBody{
-			Prime:  testPrime,
 			Amount: 0,
 			Cardholder: models.Cardholder{
 				Email: "developer@twreporter.org",
 			},
+			Prime:  testPrime,
 			UserID: userID,
 		}
 
@@ -248,12 +276,12 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		// - Malformed Cardholder.PhoneNumber (E.164 format)
 		// ===========================================
 		reqBody = requestBody{
-			Prime:  testPrime,
 			Amount: 0,
 			Cardholder: models.Cardholder{
 				Email:       "developer@twreporter.org",
 				PhoneNumber: null.StringFrom("0912345678"),
 			},
+			Prime:  testPrime,
 			UserID: userID,
 		}
 
@@ -279,14 +307,19 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 	// ===========================================
 	t.Run("StatusCode=StatusCreated", func(t *testing.T) {
 		reqBody = requestBody{
-			Prime:      testPrime,
 			Amount:     testAmount,
+			Cardholder: testCardholder,
 			Currency:   testCurrency,
 			Details:    testDetails,
 			MerchantID: testMerchantID,
-			Cardholder: testCardholder,
-			Frequency:  frequency,
+			Prime:      testPrime,
 			UserID:     userID,
+		}
+
+		if frequency == oneTimeFrequency {
+			reqBody.PayMethod = creditCardPayMethod
+		} else {
+			reqBody.Frequency = frequency
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -320,10 +353,15 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 			UserID:     userID,
 		}
 
+		if frequency == oneTimeFrequency {
+			reqBody.PayMethod = creditCardPayMethod
+		} else {
+			reqBody.Frequency = frequency
+		}
+
 		reqBodyInBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
 		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
-		fmt.Print(string(resBodyInBytes))
 		json.Unmarshal(resBodyInBytes, &resBody)
 
 		assert.Equal(t, http.StatusCreated, resp.Code)
@@ -340,13 +378,19 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 	// ===========================================
 	t.Run("StatusCode=StatusInternalServerError", func(t *testing.T) {
 		reqBody = requestBody{
-			Prime:  "test_prime_which_will_occurs_error",
 			Amount: testAmount,
 			Cardholder: models.Cardholder{
 				Email: "developer@twreporter.org",
 			},
-			UserID:    userID,
 			Frequency: frequency,
+			Prime:     "test_prime_which_will_occurs_error",
+			UserID:    userID,
+		}
+
+		if frequency == oneTimeFrequency {
+			reqBody.PayMethod = creditCardPayMethod
+		} else {
+			reqBody.Frequency = frequency
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -365,7 +409,7 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 
 func TestCreateADonation(t *testing.T) {
 	var resp *httptest.ResponseRecorder
-	var path string
+	var path = "/v1/donations/prime"
 
 	user := getUser(Globs.Defaults.Account)
 	jwt := generateJWT(user)
@@ -377,7 +421,6 @@ func TestCreateADonation(t *testing.T) {
 	// - 401 Unauthorized
 	// ===========================================
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		path = "/v1/donations/credit_card"
 		resp = serveHTTP("POST", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
@@ -388,34 +431,19 @@ func TestCreateADonation(t *testing.T) {
 	// - 403 Forbidden
 	// ===========================================
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		path = "/v1/donations/credit_card"
 		resp = serveHTTP("POST", path, `{"user_id":1000}`, "application/json", authorization)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	// ===========================================
-	// Failure (Client Error)
-	// - Create a Donation by Unrecognized Pay Method
-	// - 404 Not Found Error
-	// ===========================================
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		path = "/v1/donations/unknown_pay_method"
-
-		resp = serveHTTP("POST", path, fmt.Sprintf(`{"user_id":%d}`, user.ID), "application/json", authorization)
-
-		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	// ==========================================
 	// Test One Time Donation Creation
 	// =========================================
-	path = "/v1/donations/credit_card"
 	testCreateADonationRecord(t, path, user.ID, oneTimeFrequency, authorization)
 }
 
 func TestCreateAPeriodicDonation(t *testing.T) {
 	var resp *httptest.ResponseRecorder
-	var path string
+	var path = "/v1/periodic-donations"
 
 	user := getUser(Globs.Defaults.Account)
 	jwt := generateJWT(user)
@@ -427,7 +455,6 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// - 401 Unauthorized
 	// ===========================================
 	t.Run("StatusCode=StatusUnauthrorized", func(t *testing.T) {
-		path = "/v1/periodic-donations"
 		resp = serveHTTP("POST", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
@@ -438,7 +465,6 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// - 403 Forbidden
 	// ===========================================
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		path = "/v1/periodic-donations"
 		resp = serveHTTP("POST", path, `{"user_id":1000}`, "application/json", authorization)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
@@ -446,42 +472,16 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// ==========================================
 	// Test Periodic Donation Creation
 	// =========================================
-	path = "/v1/periodic-donations"
 	testCreateADonationRecord(t, path, user.ID, monthlyFrequency, authorization)
 }
 
-func createDefaultPostBody(userID uint, email string, frequency string) (reqBody requestBody) {
-	reqBody = requestBody{
-		Prime:  testPrime,
-		Amount: testAmount,
-		Cardholder: models.Cardholder{
-			Email:       email,
-			Name:        null.StringFrom(testName),
-			Address:     null.StringFrom(testAddress),
-			NationalID:  null.StringFrom(testNationalID),
-			PhoneNumber: null.StringFrom(testPhoneNumber),
-			ZipCode:     null.StringFrom(testZipCode),
-		},
-		MerchantID: testMerchantID,
-		UserID:     userID,
-		Details:    testDetails,
-	}
-
-	if frequency != "" {
-		reqBody.Frequency = frequency
-	}
-
-	return reqBody
-}
-
-func createDefaultDonationRecord(user models.User, endpoint string, frequency string) responseBody {
+func createDefaultDonationRecord(reqBody requestBody, endpoint string, user models.User) responseBody {
 	// create jwt of this user
 	jwt := generateJWT(user)
 	// prepare jwt authorization string
 	authorization := fmt.Sprintf("Bearer %s", jwt)
 
 	// create a donation by HTTP POST request
-	reqBody := createDefaultPostBody(user.ID, user.Email.ValueOrZero(), frequency)
 	reqBodyInBytes, _ := json.Marshal(reqBody)
 	resp := serveHTTP("POST", endpoint, string(reqBodyInBytes), "application/json", authorization)
 	respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
@@ -496,13 +496,49 @@ func createDefaultDonationRecord(user models.User, endpoint string, frequency st
 func createDefaultPeriodicDonationRecord(user models.User) responseBody {
 	// create a default periodic donation record
 	path := "/v1/periodic-donations"
-	return createDefaultDonationRecord(user, path, monthlyFrequency)
+
+	reqBody := requestBody{
+		Amount: testAmount,
+		Cardholder: models.Cardholder{
+			Address:     null.StringFrom(testAddress),
+			Email:       user.Email.ValueOrZero(),
+			Name:        null.StringFrom(testName),
+			NationalID:  null.StringFrom(testNationalID),
+			PhoneNumber: null.StringFrom(testPhoneNumber),
+			ZipCode:     null.StringFrom(testZipCode),
+		},
+		Details:    testDetails,
+		Frequency:  monthlyFrequency,
+		MerchantID: testMerchantID,
+		Prime:      testPrime,
+		UserID:     user.ID,
+	}
+
+	return createDefaultDonationRecord(reqBody, path, user)
 }
 
 func createDefaultPrimeDonationRecord(user models.User) responseBody {
 	// create a default prime donation record
-	path := "/v1/donations/credit_card"
-	return createDefaultDonationRecord(user, path, "")
+	path := "/v1/donations/prime"
+
+	reqBody := requestBody{
+		Amount: testAmount,
+		Cardholder: models.Cardholder{
+			Address:     null.StringFrom(testAddress),
+			Email:       user.Email.ValueOrZero(),
+			Name:        null.StringFrom(testName),
+			NationalID:  null.StringFrom(testNationalID),
+			PhoneNumber: null.StringFrom(testPhoneNumber),
+			ZipCode:     null.StringFrom(testZipCode),
+		},
+		Details:    testDetails,
+		MerchantID: testMerchantID,
+		PayMethod:  creditCardPayMethod,
+		Prime:      testPrime,
+		UserID:     user.ID,
+	}
+
+	return createDefaultDonationRecord(reqBody, path, user)
 }
 
 func TestPatchAPeriodicDonation(t *testing.T) {
@@ -516,22 +552,20 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 
 	jwt := generateJWT(user)
 	authorization := fmt.Sprintf("Bearer %s", jwt)
+	path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 		resp := serveHTTP("PATCH", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
 		otherUserID := 100
-		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 		resp := serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 		reqBody := map[string]interface{}{
 			"user_id": user.ID,
 			// to_feedback should be boolean
@@ -548,9 +582,9 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 		recordIDNotFound := 1000
 		path := fmt.Sprintf("/v1/periodic-donations/%d", recordIDNotFound)
 		reqBody := map[string]interface{}{
-			"user_id":      user.ID,
-			"to_feedback":  true,
 			"send_receipt": "no",
+			"to_feedback":  true,
+			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ := json.Marshal(reqBody)
 		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
@@ -558,18 +592,16 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	})
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
 		reqBody := map[string]interface{}{
-			"user_id":      user.ID,
-			"to_feedback":  true,
-			"send_receipt": "no",
 			"donator": map[string]interface{}{
-				"name":    "test-name",
 				"address": "test-addres",
+				"name":    "test-name",
 			},
+			"send_receipt": "no",
+			"to_feedback":  true,
+			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ := json.Marshal(reqBody)
-		fmt.Print(string(reqBodyInBytes))
 		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
 	})
@@ -586,28 +618,26 @@ func TestPatchAPrimeDonation(t *testing.T) {
 
 	jwt := generateJWT(user)
 	authorization := fmt.Sprintf("Bearer %s", jwt)
+	path := fmt.Sprintf("/v1/donations/prime/%d", res.Data.ID)
 
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d", res.Data.ID)
 		resp := serveHTTP("PATCH", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
 		otherUserID := 100
-		path := fmt.Sprintf("/v1/donations/prime/%d", res.Data.ID)
 		resp := serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d", res.Data.ID)
 		reqBody := map[string]interface{}{
-			"user_id": user.ID,
 			// national_id should be string
 			"donator": map[string]interface{}{
 				"national_id": true,
 			},
+			"user_id": user.ID,
 		}
 		reqBodyInBytes, _ := json.Marshal(reqBody)
 		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
@@ -618,8 +648,8 @@ func TestPatchAPrimeDonation(t *testing.T) {
 		recordIDNotFound := 1000
 		path := fmt.Sprintf("/v1/donations/prime/%d", recordIDNotFound)
 		reqBody := map[string]interface{}{
-			"user_id":      user.ID,
 			"send_receipt": "no",
+			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ := json.Marshal(reqBody)
 		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
@@ -627,14 +657,13 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	})
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d", res.Data.ID)
 		reqBody := map[string]interface{}{
-			"user_id":      user.ID,
-			"send_receipt": "no",
 			"donator": map[string]interface{}{
 				"name":    "test-name",
 				"address": "test-addres",
 			},
+			"send_receipt": "no",
+			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ := json.Marshal(reqBody)
 		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
@@ -655,11 +684,11 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 
 	idToken := generateIDToken(user)
 	cookie := http.Cookie{
-		Name:     "id_token",
-		Value:    idToken,
-		MaxAge:   3600,
-		Secure:   false,
 		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    idToken,
 	}
 
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
@@ -685,7 +714,6 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 		path := fmt.Sprintf("/v1/donations/prime/%d?user_id=%d", primeRes.Data.ID, user.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
 		respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
-		fmt.Print(string(respInBytes))
 		defer resp.Result().Body.Close()
 
 		// parse response into struct

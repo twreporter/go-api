@@ -90,7 +90,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.GET("/periodic-donations/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
-	v1Group.POST("/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), ginResponseWrapper(mc.CreateADonationOfAUser))
+	v1Group.POST("/donations/prime", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), ginResponseWrapper(mc.CreateADonationOfAUser))
 	v1Group.PATCH("/donations/prime/:id", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PrimeDonaitionType)
 	}))

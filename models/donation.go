@@ -35,7 +35,7 @@ type CardInfo struct {
 
 type Cardholder struct {
 	Address     null.String `gorm:"column:cardholder_address;type:varchar(100)" json:"address"`
-	Email       string      `gorm:"column:cardholder_email;type:varchar(100);not null" json:"email"`
+	Email       string      `gorm:"column:cardholder_email;type:varchar(100);not null" json:"email" binding:"omitempty,email"`
 	Name        null.String `gorm:"column:cardholder_name;type:varchar(30)" json:"name"`
 	NationalID  null.String `gorm:"column:cardholder_national_id;type:varchar(20)" json:"national_id"`
 	PhoneNumber null.String `gorm:"column:cardholder_phone_number;type:varchar(20)" json:"phone_number"`
