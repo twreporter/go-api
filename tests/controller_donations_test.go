@@ -50,7 +50,7 @@ type (
 	}
 	requestBody struct {
 		Amount     uint              `json:"amount"`
-		Cardholder models.Cardholder `json:"donator"`
+		Cardholder models.Cardholder `json:"donor"`
 		Currency   string            `json:"currency"`
 		Details    string            `json:"details"`
 		Frequency  string            `json:"frequency"`
@@ -543,9 +543,9 @@ func createDefaultPrimeDonationRecord(user models.User) responseBody {
 
 func TestPatchAPeriodicDonation(t *testing.T) {
 	// setup before test
-	donatorEmail := "periodic-donator@twreporter.org"
+	donorEmail := "periodic-donor@twreporter.org"
 	// create a new user
-	user := createUser(donatorEmail)
+	user := createUser(donorEmail)
 
 	// get record to patch
 	res := createDefaultPeriodicDonationRecord(user)
@@ -593,7 +593,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 		reqBody := map[string]interface{}{
-			"donator": map[string]interface{}{
+			"donor": map[string]interface{}{
 				"address": "test-addres",
 				"name":    "test-name",
 			},
@@ -609,9 +609,9 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 
 func TestPatchAPrimeDonation(t *testing.T) {
 	// setup before test
-	donatorEmail := "prime-donator@twreporter.org"
+	donorEmail := "prime-donor@twreporter.org"
 	// create a new user
-	user := createUser(donatorEmail)
+	user := createUser(donorEmail)
 
 	// get record to patch
 	res := createDefaultPrimeDonationRecord(user)
@@ -634,7 +634,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
 		reqBody := map[string]interface{}{
 			// national_id should be string
-			"donator": map[string]interface{}{
+			"donor": map[string]interface{}{
 				"national_id": true,
 			},
 			"user_id": user.ID,
@@ -658,7 +658,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 		reqBody := map[string]interface{}{
-			"donator": map[string]interface{}{
+			"donor": map[string]interface{}{
 				"name":    "test-name",
 				"address": "test-addres",
 			},
@@ -673,9 +673,9 @@ func TestPatchAPrimeDonation(t *testing.T) {
 
 func TestGetAPrimeDonationOfAUser(t *testing.T) {
 	// setup before test
-	donatorEmail := "get-prime-donator@twreporter.org"
+	donorEmail := "get-prime-donor@twreporter.org"
 	// create a new user
-	user := createUser(donatorEmail)
+	user := createUser(donorEmail)
 
 	primeRes := createDefaultPrimeDonationRecord(user)
 
@@ -722,7 +722,7 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.Code)
 		assert.Equal(t, testAmount, resBody.Data.Amount)
 		assert.Equal(t, testDetails, resBody.Data.Details)
-		assert.Equal(t, donatorEmail, resBody.Data.Cardholder.Email)
+		assert.Equal(t, donorEmail, resBody.Data.Cardholder.Email)
 		assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
 		assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
 		assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
@@ -743,9 +743,9 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 
 func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 	// setup before test
-	donatorEmail := "get-periodic-donator@twreporter.org"
+	donorEmail := "get-periodic-donor@twreporter.org"
 	// create a new user
-	user := createUser(donatorEmail)
+	user := createUser(donorEmail)
 
 	tokenRes := createDefaultPeriodicDonationRecord(user)
 
@@ -793,7 +793,7 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.Code)
 		assert.Equal(t, testAmount, resBody.Data.Amount)
 		assert.Equal(t, testDetails, resBody.Data.Details)
-		assert.Equal(t, donatorEmail, resBody.Data.Cardholder.Email)
+		assert.Equal(t, donorEmail, resBody.Data.Cardholder.Email)
 		assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
 		assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
 		assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
@@ -821,7 +821,7 @@ func TestGetDonations(t *testing.T) {
 	setUpBeforeDonationsTest()
 
 	defaultUser := getUser(Globs.Defaults.Account)
-	user := getUser(donatorEmail)
+	user := getUser(donorEmail)
 	jwt := generateJWT(user)
 	authorization := fmt.Sprintf("Bearer %s", jwt)
 

@@ -111,7 +111,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
         + amount: 500 (required, number)
         + currency: TWD 
         + details: 報導者定期定額捐款
-        + donator (required, object)
+        + donor (required, object)
             + email: developer@twporter.org (required)
         + frequency: monthly (required)
         + prime: `test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9` (required)
@@ -131,7 +131,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                 "data": {
                     "prime": "prime(string) is required",
                     "amount": "amount(number) is required",
-                    "donator": {
+                    "donor": {
                         "email": "email(string) is required",
                     },
                     "details": "details(string) is optional",
@@ -185,7 +185,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             Authorization: Bearer <jwt>
             
     + Attributes (object)
-        + donator (object)
+        + donor (object)
             + address: 台北市南京東路一段300巷300號6樓
             + email: developer@twreporter.org
             + name: 王小明
@@ -205,7 +205,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             {
                 "status": "fail",
                 "data": {
-                    "donator": {
+                    "donor": {
                         "email": "email(string) is optional",
                         "address": "address(string) is optional",
                         "name": "name(string) is optional",
