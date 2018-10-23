@@ -56,4 +56,7 @@ const (
 	PrimeDonaitionType   = "prime"
 	TokenDonationType    = "token"
 	OthersDonationType   = "others"
+
+	// jwt prefix
+	MailServiceJWTPrefix = "mail-service-jwt-"
 )

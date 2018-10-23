@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"twreporter.org/go-api/services"
+	"twreporter.org/go-api/utils"
 )
 
 type activationReqBody struct {
@@ -136,6 +137,8 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	var err error
 	var rawResp *http.Response
 	var timeout = 10 * time.Second
+	var expiration int = 60
+	var accessToken string
 
 	if body, err = json.Marshal(reqBody); err != nil {
 		return err
@@ -144,8 +147,10 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	// Setup HTTP client with timeout
 	client := &http.Client{Timeout: timeout}
 
+	accessToken, _ = utils.RetrieveMailServiceAccessToken(expiration)
 	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	if rawResp, err = client.Do(req); err != nil {
 		return err

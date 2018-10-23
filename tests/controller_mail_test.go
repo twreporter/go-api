@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"twreporter.org/go-api/globals"
+	"twreporter.org/go-api/utils"
 )
 
 type activationReqBody struct {
@@ -35,17 +36,27 @@ type donationSuccessReqBody struct {
 }
 
 func TestSendActivation(t *testing.T) {
+	var authorization string
 	var reqBody = make(map[string]interface{})
 	var bodyBytes []byte
 	var resp *httptest.ResponseRecorder
+
+	authorization, _ = utils.RetrieveMailServiceAccessToken(100)
+	authorization = fmt.Sprintf("Bearer %s", authorization)
 
 	// successful case
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 		reqBody["email"] = Globs.Defaults.Account
 		reqBody["activate_link"] = "test-activate-link"
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
+		bodyBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", "")
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
@@ -55,7 +66,7 @@ func TestSendActivation(t *testing.T) {
 		// =====================================
 		reqBody = make(map[string]interface{})
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// =====================================
@@ -66,7 +77,7 @@ func TestSendActivation(t *testing.T) {
 			"activate_link": "test-activate-link",
 		}
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// =====================================
@@ -77,7 +88,7 @@ func TestSendActivation(t *testing.T) {
 			"activate_link": 123,
 		}
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 
@@ -85,12 +96,13 @@ func TestSendActivation(t *testing.T) {
 		reqBody["email"] = Globs.Defaults.ErrorEmailAddress
 		reqBody["activate_link"] = "test-activate-link"
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendActivationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusInternalServerError, resp.Code)
 	})
 }
 
 func TestSendDonationSuccessMail(t *testing.T) {
+	var authorization string
 	var reqBody = make(map[string]interface{})
 	var bodyBytes []byte
 	var resp *httptest.ResponseRecorder
@@ -102,14 +114,23 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		"donation_type":   "定期定額",
 	}
 
+	authorization, _ = utils.RetrieveMailServiceAccessToken(100)
+	authorization = fmt.Sprintf("Bearer %s", authorization)
+
 	// successful case
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 		for key, value := range defaultReqBody {
 			reqBody[key] = value
 		}
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
+	})
+
+	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
+		bodyBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
@@ -124,12 +145,12 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		}
 		reqBody["amount"] = "wrong-amount-type"
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		reqBody["amount"] = 0
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// =====================================
@@ -141,7 +162,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		}
 		reqBody["donation_method"] = ""
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// =====================================
@@ -153,7 +174,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		}
 		reqBody["donation_type"] = ""
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// =====================================
@@ -165,7 +186,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		}
 		reqBody["email"] = ""
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 		// =====================================
@@ -177,7 +198,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		}
 		reqBody["order_number"] = ""
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 
@@ -187,7 +208,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		}
 		reqBody["email"] = Globs.Defaults.ErrorEmailAddress
 		bodyBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", "")
+		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusInternalServerError, resp.Code)
 	})
 }
