@@ -157,7 +157,8 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 		if body, err = ioutil.ReadAll(rawResp.Body); err != nil {
 			return err
 		}
-		errMsg := fmt.Sprintf("receive error status code from %s. error response: %s", endpoint, string(body))
+
+		errMsg := fmt.Sprintf("receive error status code(%d) from %s. error response: %s", rawResp.StatusCode, endpoint, string(body))
 		return errors.New(errMsg)
 	}
 

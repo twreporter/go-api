@@ -83,20 +83,20 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.DeleteABookmarkOfAUser))
 
 	// endpoints for donation
-	v1Group.POST("/users/:userID/periodic_donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
-	v1Group.PATCH("/users/:userID/periodic_donations/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.POST("/periodic-donations", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
+	v1Group.PATCH("/periodic-donations/:id", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
-	v1Group.GET("/periodic-donations/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.GET("/periodic-donations/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
-	v1Group.POST("/users/:userID/donations/:pay_method", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.CreateADonationOfAUser))
-	v1Group.PATCH("/users/:userID/donations/prime/:id", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.POST("/donations/prime", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateADonationOfAUser))
+	v1Group.PATCH("/donations/prime/:id", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PrimeDonaitionType)
 	}))
 	// v1Group.GET("/users/:userID/donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))
 	// one-time donation including credit_card, line pay, apple pay, google pay and samsung pay
-	v1Group.GET("/donations/prime/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.GET("/donations/prime/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.PrimeDonaitionType)
 	}))
 
@@ -107,13 +107,13 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	//}))
 
 	// other donations not included in the above endpoints
-	v1Group.GET("/donations/others/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.GET("/donations/others/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.OthersDonationType)
 	}))
 
 	// endpoints for web push subscriptions
-	v1Group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, ginResponseWrapper(mc.SubscribeWebPush))
-	v1Group.GET("/web-push/subscriptions", ginResponseWrapper(mc.IsWebPushSubscribed))
+	v1Group.POST("/web-push/subscriptions" /*middlewares.CheckJWT()*/, middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SubscribeWebPush))
+	v1Group.GET("/web-push/subscriptions", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.IsWebPushSubscribed))
 
 	// =============================
 	// news service endpoints
@@ -150,8 +150,8 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// =============================
 
 	mailContrl := cf.GetMailController()
-	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), ginResponseWrapper(mailContrl.SendActivation))
-	v1Group.POST(fmt.Sprintf("/%s", globals.SendSuccessDonationRoutePath), ginResponseWrapper(mailContrl.SendDonationSuccessMail))
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendActivation))
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendSuccessDonationRoutePath), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendDonationSuccessMail))
 
 	// =============================
 	// v2 oauth endpoints
