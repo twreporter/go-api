@@ -79,7 +79,7 @@ var cardInfoTypes = map[int64]string{
 type (
 	clientReq struct {
 		Amount     uint              `json:"amount" form:"amount" binding:"required"`
-		Cardholder models.Cardholder `json:"donator" form:"donator" binding:"required,dive"`
+		Cardholder models.Cardholder `json:"donor" form:"donor" binding:"required,dive"`
 		Currency   string            `json:"currency" form:"currency"`
 		Details    string            `json:"details" form:"details"`
 		Frequency  string            `json:"frequency"`
@@ -150,7 +150,7 @@ type (
 	payType int
 
 	patchBody struct {
-		Donator     models.Cardholder `json:"donator"`
+		Donor       models.Cardholder `json:"donor"`
 		Notes       string            `json:"notes"`
 		SendReceipt string            `json:"send_receipt"`
 		ToFeedback  bool              `json:"to_feedback"`
@@ -160,7 +160,7 @@ type (
 
 func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m := new(models.PeriodicDonation)
-	m.Cardholder = p.Donator
+	m.Cardholder = p.Donor
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.ToFeedback = p.ToFeedback
@@ -170,7 +170,7 @@ func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 
 func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	m := new(models.PayByPrimeDonation)
-	m.Cardholder = p.Donator
+	m.Cardholder = p.Donor
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.UserID = p.UserID
@@ -394,7 +394,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	if reqBody.Cardholder.Email == "" {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
-			"req.Body.donator.email": "donator email is not valid",
+			"req.Body.donor.email": "donor email is not valid",
 		}}, nil
 	}
 
@@ -485,7 +485,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	if reqBody.Cardholder.Email == "" {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
-			"req.Body.donator.email": "donator email is not valid",
+			"req.Body.donor.email": "donor email is not valid",
 		}}, nil
 	}
 
