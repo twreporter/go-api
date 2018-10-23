@@ -49,7 +49,10 @@ func main() {
 	router := routers.SetupRouter(cf)
 
 	readTimeout := 5 * time.Second
-	writeTimeout := 10 * time.Second
+
+	// Set writeTimeout bigger than 30 secs.
+	// 30 secs is to ensure donation request is handled correctly.
+	writeTimeout := 40 * time.Second
 	s := &http.Server{
 		Addr:         fmt.Sprintf(":%s", globals.LocalhostPort),
 		Handler:      router,
