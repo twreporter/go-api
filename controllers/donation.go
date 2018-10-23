@@ -556,7 +556,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	var valid bool
 
 	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
-		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, err
+		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, nil
 	}
 
 	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
@@ -607,13 +607,13 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 	if userID, err = strconv.ParseUint(c.Query("user_id"), 10, strconv.IntSize); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
 			"req.URL.query": "?user_id=:userID, userID should be integer",
-		}}, err
+		}}, nil
 	}
 
 	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
 		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
 			"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
-		}}, err
+		}}, nil
 	}
 
 	switch donationType {
