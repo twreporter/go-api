@@ -8,10 +8,8 @@ import (
 // SetCacheControl ...
 func SetCacheControl(cc string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Avoid adding Cache-Control in the Response Header
-		// while the Request Header is not containing Origin
-		if c.Request.Header.Get("Origin") != "" {
-			c.Writer.Header().Set("Cache-Control", cc)
-		}
+		// TODO
+		// Append Etag or Last-Modified on response header for validation
+		c.Writer.Header().Set("Cache-Control", cc)
 	}
 }

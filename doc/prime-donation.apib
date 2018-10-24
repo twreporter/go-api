@@ -1,0 +1,282 @@
+# Group Prime Donation
+Prime donation resources of go-api
+
+## Prime Donation [/donations/prime/{id}{?user_id}]
+A single Prime Donation.
+The Prime Donation is the resource in the TWReporter Donation API. 
+It reprensents one prime donation record.
+
+The Prime Donation resource has the following attributes;
+- id
+- amount
+- card_info
+- card_info.bind_code
+- card_info.country
+- card_info.country_code
+- card_info.expiry_date
+- card_info.funding
+- card_info.issuer
+- card_info.last_four
+- card_info.level
+- card_info.type
+- cardholder
+- cardholder.address
+- cardholder.email
+- cardholder.name
+- cardholder.national_id
+- cardholder.phone_number
+- cardholder.zip_code
+- currency
+- details
+- frequency
+- notes
+- order_number
+- pay_method
+- send_receipt
+
+The states *id* and *order_number* are assigned by the TWReporter Go API at the moment of creation.
+
+### Retrieve a Single Prime Donation [GET]
++ Parameters
+    + id (number) ... ID of the Prime Donation
+    + user_id (number) ... ID of the user
+
++ Request
+
+    + Headers 
+
+              Authorization: Bearer <jwt>
+
++ Response 200
+
+    + Attributes (PrimeDonationResponse)
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "JWT is not valid"
+                }
+            }
+
++ Response 403 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "request is prohibited to the resource"
+                }
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.URL": "url can not address a resource"
+                }
+            }
+
++ Response 500 (application/json)
+
+    
+    + Body
+
+            {
+                "status": "error",
+                "message": "unknown error."
+            }
+
+
+### Create a Single Prime Donation [POST]
++ Parameters
+    + id (number) ... ID of the Prime Donation
+
++ Request 
+
+    + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+            
+    + Attributes (object)
+        + amount: 500 (required, number)
+        + currency: TWD 
+        + details: 報導者單筆捐款
+        + donor (required, object)
+            + email: developer@twporter.org (required)
+        + prime: `test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9` (required)
+        + `pay_method`: `credit_card` (required)
+        + `merchant_id`: `twreporter_CTBC`
+        + `user_id`: 1 (required, number)
+
++ Response 201
+
+    + Attributes (PrimeDonationResponse)
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "prime": "prime(string) is required",
+                    "amount": "amount(number) is required",
+                    "donor": {
+                        "email": "email(string) is required",
+                    },
+                    "details": "details(string) is optional",
+                    "merchant_id": "merchant_id(string) is optional",
+                    "pay_method": "pay_method(string) is required, currently only support 'credit_card'"
+                    "user_id": "user_id(number) is required"
+                }
+            }
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "JWT is not valid"
+                }
+            }
+
++ Response 403 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "request is not permitted for the resource"
+                }
+            }
+
++ Response 500 (application/json)
+
+    
+    + Body
+
+            {
+                "status": "error",
+                "message": "unknown error."
+            }
+
+### Modify a Single Prime Donation [PATCH]
++ Parameters
+    + id (number) ... ID of the Prime Donation
+
++ Request 
+
+    + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+            
+    + Attributes (object)
+        + donor (object)
+            + address: 台北市南京東路一段300巷300號6樓
+            + email: developer@twreporter.org
+            + name: 王小明
+            + phone_number: +886912345678
+            + national_id: A12345678
+        + notes: 第一次捐款報導者喔
+        + send_receipt: no
+        + user_id: 1 (required)
+
++ Response 204
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "donor": {
+                        "email": "email(string) is optional",
+                        "address": "address(string) is optional",
+                        "name": "name(string) is optional",
+                        "zip_code": "zip_code(string) is optional",
+                        "phone_number": "phone_number(string) is optional",
+                        "national_id": "national_id(string) is optional"
+                    },
+                    "notes": "notes(string) is optional",
+                    "send_receipt": "send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'",
+                    "user_id": "user_id(number) is required"
+                }
+            }
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "JWT is not valid"
+                }
+            }
+
++ Response 403 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "request is not permitted for the resource"
+                }
+            }
+
++ Response 500 (application/json)
+
+    
+    + Body
+
+            {
+                "status": "error",
+                "message": "unknown error."
+            }
+
+
+## Data Structures
+### PrimeDonationModel
++ id: 1 (required, number)
++ amount: 500 (required, number)
++ currency: TWD (required)
++ details: 報導者單筆捐款 (required)
++ notes: 第一次捐給報導者喔 (optional)
++ `order_number`: `twreporter-153985253506653918900` (required)
++ `send_receipt`: monthly (required)
++ `pay_method`: `credit_card` (required)
++ `cardholder` (required)
+    + email: developer@twreporter.org (required)
+    + name: 王小明 (optional)
+    + address: 台北市南京東路一段300巷300號6樓 (optional)
+    + phone_number: +886912345678 (optional)
+    + `national_id`: A12345678 (optional)
+    + `zip_code`: 104 (optional)
++ `card_info` (required)
+    + `bin_code`: 424242 (required)
+    + country: UNITED KINGDOM (required)
+    + `country_code`: GB (required)
+    + `expiry_date`: 201810 (required)
+    + funding: 0 (required, number)
+    + issuer: JPMORGAN CHASE BANK NA (required)
+    + type: 1 (required, number)
+    + level: card_level (required)
+
+### PrimeDonationResponse
++ status: sucess (required)
++ data (PrimeDonationModel)
