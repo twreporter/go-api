@@ -281,7 +281,7 @@ CREATE TABLE `pay_by_other_method_donations` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_other_method_donations_pay_method` (`pay_method`),
-  KEY `idx_pay_by_other_method_donations_amount` (`amount`)
+  KEY `idx_pay_by_other_method_donations_amount` (`amount`),
   KEY `idx_pay_by_other_method_order_number` (`order_number`),
   CONSTRAINT `fk_pay_by_other_method_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
