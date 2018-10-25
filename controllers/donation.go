@@ -163,7 +163,7 @@ func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m.Cardholder = p.Donor
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
-	m.ToFeedback = p.ToFeedback
+	m.ToFeedback = null.BoolFrom(p.ToFeedback)
 	m.UserID = p.UserID
 	return *m
 }
@@ -290,7 +290,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.Notes = d.Notes
 	cr.OrderNumber = d.OrderNumber
 	cr.SendReceipt = d.SendReceipt
-	cr.ToFeedback = d.ToFeedback
+	cr.ToFeedback = d.ToFeedback.ValueOrZero()
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
