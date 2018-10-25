@@ -31,7 +31,7 @@ func runGormMigration(gormDB *gorm.DB) {
 	for _, value := range values {
 		gormDB.DropTable(value)
 	}
-	if err := gormDB.Set("gorm:table_options", "ENGINE=InnoDB default CHARSET=utf8").AutoMigrate(values...).Error; err != nil {
+	if err := gormDB.Set("gorm:table_options", "ENGINE=InnoDB default CHARSET=utf8mb4").AutoMigrate(values...).Error; err != nil {
 		panic(fmt.Sprintf("No error should happen when create table, but got %+v", err))
 	}
 }
@@ -101,7 +101,7 @@ func openGormConnection() (db *gorm.DB, err error) {
 	} else {
 		dbhost = "tcp(127.0.0.1:3306)"
 	}
-	db, err = gorm.Open("mysql", fmt.Sprintf("gorm:gorm@%v/gorm?charset=utf8&parseTime=True", dbhost))
+	db, err = gorm.Open("mysql", fmt.Sprintf("gorm:gorm@%v/gorm?charset=utf8mb4,utf8&parseTime=True", dbhost))
 
 	if os.Getenv("DEBUG") == "true" {
 		db.LogMode(true)
