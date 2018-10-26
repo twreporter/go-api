@@ -250,7 +250,7 @@ CREATE TABLE `pay_by_prime_donations` (
   KEY `idx_pay_by_prime_donations_pay_method` (`pay_method`),
   KEY `idx_pay_by_prime_donations_order_number` (`order_number`),
   CONSTRAINT `fk_pay_by_prime_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8m4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
