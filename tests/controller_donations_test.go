@@ -59,6 +59,7 @@ type (
 		Prime      string            `json:"prime"`
 		ResultURL  linePayResultURL  `json:"result_url"` // Line pay needed only
 		UserID     uint              `json:"user_id"`
+		ToFeedback bool              `json:"to_feedback"`
 	}
 )
 
@@ -68,6 +69,7 @@ const (
 	testAmount     uint = 500
 	testCurrency        = "TWD"
 	testMerchantID      = "GlobalTesting_CTBC"
+	testFeedback        = true
 
 	testName        = "報導者測試者"
 	testAddress     = "台北市南京東路一段32巷100號10樓"
@@ -512,6 +514,7 @@ func createDefaultPeriodicDonationRecord(user models.User) responseBody {
 		MerchantID: testMerchantID,
 		Prime:      testPrime,
 		UserID:     user.ID,
+		ToFeedback: testFeedback,
 	}
 
 	return createDefaultDonationRecord(reqBody, path, user)
@@ -542,132 +545,170 @@ func createDefaultPrimeDonationRecord(user models.User) responseBody {
 }
 
 func TestPatchAPeriodicDonation(t *testing.T) {
+	const donorEmail string = "periodic-donor@twreporter.org"
+	var authorization string
+	var defaultRecordRes responseBody
+	var jwt string
+	var path string
+	var reqBody map[string]interface{}
+	var reqBodyInBytes []byte
+	var resp *httptest.ResponseRecorder
+	var user models.User
+
 	// setup before test
-	donorEmail := "periodic-donor@twreporter.org"
 	// create a new user
-	user := createUser(donorEmail)
+	user = createUser(donorEmail)
 
 	// get record to patch
-	res := createDefaultPeriodicDonationRecord(user)
+	defaultRecordRes = createDefaultPeriodicDonationRecord(user)
 
-	jwt := generateJWT(user)
-	authorization := fmt.Sprintf("Bearer %s", jwt)
-	path := fmt.Sprintf("/v1/periodic-donations/%d", res.Data.ID)
+	jwt = generateJWT(user)
+	authorization = fmt.Sprintf("Bearer %s", jwt)
+	path = fmt.Sprintf("/v1/periodic-donations/%d", defaultRecordRes.Data.ID)
 
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp := serveHTTP("PATCH", path, "", "application/json", "")
+		resp = serveHTTP("PATCH", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		otherUserID := 100
-		resp := serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
+		var otherUserID uint = 100
+		resp = serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		reqBody := map[string]interface{}{
+		reqBody = map[string]interface{}{
 			"user_id": user.ID,
 			// to_feedback should be boolean
-			"to_feedback": "true",
+			"to_feedback": "false",
 			// national_id should be string
 			"national_id": true,
 		}
-		reqBodyInBytes, _ := json.Marshal(reqBody)
-		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		recordIDNotFound := 1000
-		path := fmt.Sprintf("/v1/periodic-donations/%d", recordIDNotFound)
-		reqBody := map[string]interface{}{
+		var path string
+		var recordIDNotFound uint = 1000
+
+		path = fmt.Sprintf("/v1/periodic-donations/%d", recordIDNotFound)
+
+		reqBody = map[string]interface{}{
 			"send_receipt": "no",
-			"to_feedback":  true,
+			"to_feedback":  !testFeedback,
 			"user_id":      user.ID,
 		}
-		reqBodyInBytes, _ := json.Marshal(reqBody)
-		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		reqBody := map[string]interface{}{
-			"donor": map[string]interface{}{
+		var dataAfterPatch models.PeriodicDonation
+
+		reqBody = map[string]interface{}{
+			"donor": map[string]string{
 				"address": "test-addres",
 				"name":    "test-name",
 			},
 			"send_receipt": "no",
-			"to_feedback":  true,
+			"to_feedback":  !testFeedback,
 			"user_id":      user.ID,
 		}
-		reqBodyInBytes, _ := json.Marshal(reqBody)
-		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
+
+		Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
+		assert.Equal(t, reqBody["to_feedback"], dataAfterPatch.ToFeedback.ValueOrZero())
+		assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
+		assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
+		assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
 	})
 }
 
 func TestPatchAPrimeDonation(t *testing.T) {
+	const donorEmail string = "prim-donor@twreporter.org"
+	var authorization string
+	var defaultRecordRes responseBody
+	var jwt string
+	var path string
+	var reqBody map[string]interface{}
+	var reqBodyInBytes []byte
+	var resp *httptest.ResponseRecorder
+	var user models.User
+
 	// setup before test
-	donorEmail := "prime-donor@twreporter.org"
 	// create a new user
-	user := createUser(donorEmail)
+	user = createUser(donorEmail)
 
 	// get record to patch
-	res := createDefaultPrimeDonationRecord(user)
+	defaultRecordRes = createDefaultPrimeDonationRecord(user)
 
-	jwt := generateJWT(user)
-	authorization := fmt.Sprintf("Bearer %s", jwt)
-	path := fmt.Sprintf("/v1/donations/prime/%d", res.Data.ID)
+	jwt = generateJWT(user)
+	authorization = fmt.Sprintf("Bearer %s", jwt)
+	path = fmt.Sprintf("/v1/donations/prime/%d", defaultRecordRes.Data.ID)
 
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp := serveHTTP("PATCH", path, "", "application/json", "")
+		resp = serveHTTP("PATCH", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		otherUserID := 100
-		resp := serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
+		var otherUserID uint = 100
+		resp = serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		reqBody := map[string]interface{}{
+		reqBody = map[string]interface{}{
 			// national_id should be string
 			"donor": map[string]interface{}{
 				"national_id": true,
 			},
 			"user_id": user.ID,
 		}
-		reqBodyInBytes, _ := json.Marshal(reqBody)
-		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		recordIDNotFound := 1000
-		path := fmt.Sprintf("/v1/donations/prime/%d", recordIDNotFound)
-		reqBody := map[string]interface{}{
+		var path string
+		var recordIDNotFound uint = 1000
+
+		path = fmt.Sprintf("/v1/donations/prime/%d", recordIDNotFound)
+		reqBody = map[string]interface{}{
 			"send_receipt": "no",
 			"user_id":      user.ID,
 		}
-		reqBodyInBytes, _ := json.Marshal(reqBody)
-		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		reqBody := map[string]interface{}{
-			"donor": map[string]interface{}{
+		var dataAfterPatch models.PayByPrimeDonation
+
+		reqBody = map[string]interface{}{
+			"donor": map[string]string{
 				"name":    "test-name",
 				"address": "test-addres",
 			},
 			"send_receipt": "no",
 			"user_id":      user.ID,
 		}
-		reqBodyInBytes, _ := json.Marshal(reqBody)
-		resp := serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		reqBodyInBytes, _ = json.Marshal(reqBody)
+		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
+
+		Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
+		assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
+		assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
+		assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
 	})
 }
 
