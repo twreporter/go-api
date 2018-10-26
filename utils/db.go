@@ -21,7 +21,7 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 		var config = globals.Conf.DB.MySQL
 
 		// connect to MySQL database
-		var endpoint = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", config.User, config.Password, config.Address, config.Port, config.Name)
+		var endpoint = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4,utf8&parseTime=true", config.User, config.Password, config.Address, config.Port, config.Name)
 		log.Info("connect to mysql ", endpoint)
 		db, err = gorm.Open("mysql", endpoint)
 

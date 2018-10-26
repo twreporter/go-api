@@ -202,7 +202,7 @@ CREATE TABLE `web_push_subs` (
 
 DROP TABLE IF EXISTS `pay_by_prime_donations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `pay_by_prime_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -250,7 +250,7 @@ CREATE TABLE `pay_by_prime_donations` (
   KEY `idx_pay_by_prime_donations_pay_method` (`pay_method`),
   KEY `idx_pay_by_prime_donations_order_number` (`order_number`),
   CONSTRAINT `fk_pay_by_prime_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8m4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -259,7 +259,7 @@ CREATE TABLE `pay_by_prime_donations` (
 
 DROP TABLE IF EXISTS `pay_by_other_method_donations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `pay_by_other_method_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -284,7 +284,7 @@ CREATE TABLE `pay_by_other_method_donations` (
   KEY `idx_pay_by_other_method_donations_amount` (`amount`),
   KEY `idx_pay_by_other_method_order_number` (`order_number`),
   CONSTRAINT `fk_pay_by_other_method_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -293,7 +293,7 @@ CREATE TABLE `pay_by_other_method_donations` (
 
 DROP TABLE IF EXISTS `periodic_donations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `periodic_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -333,7 +333,7 @@ CREATE TABLE `periodic_donations` (
   KEY `idx_periodic_donations_order_number` (`order_number`),
   KEY `idx_periodic_donations_last_success_at` (`last_success_at`),
   CONSTRAINT `fk_periodic_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
@@ -343,7 +343,7 @@ CREATE TABLE `periodic_donations` (
 
 DROP TABLE IF EXISTS `pay_by_card_token_donations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `pay_by_card_token_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -373,38 +373,6 @@ CREATE TABLE `pay_by_card_token_donations` (
   KEY `idx_pay_by_card_token_donations_amount` (`amount`),
   KEY `idx_pay_by_card_token_donations_order_number` (`order_number`),
   CONSTRAINT `fk_pay_by_card_token_donations_periodic_id` FOREIGN KEY (`periodic_id`) REFERENCES `periodic_donations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-
---
--- Table structure for table `donation_summary`
---
-
-DROP TABLE IF EXISTS `donation_summary`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `donation_summary` (
-  `email` varchar(100) NOT NULL,
-  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  `credit_card_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
-  `credit_card_donation_amount` int(10) unsigned DEFAULT 0 NOT NULL,
-  `card_token_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
-  `card_token_donation_amount` int(10) unsigned DEFAULT 0 NOT NULL,
-  `line_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
-  `line_donation_amount` int(10) unsigned DEFAULT 0 NOT NULL,
-  `apple_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
-  `apple_donation_amount` int(10) unsigned DEFAULT 0 NOT NULL,
-  `google_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
-  `google_donation_amount` int(10) unsigned DEFAULT 0 NOT NULL,
-  `samsung_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
-  `samsung_donation_amount` int(10) unsigned DEFAULT 0 NOT NULL,
-  `other_donation_times` smallint unsigned DEFAULT 0 NOT NULL,
-  `other_donation_amount` int(10) unsigned DEFAULT 0 NOT NULL,
-  PRIMARY KEY (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
 
