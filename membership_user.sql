@@ -299,7 +299,7 @@ CREATE TABLE `periodic_donations` (
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `status` enum('to_pay', 'paying', 'paid', 'fail') NOT NULL,
+  `status` enum('to_pay', 'paying', 'paid', 'fail', 'stopped', 'invalid') NOT NULL,
   `card_token` tinyblob NULL DEFAULT NULL,
   `card_key` tinyblob NULL DEFAULT NULL,
   `user_id` int(10) unsigned NOT NULL,
