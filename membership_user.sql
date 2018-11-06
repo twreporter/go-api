@@ -327,6 +327,8 @@ CREATE TABLE `periodic_donations` (
   `card_info_country_code` varchar(10) DEFAULT NULL, 
   `card_info_expiry_date` varchar(6) DEFAULT NULL, 
   `notes` varchar(100) DEFAULT NULL,
+  `max_paid_times` int NOT NULL DEFAULT 2147483647,
+
   PRIMARY KEY (`id`),
   KEY `idx_periodic_donations_status` (`status`),
   KEY `idx_periodic_donations_amount` (`amount`),

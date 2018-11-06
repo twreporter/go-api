@@ -112,6 +112,7 @@ type PeriodicDonation struct {
 	Frequency     string     `gorm:"type:ENUM('monthly', 'yearly');default:'monthly'" json:"frequency"`
 	ID            uint       `gorm:"primary_key" json:"id"`
 	LastSuccessAt null.Time  `json:"last_success_at"`
+	MaxPaidTimes  uint       `json:"max_paid_times" gorm:"type:int;not null;default:2147483647"`
 	Notes         string     `gorm:"type:varchar(100)" json:"notes"`
 	OrderNumber   string     `gorm:"type:varchar(50);not null" json:"order_number"`
 	SendReceipt   string     `gorm:"type:ENUM('no', 'monthly', 'yearly');default:'monthly'" json:"send_receipt"`

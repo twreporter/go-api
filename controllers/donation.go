@@ -80,16 +80,17 @@ var cardInfoTypes = map[int64]string{
 
 type (
 	clientReq struct {
-		Amount     uint              `json:"amount" form:"amount" binding:"required"`
-		Cardholder models.Cardholder `json:"donor" form:"donor" binding:"required,dive"`
-		Currency   string            `json:"currency" form:"currency"`
-		Details    string            `json:"details" form:"details"`
-		Frequency  string            `json:"frequency"`
-		MerchantID string            `json:"merchant_id" form:"merchant_id"`
-		PayMethod  string            `json:"pay_method" form:"pay_method"`
-		Prime      string            `json:"prime" form:"prime" binding:"required"`
-		ResultUrl  linePayResultUrl  `json:"result_url" form:"result_url"`
-		UserID     uint              `json:"user_id" form:"user_id" binding:"required"`
+		Amount       uint              `json:"amount" form:"amount" binding:"required"`
+		Cardholder   models.Cardholder `json:"donor" form:"donor" binding:"required,dive"`
+		Currency     string            `json:"currency" form:"currency"`
+		Details      string            `json:"details" form:"details"`
+		Frequency    string            `json:"frequency"`
+		MerchantID   string            `json:"merchant_id" form:"merchant_id"`
+		PayMethod    string            `json:"pay_method" form:"pay_method"`
+		Prime        string            `json:"prime" form:"prime" binding:"required"`
+		ResultUrl    linePayResultUrl  `json:"result_url" form:"result_url"`
+		UserID       uint              `json:"user_id" form:"user_id" binding:"required"`
+		MaxPaidTimes uint              `json:"max_paid_times" form:"max_paid_times"`
 	}
 
 	clientResp struct {
