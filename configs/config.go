@@ -12,7 +12,8 @@ var defaultConf = []byte(`
 environment: development
 cors:
     allow_origins:
-        - '*'
+        - 'http://localhost:3000'
+        - 'http://localhost:3001'
 app:
     protocol: http
     host: localhost

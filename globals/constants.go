@@ -3,6 +3,19 @@ package globals
 const (
 	LocalhostPort = "8080"
 
+	// environment
+	DevelopmentEnvironment = "development"
+	StagingEnvironment     = "staging"
+	ProductionEnvironment  = "production"
+
+	// client URLs
+	MainSiteURL            = "https://www.twreporter.org"
+	MainSiteStagingURL     = "https://staging.twreporter.org"
+	SupportSiteURL         = "https://support.twreporter.org"
+	SupportSiteStagingURL  = "https://staging-support.twreporter.org"
+	AccountsSiteURL        = "https://accounts.twreporter.org"
+	AccountsSiteStagingURL = "https://staging-accounts.twreporter.org"
+
 	// route path
 	SendActivationRoutePath      = "mail/send_activation"
 	SendSuccessDonationRoutePath = "mail/send_success_donation"

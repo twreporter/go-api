@@ -40,19 +40,27 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 
 	config := cors.DefaultConfig()
 
-	if globals.Conf.Environment != "development" {
-		var allowOrigins = globals.Conf.Cors.AllowOrigins
-		if len(allowOrigins) > 0 {
-			config.AllowOrigins = allowOrigins
-		} else {
-			config.AllowOrigins = []string{"https://www.twreporter.org"}
-		}
+	var allowOrigins = globals.Conf.Cors.AllowOrigins
+	if len(allowOrigins) > 0 {
+		config.AllowOrigins = allowOrigins
 	} else {
-		config.AllowAllOrigins = true
+		switch globals.Conf.Environment {
+		case globals.DevelopmentEnvironment:
+			config.AllowAllOrigins = true
+			break
+		case globals.StagingEnvironment:
+			config.AllowOrigins = []string{globals.MainSiteStagingURL, globals.SupportSiteStagingURL, globals.AccountsSiteStagingURL}
+			break
+		case globals.ProductionEnvironment:
+			config.AllowOrigins = []string{globals.MainSiteURL, globals.SupportSiteURL, globals.AccountsSiteURL}
+			break
+		default:
+			// omit intentionally
+			break
+		}
 	}
 
 	config.AddAllowHeaders("Authorization")
-	config.AddAllowHeaders("ContentType")
 	config.AddAllowMethods("DELETE")
 	config.AddAllowMethods("PATCH")
 
