@@ -33,6 +33,7 @@ The Periodic Donation resource has the following attributes;
 - order_number
 - send_receipt
 - to_feedback
+- max_paid_times
 
 The states *id* and *order_number* are assigned by the TWReporter Go API at the moment of creation.
 
@@ -117,6 +118,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
         + prime: `test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9` (required)
         + `merchant_id`: `twreporter_CTBC`
         + `user_id`: 1 (required, number)
+        + `max_paid_times`: 3 (optional, number)
 
 + Response 201
 
@@ -137,7 +139,8 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                     "details": "details(string) is optional",
                     "merchant_id": "merchant_id(string) is optional",
                     "frequency": "frequency(string) is optional, default: 'monthly'. only support 'monthly' and 'yearly'",
-                    "user_id": "user_id(number) is required"
+                    "user_id": "user_id(number) is required",
+                    "max_paid_times": "max_paid_times(number) is optional, default: 2147483647"
                 }
             }
 

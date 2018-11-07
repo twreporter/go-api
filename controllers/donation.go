@@ -36,9 +36,11 @@ const (
 
 	orderPrefix = "twreporter"
 
-	statusPaying = "paying"
-	statusPaid   = "paid"
-	statusFail   = "fail"
+	statusPaying  = "paying"
+	statusPaid    = "paid"
+	statusFail    = "fail"
+	statusStopped = "stopped"
+	statusInvalid = "invalid"
 
 	tapPayRespStatusSuccess = 0
 
@@ -78,16 +80,17 @@ var cardInfoTypes = map[int64]string{
 
 type (
 	clientReq struct {
-		Amount     uint              `json:"amount" form:"amount" binding:"required"`
-		Cardholder models.Cardholder `json:"donor" form:"donor" binding:"required,dive"`
-		Currency   string            `json:"currency" form:"currency"`
-		Details    string            `json:"details" form:"details"`
-		Frequency  string            `json:"frequency"`
-		MerchantID string            `json:"merchant_id" form:"merchant_id"`
-		PayMethod  string            `json:"pay_method" form:"pay_method"`
-		Prime      string            `json:"prime" form:"prime" binding:"required"`
-		ResultUrl  linePayResultUrl  `json:"result_url" form:"result_url"`
-		UserID     uint              `json:"user_id" form:"user_id" binding:"required"`
+		Amount       uint              `json:"amount" form:"amount" binding:"required"`
+		Cardholder   models.Cardholder `json:"donor" form:"donor" binding:"required,dive"`
+		Currency     string            `json:"currency" form:"currency"`
+		Details      string            `json:"details" form:"details"`
+		Frequency    string            `json:"frequency"`
+		MerchantID   string            `json:"merchant_id" form:"merchant_id"`
+		PayMethod    string            `json:"pay_method" form:"pay_method"`
+		Prime        string            `json:"prime" form:"prime" binding:"required"`
+		ResultUrl    linePayResultUrl  `json:"result_url" form:"result_url"`
+		UserID       uint              `json:"user_id" form:"user_id" binding:"required"`
+		MaxPaidTimes uint              `json:"max_paid_times" form:"max_paid_times"`
 	}
 
 	clientResp struct {
@@ -433,13 +436,14 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
-			// If tappay error occurs, update the transaction status to 'fail' and stop the periodic donation
-			failResp := models.PayByCardTokenDonation{}
-			failResp.TappayApiStatus = null.IntFrom(tapPayResp.Status)
-			failResp.Msg = tapPayResp.Msg
-			failResp.Status = statusFail
-			// Procceed even if the deletion is failed
-			mc.Storage.DeleteAPeriodicDonation(periodicDonation.ID, failResp)
+			// If tappay error occurs, update the transaction status to 'fail' and mark the periodic donation as 'invalid'.
+			tokenDonation.TappayApiStatus = null.IntFrom(tapPayResp.Status)
+			tokenDonation.Msg = tapPayResp.Msg
+			tokenDonation.Status = statusFail
+
+			periodicDonation.Status = statusInvalid
+
+			mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation)
 		}
 		errMsg := err.Error()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
