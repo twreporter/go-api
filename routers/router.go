@@ -91,15 +91,15 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.DELETE("/users/:userID/bookmarks/:bookmarkID", middlewares.CheckJWT(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.DeleteABookmarkOfAUser))
 
 	// endpoints for donation
-	v1Group.POST("/periodic-donations", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
-	v1Group.PATCH("/periodic-donations/:id", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.POST("/periodic-donations", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateAPeriodicDonationOfAUser))
+	v1Group.PATCH("/periodic-donations/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
 	v1Group.GET("/periodic-donations/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
-	v1Group.POST("/donations/prime", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateADonationOfAUser))
-	v1Group.PATCH("/donations/prime/:id", middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
+	v1Group.POST("/donations/prime", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateADonationOfAUser))
+	v1Group.PATCH("/donations/prime/:id", middlewares.ValidateAuthentication(), middlewares.CheckJWT(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PrimeDonaitionType)
 	}))
 	// v1Group.GET("/users/:userID/donations", middlewares.CheckJWT(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))

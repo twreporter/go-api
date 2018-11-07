@@ -114,7 +114,7 @@ func testCardholderWithDefaultValue(t *testing.T, ch models.Cardholder) {
 	assert.Equal(t, testCardholder.Address.ValueOrZero(), ch.Address.ValueOrZero())
 }
 
-func testDonationDataValidation(t *testing.T, path string, userID uint, authorization string) {
+func testDonationDataValidation(t *testing.T, path string, userID uint, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
 	var reqBody requestBody
 	var reqBodyInBytes []byte
@@ -135,7 +135,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
@@ -154,7 +154,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
@@ -171,7 +171,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
@@ -192,7 +192,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
@@ -211,7 +211,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
@@ -230,7 +230,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
@@ -249,7 +249,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
@@ -268,7 +268,7 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 
@@ -288,13 +288,13 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 }
 
-func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency string, authorization string) {
+func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency string, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
 	var reqBody requestBody
 	var resBody responseBody
@@ -325,7 +325,7 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 		json.Unmarshal(resBodyInBytes, &resBody)
 
@@ -362,7 +362,7 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
 		json.Unmarshal(resBodyInBytes, &resBody)
 
@@ -396,7 +396,7 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 		}
 
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("POST", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
 		assert.Equal(t, http.StatusInternalServerError, resp.Code)
 	})
@@ -406,20 +406,32 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 	// - Create a Donation by Credit Card
 	// - Request Body Data Validation Error
 	// ===========================================
-	testDonationDataValidation(t, path, userID, authorization)
+	testDonationDataValidation(t, path, userID, authorization, cookie)
 }
 
 func TestCreateADonation(t *testing.T) {
-	var resp *httptest.ResponseRecorder
+	var authorization, jwt, idToken string
+	var cookie http.Cookie
 	var path = "/v1/donations/prime"
+	var resp *httptest.ResponseRecorder
+	var user models.User
 
-	user := getUser(Globs.Defaults.Account)
-	jwt := generateJWT(user)
-	authorization := fmt.Sprintf("Bearer %s", jwt)
+	user = getUser(Globs.Defaults.Account)
+	jwt = generateJWT(user)
+	authorization = fmt.Sprintf("Bearer %s", jwt)
+
+	idToken = generateIDToken(user)
+	cookie = http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    idToken,
+	}
 
 	// ===========================================
 	// Failure (Client Error)
-	// - Create a Donation Without Authorization Header
+	// - Create a Donation Without Cookie
 	// - 401 Unauthorized
 	// ===========================================
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
@@ -429,27 +441,49 @@ func TestCreateADonation(t *testing.T) {
 
 	// ===========================================
 	// Failure (Client Error)
+	// - Create a Donation Without Authorization Header
+	// - 401 Unauthorized
+	// ===========================================
+	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
+		resp = serveHTTPWithCookies("POST", path, "", "application/json", "", cookie)
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
+	})
+
+	// ===========================================
+	// Failure (Client Error)
 	// - Create a Donation on Unauthorized Resource
 	// - 403 Forbidden
 	// ===========================================
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		resp = serveHTTP("POST", path, `{"user_id":1000}`, "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, `{"user_id":1000}`, "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	// ==========================================
 	// Test One Time Donation Creation
 	// =========================================
-	testCreateADonationRecord(t, path, user.ID, oneTimeFrequency, authorization)
+	testCreateADonationRecord(t, path, user.ID, oneTimeFrequency, authorization, cookie)
 }
 
 func TestCreateAPeriodicDonation(t *testing.T) {
-	var resp *httptest.ResponseRecorder
+	var authorization, idToken, jwt string
+	var cookie http.Cookie
 	var path = "/v1/periodic-donations"
+	var resp *httptest.ResponseRecorder
+	var user models.User
 
-	user := getUser(Globs.Defaults.Account)
-	jwt := generateJWT(user)
-	authorization := fmt.Sprintf("Bearer %s", jwt)
+	user = getUser(Globs.Defaults.Account)
+	jwt = generateJWT(user)
+	authorization = fmt.Sprintf("Bearer %s", jwt)
+
+	idToken = generateIDToken(user)
+	cookie = http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    idToken,
+	}
 
 	// ===========================================
 	// Failure (Client Error)
@@ -467,14 +501,14 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// - 403 Forbidden
 	// ===========================================
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		resp = serveHTTP("POST", path, `{"user_id":1000}`, "application/json", authorization)
+		resp = serveHTTPWithCookies("POST", path, `{"user_id":1000}`, "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	// ==========================================
 	// Test Periodic Donation Creation
 	// =========================================
-	testCreateADonationRecord(t, path, user.ID, monthlyFrequency, authorization)
+	testCreateADonationRecord(t, path, user.ID, monthlyFrequency, authorization, cookie)
 }
 
 func createDefaultDonationRecord(reqBody requestBody, endpoint string, user models.User) responseBody {
@@ -483,9 +517,18 @@ func createDefaultDonationRecord(reqBody requestBody, endpoint string, user mode
 	// prepare jwt authorization string
 	authorization := fmt.Sprintf("Bearer %s", jwt)
 
+	idToken := generateIDToken(user)
+	cookie := http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    idToken,
+	}
+
 	// create a donation by HTTP POST request
 	reqBodyInBytes, _ := json.Marshal(reqBody)
-	resp := serveHTTP("POST", endpoint, string(reqBodyInBytes), "application/json", authorization)
+	resp := serveHTTPWithCookies("POST", endpoint, string(reqBodyInBytes), "application/json", authorization, cookie)
 	respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
 	defer resp.Result().Body.Close()
 
@@ -547,7 +590,9 @@ func createDefaultPrimeDonationRecord(user models.User) responseBody {
 func TestPatchAPeriodicDonation(t *testing.T) {
 	const donorEmail string = "periodic-donor@twreporter.org"
 	var authorization string
+	var cookie http.Cookie
 	var defaultRecordRes responseBody
+	var idToken string
 	var jwt string
 	var path string
 	var reqBody map[string]interface{}
@@ -566,14 +611,30 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	authorization = fmt.Sprintf("Bearer %s", jwt)
 	path = fmt.Sprintf("/v1/periodic-donations/%d", defaultRecordRes.Data.ID)
 
+	idToken = generateIDToken(user)
+	cookie = http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    idToken,
+	}
+
+	// without cookie
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
 		resp = serveHTTP("PATCH", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
+	// without Authorization header
+	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
+		resp = serveHTTPWithCookies("PATCH", path, "", "application/json", "", cookie)
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
+	})
+
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
 		var otherUserID uint = 100
-		resp = serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
+		resp = serveHTTPWithCookies("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
@@ -586,7 +647,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 			"national_id": true,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 
@@ -602,7 +663,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
@@ -619,7 +680,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
 
 		Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
@@ -633,7 +694,9 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 func TestPatchAPrimeDonation(t *testing.T) {
 	const donorEmail string = "prim-donor@twreporter.org"
 	var authorization string
+	var cookie http.Cookie
 	var defaultRecordRes responseBody
+	var idToken string
 	var jwt string
 	var path string
 	var reqBody map[string]interface{}
@@ -652,14 +715,30 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	authorization = fmt.Sprintf("Bearer %s", jwt)
 	path = fmt.Sprintf("/v1/donations/prime/%d", defaultRecordRes.Data.ID)
 
+	idToken = generateIDToken(user)
+	cookie = http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    idToken,
+	}
+
+	// without cookie
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
 		resp = serveHTTP("PATCH", path, "", "application/json", "")
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
+	// without Authorization header
+	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
+		resp = serveHTTPWithCookies("PATCH", path, "", "application/json", "", cookie)
+		assert.Equal(t, http.StatusUnauthorized, resp.Code)
+	})
+
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
 		var otherUserID uint = 100
-		resp = serveHTTP("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization)
+		resp = serveHTTPWithCookies("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
@@ -672,7 +751,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 			"user_id": user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 
@@ -686,7 +765,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
@@ -702,7 +781,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTP("PATCH", path, string(reqBodyInBytes), "application/json", authorization)
+		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
 
 		Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
