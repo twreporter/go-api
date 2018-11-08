@@ -125,7 +125,7 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 		DonationDatetime string
 	}{
 		reqBody,
-		reqBody.DonationTimestamp.Time.In(location).Format("2006-01-02 15:04:05"),
+		reqBody.DonationTimestamp.Time.In(location).Format("2006-01-02 15:04:05 UTC+8"),
 	}
 
 	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "success-donation.tmpl", templateData); err != nil {
