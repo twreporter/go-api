@@ -24,20 +24,20 @@ type activationReqBody struct {
 }
 
 type donationSuccessReqBody struct {
-	Address           string    `json:"address"`
-	Amount            uint      `json:"amount" binding:"required"`
-	CardInfoLastFour  string    `json:"card_info_last_four"`
-	CardInfoType      string    `json:"card_info_type"`
-	Currency          string    `json:"currency"`
-	DonationTimestamp null.Time `json:"donation_timestamp"`
-	DonationLink      string    `json:"donation_link"`
-	DonationMethod    string    `json:"donation_method" binding:"required"`
-	DonationType      string    `json:"donation_type" binding:"required"`
-	Email             string    `json:"email" binding:"required"`
-	Name              string    `json:"name"`
-	NationalID        string    `json:"national_id"`
-	OrderNumber       string    `json:"order_number" binding:"required"`
-	PhoneNumber       string    `json:"phone_number"`
+	Address           string   `json:"address"`
+	Amount            uint     `json:"amount" binding:"required"`
+	CardInfoLastFour  string   `json:"card_info_last_four"`
+	CardInfoType      string   `json:"card_info_type"`
+	Currency          string   `json:"currency"`
+	DonationTimestamp null.Int `json:"donation_timestamp"`
+	DonationLink      string   `json:"donation_link"`
+	DonationMethod    string   `json:"donation_method" binding:"required"`
+	DonationType      string   `json:"donation_type" binding:"required"`
+	Email             string   `json:"email" binding:"required"`
+	Name              string   `json:"name"`
+	NationalID        string   `json:"national_id"`
+	OrderNumber       string   `json:"order_number" binding:"required"`
+	PhoneNumber       string   `json:"phone_number"`
 }
 
 // NewMailController is used to new *MailController
@@ -96,12 +96,13 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.H, error) {
 	const subject = "感謝您成為報導者的夥伴"
 	const taipeiLocationName = "Asia/Taipei"
+	var donationDatetime time.Time
 	var err error
 	var failData gin.H
+	var location *time.Location
 	var mailBody string
 	var out bytes.Buffer
 	var reqBody donationSuccessReqBody
-	var location *time.Location
 	var valid bool
 
 	// parse requst JSON into struct
@@ -114,8 +115,10 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 		reqBody.Currency = "TWD"
 	}
 
-	if !reqBody.DonationTimestamp.Valid {
-		reqBody.DonationTimestamp = null.TimeFrom(time.Now())
+	if reqBody.DonationTimestamp.Valid {
+		donationDatetime = time.Unix(reqBody.DonationTimestamp.Int64, 0)
+	} else {
+		donationDatetime = time.Now()
 	}
 
 	location, _ = time.LoadLocation(taipeiLocationName)
@@ -125,7 +128,7 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 		DonationDatetime string
 	}{
 		reqBody,
-		reqBody.DonationTimestamp.Time.In(location).Format("2006-01-02 15:04:05 UTC+8"),
+		donationDatetime.In(location).Format("2006-01-02 15:04:05 UTC+8"),
 	}
 
 	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "success-donation.tmpl", templateData); err != nil {

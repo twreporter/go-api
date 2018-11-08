@@ -13,28 +13,6 @@ import (
 	"twreporter.org/go-api/utils"
 )
 
-type activationReqBody struct {
-	Email        string `json:"email"`
-	ActivateLink string `json:"activate_link"`
-}
-
-type donationSuccessReqBody struct {
-	Address           string `json:"address"`
-	Amount            uint   `json:"amount" binding:"required"`
-	CardInfoLastFour  string `json:"card_info_last_four"`
-	CardInfoType      string `json:"card_info_type"`
-	Currency          string `json:"currency"`
-	DonationTimestamp string `json:"donation_timestamp"`
-	DonationLink      string `json:"donation_link"`
-	DonationMethod    string `json:"donation_method" binding:"required"`
-	DonationType      string `json:"donation_type" binding:"required"`
-	Email             string `json:"email" binding:"required"`
-	Name              string `json:"name"`
-	NationalID        string `json:"national_id"`
-	OrderNumber       string `json:"order_number" binding:"required"`
-	PhoneNumber       string `json:"phone_number"`
-}
-
 func TestSendActivation(t *testing.T) {
 	const expire int = 100
 	var authorization string
@@ -110,11 +88,12 @@ func TestSendDonationSuccessMail(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 	var getDefaultReqBody = func() map[string]interface{} {
 		return map[string]interface{}{
-			"email":           Globs.Defaults.Account,
-			"order_number":    "test-order-number",
-			"amount":          300,
-			"donation_method": "信用卡捐款",
-			"donation_type":   "定期定額",
+			"email":              Globs.Defaults.Account,
+			"order_number":       "test-order-number",
+			"amount":             300,
+			"donation_method":    "信用卡捐款",
+			"donation_type":      "定期定額",
+			"donation_timestamp": 1541671797,
 		}
 	}
 
