@@ -19,29 +19,30 @@ type activationReqBody struct {
 }
 
 type donationSuccessReqBody struct {
-	Address          string `json:"address"`
-	Amount           uint   `json:"amount" binding:"required"`
-	CardInfoLastFour string `json:"card_info_four_number"`
-	CardInfoType     string `json:"card_info_type"`
-	Currency         string `json:"currency"`
-	DonationDatetime string `json:"donation_datetime"`
-	DonationLink     string `json:"donation_link"`
-	DonationMethod   string `json:"donation_method" binding:"required"`
-	DonationType     string `json:"donation_type" binding:"required"`
-	Email            string `json:"email" binding:"required"`
-	Name             string `json:"name"`
-	NationalID       string `json:"national_id"`
-	OrderNumber      string `json:"order_number" binding:"required"`
-	PhoneNumber      string `json:"phone_number"`
+	Address           string `json:"address"`
+	Amount            uint   `json:"amount" binding:"required"`
+	CardInfoLastFour  string `json:"card_info_last_four"`
+	CardInfoType      string `json:"card_info_type"`
+	Currency          string `json:"currency"`
+	DonationTimestamp string `json:"donation_timestamp"`
+	DonationLink      string `json:"donation_link"`
+	DonationMethod    string `json:"donation_method" binding:"required"`
+	DonationType      string `json:"donation_type" binding:"required"`
+	Email             string `json:"email" binding:"required"`
+	Name              string `json:"name"`
+	NationalID        string `json:"national_id"`
+	OrderNumber       string `json:"order_number" binding:"required"`
+	PhoneNumber       string `json:"phone_number"`
 }
 
 func TestSendActivation(t *testing.T) {
+	const expire int = 100
 	var authorization string
 	var reqBody = make(map[string]interface{})
 	var bodyBytes []byte
 	var resp *httptest.ResponseRecorder
 
-	authorization, _ = utils.RetrieveMailServiceAccessToken(100)
+	authorization, _ = utils.RetrieveMailServiceAccessToken(expire)
 	authorization = fmt.Sprintf("Bearer %s", authorization)
 
 	// successful case
@@ -102,26 +103,27 @@ func TestSendActivation(t *testing.T) {
 }
 
 func TestSendDonationSuccessMail(t *testing.T) {
+	const expire int = 100
 	var authorization string
 	var reqBody = make(map[string]interface{})
 	var bodyBytes []byte
 	var resp *httptest.ResponseRecorder
-	var defaultReqBody = map[string]interface{}{
-		"email":           Globs.Defaults.Account,
-		"order_number":    "test-order-number",
-		"amount":          300,
-		"donation_method": "信用卡捐款",
-		"donation_type":   "定期定額",
+	var getDefaultReqBody = func() map[string]interface{} {
+		return map[string]interface{}{
+			"email":           Globs.Defaults.Account,
+			"order_number":    "test-order-number",
+			"amount":          300,
+			"donation_method": "信用卡捐款",
+			"donation_type":   "定期定額",
+		}
 	}
 
-	authorization, _ = utils.RetrieveMailServiceAccessToken(100)
+	authorization, _ = utils.RetrieveMailServiceAccessToken(expire)
 	authorization = fmt.Sprintf("Bearer %s", authorization)
 
 	// successful case
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		for key, value := range defaultReqBody {
-			reqBody[key] = value
-		}
+		reqBody = getDefaultReqBody()
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
 		assert.Equal(t, http.StatusNoContent, resp.Code)
@@ -140,9 +142,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		// =====================================
 
 		// Copy reqBody from defaultReqBody
-		for key, value := range defaultReqBody {
-			reqBody[key] = value
-		}
+		reqBody = getDefaultReqBody()
 		reqBody["amount"] = "wrong-amount-type"
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
@@ -157,9 +157,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		// Error situation:
 		// donation_method is empty
 		// =====================================
-		for key, value := range defaultReqBody {
-			reqBody[key] = value
-		}
+		reqBody = getDefaultReqBody()
 		reqBody["donation_method"] = ""
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
@@ -169,9 +167,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		// Error situation:
 		// donation_type is empty
 		// =====================================
-		for key, value := range defaultReqBody {
-			reqBody[key] = value
-		}
+		reqBody = getDefaultReqBody()
 		reqBody["donation_type"] = ""
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
@@ -181,9 +177,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		// Error situation:
 		// email is empty
 		// =====================================
-		for key, value := range defaultReqBody {
-			reqBody[key] = value
-		}
+		reqBody = getDefaultReqBody()
 		reqBody["email"] = ""
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
@@ -193,9 +187,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 		// Error situation:
 		// order_number is empty
 		// =====================================
-		for key, value := range defaultReqBody {
-			reqBody[key] = value
-		}
+		reqBody = getDefaultReqBody()
 		reqBody["order_number"] = ""
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)
@@ -203,9 +195,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 	})
 
 	t.Run("StatusCode=StatusInternalServerError", func(t *testing.T) {
-		for key, value := range defaultReqBody {
-			reqBody[key] = value
-		}
+		reqBody = getDefaultReqBody()
 		reqBody["email"] = Globs.Defaults.ErrorEmailAddress
 		bodyBytes, _ = json.Marshal(reqBody)
 		resp = serveHTTP("POST", fmt.Sprintf("/v1/%s", globals.SendSuccessDonationRoutePath), string(bodyBytes), "application/json", authorization)

@@ -6,10 +6,10 @@ Send thank-you donation email to a user.
 The email contains the following attributes
 - address - address of the user
 - amount - donation amount
-- card_info_four_number - last four number of credit card, e.g. 4242
+- card_info_last_four - last four number of credit card, e.g. 4242
 - card_info_type - type of credit card, e.g. VISA
 - currency - donation currency, e.g. TWD
-- donation_datetime - datetime(YYYY-MM-DD hh:mm:ss) of donation made, e.g. 2018-10-30 14:00:01
+- donation_timestamp - timestamp of donation made, e.g. 1541641779
 - donation_link - URL of the web page of the donation
 - donation_method - the way user pay the money, e.g. 信用卡支付
 - donation_type - donation type, e.g. 定期定額
@@ -40,10 +40,10 @@ The email contains the following attributes
                 "data": {
                     "address": "address is optional"
                     "amount": "amount(number) is required",
-                    "card_info_four_number": "card_info_four_number is optional",
+                    "card_info_last_four": "card_info_last_four is optional",
                     "card_info_type": "card_info_type is optional",
                     "currency": "currency is optional, default is TWD",
-                    "donation_datetime": "donation_datetime is optional, default is current datetime",
+                    "donation_timestamp": "donation_timestamp is optional, default is current timestamp",
                     "donation_link": "donation_link is optional",
                     "donation_method": "donation_method is required",
                     "donation_type": "donation_type is required",
@@ -51,7 +51,7 @@ The email contains the following attributes
                     "name": "name is optional",
                     "national_id": "national_id is optional",
                     "order_number": "order_number is required",
-                    "phone_number: "phone_number is optional"
+                    "phone_number": "phone_number is optional"
                 }
             }
 
@@ -81,10 +81,10 @@ The email contains the following attributes
 ### DonationSuccessMailModel
 + address: 台北市南京東路一段100號
 + amount: 500 (required, number)
-+ `card_info_four_number`: 4242
++ `card_info_last_four`: 4242
 + `card_info_type`: visa
 + currency: TWD
-+ `donation_datetime`: `2018-10-30 12:45:30`
++ `donation_timestamp`: 1541641779
 + `donation_link`: `https://support.twreporter.org/`
 + `donation_method`: 信用卡支付 (required)
 + `donation_type`: 定期定額 (required)

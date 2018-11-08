@@ -109,26 +109,32 @@ func RetrieveV2AccessToken(userID uint, email string, expiration int) (string, e
 	return genToken(claims, globals.Conf.App.JwtSecret)
 }
 
+// RetrieveMailServiceAccessToken generate JWT for mail service validation
 func RetrieveMailServiceAccessToken(expiration int) (string, error) {
-	claims := jwt.StandardClaims{
+	var secret = globals.MailServiceJWTPrefix + globals.Conf.App.JwtSecret
+	var claims = jwt.StandardClaims{
 		IssuedAt:  time.Now().Unix(),
 		ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),
 		Issuer:    globals.Conf.App.JwtIssuer,
 		Audience:  globals.Conf.App.JwtAudience,
 		Subject:   AccessTokenSubject,
 	}
-	return genToken(claims, globals.MailServiceJWTPrefix+globals.Conf.App.JwtSecret)
+
+	return genToken(claims, secret)
 }
 
 // genToken - generate jwt token according to user's info
 func genToken(claims jwt.Claims, secret string) (string, error) {
-	var errorWhere = "RetrieveToken"
+	const errorWhere = "RetrieveToken"
+	var err error
+	var token *jwt.Token
+	var tokenString string
 
 	// create the token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/* Sign the token with our secret */
-	tokenString, err := token.SignedString([]byte(secret))
+	tokenString, err = token.SignedString([]byte(secret))
 
 	if err != nil {
 		return "", models.NewAppError(errorWhere, "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)
