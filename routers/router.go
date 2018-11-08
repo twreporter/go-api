@@ -150,8 +150,9 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// =============================
 
 	mailContrl := cf.GetMailController()
-	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendActivation))
-	v1Group.POST(fmt.Sprintf("/%s", globals.SendSuccessDonationRoutePath), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendDonationSuccessMail))
+	mailMiddleware := middlewares.GetMailServiceMiddleware()
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), mailMiddleware.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendActivation))
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendSuccessDonationRoutePath), mailMiddleware.CheckJWT(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendDonationSuccessMail))
 
 	// =============================
 	// v2 oauth endpoints

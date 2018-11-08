@@ -74,7 +74,7 @@ func RetrieveV1Token(userID uint, email string) (string, error) {
 			Audience:  globals.Conf.App.JwtAudience,
 		},
 	}
-	return genToken(claims)
+	return genToken(claims, globals.Conf.App.JwtSecret)
 }
 
 func RetrieveV2IDToken(userID uint, email, firstName, lastName string, expiration int) (string, error) {
@@ -91,7 +91,7 @@ func RetrieveV2IDToken(userID uint, email, firstName, lastName string, expiratio
 			Subject:   IDTokenSubject,
 		},
 	}
-	return genToken(claims)
+	return genToken(claims, globals.Conf.App.JwtSecret)
 }
 
 func RetrieveV2AccessToken(userID uint, email string, expiration int) (string, error) {
@@ -106,18 +106,35 @@ func RetrieveV2AccessToken(userID uint, email string, expiration int) (string, e
 			Subject:   AccessTokenSubject,
 		},
 	}
-	return genToken(claims)
+	return genToken(claims, globals.Conf.App.JwtSecret)
+}
+
+// RetrieveMailServiceAccessToken generate JWT for mail service validation
+func RetrieveMailServiceAccessToken(expiration int) (string, error) {
+	var secret = globals.MailServiceJWTPrefix + globals.Conf.App.JwtSecret
+	var claims = jwt.StandardClaims{
+		IssuedAt:  time.Now().Unix(),
+		ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),
+		Issuer:    globals.Conf.App.JwtIssuer,
+		Audience:  globals.Conf.App.JwtAudience,
+		Subject:   AccessTokenSubject,
+	}
+
+	return genToken(claims, secret)
 }
 
 // genToken - generate jwt token according to user's info
-func genToken(claims jwt.Claims) (string, error) {
-	var errorWhere = "RetrieveToken"
+func genToken(claims jwt.Claims, secret string) (string, error) {
+	const errorWhere = "RetrieveToken"
+	var err error
+	var token *jwt.Token
+	var tokenString string
 
 	// create the token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/* Sign the token with our secret */
-	tokenString, err := token.SignedString([]byte(globals.Conf.App.JwtSecret))
+	tokenString, err = token.SignedString([]byte(secret))
 
 	if err != nil {
 		return "", models.NewAppError(errorWhere, "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)
