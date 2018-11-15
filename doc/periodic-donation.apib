@@ -97,85 +97,6 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             }
 
 
-### Create a Single Periodic Donation [POST]
-+ Parameters
-    + id (number) ... ID of the Periodic Donation
-
-+ Request 
-
-    + Headers
-
-            Content-Type: application/json
-            Authorization: Bearer <jwt>
-            
-    + Attributes (object)
-        + amount: 500 (required, number)
-        + currency: TWD 
-        + details: 報導者定期定額捐款
-        + donor (required, object)
-            + email: developer@twporter.org (required)
-        + frequency: monthly (required)
-        + prime: `test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9` (required)
-        + `merchant_id`: `twreporter_CTBC`
-        + `user_id`: 1 (required, number)
-        + `max_paid_times`: 3 (optional, number)
-
-+ Response 201
-
-    + Attributes (PeriodicDonationResponse)
-
-+ Response 400 (application/json)
-
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "prime": "prime(string) is required",
-                    "amount": "amount(number) is required",
-                    "donor": {
-                        "email": "email(string) is required",
-                    },
-                    "details": "details(string) is optional",
-                    "merchant_id": "merchant_id(string) is optional",
-                    "frequency": "frequency(string) is optional, default: 'monthly'. only support 'monthly' and 'yearly'",
-                    "user_id": "user_id(number) is required",
-                    "max_paid_times": "max_paid_times(number) is optional, default: 2147483647"
-                }
-            }
-
-+ Response 401 (application/json)
-
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "req.Headers.Authorization": "JWT is not valid"
-                }
-            }
-
-+ Response 403 (application/json)
-
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "req.Headers.Authorization": "request is not permitted for the resource"
-                }
-            }
-
-+ Response 500 (application/json)
-
-    
-    + Body
-
-            {
-                "status": "error",
-                "message": "unknown error."
-            }
-
 ### Modify a Single Periodic Donation [PATCH]
 + Parameters
     + id (number) ... ID of the Periodic Donation
@@ -220,6 +141,85 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                     "send_receipt": "send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'",
                     "to_feedback": "to_feedback(bool) is optional."
                     "user_id": "user_id(number) is required"
+                }
+            }
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "JWT is not valid"
+                }
+            }
+
++ Response 403 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "request is not permitted for the resource"
+                }
+            }
+
++ Response 500 (application/json)
+
+    
+    + Body
+
+            {
+                "status": "error",
+                "message": "unknown error."
+            }
+
+## Periodic Donation [/v1/periodic_donations]
+
+### Create a Single Periodic Donation [POST]
+
++ Request 
+
+    + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+            
+    + Attributes (object)
+        + amount: 500 (required, number)
+        + currency: TWD 
+        + details: 報導者定期定額捐款
+        + donor (required, object)
+            + email: developer@twporter.org (required)
+        + frequency: monthly (required)
+        + prime: `test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9` (required)
+        + `merchant_id`: `twreporter_CTBC`
+        + `user_id`: 1 (required, number)
+        + `max_paid_times`: 3 (optional, number)
+
++ Response 201
+
+    + Attributes (PeriodicDonationResponse)
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "prime": "prime(string) is required",
+                    "amount": "amount(number) is required",
+                    "donor": {
+                        "email": "email(string) is required",
+                    },
+                    "details": "details(string) is optional",
+                    "merchant_id": "merchant_id(string) is optional",
+                    "frequency": "frequency(string) is optional, default: 'monthly'. only support 'monthly' and 'yearly'",
+                    "user_id": "user_id(number) is required",
+                    "max_paid_times": "max_paid_times(number) is optional, default: 2147483647"
                 }
             }
 
