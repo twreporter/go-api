@@ -389,8 +389,6 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp, donati
 		PhoneNumber:      body.Cardholder.PhoneNumber.ValueOrZero(),
 	}
 
-	log.Infof("%#v", reqBody)
-
 	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {
 		log.Warnf("fail to send %s donation(order_number: %s) thank you mail due to %s", donationType, body.OrderNumber, err.Error())
 	}
