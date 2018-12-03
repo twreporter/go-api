@@ -25,8 +25,8 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	SigningMethod: jwt.SigningMethodHS256,
 })
 
-// CheckJWT checks the jwt token in the Authorization header is valid or not
-func CheckJWT() gin.HandlerFunc {
+// ValidateAuthorization checks the jwt token in the Authorization header is valid or not
+func ValidateAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
