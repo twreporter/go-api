@@ -15,21 +15,35 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+const authUserProperty = "app-auth-jwt"
+
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 		return []byte(globals.Conf.App.JwtSecret), nil
 	},
-	// TODO
-	// add UserProperty 'app-jwt' to replace default 'user'
-
+	UserProperty:  authUserProperty,
 	SigningMethod: jwt.SigningMethodHS256,
 })
 
 // ValidateAuthorization checks the jwt token in the Authorization header is valid or not
 func ValidateAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
+		const verifyRequired = true
+		var err error
+		var userProperty interface{}
+		var claims jwt.MapClaims
+
+		if err = jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		userProperty = c.Request.Context().Value(authUserProperty)
+		claims = userProperty.(*jwt.Token).Claims.(jwt.MapClaims)
+		if !claims.VerifyAudience(globals.Conf.App.JwtAudience, verifyRequired) ||
+			!claims.VerifyIssuer(globals.Conf.App.JwtIssuer, verifyRequired) {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
 		}
 	}
 }
@@ -37,10 +51,14 @@ func ValidateAuthorization() gin.HandlerFunc {
 // ValidateUserID checks claim userID in the jwt with :userID param in the request url.
 // if the two values are not the same, return the 401 response
 func ValidateUserID() gin.HandlerFunc {
+	var userID string
+	var userIDClaim interface{}
+	var userProperty interface{}
+
 	return func(c *gin.Context) {
-		user := c.Request.Context().Value("user")
-		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
-		userID := c.Param("userID")
+		userProperty = c.Request.Context().Value(authUserProperty)
+		userIDClaim = userProperty.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
+		userID = c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
@@ -53,8 +71,11 @@ func ValidateUserIDInReqBody() gin.HandlerFunc {
 			UserID uint64 `json:"user_id" form:"user_id" binding:"required"`
 		}{}
 		var err error
-		user := c.Request.Context().Value("user")
-		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
+		var userIDClaim interface{}
+		var userProperty interface{}
+
+		userProperty = c.Request.Context().Value(authUserProperty)
+		userIDClaim = userProperty.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
 
 		// gin.Context.Bind does not support to bind `JSON` body multiple times
 		// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
@@ -108,40 +129,8 @@ func ValidateAuthentication() gin.HandlerFunc {
 		}
 
 		if !token.Valid {
-			panic(errors.New("id_token is not valid"))
+			err = errors.New("id_token is invalid")
+			panic(err)
 		}
-	}
-}
-
-// SetEmailClaim get email value from jwt, and set it into gin.Context
-func SetEmailClaim() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user := c.Request.Context().Value("user")
-		emailClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["email"]
-
-		c.Set("emailClaim", fmt.Sprint(emailClaim))
-
-		// The reason why we don't validate the email value in POST body with jwt email claim HERE
-		// is because c.Bind(&login) only can be executed once.
-		// If we get POST body here, then in the controllers, such as controllers/account.go,
-		// we cannot c.Bind(&login) to get the POST body.
-		// Hence, here only set emailClaim in the gin.Context
-	}
-}
-
-// ValidateAdminUsers ...
-func ValidateAdminUsers() gin.HandlerFunc {
-	var whiteList = []string{"nickhsine@twreporter.org", "han@twreporter.org", "yucj@twreporter.org", "developer@twreporter.org"}
-	return func(c *gin.Context) {
-		user := c.Request.Context().Value("user")
-		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["email"]
-
-		for _, v := range whiteList {
-			if v == fmt.Sprint(userIDClaim) {
-				return
-			}
-		}
-
-		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 }
