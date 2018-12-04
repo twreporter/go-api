@@ -94,84 +94,6 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                 "message": "unknown error."
             }
 
-
-### Create a Single Prime Donation [POST]
-+ Parameters
-    + id (number) ... ID of the Prime Donation
-
-+ Request 
-
-    + Headers
-
-            Content-Type: application/json
-            Authorization: Bearer <jwt>
-            
-    + Attributes (object)
-        + amount: 500 (required, number)
-        + currency: TWD 
-        + details: 報導者單筆捐款
-        + donor (required, object)
-            + email: developer@twporter.org (required)
-        + prime: `test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9` (required)
-        + `pay_method`: `credit_card` (required)
-        + `merchant_id`: `twreporter_CTBC`
-        + `user_id`: 1 (required, number)
-
-+ Response 201
-
-    + Attributes (PrimeDonationResponse)
-
-+ Response 400 (application/json)
-
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "prime": "prime(string) is required",
-                    "amount": "amount(number) is required",
-                    "donor": {
-                        "email": "email(string) is required",
-                    },
-                    "details": "details(string) is optional",
-                    "merchant_id": "merchant_id(string) is optional",
-                    "pay_method": "pay_method(string) is required, currently only support 'credit_card'"
-                    "user_id": "user_id(number) is required"
-                }
-            }
-
-+ Response 401 (application/json)
-
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "req.Headers.Authorization": "JWT is not valid"
-                }
-            }
-
-+ Response 403 (application/json)
-
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "req.Headers.Authorization": "request is not permitted for the resource"
-                }
-            }
-
-+ Response 500 (application/json)
-
-    
-    + Body
-
-            {
-                "status": "error",
-                "message": "unknown error."
-            }
-
 ### Modify a Single Prime Donation [PATCH]
 + Parameters
     + id (number) ... ID of the Prime Donation
@@ -249,6 +171,82 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                 "message": "unknown error."
             }
 
+## Prime Donation [/v1/donations/prime]
+
+### Create a Single Prime Donation [POST]
+
++ Request 
+
+    + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+            
+    + Attributes (object)
+        + amount: 500 (required, number)
+        + currency: TWD 
+        + details: 報導者單筆捐款
+        + donor (required, object)
+            + email: developer@twporter.org (required)
+        + prime: `test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9` (required)
+        + `pay_method`: `credit_card` (required)
+        + `merchant_id`: `twreporter_CTBC`
+        + `user_id`: 1 (required, number)
+
++ Response 201
+
+    + Attributes (PrimeDonationResponse)
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "prime": "prime(string) is required",
+                    "amount": "amount(number) is required",
+                    "donor": {
+                        "email": "email(string) is required",
+                    },
+                    "details": "details(string) is optional",
+                    "merchant_id": "merchant_id(string) is optional",
+                    "pay_method": "pay_method(string) is required, currently only support 'credit_card'"
+                    "user_id": "user_id(number) is required"
+                }
+            }
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "JWT is not valid"
+                }
+            }
+
++ Response 403 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.Headers.Authorization": "request is not permitted for the resource"
+                }
+            }
+
++ Response 500 (application/json)
+
+    
+    + Body
+
+            {
+                "status": "error",
+                "message": "unknown error."
+            }
 
 ## Data Structures
 ### PrimeDonationModel

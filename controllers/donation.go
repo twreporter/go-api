@@ -52,6 +52,12 @@ const (
 	monthlyFrequency = "monthly"
 	yearlyFrequency  = "yearly"
 	oneTimeFrequency = "one_time"
+
+	payMethodCreditCard = "credit_card"
+	payMethodLine       = "line"
+	payMethodGoogle     = "google"
+	payMethodApple      = "apple"
+	payMethodSamsung    = "samsung"
 )
 
 // pay type Enum
@@ -63,11 +69,19 @@ const (
 
 // pay method collections
 var payMethodCollections = []string{
-	"credit_card",
-	"line",
-	"google",
-	"apple",
-	"samsung",
+	payMethodCreditCard,
+	payMethodLine,
+	payMethodGoogle,
+	payMethodApple,
+	payMethodSamsung,
+}
+
+var payMethodMap = map[string]string{
+	payMethodCreditCard: "信用卡支付",
+	payMethodLine:       "Line Pay",
+	payMethodGoogle:     "Google Pay",
+	payMethodApple:      "Apple Pay",
+	payMethodSamsung:    "Samsung Pay",
 }
 
 var cardInfoTypes = map[int64]string{
@@ -366,7 +380,7 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp, donati
 		CardInfoLastFour: body.CardInfo.LastFour.ValueOrZero(),
 		CardInfoType:     cardInfoTypes[body.CardInfo.Type.ValueOrZero()],
 		Currency:         body.Currency,
-		DonationMethod:   "信用卡支付",
+		DonationMethod:   payMethodMap[body.PayMethod],
 		DonationType:     donationType,
 		Email:            body.Cardholder.Email,
 		Name:             body.Cardholder.Name.ValueOrZero(),
