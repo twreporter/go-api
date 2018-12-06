@@ -12,7 +12,8 @@ var defaultConf = []byte(`
 environment: development
 cors:
     allow_origins:
-        - '*'
+        - 'http://localhost:3000'
+        - 'http://localhost:3001'
 app:
     protocol: http
     host: localhost
@@ -21,7 +22,7 @@ app:
     jwt_secret: secret_token
     jwt_expiration: 604800
     jwt_issuer: 'http://testtest.twreporter.org:8080' # used for issuer claim
-    jwt_audience: 'http://testtest.twreporter.org:3000' # used for audience claim
+    jwt_audience: 'http://testtest.twreporter.org:8080' # used for audience claim
 email:
     smtp:
         username: no-reply@t-reporters.org

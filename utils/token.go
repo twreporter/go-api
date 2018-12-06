@@ -48,6 +48,7 @@ type AccessTokenJWTClaims struct {
 }
 
 func (idc IDTokenJWTClaims) Valid() error {
+	const verifyRequired = true
 	var err error
 
 	// Validate expiration date
@@ -57,6 +58,18 @@ func (idc IDTokenJWTClaims) Valid() error {
 
 	if IDTokenSubject != idc.StandardClaims.Subject {
 		errMsg := "Invalid subject"
+		err = *(jwt.NewValidationError(errMsg, jwt.ValidationErrorClaimsInvalid))
+		return err
+	}
+
+	if !idc.VerifyAudience(globals.Conf.App.JwtAudience, verifyRequired) {
+		errMsg := "Invalid audience"
+		err = *(jwt.NewValidationError(errMsg, jwt.ValidationErrorClaimsInvalid))
+		return err
+	}
+
+	if !idc.VerifyIssuer(globals.Conf.App.JwtIssuer, verifyRequired) {
+		errMsg := "Invalid issuer"
 		err = *(jwt.NewValidationError(errMsg, jwt.ValidationErrorClaimsInvalid))
 		return err
 	}
