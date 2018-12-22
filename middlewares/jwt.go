@@ -45,7 +45,7 @@ func ValidateAuthorization() gin.HandlerFunc {
 		var claims jwt.MapClaims
 
 		if err = jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
@@ -132,7 +132,7 @@ func ValidateAuthentication() gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"status": "fail",
 					"data": gin.H{
-						"req.Cookies.id_token": err.Error(),
+						"req.Headers.Cookies.id_token": err.Error(),
 					},
 				})
 				return
