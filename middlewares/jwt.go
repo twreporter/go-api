@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -8,7 +9,7 @@ import (
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/utils"
 
-	//log "github.com/Sirupsen/logrus"
+	// log "github.com/Sirupsen/logrus"
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -23,6 +24,16 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	},
 	UserProperty:  authUserProperty,
 	SigningMethod: jwt.SigningMethodHS256,
+	ErrorHandler: func(w http.ResponseWriter, r *http.Request, err string) {
+		var res = map[string]interface{}{
+			"status": "fail",
+			"data": map[string]interface{}{
+				"req.Headers.Authorization": err,
+			},
+		}
+		var resByte, _ = json.Marshal(res)
+		http.Error(w, string(resByte), http.StatusUnauthorized)
+	},
 })
 
 // ValidateAuthorization checks the jwt token in the Authorization header is valid or not
@@ -34,7 +45,7 @@ func ValidateAuthorization() gin.HandlerFunc {
 		var claims jwt.MapClaims
 
 		if err = jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
@@ -42,7 +53,12 @@ func ValidateAuthorization() gin.HandlerFunc {
 		claims = userProperty.(*jwt.Token).Claims.(jwt.MapClaims)
 		if !claims.VerifyAudience(globals.Conf.App.JwtAudience, verifyRequired) ||
 			!claims.VerifyIssuer(globals.Conf.App.JwtIssuer, verifyRequired) {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"status": "fail",
+				"data": gin.H{
+					"req.Cookies.id_token": "aud or issuer claim is invalid",
+				},
+			})
 			return
 		}
 	}
@@ -60,7 +76,12 @@ func ValidateUserID() gin.HandlerFunc {
 		userIDClaim = userProperty.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
 		userID = c.Param("userID")
 		if userID != fmt.Sprint(userIDClaim) {
-			c.AbortWithStatus(http.StatusForbidden)
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"status": "fail",
+				"data": gin.H{
+					"req.Headers.Authorization": "the request is not permitted to reach the resource",
+				},
+			})
 		}
 	}
 }
@@ -111,7 +132,7 @@ func ValidateAuthentication() gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"status": "fail",
 					"data": gin.H{
-						"req.cookies.id_token": err.Error(),
+						"req.Headers.Cookies.id_token": err.Error(),
 					},
 				})
 				return

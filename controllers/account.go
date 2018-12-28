@@ -8,6 +8,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 
 	"twreporter.org/go-api/globals"
@@ -420,23 +421,24 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 // TokenDispatch returns the `access_token` in payload for frontend server
 func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	const acccessTokenExpiration = 60 * 60 * 24 * 14 // 2week
+	const idTokenKey = "id_token"
+	var accessToken string
+	var claims = new(utils.IDTokenJWTClaims)
+	var err error
+	var idToken string
+	var user models.User
 
-	errorWhere := "MembershipController.TokenDispatch"
-
-	type reqBody struct {
-		UserID uint `json:"user_id"`
+	if idToken, err = c.Cookie(idTokenKey); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{"req.Headers.Cookies.id_token": err.Error()}})
+		return
 	}
 
-	// Validate the request body
-	body := reqBody{}
-	if err := c.Bind(&body); nil != err {
-		log.Error(errorWhere + "():" + err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
-			"user_id": "invalid",
-		}})
+	if _, _, err = new(jwt.Parser).ParseUnverified(idToken, claims); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{"req.Headers.Cookies.id_token": err.Error()}})
+		return
 	}
 
-	user, err := mc.Storage.GetUserByID(fmt.Sprint(body.UserID))
+	user, err = mc.Storage.GetUserByID(fmt.Sprint(claims.UserID))
 	if nil != err {
 		appErr := err.(*models.AppError)
 		log.Error(appErr.Error())
@@ -444,7 +446,7 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 		return
 	}
 
-	jwt, err := utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), acccessTokenExpiration)
+	accessToken, err = utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), acccessTokenExpiration)
 	if err != nil {
 		appErr := err.(*models.AppError)
 		log.Error(appErr.Error())
@@ -453,7 +455,7 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{
-		"jwt": jwt,
+		"jwt": accessToken,
 	}})
 }
 
