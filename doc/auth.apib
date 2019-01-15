@@ -1,0 +1,88 @@
+## Data Structures
+
+### SigninRequest
++ email: user@example.com (required)
++ destination: https://www.twreporter.org
+
+# Group Membership Service
+Twreporter Membership service api
+
+## Signin [/v2/signin]
+Validate the logining user and send the activation email
+
+### User signins [POST]
++ Request with Body (application/json)
+
+    + Attributes(SigninRequest)
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data (SigninRequest, required)
+        
++ Response 201 (application/json)
+    
+    + Attributes
+        + status: success (required)
+        + data (SigninRequest, required) 
+
++ Response 400
+
+    + Attributes
+        + status: fail (required)
+        + data
+            + email: "email is required"
+            + destination: "destination is optional"
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: "Generating active token occurs error"
+
+## Activate [/v2/activate{?email,token,destination}]
+Send identity token if valid user sigins
+
+### Activate user [GET]
++ Parameters
+    + email: user@example.com (required)
+    + token: 26dlFidiTVY= (required)
+    + destination: https://www.twreporter.org (optional)
+
++ Response 302
+    
+## Token [/v2/token]
+Authenticate user request and grant access token to the corresponding domain
+
+### Dispatch access token [POST]
+
++ Response 200
+    
+    + Attributes
+        + status: success (required)
+        + data
+            + jwt: access_token (required)
+
++ Response 401
+    
+    + Attributes
+        + status: fail (required)
+        + data
+            + `req.Headers.Cookie.id_token`: id_token is invalid
+
++ Response 500
+ 
+    + Attributes
+        + status: error (required)
+        + message: cannot get user data
+
+## Logout [/v2/logout{?destination}]
+Invalidate the identity token set on the root domain
+
+### User logouts [GET]
++ Parameters
+    + destination: https://www.twreporter.org
+
++ Response 302
+

@@ -1,0 +1,34 @@
+# Group Oauth Service
+
+## Google oauth request [/v2/auth/google{?destination}]
+Redirect a user request to google oauth server
+
+### Redirect google request [GET]
++ Parameters
+    + destination: https://www.twreporter.org
+
++ Response 302
+
+## Google oauth response [/v2/auth/google/callback]
+Process user information from google and grants identity token
+
+### Response google callback [GET]
+
++ Response 302
+
+## Facebook oauth request [/v2/auth/facebook{?destination}]
+Redirect a user request to facebook oauth server 
+
+### Redirect facebook request [GET]
+
++ Parameters
+    + destination: https://www.twreporter.org
+
++ Response 302
+
+## Facebook oauth response [/v2/auth/facebook/callback]
+Process user information from facebook and grants identity token
+
+### Response facebook callback [GET]
+
++ Response 302
