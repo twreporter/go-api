@@ -9,12 +9,19 @@ Redirect a user request to google oauth server
 
 + Response 302
 
-## Google oauth response [/v2/auth/google/callback]
+## Google oauth response [/v2/auth/google/callback{?state,code}]
 Process user information from google and grants identity token
 
 ### Response google callback [GET]
++ Parameters
+    + state: `grqsh0n3OgO-0RCavx7NOASlCNyfoNU8k_Ty6_ZcrCM%3D`
+    + code: `4/1ADU33t4EZbMkrnH7GNCbIF9eQtRgoGNmM3Wy6Ika8SQXtroi8nSHpqsDjvwda87xvQQ-0fbxFI5hl0-V_f37Kg`
 
 + Response 302
+
+    + Headers
+            
+            Set-Cookie: id_token=<cookie value>; Domain=twreporter.org; Max-Age=15552000; HttpOnly; Secure
 
 ## Facebook oauth request [/v2/auth/facebook{?destination}]
 Redirect a user request to facebook oauth server 
@@ -26,9 +33,17 @@ Redirect a user request to facebook oauth server
 
 + Response 302
 
-## Facebook oauth response [/v2/auth/facebook/callback]
+## Facebook oauth response [/v2/auth/facebook/callback{?state,code}]
 Process user information from facebook and grants identity token
 
 ### Response facebook callback [GET]
++ Parameters
+    + state: `grqsh0n3OgO-0RCavx7NOASlCNyfoNU8k_Ty6_ZcrCM%3D`
+    + code: `4/1ADU33t4EZbMkrnH7GNCbIF9eQtRgoGNmM3Wy6Ika8SQXtroi8nSHpqsDjvwda87xvQQ-0fbxFI5hl0-V_f37Kg`
 
 + Response 302
+
+    + Headers
+            
+            Set-Cookie: id_token=<cookie value>; Domain=twreporter.org; Max-Age=15552000; HttpOnly; Secure
+

@@ -52,10 +52,19 @@ Send identity token if valid user sigins
 
 + Response 302
     
+    + Headers
+            
+            Set-Cookie: id_token=<cookie value>; Domain=twreporter.org; Max-Age=15552000; HttpOnly; Secure
+ 
 ## Token [/v2/token]
 Authenticate user request and grant access token to the corresponding domain
 
 ### Dispatch access token [POST]
++ Request
+
+    + Headers
+            
+            Cookie: id_token=<cookie value>
 
 + Response 200
     
