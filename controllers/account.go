@@ -233,7 +233,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 
 	const errorWhere = "MembershipController.SignInV2"
 	const SignInMailSubject = "登入報導者"
-	const activateHost = "go-api.twreporter.org"
+	var activateHost string
 	var activeToken string
 	var appErr *models.AppError
 	var email string
@@ -242,6 +242,17 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	var ra models.ReporterAccount
 	var signIn SignInBody
 	var statusCode int
+
+	switch globals.Conf.Environment {
+	case "development":
+		activateHost = "localhost"
+	case "staging":
+		activateHost = "staging-go-api.twreporter.org"
+	case "production":
+		activateHost = "go-api.twreporter.org"
+	default:
+		activateHost = "localhost"
+	}
 
 	// extract email and password field in POST body
 	if err = c.Bind(&signIn); err != nil {
@@ -322,7 +333,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	// send activation email
 	err = postMailServiceEndpoint(activationReqBody{
 		Email: email,
-		ActivateLink: fmt.Sprintf("%s://%s:%s/activate?email=%s&token=%s&destination=%s",
+		ActivateLink: fmt.Sprintf("%s://%s:%s/v2/auth/activate?email=%s&token=%s&destination=%s",
 			globals.Conf.App.Protocol, activateHost, globals.Conf.App.Port, email, activeToken, signIn.Destination),
 	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
 
