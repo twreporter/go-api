@@ -1,3 +1,5 @@
+### Unreleased
+
 ### 3.0.0
 #### Improve authentication and authorization protocol 
   1. A user signs in through the login form or social account
@@ -6,7 +8,8 @@
   3. Frontend server will then launch another request to
   /v2/auth/token along with the bear token in Authorization header
   from `id_token` to get the `access_token`.
-  4. After validating the `id_token`, go-api returns the `access_token`
+  4. After validating the `id_token`, go-api returns the `access_token` in
+     response payload.
   5. When users want to sign out, the frontend server should redirect users to
   /v2/auth/logout endpoint, which will unset `id_token` cookie.
   
@@ -27,7 +30,7 @@
   - /v1/periodic-donations/:id?user_id=:userID (GET method)
   - /v1/donations/prime/:id?user_id=:userID (GET method)
   The above endpoints allow users to get the certain donation record
-
+ 
 ##### Mail endpoints
   - /v1/mail/send_activation (POST method)
   - /v1/mail/send_success_donation (POST method)
@@ -40,6 +43,12 @@
   - use template/signin.tmpl to generate activation mail HTML
   - use template/success-donation.tmpl to generate success donation mail HTML
   - send HTTP POST request to mail endpoints after signin and donation success
+
+#### Miscellaneous
+- Use Allow-Origins to constrain access from different sites with respect to the environments
+- Api documents for donation, mail, version 2 auth/oauth endpoints
+
+### Released 
 
 ### 2.1.4
 - Update /v1/search/posts and /v1/search/authors to use new algolia indices
