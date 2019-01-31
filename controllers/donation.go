@@ -94,17 +94,17 @@ var cardInfoTypes = map[int64]string{
 
 type (
 	clientReq struct {
-		Amount       uint              `json:"amount" form:"amount" binding:"required"`
-		Cardholder   models.Cardholder `json:"donor" form:"donor" binding:"required,dive"`
-		Currency     string            `json:"currency" form:"currency"`
-		Details      string            `json:"details" form:"details"`
+		Amount       uint              `json:"amount" binding:"required"`
+		Cardholder   models.Cardholder `json:"donor" binding:"required,dive"`
+		Currency     string            `json:"currency"`
+		Details      string            `json:"details"`
 		Frequency    string            `json:"frequency"`
-		MerchantID   string            `json:"merchant_id" form:"merchant_id"`
-		PayMethod    string            `json:"pay_method" form:"pay_method"`
-		Prime        string            `json:"prime" form:"prime" binding:"required"`
-		ResultUrl    linePayResultUrl  `json:"result_url" form:"result_url"`
-		UserID       uint              `json:"user_id" form:"user_id" binding:"required"`
-		MaxPaidTimes uint              `json:"max_paid_times" form:"max_paid_times"`
+		MerchantID   string            `json:"merchant_id"`
+		PayMethod    string            `json:"pay_method"`
+		Prime        string            `json:"prime" binding:"required"`
+		ResultUrl    linePayResultUrl  `json:"result_url"`
+		UserID       uint              `json:"user_id" binding:"required"`
+		MaxPaidTimes uint              `json:"max_paid_times"`
 	}
 
 	clientResp struct {
@@ -133,8 +133,8 @@ type (
 	}
 
 	linePayResultUrl struct {
-		FrontendRedirectUrl string `json:"frontend_redirect_url" form:"frontend_redirect_url"`
-		BackendNotifyUrl    string `json:"backend_notify_url" form:"backend_notify_url"`
+		FrontendRedirectUrl string `json:"frontend_redirect_url"`
+		BackendNotifyUrl    string `json:"backend_notify_url"`
 	}
 
 	tapPayTransactionReq struct {
@@ -347,14 +347,12 @@ func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMetho
 	cr.Frequency = oneTimeFrequency
 }
 
-func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
+func bindRequestJSONBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	var err error
 	// Validate request body
 	// gin.Context.Bind does not support to bind `JSON` body multiple times
 	// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
-	if err = c.ShouldBindBodyWith(reqBody, binding.JSON); nil == err {
-		// omit intentionally
-	} else if err = c.Bind(reqBody); nil != err {
+	if err = c.ShouldBindBodyWith(reqBody, binding.JSON); nil != err {
 		// bind other format rather than JSON
 		failData := gin.H{}
 
@@ -433,7 +431,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	var reqBody clientReq
 	var tapPayResp tapPayTransactionResp
 
-	if failData, valid := bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid := bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -519,7 +517,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	var tapPayResp tapPayTransactionResp
 
 	// Validate client request
-	if failData, valid := bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid := bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -605,7 +603,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, nil
 	}
 
-	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -818,8 +816,6 @@ func encrypt(data string, key string) string {
 func generateOrderNumber(t payType, payMethodID int) string {
 	timestamp := time.Now().UnixNano()
 	orderNumber := fmt.Sprintf("%s-%d%d%d", orderPrefix, timestamp, t, payMethodID)
-	msg := fmt.Sprintf("OrderNumber: %s", orderNumber)
-	log.Info(msg)
 	return orderNumber
 }
 

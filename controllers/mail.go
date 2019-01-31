@@ -70,7 +70,7 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 	var reqBody activationReqBody
 	var valid bool
 
-	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -98,21 +98,16 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	const taipeiLocationName = "Asia/Taipei"
 	var donationDatetime time.Time
 	var err error
-	//var failData gin.H
+	var failData gin.H
 	var location *time.Location
 	var mailBody string
 	var out bytes.Buffer
 	var reqBody donationSuccessReqBody
-	//var valid bool
+	var valid bool
 
 	// parse requst JSON into struct
-	//if failData, valid = bindRequestBody(c, &reqBody); valid == false {
-	//return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
-	//}
-
-	if err = c.Bind(&reqBody); err != nil {
-		log.Info("err", err)
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": "bad data"}, nil
+	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
 	if reqBody.Currency == "" {
