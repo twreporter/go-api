@@ -46,7 +46,9 @@
 
 #### Miscellaneous
 - Use Allow-Origins to constrain access from different sites with respect to the environments
+- Send thank-you donation email after success donation
 - Api documents for donation, mail, version 2 auth/oauth endpoints
+- `form` request body is not supported on donation and mail controllers anymore
 
 ### Released 
 
