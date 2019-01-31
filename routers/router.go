@@ -49,10 +49,10 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 			config.AllowAllOrigins = true
 			break
 		case globals.StagingEnvironment:
-			config.AllowOrigins = []string{globals.MainSiteStagingURL, globals.SupportSiteStagingURL, globals.AccountsSiteStagingURL}
+			config.AllowOrigins = []string{globals.MainSiteStagingOrigin, globals.SupportSiteStagingOrigin, globals.AccountsSiteStagingOrigin}
 			break
 		case globals.ProductionEnvironment:
-			config.AllowOrigins = []string{globals.MainSiteURL, globals.SupportSiteURL, globals.AccountsSiteURL}
+			config.AllowOrigins = []string{globals.MainSiteOrigin, globals.SupportSiteOrigin, globals.AccountsSiteOrigin}
 			break
 		default:
 			// omit intentionally

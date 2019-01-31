@@ -94,6 +94,7 @@ func TestSendDonationSuccessMail(t *testing.T) {
 			"donation_method":    "信用卡捐款",
 			"donation_type":      "定期定額",
 			"donation_timestamp": 1541671797,
+			"donation_link":      "http://localhost:3000/contribute/monthly/1",
 		}
 	}
 

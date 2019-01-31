@@ -308,6 +308,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.OrderNumber = d.OrderNumber
 	cr.SendReceipt = d.SendReceipt
 	cr.ToFeedback = d.ToFeedback.ValueOrZero()
+	cr.PayMethod = payMethodCreditCard
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
@@ -373,7 +374,33 @@ func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	return gin.H{}, true
 }
 
-func (mc *MembershipController) sendDonationThankYouMail(body clientResp, donationType string) {
+func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
+	var origin string
+	switch globals.Conf.Environment {
+	case globals.DevelopmentEnvironment:
+		origin = globals.SupportSiteDevOrigin
+	case globals.StagingEnvironment:
+		origin = globals.SupportSiteStagingOrigin
+	case globals.ProductionEnvironment:
+		origin = globals.SupportSiteOrigin
+	default:
+		origin = globals.SupportSiteOrigin
+	}
+
+	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + fmt.Sprint(body.ID)
+
+	var donationType string
+	switch body.Frequency {
+	case oneTimeFrequency:
+		donationType = "單筆捐款"
+	case monthlyFrequency:
+		donationType = "定期定額"
+	case yearlyFrequency:
+		donationType = "定期定額"
+	default:
+		donationType = "捐款"
+	}
+
 	reqBody := donationSuccessReqBody{
 		Address:          body.Cardholder.Address.ValueOrZero(),
 		Amount:           body.Amount,
@@ -382,6 +409,7 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp, donati
 		Currency:         body.Currency,
 		DonationMethod:   payMethodMap[body.PayMethod],
 		DonationType:     donationType,
+		DonationLink:     donationLink,
 		Email:            body.Cardholder.Email,
 		Name:             body.Cardholder.Name.ValueOrZero(),
 		OrderNumber:      body.OrderNumber,
@@ -478,7 +506,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	resp.BuildFromPeriodicDonationModel(periodicDonation)
 
 	// send success mail asynchronously
-	go mc.sendDonationThankYouMail(*resp, "定期定額")
+	go mc.sendDonationThankYouMail(*resp)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -557,7 +585,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	resp.BuildFromPrimeDonationModel(primeDonation)
 
 	// send success mail asynchronously
-	go mc.sendDonationThankYouMail(*resp, "單筆捐款")
+	go mc.sendDonationThankYouMail(*resp)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
