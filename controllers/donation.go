@@ -36,9 +36,11 @@ const (
 
 	orderPrefix = "twreporter"
 
-	statusPaying = "paying"
-	statusPaid   = "paid"
-	statusFail   = "fail"
+	statusPaying  = "paying"
+	statusPaid    = "paid"
+	statusFail    = "fail"
+	statusStopped = "stopped"
+	statusInvalid = "invalid"
 
 	tapPayRespStatusSuccess = 0
 
@@ -50,6 +52,12 @@ const (
 	monthlyFrequency = "monthly"
 	yearlyFrequency  = "yearly"
 	oneTimeFrequency = "one_time"
+
+	payMethodCreditCard = "credit_card"
+	payMethodLine       = "line"
+	payMethodGoogle     = "google"
+	payMethodApple      = "apple"
+	payMethodSamsung    = "samsung"
 )
 
 // pay type Enum
@@ -61,11 +69,19 @@ const (
 
 // pay method collections
 var payMethodCollections = []string{
-	"credit_card",
-	"line",
-	"google",
-	"apple",
-	"samsung",
+	payMethodCreditCard,
+	payMethodLine,
+	payMethodGoogle,
+	payMethodApple,
+	payMethodSamsung,
+}
+
+var payMethodMap = map[string]string{
+	payMethodCreditCard: "信用卡支付",
+	payMethodLine:       "Line Pay",
+	payMethodGoogle:     "Google Pay",
+	payMethodApple:      "Apple Pay",
+	payMethodSamsung:    "Samsung Pay",
 }
 
 var cardInfoTypes = map[int64]string{
@@ -78,16 +94,17 @@ var cardInfoTypes = map[int64]string{
 
 type (
 	clientReq struct {
-		Amount     uint              `json:"amount" form:"amount" binding:"required"`
-		Cardholder models.Cardholder `json:"donor" form:"donor" binding:"required,dive"`
-		Currency   string            `json:"currency" form:"currency"`
-		Details    string            `json:"details" form:"details"`
-		Frequency  string            `json:"frequency"`
-		MerchantID string            `json:"merchant_id" form:"merchant_id"`
-		PayMethod  string            `json:"pay_method" form:"pay_method"`
-		Prime      string            `json:"prime" form:"prime" binding:"required"`
-		ResultUrl  linePayResultUrl  `json:"result_url" form:"result_url"`
-		UserID     uint              `json:"user_id" form:"user_id" binding:"required"`
+		Amount       uint              `json:"amount" binding:"required"`
+		Cardholder   models.Cardholder `json:"donor" binding:"required,dive"`
+		Currency     string            `json:"currency"`
+		Details      string            `json:"details"`
+		Frequency    string            `json:"frequency"`
+		MerchantID   string            `json:"merchant_id"`
+		PayMethod    string            `json:"pay_method"`
+		Prime        string            `json:"prime" binding:"required"`
+		ResultUrl    linePayResultUrl  `json:"result_url"`
+		UserID       uint              `json:"user_id" binding:"required"`
+		MaxPaidTimes uint              `json:"max_paid_times"`
 	}
 
 	clientResp struct {
@@ -116,8 +133,8 @@ type (
 	}
 
 	linePayResultUrl struct {
-		FrontendRedirectUrl string `json:"frontend_redirect_url" form:"frontend_redirect_url"`
-		BackendNotifyUrl    string `json:"backend_notify_url" form:"backend_notify_url"`
+		FrontendRedirectUrl string `json:"frontend_redirect_url"`
+		BackendNotifyUrl    string `json:"backend_notify_url"`
 	}
 
 	tapPayTransactionReq struct {
@@ -291,6 +308,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.OrderNumber = d.OrderNumber
 	cr.SendReceipt = d.SendReceipt
 	cr.ToFeedback = d.ToFeedback.ValueOrZero()
+	cr.PayMethod = payMethodCreditCard
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
@@ -329,14 +347,12 @@ func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMetho
 	cr.Frequency = oneTimeFrequency
 }
 
-func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
+func bindRequestJSONBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	var err error
 	// Validate request body
 	// gin.Context.Bind does not support to bind `JSON` body multiple times
 	// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
-	if err = c.ShouldBindBodyWith(reqBody, binding.JSON); nil == err {
-		// omit intentionally
-	} else if err = c.Bind(reqBody); nil != err {
+	if err = c.ShouldBindBodyWith(reqBody, binding.JSON); nil != err {
 		// bind other format rather than JSON
 		failData := gin.H{}
 
@@ -356,15 +372,42 @@ func bindRequestBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 	return gin.H{}, true
 }
 
-func (mc *MembershipController) sendDonationThankYouMail(body clientResp, donationType string) {
+func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
+	var origin string
+	switch globals.Conf.Environment {
+	case globals.DevelopmentEnvironment:
+		origin = globals.SupportSiteDevOrigin
+	case globals.StagingEnvironment:
+		origin = globals.SupportSiteStagingOrigin
+	case globals.ProductionEnvironment:
+		origin = globals.SupportSiteOrigin
+	default:
+		origin = globals.SupportSiteOrigin
+	}
+
+	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + fmt.Sprint(body.ID)
+
+	var donationType string
+	switch body.Frequency {
+	case oneTimeFrequency:
+		donationType = "單筆捐款"
+	case monthlyFrequency:
+		donationType = "定期定額"
+	case yearlyFrequency:
+		donationType = "定期定額"
+	default:
+		donationType = "捐款"
+	}
+
 	reqBody := donationSuccessReqBody{
 		Address:          body.Cardholder.Address.ValueOrZero(),
 		Amount:           body.Amount,
 		CardInfoLastFour: body.CardInfo.LastFour.ValueOrZero(),
 		CardInfoType:     cardInfoTypes[body.CardInfo.Type.ValueOrZero()],
 		Currency:         body.Currency,
-		DonationMethod:   "信用卡支付",
+		DonationMethod:   payMethodMap[body.PayMethod],
 		DonationType:     donationType,
+		DonationLink:     donationLink,
 		Email:            body.Cardholder.Email,
 		Name:             body.Cardholder.Name.ValueOrZero(),
 		OrderNumber:      body.OrderNumber,
@@ -388,7 +431,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	var reqBody clientReq
 	var tapPayResp tapPayTransactionResp
 
-	if failData, valid := bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid := bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -433,13 +476,14 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
-			// If tappay error occurs, update the transaction status to 'fail' and stop the periodic donation
-			failResp := models.PayByCardTokenDonation{}
-			failResp.TappayApiStatus = null.IntFrom(tapPayResp.Status)
-			failResp.Msg = tapPayResp.Msg
-			failResp.Status = statusFail
-			// Procceed even if the deletion is failed
-			mc.Storage.DeleteAPeriodicDonation(periodicDonation.ID, failResp)
+			// If tappay error occurs, update the transaction status to 'fail' and mark the periodic donation as 'invalid'.
+			tokenDonation.TappayApiStatus = null.IntFrom(tapPayResp.Status)
+			tokenDonation.Msg = tapPayResp.Msg
+			tokenDonation.Status = statusFail
+
+			periodicDonation.Status = statusInvalid
+
+			mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation)
 		}
 		errMsg := err.Error()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
@@ -460,7 +504,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	resp.BuildFromPeriodicDonationModel(periodicDonation)
 
 	// send success mail asynchronously
-	go mc.sendDonationThankYouMail(*resp, "定期定額")
+	go mc.sendDonationThankYouMail(*resp)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -473,7 +517,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	var tapPayResp tapPayTransactionResp
 
 	// Validate client request
-	if failData, valid := bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid := bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -539,7 +583,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	resp.BuildFromPrimeDonationModel(primeDonation)
 
 	// send success mail asynchronously
-	go mc.sendDonationThankYouMail(*resp, "單筆捐款")
+	go mc.sendDonationThankYouMail(*resp)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -559,7 +603,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, nil
 	}
 
-	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -772,8 +816,6 @@ func encrypt(data string, key string) string {
 func generateOrderNumber(t payType, payMethodID int) string {
 	timestamp := time.Now().UnixNano()
 	orderNumber := fmt.Sprintf("%s-%d%d%d", orderPrefix, timestamp, t, payMethodID)
-	msg := fmt.Sprintf("OrderNumber: %s", orderNumber)
-	log.Info(msg)
 	return orderNumber
 }
 

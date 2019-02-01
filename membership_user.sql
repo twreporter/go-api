@@ -250,7 +250,7 @@ CREATE TABLE `pay_by_prime_donations` (
   KEY `idx_pay_by_prime_donations_pay_method` (`pay_method`),
   KEY `idx_pay_by_prime_donations_order_number` (`order_number`),
   CONSTRAINT `fk_pay_by_prime_donations_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8m4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -299,7 +299,7 @@ CREATE TABLE `periodic_donations` (
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `status` enum('to_pay', 'paying', 'paid', 'fail') NOT NULL,
+  `status` enum('to_pay', 'paying', 'paid', 'fail', 'stopped', 'invalid') NOT NULL,
   `card_token` tinyblob NULL DEFAULT NULL,
   `card_key` tinyblob NULL DEFAULT NULL,
   `user_id` int(10) unsigned NOT NULL,
@@ -327,6 +327,8 @@ CREATE TABLE `periodic_donations` (
   `card_info_country_code` varchar(10) DEFAULT NULL, 
   `card_info_expiry_date` varchar(6) DEFAULT NULL, 
   `notes` varchar(100) DEFAULT NULL,
+  `max_paid_times` int NOT NULL DEFAULT 2147483647,
+
   PRIMARY KEY (`id`),
   KEY `idx_periodic_donations_status` (`status`),
   KEY `idx_periodic_donations_amount` (`amount`),

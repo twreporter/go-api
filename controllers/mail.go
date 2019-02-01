@@ -12,8 +12,10 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"gopkg.in/guregu/null.v3"
 
 	"twreporter.org/go-api/services"
+	"twreporter.org/go-api/utils"
 )
 
 type activationReqBody struct {
@@ -22,20 +24,20 @@ type activationReqBody struct {
 }
 
 type donationSuccessReqBody struct {
-	Address          string `json:"address"`
-	Amount           uint   `json:"amount" binding:"required"`
-	CardInfoLastFour string `json:"card_info_four_number"`
-	CardInfoType     string `json:"card_info_type"`
-	Currency         string `json:"currency"`
-	DonationDatetime string `json:"donation_datetime"`
-	DonationLink     string `json:"donation_link"`
-	DonationMethod   string `json:"donation_method" binding:"required"`
-	DonationType     string `json:"donation_type" binding:"required"`
-	Email            string `json:"email" binding:"required"`
-	Name             string `json:"name"`
-	NationalID       string `json:"national_id"`
-	OrderNumber      string `json:"order_number" binding:"required"`
-	PhoneNumber      string `json:"phone_number"`
+	Address           string   `json:"address"`
+	Amount            uint     `json:"amount" binding:"required"`
+	CardInfoLastFour  string   `json:"card_info_last_four"`
+	CardInfoType      string   `json:"card_info_type"`
+	Currency          string   `json:"currency"`
+	DonationTimestamp null.Int `json:"donation_timestamp"`
+	DonationLink      string   `json:"donation_link" binding:"required"`
+	DonationMethod    string   `json:"donation_method" binding:"required"`
+	DonationType      string   `json:"donation_type" binding:"required"`
+	Email             string   `json:"email" binding:"required"`
+	Name              string   `json:"name"`
+	NationalID        string   `json:"national_id"`
+	OrderNumber       string   `json:"order_number" binding:"required"`
+	PhoneNumber       string   `json:"phone_number"`
 }
 
 // NewMailController is used to new *MailController
@@ -68,7 +70,7 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 	var reqBody activationReqBody
 	var valid bool
 
-	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -93,15 +95,18 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 
 func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.H, error) {
 	const subject = "感謝您成為報導者的夥伴"
+	const taipeiLocationName = "Asia/Taipei"
+	var donationDatetime time.Time
 	var err error
 	var failData gin.H
+	var location *time.Location
 	var mailBody string
 	var out bytes.Buffer
 	var reqBody donationSuccessReqBody
 	var valid bool
 
 	// parse requst JSON into struct
-	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -110,12 +115,23 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 		reqBody.Currency = "TWD"
 	}
 
-	if reqBody.DonationDatetime == "" {
-		// give default DonationDatetime
-		reqBody.DonationDatetime = time.Now().Format("2006-01-02 15:04:05")
+	if reqBody.DonationTimestamp.Valid {
+		donationDatetime = time.Unix(reqBody.DonationTimestamp.Int64, 0)
+	} else {
+		donationDatetime = time.Now()
 	}
 
-	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "success-donation.tmpl", reqBody); err != nil {
+	location, _ = time.LoadLocation(taipeiLocationName)
+
+	var templateData = struct {
+		donationSuccessReqBody
+		DonationDatetime string
+	}{
+		reqBody,
+		donationDatetime.In(location).Format("2006-01-02 15:04:05 UTC+8"),
+	}
+
+	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "success-donation.tmpl", templateData); err != nil {
 		log.Error(err)
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create donation success mail body"}, nil
 	}
@@ -136,6 +152,8 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	var err error
 	var rawResp *http.Response
 	var timeout = 10 * time.Second
+	var expiration int = 60
+	var accessToken string
 
 	if body, err = json.Marshal(reqBody); err != nil {
 		return err
@@ -144,8 +162,10 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	// Setup HTTP client with timeout
 	client := &http.Client{Timeout: timeout}
 
+	accessToken, _ = utils.RetrieveMailServiceAccessToken(expiration)
 	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	if rawResp, err = client.Do(req); err != nil {
 		return err
