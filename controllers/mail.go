@@ -30,7 +30,7 @@ type donationSuccessReqBody struct {
 	CardInfoType      string   `json:"card_info_type"`
 	Currency          string   `json:"currency"`
 	DonationTimestamp null.Int `json:"donation_timestamp"`
-	DonationLink      string   `json:"donation_link"`
+	DonationLink      string   `json:"donation_link" binding:"required"`
 	DonationMethod    string   `json:"donation_method" binding:"required"`
 	DonationType      string   `json:"donation_type" binding:"required"`
 	Email             string   `json:"email" binding:"required"`
@@ -70,7 +70,7 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 	var reqBody activationReqBody
 	var valid bool
 
-	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -106,7 +106,7 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	var valid bool
 
 	// parse requst JSON into struct
-	if failData, valid = bindRequestBody(c, &reqBody); valid == false {
+	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 

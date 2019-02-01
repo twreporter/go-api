@@ -9,12 +9,15 @@ const (
 	ProductionEnvironment  = "production"
 
 	// client URLs
-	MainSiteURL            = "https://www.twreporter.org"
-	MainSiteStagingURL     = "https://staging.twreporter.org"
-	SupportSiteURL         = "https://support.twreporter.org"
-	SupportSiteStagingURL  = "https://staging-support.twreporter.org"
-	AccountsSiteURL        = "https://accounts.twreporter.org"
-	AccountsSiteStagingURL = "https://staging-accounts.twreporter.org"
+	MainSiteOrigin            = "https://www.twreporter.org"
+	MainSiteDevOrigin         = "http://localhost:3000"
+	MainSiteStagingOrigin     = "https://staging.twreporter.org"
+	SupportSiteOrigin         = "https://support.twreporter.org"
+	SupportSiteDevOrigin      = "http://localhost:3000"
+	SupportSiteStagingOrigin  = "https://staging-support.twreporter.org"
+	AccountsSiteOrigin        = "https://accounts.twreporter.org"
+	AccountsSiteDevOrigin     = "http://localhost:3000"
+	AccountsSiteStagingOrigin = "https://staging-accounts.twreporter.org"
 
 	// route path
 	SendActivationRoutePath      = "mail/send_activation"
