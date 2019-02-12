@@ -75,4 +75,7 @@ const (
 
 	// jwt prefix
 	MailServiceJWTPrefix = "mail-service-jwt-"
+
+	// custom context key
+	AuthUserIDProperty = "auth-user-id"
 )
