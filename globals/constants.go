@@ -69,7 +69,7 @@ const (
 
 	// donation
 	PeriodicDonationType = "periodic_donation"
-	PrimeDonaitionType   = "prime"
+	PrimeDonationType    = "prime"
 	TokenDonationType    = "token"
 	OthersDonationType   = "others"
 

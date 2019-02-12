@@ -610,7 +610,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	switch donationType {
 	case globals.PeriodicDonationType:
 		d = reqBody.BuildPeriodicDonation()
-	case globals.PrimeDonaitionType:
+	case globals.PrimeDonationType:
 		d = reqBody.BuildPrimeDonation()
 	default:
 		return http.StatusInternalServerError,
@@ -642,17 +642,13 @@ func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H,
 
 // GetADonationOfAUser returns a donation of a user
 func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
-	var err error
-	var recordID uint64
-	var userID uint64
-	var _userID uint
-	var resp = new(clientResp)
-
-	if userID, err = strconv.ParseUint(c.Query("user_id"), 10, strconv.IntSize); err != nil {
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
-			"req.URL.query": "?user_id=:userID, userID should be integer",
-		}}, nil
-	}
+	var (
+		err        error
+		recordID   uint64
+		_userID    uint
+		resp       = new(clientResp)
+		authUserID interface{}
+	)
 
 	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
 		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
@@ -667,7 +663,7 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 		resp.BuildFromPeriodicDonationModel(d)
 		_userID = uint(d.UserID)
 		break
-	case globals.PrimeDonaitionType:
+	case globals.PrimeDonationType:
 		d := models.PayByPrimeDonation{}
 		err = mc.Storage.Get(uint(recordID), &d)
 		resp.BuildFromPrimeDonationModel(d)
@@ -697,7 +693,10 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 		return 0, gin.H{}, err
 	}
 
-	if _userID != uint(userID) {
+	// Compare with the auth-user-id in context extracted from access_token
+	authUserID = c.Request.Context().Value(globals.AuthUserIDProperty)
+
+	if fmt.Sprint(_userID) != fmt.Sprint(authUserID) {
 		return http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
 			"req.Headers.Authorization": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI),
 		}}, nil

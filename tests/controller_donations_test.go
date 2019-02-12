@@ -817,12 +817,6 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d?user_id=%d", primeRes.Data.ID, getUser(Globs.Defaults.Account).ID)
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
 	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
 		recordIDNotFound := 1000
 		path := fmt.Sprintf("/v1/donations/prime/%d?user_id=%d", recordIDNotFound, user.ID)
@@ -885,12 +879,6 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 		path := fmt.Sprintf("/v1/periodic-donations/%d?user_id=%d", tokenRes.Data.ID, user.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d?user_id=%d", tokenRes.Data.ID, getUser(Globs.Defaults.Account).ID)
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
