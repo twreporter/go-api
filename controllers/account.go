@@ -334,7 +334,13 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	err = postMailServiceEndpoint(activationReqBody{
 		Email: email,
 		ActivateLink: fmt.Sprintf("%s://%s:%s/v2/auth/activate?email=%s&token=%s&destination=%s",
-			globals.Conf.App.Protocol, activateHost, globals.Conf.App.Port, email, activeToken, signIn.Destination),
+			globals.Conf.App.Protocol,
+			activateHost,
+			globals.Conf.App.Port,
+			url.QueryEscape(email),
+			url.QueryEscape(activeToken),
+			url.QueryEscape(signIn.Destination),
+		),
 	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
 
 	if err != nil {
