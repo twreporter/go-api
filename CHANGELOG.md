@@ -49,6 +49,7 @@
 - Send thank-you donation email after success donation
 - Api documents for donation, mail, version 2 auth/oauth endpoints
 - `form` request body is not supported on donation and mail controllers anymore
+- Only development environment can return draft posts or topics
 
 ### Released 
 

@@ -9,7 +9,7 @@ import (
 func (m *MongoStorage) _GetPosts(mq models.MongoQuery, limit int, offset int, sort string, embedded []string, isFull bool) ([]models.Post, int, error) {
 	var posts []models.Post
 
-	if globals.Conf.Environment == "production" {
+	if globals.Conf.Environment != "development" {
 		mq.State = "published"
 	}
 
