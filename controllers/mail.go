@@ -94,7 +94,7 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 }
 
 func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.H, error) {
-	const subject = "感謝您成為報導者的夥伴"
+	const subject = "感謝您成為報導者的贊助夥伴"
 	const taipeiLocationName = "Asia/Taipei"
 	var donationDatetime time.Time
 	var err error
