@@ -811,27 +811,40 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 		Value:    idToken,
 	}
 
+	maliciousDonorEmail := "get-others-prime-donor@twreporter.org"
+	maliciousUser := createUser(maliciousDonorEmail)
+	maliciousJwt := generateJWT(maliciousUser)
+	maliciousAuthorization := fmt.Sprintf("Bearer %s", maliciousJwt)
+	maliciousIDToken := generateIDToken(maliciousUser)
+	maliciousCookie := http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    maliciousIDToken,
+	}
+
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d?user_id=%d", primeRes.Data.ID, user.ID)
+		path := fmt.Sprintf("/v1/donations/prime/%d", primeRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d?user_id=%d", primeRes.Data.ID, getUser(Globs.Defaults.Account).ID)
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
+		path := fmt.Sprintf("/v1/donations/prime/%d", primeRes.Data.ID)
+		resp := serveHTTPWithCookies("GET", path, "", "application/json", maliciousAuthorization, maliciousCookie)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
 		recordIDNotFound := 1000
-		path := fmt.Sprintf("/v1/donations/prime/%d?user_id=%d", recordIDNotFound, user.ID)
+		path := fmt.Sprintf("/v1/donations/prime/%d", recordIDNotFound)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusOK", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d?user_id=%d", primeRes.Data.ID, user.ID)
+		path := fmt.Sprintf("/v1/donations/prime/%d", primeRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
 		respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
 		defer resp.Result().Body.Close()
@@ -881,27 +894,40 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 		HttpOnly: true,
 	}
 
+	maliciousDonorEmail := "get-others-periodic-donor@twreporter.org"
+	maliciousUser := createUser(maliciousDonorEmail)
+	maliciousJwt := generateJWT(maliciousUser)
+	maliciousAuthorization := fmt.Sprintf("Bearer %s", maliciousJwt)
+	maliciousIDToken := generateIDToken(maliciousUser)
+	maliciousCookie := http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    maliciousIDToken,
+	}
+
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d?user_id=%d", tokenRes.Data.ID, user.ID)
+		path := fmt.Sprintf("/v1/periodic-donations/%d", tokenRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d?user_id=%d", tokenRes.Data.ID, getUser(Globs.Defaults.Account).ID)
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
+		path := fmt.Sprintf("/v1/periodic-donations/%d", tokenRes.Data.ID)
+		resp := serveHTTPWithCookies("GET", path, "", "application/json", maliciousAuthorization, maliciousCookie)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
 		recordIDNotFound := 1000
-		path := fmt.Sprintf("/v1/periodic-donations/%d?user_id=%d", recordIDNotFound, user.ID)
+		path := fmt.Sprintf("/v1/periodic-donations/%d", recordIDNotFound)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusOK", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d?user_id=%d", tokenRes.Data.ID, user.ID)
+		path := fmt.Sprintf("/v1/periodic-donations/%d", tokenRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusOK, resp.Code)
 		respInBytes, _ := ioutil.ReadAll(resp.Result().Body)

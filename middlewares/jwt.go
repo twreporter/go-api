@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -61,21 +62,27 @@ func ValidateAuthorization() gin.HandlerFunc {
 			})
 			return
 		}
+
+		var newRequest *http.Request
+
+		// Set user_id with key "auth-user-id" in context to avoid hierarchy access
+		newRequest = c.Request.WithContext(context.WithValue(c.Request.Context(), globals.AuthUserIDProperty, claims["user_id"]))
+		*c.Request = *newRequest
 	}
 }
 
 // ValidateUserID checks claim userID in the jwt with :userID param in the request url.
 // if the two values are not the same, return the 401 response
 func ValidateUserID() gin.HandlerFunc {
-	var userID string
-	var userIDClaim interface{}
-	var userProperty interface{}
-
 	return func(c *gin.Context) {
-		userProperty = c.Request.Context().Value(authUserProperty)
-		userIDClaim = userProperty.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
+		var (
+			userID     string
+			authUserID interface{}
+		)
+
+		authUserID = c.Request.Context().Value(globals.AuthUserIDProperty)
 		userID = c.Param("userID")
-		if userID != fmt.Sprint(userIDClaim) {
+		if userID != fmt.Sprint(authUserID) {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"status": "fail",
 				"data": gin.H{
@@ -88,15 +95,13 @@ func ValidateUserID() gin.HandlerFunc {
 
 func ValidateUserIDInReqBody() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var body = struct {
-			UserID uint64 `json:"user_id" form:"user_id" binding:"required"`
-		}{}
-		var err error
-		var userIDClaim interface{}
-		var userProperty interface{}
-
-		userProperty = c.Request.Context().Value(authUserProperty)
-		userIDClaim = userProperty.(*jwt.Token).Claims.(jwt.MapClaims)["user_id"]
+		var (
+			body = struct {
+				UserID uint64 `json:"user_id" form:"user_id" binding:"required"`
+			}{}
+			err        error
+			authUserID interface{}
+		)
 
 		// gin.Context.Bind does not support to bind `JSON` body multiple times
 		// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
@@ -110,7 +115,9 @@ func ValidateUserIDInReqBody() gin.HandlerFunc {
 			return
 		}
 
-		if fmt.Sprint(body.UserID) != fmt.Sprint(userIDClaim) {
+		authUserID = c.Request.Context().Value(globals.AuthUserIDProperty)
+
+		if fmt.Sprint(body.UserID) != fmt.Sprint(authUserID) {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
 				"req.Headers.Authorization": "the request is not permitted to reach the resource",
 			}})
