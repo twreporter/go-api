@@ -5,7 +5,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: thereporter/circleci-go-api:latest
+      - image: thereporter/circleci-go-api:1.10-alpine3.8
       - image: circleci/mongo:3.2
       - image: circleci/mysql:5.7
         environment:
