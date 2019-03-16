@@ -1,6 +1,6 @@
 # Start from a Debian image with the latest version of Go installed
 # and a workspace (GOPATH) configured at /go.
-FROM golang:1.8-alpine
+FROM golang:1.10-alpine3.8
 
 # Copy the local package files to the container's workspace.
 ADD . /go/src/twreporter.org/go-api/
