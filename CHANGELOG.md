@@ -1,5 +1,3 @@
-### Unreleased
-
 ### 3.0.0
 #### Improve authentication and authorization protocol 
   1. A user signs in through the login form or social account
@@ -50,8 +48,6 @@
 - Api documents for donation, mail, version 2 auth/oauth endpoints
 - `form` request body is not supported on donation and mail controllers anymore
 - Only development environment can return draft posts or topics
-
-### Released 
 
 ### 2.1.4
 - Update /v1/search/posts and /v1/search/authors to use new algolia indices
