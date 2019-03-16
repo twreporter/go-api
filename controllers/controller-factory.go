@@ -1,114 +1,115 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	// "gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/constants"
-	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/storage"
-	"twreporter.org/go-api/utils"
+	"fmt"
+	"go/build"
+	"net/http"
+	"os"
+	"path"
 
-	log "github.com/Sirupsen/logrus"
+	// "gopkg.in/mgo.v2/bson"
+	"github.com/jinzhu/gorm"
+	"gopkg.in/mgo.v2"
+	"twreporter.org/go-api/globals"
+	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/services"
+	"twreporter.org/go-api/storage"
+	//log "github.com/Sirupsen/logrus"
 )
 
-// Controller ...
-type Controller interface {
-	SetRoute(*gin.RouterGroup) *gin.RouterGroup
-	Close() error
-}
-
-// ControllerFactory ...
+// ControllerFactory generates controlloers by given persistent storage connection
+// and mail service
 type ControllerFactory struct {
-	Controllers map[string]Controller
+	gormDB      *gorm.DB
+	mgoSession  *mgo.Session
+	mailService services.MailService
 }
 
-// GetController ...
-func (cf *ControllerFactory) GetController(cn string) Controller {
-	return cf.Controllers[cn]
+// GetGoogleController returns Google struct
+func (cf *ControllerFactory) GetGoogleController() Google {
+	gs := storage.NewGormStorage(cf.gormDB)
+	return Google{Storage: gs}
 }
 
-// GetControllers returns an array of controllers
-func (cf *ControllerFactory) GetControllers() []Controller {
-	var cons []Controller
-
-	for _, con := range cf.Controllers {
-		cons = append(cons, con)
-	}
-	return cons
+// GetFacebookController returns Facebook struct
+func (cf *ControllerFactory) GetFacebookController() Facebook {
+	gs := storage.NewGormStorage(cf.gormDB)
+	return Facebook{Storage: gs}
 }
 
-// SetController ...
-func (cf *ControllerFactory) SetController(cn string, c Controller) {
-	cf.Controllers[cn] = c
-}
-
-// Close this func releases the resource appropriately
-func (cf *ControllerFactory) Close() error {
-	var err error
-	for _, controller := range cf.GetControllers() {
-		err = controller.Close()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// SetRoute set route by calling the correspoding controllers.
-func (cf *ControllerFactory) SetRoute(group *gin.RouterGroup) *gin.RouterGroup {
-	for _, v := range cf.Controllers {
-		group = v.SetRoute(group)
-	}
-	return group
-}
-
-// NewControllerFactory ...
-func NewControllerFactory() (*ControllerFactory, error) {
-	// set up database connection
-	log.Info("Connecting to MySQL cloud")
-	db, err := utils.InitDB(10, 5)
-	if err != nil {
-		return nil, err
+// GetOAuthController returns OAuth struct
+func (cf *ControllerFactory) GetOAuthController(oauthType string) (oauth *OAuth) {
+	gs := storage.NewGormStorage(cf.gormDB)
+	oauth = &OAuth{Storage: gs}
+	if oauthType == globals.GoogleOAuth {
+		oauth.InitGoogleConfig()
+	} else {
+		oauth.InitFacebookConfig()
 	}
 
-	log.Info("Connecting to MongoDB replica")
-	session, err := utils.InitMongoDB()
-	if err != nil {
-		return nil, err
-	}
-	// set up data storage
-	gs := storage.NewGormStorage(db)
-
-	// init controllers
-	mc := NewMembershipController(gs)
-	fc := Facebook{Storage: gs}
-	gc := Google{Storage: gs}
-
-	ms := storage.NewMongoStorage(session)
-	nc := NewNewsController(ms)
-
-	cf := &ControllerFactory{
-		Controllers: make(map[string]Controller),
-	}
-	cf.SetController(constants.MembershipController, mc)
-	cf.SetController(constants.FacebookController, fc)
-	cf.SetController(constants.GoogleController, gc)
-	cf.SetController(constants.NewsController, nc)
-
-	return cf, nil
+	return oauth
 }
 
-type wrappedFn func(c *gin.Context) (int, gin.H, error)
+// GetMembershipController returns *MembershipController struct
+func (cf *ControllerFactory) GetMembershipController() *MembershipController {
+	gs := storage.NewGormStorage(cf.gormDB)
+	return NewMembershipController(gs)
+}
 
-func ginResponseWrapper(fn wrappedFn) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		statusCode, obj, err := fn(c)
-		if err != nil {
-			appErr := err.(models.AppError)
-			log.Error(appErr.Error())
-			c.JSON(appErr.StatusCode, gin.H{"status": "error", "message": appErr.Message})
-			return
-		}
-		c.JSON(statusCode, obj)
+// GetNewsController returns *NewsController struct
+func (cf *ControllerFactory) GetNewsController() *NewsController {
+	ms := storage.NewMongoStorage(cf.mgoSession)
+	return NewNewsController(ms)
+}
+
+// GetMailController returns *MailController struct
+func (cf *ControllerFactory) GetMailController() *MailController {
+	var gopath string
+	var filepath string
+	var contrl *MailController
+
+	contrl = NewMailController(cf.mailService, nil)
+
+	gopath = os.Getenv("GOPATH")
+	if gopath == "" {
+		gopath = build.Default.GOPATH
+	}
+	filepath = path.Join(gopath, "src/twreporter.org/go-api/template")
+
+	contrl.LoadTemplateFiles(fmt.Sprintf("%s/signin.tmpl", filepath), fmt.Sprintf("%s/success-donation.tmpl", filepath))
+
+	return contrl
+}
+
+// GetMailService returns MailService it holds
+func (cf *ControllerFactory) GetMailService() services.MailService {
+	return cf.mailService
+}
+
+// GetMgoSession returns *mgo.Session it holds
+func (cf *ControllerFactory) GetMgoSession() *mgo.Session {
+	return cf.mgoSession
+}
+
+// GetMgoSession returns *gorm.DB it holds
+func (cf *ControllerFactory) GetGormDB() *gorm.DB {
+	return cf.gormDB
+}
+
+// NewControllerFactory generate *ControllerFactory struct
+func NewControllerFactory(gormDB *gorm.DB, mgoSession *mgo.Session, mailSvc services.MailService) *ControllerFactory {
+	return &ControllerFactory{
+		gormDB:      gormDB,
+		mgoSession:  mgoSession,
+		mailService: mailSvc,
+	}
+}
+
+func appErrorTypeAssertion(err error) *models.AppError {
+	switch appErr := err.(type) {
+	case *models.AppError:
+		return appErr
+	default:
+		return models.NewAppError("AppErrorTypeAssertion", "unknown error type", err.Error(), http.StatusInternalServerError)
 	}
 }

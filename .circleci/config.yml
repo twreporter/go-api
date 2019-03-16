@@ -5,7 +5,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: thereporter/circleci-go-api:latest
+      - image: thereporter/circleci-go-api:1.10-alpine3.8
       - image: circleci/mongo:3.2
       - image: circleci/mysql:5.7
         environment:
@@ -109,13 +109,13 @@ jobs:
               # pkg version for staging
               PKG_VER="staging-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
 
-              # config.json for go-api
-              echo ${GO_STAGING_CONFIG} | base64 -i --decode > ./configs/config.json
+              # config.yml for go-api
+              echo ${GO_STAGING_CONFIG_YML} | base64 -i --decode > ./configs/config.yml
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
-              # config.json for go-api
-              echo ${GO_CONFIG} | base64 -i --decode > ./configs/config.json
+              # config.yml for go-api
+              echo ${GO_CONFIG_YML} | base64 -i --decode > ./configs/config.yml
             fi
 
             # aws config

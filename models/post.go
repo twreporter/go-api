@@ -8,7 +8,6 @@ import (
 
 // ContentBody ...
 type ContentBody struct {
-	HTML    string   `bson:"html" json:"html"`
 	APIData []bson.M `bson:"apiData" json:"api_data"`
 }
 

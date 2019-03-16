@@ -1,15 +1,15 @@
 package main
 
 import (
-	"go/build"
+	"fmt"
 	"net/http"
-	"path/filepath"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/unrolled/secure"
+	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/controllers"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/routers"
+	"twreporter.org/go-api/services"
 	"twreporter.org/go-api/utils"
 
 	log "github.com/Sirupsen/logrus"
@@ -17,56 +17,51 @@ import (
 )
 
 func main() {
+	var err error
+	var cf *controllers.ControllerFactory
 
-	p, _ := build.Default.Import("twreporter.org/go-api", "", build.FindOnly)
-
-	fname := filepath.Join(p.Dir, "configs/config.json")
-
-	// Load config file
-	err := utils.LoadConfig(fname)
+	globals.Conf, err = configs.LoadConf("")
 	if err != nil {
-		log.Fatal("main.load_config.fatal_error: ", err.Error())
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
 
-	// security: no one can put it in an iframe
-	secureMiddleware := secure.New(secure.Options{
-		FrameDeny: true,
-	})
-	secureFunc := func() gin.HandlerFunc {
-		return func(c *gin.Context) {
-			err := secureMiddleware.Process(c.Writer, c.Request)
-
-			// If there was an error, do not continue.
-			if err != nil {
-				c.Abort()
-				return
-			}
-
-			// Avoid header rewrite if response is a redirection.
-			if status := c.Writer.Status(); status > 300 && status < 399 {
-				c.Abort()
-			}
-		}
-	}()
-
-	cf, err := controllers.NewControllerFactory()
-
+	// set up database connection
+	log.Info("Connecting to MySQL cloud")
+	db, err := utils.InitDB(10, 5)
+	defer db.Close()
 	if err != nil {
 		panic(err)
 	}
 
-	defer utils.Check(cf.Close)
+	log.Info("Connecting to MongoDB replica")
+	session, err := utils.InitMongoDB()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	// mailSender := services.NewSMTPMailService() // use office365 to send mails
+	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails
+
+	cf = controllers.NewControllerFactory(db, session, mailSvc)
 
 	// set up the router
 	router := routers.SetupRouter(cf)
-	router.Use(secureFunc)
 
+	readTimeout := 5 * time.Second
+
+	// Set writeTimeout bigger than 30 secs.
+	// 30 secs is to ensure donation request is handled correctly.
+	writeTimeout := 40 * time.Second
 	s := &http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%s", globals.LocalhostPort),
 		Handler:      router,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
 	}
-	utils.Check(s.ListenAndServe)
+
+	if err = s.ListenAndServe(); err != nil {
+		log.Error("Fail to start HTTP server", err.Error())
+	}
 
 }

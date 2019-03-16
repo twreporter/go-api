@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/matryer/try.v1"
 	"gopkg.in/mgo.v2"
-	"twreporter.org/go-api/constants"
-	"twreporter.org/go-api/models"
 
-	log "github.com/Sirupsen/logrus"
+	"twreporter.org/go-api/globals"
+	"twreporter.org/go-api/models"
 )
 
 // InitDB initiates the MySQL database connection
@@ -18,9 +18,10 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 	var db *gorm.DB
 	err := try.Do(func(attempt int) (bool, error) {
 		var err error
+		var config = globals.Conf.DB.MySQL
 
 		// connect to MySQL database
-		var endpoint = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", Cfg.DBSettings.User, Cfg.DBSettings.Password, Cfg.DBSettings.Address, Cfg.DBSettings.Port, Cfg.DBSettings.Name)
+		var endpoint = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4,utf8&parseTime=true", config.User, config.Password, config.Address, config.Port, config.Name)
 		log.Info("connect to mysql ", endpoint)
 		db, err = gorm.Open("mysql", endpoint)
 
@@ -36,7 +37,7 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.SetJoinTableHandler(&models.User{}, constants.TableBookmarks, &models.UsersBookmarks{})
+	db.SetJoinTableHandler(&models.User{}, globals.TableBookmarks, &models.UsersBookmarks{})
 
 	//db.LogMode(true)
 
@@ -45,8 +46,9 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 
 // InitMongoDB initiates the Mongo DB connection
 func InitMongoDB() (*mgo.Session, error) {
+	var timeout = globals.Conf.DB.Mongo.Timeout
 	// Set connection timeout
-	session, err := mgo.DialWithTimeout(Cfg.MongoDBSettings.URL, time.Duration(Cfg.MongoDBSettings.Timeout)*time.Second)
+	session, err := mgo.DialWithTimeout(globals.Conf.DB.Mongo.URL, time.Duration(timeout)*time.Second)
 
 	if err != nil {
 		log.Error("Establishing a new session to the mongo occurs error: ", err.Error())
@@ -54,7 +56,7 @@ func InitMongoDB() (*mgo.Session, error) {
 	}
 
 	// Set operation timeout
-	session.SetSyncTimeout(time.Duration(Cfg.MongoDBSettings.Timeout) * time.Second)
+	session.SetSyncTimeout(time.Duration(timeout) * time.Second)
 
 	// Set socket timeout to 3 mins
 	session.SetSocketTimeout(3 * time.Minute)

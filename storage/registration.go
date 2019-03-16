@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 
-	"twreporter.org/go-api/constants"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 )
 
@@ -61,7 +61,7 @@ func (g *GormStorage) GetRegistrationsAmountByService(service string, activeCode
 
 	where := getActiveWhereCondition(activeCode)
 
-	err = g.db.Table(constants.RegistrationTable).Where("service_id = ?", svc.ID).Where(where).Count(&count).Error
+	err = g.db.Table(globals.RegistrationTable).Where("service_id = ?", svc.ID).Where(where).Count(&count).Error
 	if err != nil {
 		return 0, g.NewStorageError(err, funcName, fmt.Sprintf("%v.err_to_get_count: ", message))
 	}

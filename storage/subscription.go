@@ -10,7 +10,7 @@ import (
 func (g *GormStorage) CreateAWebPushSubscription(wpSub models.WebPushSubscription) error {
 	err := g.db.Create(&wpSub).Error
 	if err != nil {
-		return g.NewStorageError(err, "GormStorage.CreateAWebPushSubscription", "storage.subscription.error_to_create_a_subscription")
+		return g.NewStorageError(err, "GormStorage.CreateAWebPushSubscription", fmt.Sprintf("creating a web push subscription(%#v) occurs error", wpSub))
 	}
 
 	return nil
@@ -22,7 +22,7 @@ func (g *GormStorage) GetAWebPushSubscription(crc32Endpoint uint32, endpoint str
 	var err error
 
 	if err = g.db.Find(&wpSub, "crc32_endpoint = ? AND endpoint = ?", crc32Endpoint, endpoint).Error; err != nil {
-		return wpSub, g.NewStorageError(err, "GormStorage.GetAWebPushSubscription", fmt.Sprintf("Getting subscription by endpoint %v and crc32_endpoint %v occurs error", endpoint, crc32Endpoint))
+		return wpSub, g.NewStorageError(err, "GormStorage.GetAWebPushSubscription", fmt.Sprintf("getting a web push subscription(endpoint: %s) occurs error", endpoint))
 	}
 
 	return wpSub, nil

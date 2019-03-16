@@ -1,30 +1,73 @@
 package middlewares
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	//"time"
 
-	//log "github.com/Sirupsen/logrus"
+	"twreporter.org/go-api/globals"
+	"twreporter.org/go-api/utils"
+
+	// log "github.com/Sirupsen/logrus"
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/utils"
+	"github.com/gin-gonic/gin/binding"
 )
+
+const authUserProperty = "app-auth-jwt"
 
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-		return []byte(utils.Cfg.AppSettings.Token), nil
+		return []byte(globals.Conf.App.JwtSecret), nil
 	},
+	UserProperty:  authUserProperty,
 	SigningMethod: jwt.SigningMethodHS256,
+	ErrorHandler: func(w http.ResponseWriter, r *http.Request, err string) {
+		var res = map[string]interface{}{
+			"status": "fail",
+			"data": map[string]interface{}{
+				"req.Headers.Authorization": err,
+			},
+		}
+		var resByte, _ = json.Marshal(res)
+		http.Error(w, string(resByte), http.StatusUnauthorized)
+	},
 })
 
-// CheckJWT checks the jwt token in the Authorization header is valid or not
-func CheckJWT() gin.HandlerFunc {
+// ValidateAuthorization checks the jwt token in the Authorization header is valid or not
+func ValidateAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
+		const verifyRequired = true
+		var err error
+		var userProperty interface{}
+		var claims jwt.MapClaims
+
+		if err = jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
+			c.Abort()
+			return
 		}
+
+		userProperty = c.Request.Context().Value(authUserProperty)
+		claims = userProperty.(*jwt.Token).Claims.(jwt.MapClaims)
+		if !claims.VerifyAudience(globals.Conf.App.JwtAudience, verifyRequired) ||
+			!claims.VerifyIssuer(globals.Conf.App.JwtIssuer, verifyRequired) {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"status": "fail",
+				"data": gin.H{
+					"req.Cookies.id_token": "aud or issuer claim is invalid",
+				},
+			})
+			return
+		}
+
+		var newRequest *http.Request
+
+		// Set user_id with key "auth-user-id" in context to avoid hierarchy access
+		newRequest = c.Request.WithContext(context.WithValue(c.Request.Context(), globals.AuthUserIDProperty, claims["user_id"]))
+		*c.Request = *newRequest
 	}
 }
 
@@ -32,44 +75,90 @@ func CheckJWT() gin.HandlerFunc {
 // if the two values are not the same, return the 401 response
 func ValidateUserID() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := c.Request.Context().Value("user")
-		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["userID"]
-		userID := c.Param("userID")
-		if userID != fmt.Sprint(userIDClaim) {
-			c.AbortWithStatus(http.StatusUnauthorized)
+		var (
+			userID     string
+			authUserID interface{}
+		)
+
+		authUserID = c.Request.Context().Value(globals.AuthUserIDProperty)
+		userID = c.Param("userID")
+		if userID != fmt.Sprint(authUserID) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"status": "fail",
+				"data": gin.H{
+					"req.Headers.Authorization": "the request is not permitted to reach the resource",
+				},
+			})
 		}
 	}
 }
 
-// SetEmailClaim get email value from jwt, and set it into gin.Context
-func SetEmailClaim() gin.HandlerFunc {
+func ValidateUserIDInReqBody() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := c.Request.Context().Value("user")
-		emailClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["email"]
+		var (
+			body = struct {
+				UserID uint64 `json:"user_id" form:"user_id" binding:"required"`
+			}{}
+			err        error
+			authUserID interface{}
+		)
 
-		c.Set("emailClaim", fmt.Sprint(emailClaim))
+		// gin.Context.Bind does not support to bind `JSON` body multiple times
+		// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
+		if err = c.ShouldBindBodyWith(&body, binding.JSON); err == nil {
+			// omit intentionally
+		} else if err = c.Bind(&body); err != nil {
+			// bind other format rather than JSON
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{
+				"req.Body.user_id": err.Error(),
+			}})
+			return
+		}
 
-		// The reason why we don't validate the email value in POST body with jwt email claim HERE
-		// is because c.Bind(&login) only can be executed once.
-		// If we get POST body here, then in the controllers, such as controllers/account.go,
-		// we cannot c.Bind(&login) to get the POST body.
-		// Hence, here only set emailClaim in the gin.Context
+		authUserID = c.Request.Context().Value(globals.AuthUserIDProperty)
+
+		if fmt.Sprint(body.UserID) != fmt.Sprint(authUserID) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+				"req.Headers.Authorization": "the request is not permitted to reach the resource",
+			}})
+			return
+		}
 	}
 }
 
-// ValidateAdminUsers ...
-func ValidateAdminUsers() gin.HandlerFunc {
-	var whiteList = []string{"nickhsine@twreporter.org", "han@twreporter.org", "yucj@twreporter.org", "developer@twreporter.org"}
+// ValidateAuthentication validates `req.Cookies.id_token`
+// if id_token, which is a JWT, is invalid, and then return 401 status code
+func ValidateAuthentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := c.Request.Context().Value("user")
-		userIDClaim := user.(*jwt.Token).Claims.(jwt.MapClaims)["email"]
+		var tokenString string
+		var err error
+		var token *jwt.Token
 
-		for _, v := range whiteList {
-			if v == fmt.Sprint(userIDClaim) {
+		defer func() {
+			if r := recover(); r != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"status": "fail",
+					"data": gin.H{
+						"req.Headers.Cookies.id_token": err.Error(),
+					},
+				})
 				return
 			}
+		}()
+
+		if tokenString, err = c.Cookie("id_token"); err != nil {
+			panic(err)
 		}
 
-		c.AbortWithStatus(http.StatusUnauthorized)
+		if token, err = jwt.ParseWithClaims(tokenString, &utils.IDTokenJWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return []byte(globals.Conf.App.JwtSecret), nil
+		}); err != nil {
+			panic(err)
+		}
+
+		if !token.Valid {
+			err = errors.New("id_token is invalid")
+			panic(err)
+		}
 	}
 }

@@ -1,3 +1,54 @@
+### 3.0.0
+#### Improve authentication and authorization protocol 
+  1. A user signs in through the login form or social account
+  2. After authentication,  /v2/auth/activate or /v2/auth/{google,
+  facebook}/callback will set `id_token` cookie in jwt format.
+  3. Frontend server will then launch another request to
+  /v2/auth/token along with the bear token in Authorization header
+  from `id_token` to get the `access_token`.
+  4. After validating the `id_token`, go-api returns the `access_token` in
+     response payload.
+  5. When users want to sign out, the frontend server should redirect users to
+  /v2/auth/logout endpoint, which will unset `id_token` cookie.
+  
+  Besides protocol improvement, there are some refactors as well,
+  - refactor the token generation utilties for backward compatibility.
+  - enable sessions while doing google|facebook oAuth.
+
+#### New Feature:
+##### Donation endpoints
+  - /v1/periodic_donations endpoint with POST method
+  - /v1/donations/prime endpoint with POST method
+  The above endpoints allow users to contribute monthly(the upper one) or one-time(the lower one).
+
+  - /v1/periodic_donations/:id (PATCH method)
+  - /v1/donations/prime/:id (PATCH method)
+  The above endpoints allow users to patch detailed information to the certain donation record
+
+  - /v1/periodic-donations/:id?user_id=:userID (GET method)
+  - /v1/donations/prime/:id?user_id=:userID (GET method)
+  The above endpoints allow users to get the certain donation record
+ 
+##### Mail endpoints
+  - /v1/mail/send_activation (POST method)
+  - /v1/mail/send_success_donation (POST method)
+
+#### Configuration refactoring
+  - use `viper` to load the config
+  - change config file format from json to yaml
+  - add controllers/mail.go to handle HTTP request/response
+  - replace utils/mail.go by services/mail.go
+  - use template/signin.tmpl to generate activation mail HTML
+  - use template/success-donation.tmpl to generate success donation mail HTML
+  - send HTTP POST request to mail endpoints after signin and donation success
+
+#### Miscellaneous
+- Use Allow-Origins to constrain access from different sites with respect to the environments
+- Send thank-you donation email after success donation
+- Api documents for donation, mail, version 2 auth/oauth endpoints
+- `form` request body is not supported on donation and mail controllers anymore
+- Only development environment can return draft posts or topics
+
 ### 2.1.4
 - Update /v1/search/posts and /v1/search/authors to use new algolia indices
 
