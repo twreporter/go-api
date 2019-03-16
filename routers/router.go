@@ -100,12 +100,12 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	}))
 	v1Group.POST("/donations/prime", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateADonationOfAUser))
 	v1Group.PATCH("/donations/prime/:id", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
-		return mc.PatchADonationOfAUser(c, globals.PrimeDonaitionType)
+		return mc.PatchADonationOfAUser(c, globals.PrimeDonationType)
 	}))
 	// v1Group.GET("/users/:userID/donations", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))
 	// one-time donation including credit_card, line pay, apple pay, google pay and samsung pay
 	v1Group.GET("/donations/prime/:id", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
-		return mc.GetADonationOfAUser(c, globals.PrimeDonaitionType)
+		return mc.GetADonationOfAUser(c, globals.PrimeDonationType)
 	}))
 
 	// TODO
