@@ -1,3 +1,7 @@
+### 3.0.1
+#### Bug fixed
+- `leading_image_portrait` is missing in full post object.
+
 ### 3.0.0
 #### Improve authentication and authorization protocol 
   1. A user signs in through the login form or social account
