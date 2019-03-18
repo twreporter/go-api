@@ -34,7 +34,8 @@ email:
         feedback_name: '報導者 The Reporter'
         feedback_email: contact@twreporter.org
     amazon:
-        sender: no-reply@twreporter.org
+        sender_address: 'no-reply@twreporter.org'
+        sender_name: '報導者 The Reporter'
         aws_region: us-west-2
         char_set: utf-8
 db:
@@ -110,9 +111,10 @@ type SMTPConfig struct {
 }
 
 type AmazonConfig struct {
-	Sender    string `yaml:"sender"`
-	AwsRegion string `yaml:"aws_region"`
-	Charset   string `yaml:"char_set"`
+	SenderAddress string `yaml:"sender_address"`
+	SenderName    string `yaml:"sender_name"`
+	AwsRegion     string `yaml:"aws_region"`
+	Charset       string `yaml:"char_set"`
 }
 
 type DBConfig struct {
@@ -202,7 +204,8 @@ func buildConf() ConfYaml {
 	conf.DB.Mongo.Timeout = viper.GetInt("db.mongo.timeout")
 
 	// Email - Amazon
-	conf.Email.Amazon.Sender = viper.GetString("email.amazon.sender")
+	conf.Email.Amazon.SenderAddress = viper.GetString("email.amazon.sender_address")
+	conf.Email.Amazon.SenderName = viper.GetString("email.amazon.sender_name")
 	conf.Email.Amazon.AwsRegion = viper.GetString("email.amazon.aws_region")
 	conf.Email.Amazon.Charset = viper.GetString("email.amazon.char_set")
 
