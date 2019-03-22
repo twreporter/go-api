@@ -56,7 +56,7 @@ type PayByPrimeDonation struct {
 	Notes       string     `gorm:"type:varchar(100)" json:"notes"`
 	OrderNumber string     `gorm:"type:varchar(50);not null" json:"order_number"`
 	PayMethod   string     `gorm:"type:ENUM('credit_card','line','apple','google','samsung');not null;index:idx_pay_by_prime_donations_cardholder_email_pay_method" json:"pay_method"`
-	SendReceipt string     `gorm:"type:ENUM('no', 'monthly');default:'monthly'" json:"send_receipt"`
+	SendReceipt string     `gorm:"type:ENUM('no', 'yearly', 'monthly');default:'yearly'" json:"send_receipt"`
 	Status      string     `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 	UserID      uint       `gorm:"type:int(10);unsigned;not null" json:"user_id"`
@@ -93,7 +93,7 @@ type PayByOtherMethodDonation struct {
 	OrderNumber string     `gorm:"type:varchar(50);not null" json:"order_number"`
 	PayMethod   string     `gorm:"type:varchar(50);not null;index:idx_pay_by_other_donations_pay_method" json:"pay_method"`
 	PhoneNumber string     `gorm:"type:varchar(20)" json:"phone_number"`
-	SendReceipt string     `gorm:"type:ENUM('no', 'monthly');default:'monthly'" json:"send_receipt"`
+	SendReceipt string     `gorm:"type:ENUM('no', 'yearly', 'monthly');default:'yearly'" json:"send_receipt"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 	UserID      uint       `gorm:"type:int(10) unsigned;not null" json:"user_id"`
 	ZipCode     string     `gorm:"type:varchar(10)" json:"zip_code"`
@@ -115,7 +115,7 @@ type PeriodicDonation struct {
 	MaxPaidTimes  uint       `json:"max_paid_times" gorm:"type:int;not null;default:2147483647"`
 	Notes         string     `gorm:"type:varchar(100)" json:"notes"`
 	OrderNumber   string     `gorm:"type:varchar(50);not null" json:"order_number"`
-	SendReceipt   string     `gorm:"type:ENUM('no', 'monthly', 'yearly');default:'monthly'" json:"send_receipt"`
+	SendReceipt   string     `gorm:"type:ENUM('no', 'yearly');default:'yearly'" json:"send_receipt"`
 	Status        string     `gorm:"type:ENUM('to_pay','paying','paid','fail','stopped','invalid');not null" json:"status"`
 	ToFeedback    null.Bool  `gorm:"type:tinyint(1);default:1" json:"to_feedback"`
 	UpdatedAt     time.Time  `json:"updated_at"`
