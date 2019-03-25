@@ -1,3 +1,7 @@
+### 3.0.2 (Released)
+#### Schema Change 
+- Correct `send_receipt` enumeration value of `periodic_donations`, `pay_by_prime_donations` and `pay_by_other_method_donations` tables
+
 ### 3.0.1
 #### Bug fixed
 - `leading_image_portrait` is missing in full post object.
