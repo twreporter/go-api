@@ -6,6 +6,7 @@ import (
 	"go/build"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -20,15 +21,19 @@ func main() {
 	}
 
 	defer file.Close()
-	reader := bufio.NewReader(file)
-	line, _, err1 := reader.ReadLine()
-	if err1 != nil {
-		fmt.Println("Cannot read file")
-		fmt.Println(err1.Error())
-		return
-	}
-	ver := strings.Replace(string(line), "#", "", -1)
-	ver = strings.Replace(ver, " ", "", -1)
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
 
-	fmt.Print(ver)
+	re := regexp.MustCompile(`#{1,}\s+(?:\d+\.)(?:\d+\.)(?:\d+)`)
+	for scanner.Scan() {
+		ver := re.FindString(scanner.Text())
+		if ver != "" {
+			// remove #
+			ver = strings.Replace(ver, "#", "", -1)
+			// remove whitespace
+			ver = strings.Replace(ver, " ", "", -1)
+			fmt.Print(ver)
+			break
+		}
+	}
 }
