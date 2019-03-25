@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 func main() {
@@ -23,11 +24,15 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
-	re := regexp.MustCompile(`#{1,}(\s)*(?:\d+\.)(?:\d+\.)(?:\d+)`)
+	re := regexp.MustCompile(`#{1,}\s+(?:\d+\.)(?:\d+\.)(?:\d+)`)
 	for scanner.Scan() {
 		ver := re.FindString(scanner.Text())
 		if ver != "" {
-			fmt.Println(ver)
+			// remove #
+			ver = strings.Replace(ver, "#", "", -1)
+			// remove whitespace
+			ver = strings.Replace(ver, " ", "", -1)
+			fmt.Print(ver)
 			break
 		}
 	}
