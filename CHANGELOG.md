@@ -1,4 +1,6 @@
-### 3.0.2 (Released)
+(Released) 
+
+### 3.0.2
 #### Schema Change 
 - Correct `send_receipt` enumeration value of `periodic_donations`, `pay_by_prime_donations` and `pay_by_other_method_donations` tables
 
