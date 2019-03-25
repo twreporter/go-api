@@ -1,4 +1,4 @@
-(Released) 
+## Released
 
 ### 3.0.2
 #### Schema Change 
