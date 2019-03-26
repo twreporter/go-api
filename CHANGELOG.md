@@ -1,5 +1,12 @@
 ## Released
 
+### 3.0.3
+#### Thank you mail refinement
+- Format template/success-donation.tmpl
+- Update template/success-donation.tmpl. Add do-not-reply message
+- Email sender name changed: `no-reply@twreporter.org` -> `報導者 The Reporter <no-reply@twreporter.org>`
+- Thank-you mail wording revised: 捐款 -> 贊助
+
 ### 3.0.2
 #### Schema Change 
 - Correct `send_receipt` enumeration value of `periodic_donations`, `pay_by_prime_donations` and `pay_by_other_method_donations` tables
