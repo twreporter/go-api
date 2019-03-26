@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"mime"
@@ -35,13 +36,21 @@ type AmazonMailStrategy struct {
 	conf configs.AmazonConfig
 }
 
+func (s *AmazonMailStrategy) MIMEForEmailTitle(charSet, title string) string {
+	const encoding string = "B" // base64
+	var encodedText = base64.StdEncoding.EncodeToString([]byte(title))
+	return fmt.Sprintf("=?%s?%s?%s?=", charSet, encoding, encodedText)
+}
+
 // Send is a pointer receiver function of AmazonMailStrategy,
 // which uses SES to send the mail
 func (s *AmazonMailStrategy) Send(to, subject, body string) error {
+	var source string
+
 	emailSettings := s.conf
 
-	if len(emailSettings.Sender) == 0 {
-		log.Info("utils.mail.send: Sender is not set")
+	if len(emailSettings.SenderAddress) == 0 {
+		log.Warn("AmazonMailStrategy.config.SenderAddress is not set")
 		return nil
 	}
 
@@ -55,6 +64,10 @@ func (s *AmazonMailStrategy) Send(to, subject, body string) error {
 
 	// Create an SES client in the session.
 	svc := ses.New(sess)
+
+	source = fmt.Sprintf("%s <%s>",
+		s.MIMEForEmailTitle(emailSettings.Charset, emailSettings.SenderName),
+		emailSettings.SenderAddress)
 
 	// Assemble the email.
 	input := &ses.SendEmailInput{
@@ -80,7 +93,7 @@ func (s *AmazonMailStrategy) Send(to, subject, body string) error {
 				Data:    aws.String(subject),
 			},
 		},
-		Source: aws.String(emailSettings.Sender),
+		Source: aws.String(source),
 	}
 
 	// Attempt to send the email.
