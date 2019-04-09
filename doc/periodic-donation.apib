@@ -220,9 +220,9 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                     },
                     "details": "details(string) is optional",
                     "merchant_id": "merchant_id(string) is optional",
-                    "frequency": "frequency(string) is optional, default: 'monthly'. only support 'monthly' and 'yearly'",
+                    "frequency": "frequency(string) is required. Only support 'monthly' and 'yearly'",
                     "user_id": "user_id(number) is required",
-                    "max_paid_times": "max_paid_times(number) is optional, default: 2147483647"
+                    "max_paid_times": "max_paid_times(unsigned number) is optional, default: 2147483647"
                 }
             }
 
