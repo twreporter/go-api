@@ -241,6 +241,7 @@ func (req clientReq) BuildTapPayReq(orderNumber string) tapPayTransactionReq {
 
 func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.PeriodicDonation {
 	const defaultDetails = "一般線上定期定額捐款"
+	const defaultMaxPaidTimes = 2147483647
 
 	m := new(models.PeriodicDonation)
 
@@ -263,6 +264,13 @@ func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.Perio
 
 	m.OrderNumber = orderNumber
 	m.Status = statusPaying
+
+	// If MaxPaidTimes is not specified or zero value, set it to default maximum paid times.
+	if req.MaxPaidTimes != 0 {
+		m.MaxPaidTimes = req.MaxPaidTimes
+	} else {
+		m.MaxPaidTimes = defaultMaxPaidTimes
+	}
 
 	return *m
 }
