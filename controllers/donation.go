@@ -12,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -27,10 +28,9 @@ import (
 )
 
 const (
-	defaultDetails        = "報導者小額捐款"
-	defaultCurrency       = "TWD"
-	defaultMerchantID     = "twreporter_CTBC"
-	defaultRequestTimeout = 45 * time.Second
+	defaultDetails    = "報導者小額捐款"
+	defaultCurrency   = "TWD"
+	defaultMerchantID = "twreporter_CTBC"
 
 	invalidPayMethodID = -1
 
@@ -835,6 +835,23 @@ func getPayMethodID(payMethod string) int {
 	return invalidPayMethodID
 }
 
+func getProxyHttpClient() *http.Client {
+	const defaultRequestTimeout = 45 * time.Second
+
+	client := &http.Client{Timeout: defaultRequestTimeout}
+
+	switch globals.Conf.Environment {
+	// Always make tappay request through proxy in staging/production.
+	case "staging", "production":
+		proxyUrl, _ := url.Parse(globals.Conf.Donation.ProxyServer)
+		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	default:
+		// Omit intentionally
+	}
+
+	return client
+}
+
 func handleTapPayBodyParseError(body []byte) (tapPayTransactionResp, error) {
 	var minResp tapPayMinTransactionResp
 	var resp tapPayTransactionResp
@@ -856,8 +873,7 @@ func handleTapPayBodyParseError(body []byte) (tapPayTransactionResp, error) {
 }
 
 func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
-	// Setup HTTP client with timeout
-	client := &http.Client{Timeout: defaultRequestTimeout}
+	client := getProxyHttpClient()
 
 	req, _ := http.NewRequest("POST", globals.Conf.Donation.TapPayURL, bytes.NewBuffer(reqBodyJson))
 	req.Header.Add("x-api-key", key)
