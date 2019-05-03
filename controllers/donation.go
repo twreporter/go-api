@@ -393,7 +393,7 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 		origin = globals.SupportSiteOrigin
 	}
 
-	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + fmt.Sprint(body.ID)
+	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + body.OrderNumber
 
 	var donationType string
 	switch body.Frequency {
