@@ -3,6 +3,7 @@ package configs
 import (
 	"bytes"
 	"io/ioutil"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -261,6 +262,12 @@ func LoadDefaultConf() (ConfYaml, error) {
 // LoadConf load config from file and read in environment variables that match
 func LoadConf(confPath string) (ConfYaml, error) {
 	var conf ConfYaml
+
+	// Set environment variables prefix with GOAPI_
+	viper.SetEnvPrefix("GOAPI")
+	viper.AutomaticEnv()
+	// Replace the nested key delimiter "." with "_"
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	if confPath != "" {
 		content, err := ioutil.ReadFile(confPath)
