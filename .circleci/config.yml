@@ -43,26 +43,15 @@ jobs:
       - run:
           name: save SHA to a file
           command: echo $CIRCLE_SHA1 > .circle-sha
-      - save_cache:
-          key: v1-build-{{ checksum ".circle-sha" }}
+      - persist_to_workspace:
+          root: /go/src/twreporter.org/go-api
           paths:
-            - /go/src/twreporter.org/go-api
+            - ./*
 
   deploy:
-    machine:
-      enabled: true
+    docker:
+      - image: google/cloud-sdk
     steps:
-      - run:
-          name: Create working directory
-          command: |
-            sudo mkdir -p /go/src/twreporter.org/go-api
-            sudo chown -R circleci:root /go
-      - run:
-          name: save SHA to a file
-          command: echo $CIRCLE_SHA1 > .circle-sha
-      - restore_cache:
-          keys:
-            - v1-build-{{ checksum ".circle-sha" }}
       - run:
           name: Connect to container cluster
           command: |
@@ -73,7 +62,6 @@ jobs:
             gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcp-key.json"
             CLUSTER_NAME=""
 
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
@@ -85,44 +73,34 @@ jobs:
             fi
 
             echo "CLUSTER_NAME: ${CLUSTER_NAME}"
-            echo "CLUSTER_NAME=${CLUSTER_NAME}" > circle_ci_local_env
             gcloud --quiet container clusters get-credentials $CLUSTER_NAME
-
-      - run:
-          name: Install kubectl
-          command: |
-            source circle_ci_local_env
-            echo "CLUSTER_NAME: ${CLUSTER_NAME}"
-            KUBECTL_VERSION="$(gcloud container clusters describe ${CLUSTER_NAME} | sed -n 's/.*currentMasterVersion:[ ]*\(.*\)-\(.*\)/\1/p')"
-            echo "KUBECTL_VERSION=${KUBECTL_VERSION}"
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
+      - setup_remote_docker
+      
+      - attach_workspace:
+          at: /go/src/twreporter.org/go-api
 
       - run:
           name: Build, push and deploy Docker image
           command: |
             cd /go/src/twreporter.org/go-api
-            PKG_VER="$(cat .pkg-version)"
+            PKG_VER=""
 
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
               # pkg version for staging
               PKG_VER="staging-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
-
-              # config.yml for go-api
-              echo ${GO_STAGING_CONFIG_YML} | base64 -i --decode > ./configs/config.yml
             fi
-
+            
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
-              # config.yml for go-api
-              echo ${GO_CONFIG_YML} | base64 -i --decode > ./configs/config.yml
+              # pkg version for release
+              PKG_VER="$(cat .pkg-version)"
             fi
 
             # aws config
             echo ${AWS_CREDENTIALS} | base64 -i --decode > ./aws_credentials
 
             docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
-            gcloud docker -- push gcr.io/coastal-run-106202/go-api:$PKG_VER
+            gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
+            docker push gcr.io/coastal-run-106202/go-api:$PKG_VER
             kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$PKG_VER --container=go-api
 
 workflows:
