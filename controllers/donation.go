@@ -393,7 +393,7 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 		origin = globals.SupportSiteOrigin
 	}
 
-	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + fmt.Sprint(body.ID)
+	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + body.OrderNumber
 
 	var donationType string
 	switch body.Frequency {
@@ -602,13 +602,13 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	var d interface{}
 	var err error
 	var failData gin.H
-	var recordID uint64
 	var reqBody patchBody
 	var rowsAffected int64
 	var valid bool
+	var orderNumber string
 
-	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
-		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, nil
+	if orderNumber = c.Param("order"); "" == orderNumber {
+		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, order_number should be provided in the url"}, nil
 	}
 
 	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
@@ -627,8 +627,8 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	}
 
 	if err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
-		"user_id": reqBody.UserID,
-		"id":      recordID,
+		"user_id":      reqBody.UserID,
+		"order_number": orderNumber,
 	}, d); err != nil {
 		return 0, gin.H{}, err
 	}
@@ -651,35 +651,37 @@ func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H,
 // GetADonationOfAUser returns a donation of a user
 func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
 	var (
-		err        error
-		recordID   uint64
-		_userID    uint
-		resp       = new(clientResp)
-		authUserID interface{}
+		err         error
+		_userID     uint
+		resp        = new(clientResp)
+		authUserID  interface{}
+		orderNumber string
 	)
 
-	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
-		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
-			"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
-		}}, nil
-	}
+	orderNumber = c.Param("order")
 
 	switch donationType {
 	case globals.PeriodicDonationType:
 		d := models.PeriodicDonation{}
-		err = mc.Storage.Get(uint(recordID), &d)
+		err = mc.Storage.GetByConditions(map[string]interface{}{
+			"order_number": orderNumber,
+		}, &d)
 		resp.BuildFromPeriodicDonationModel(d)
 		_userID = uint(d.UserID)
 		break
 	case globals.PrimeDonationType:
 		d := models.PayByPrimeDonation{}
-		err = mc.Storage.Get(uint(recordID), &d)
+		err = mc.Storage.GetByConditions(map[string]interface{}{
+			"order_number": orderNumber,
+		}, &d)
 		resp.BuildFromPrimeDonationModel(d)
 		_userID = uint(d.UserID)
 		break
 	case globals.OthersDonationType:
 		d := models.PayByOtherMethodDonation{}
-		err = mc.Storage.Get(uint(recordID), &d)
+		err = mc.Storage.GetByConditions(map[string]interface{}{
+			"order_number": orderNumber,
+		}, &d)
 		resp.BuildFromOtherMethodDonationModel(d)
 		_userID = uint(d.UserID)
 		break
