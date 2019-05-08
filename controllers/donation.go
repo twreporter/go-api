@@ -12,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -27,10 +28,9 @@ import (
 )
 
 const (
-	defaultDetails        = "報導者小額捐款"
-	defaultCurrency       = "TWD"
-	defaultMerchantID     = "twreporter_CTBC"
-	defaultRequestTimeout = 45 * time.Second
+	defaultDetails    = "報導者小額捐款"
+	defaultCurrency   = "TWD"
+	defaultMerchantID = "twreporter_CTBC"
 
 	invalidPayMethodID = -1
 
@@ -241,6 +241,7 @@ func (req clientReq) BuildTapPayReq(orderNumber string) tapPayTransactionReq {
 
 func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.PeriodicDonation {
 	const defaultDetails = "一般線上定期定額捐款"
+	const defaultMaxPaidTimes = 2147483647
 
 	m := new(models.PeriodicDonation)
 
@@ -263,6 +264,13 @@ func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.Perio
 
 	m.OrderNumber = orderNumber
 	m.Status = statusPaying
+
+	// If MaxPaidTimes is not specified or zero value, set it to default maximum paid times.
+	if req.MaxPaidTimes != 0 {
+		m.MaxPaidTimes = req.MaxPaidTimes
+	} else {
+		m.MaxPaidTimes = defaultMaxPaidTimes
+	}
 
 	return *m
 }
@@ -385,7 +393,7 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 		origin = globals.SupportSiteOrigin
 	}
 
-	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + fmt.Sprint(body.ID)
+	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + body.OrderNumber
 
 	var donationType string
 	switch body.Frequency {
@@ -594,13 +602,13 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	var d interface{}
 	var err error
 	var failData gin.H
-	var recordID uint64
 	var reqBody patchBody
 	var rowsAffected int64
 	var valid bool
+	var orderNumber string
 
-	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
-		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, record id should be provided in the url"}, nil
+	if orderNumber = c.Param("order"); "" == orderNumber {
+		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, order_number should be provided in the url"}, nil
 	}
 
 	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
@@ -619,8 +627,8 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	}
 
 	if err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
-		"user_id": reqBody.UserID,
-		"id":      recordID,
+		"user_id":      reqBody.UserID,
+		"order_number": orderNumber,
 	}, d); err != nil {
 		return 0, gin.H{}, err
 	}
@@ -643,35 +651,37 @@ func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H,
 // GetADonationOfAUser returns a donation of a user
 func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
 	var (
-		err        error
-		recordID   uint64
-		_userID    uint
-		resp       = new(clientResp)
-		authUserID interface{}
+		err         error
+		_userID     uint
+		resp        = new(clientResp)
+		authUserID  interface{}
+		orderNumber string
 	)
 
-	if recordID, err = strconv.ParseUint(c.Param("id"), 10, strconv.IntSize); err != nil {
-		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
-			"url": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
-		}}, nil
-	}
+	orderNumber = c.Param("order")
 
 	switch donationType {
 	case globals.PeriodicDonationType:
 		d := models.PeriodicDonation{}
-		err = mc.Storage.Get(uint(recordID), &d)
+		err = mc.Storage.GetByConditions(map[string]interface{}{
+			"order_number": orderNumber,
+		}, &d)
 		resp.BuildFromPeriodicDonationModel(d)
 		_userID = uint(d.UserID)
 		break
 	case globals.PrimeDonationType:
 		d := models.PayByPrimeDonation{}
-		err = mc.Storage.Get(uint(recordID), &d)
+		err = mc.Storage.GetByConditions(map[string]interface{}{
+			"order_number": orderNumber,
+		}, &d)
 		resp.BuildFromPrimeDonationModel(d)
 		_userID = uint(d.UserID)
 		break
 	case globals.OthersDonationType:
 		d := models.PayByOtherMethodDonation{}
-		err = mc.Storage.Get(uint(recordID), &d)
+		err = mc.Storage.GetByConditions(map[string]interface{}{
+			"order_number": orderNumber,
+		}, &d)
 		resp.BuildFromOtherMethodDonationModel(d)
 		_userID = uint(d.UserID)
 		break
@@ -827,6 +837,23 @@ func getPayMethodID(payMethod string) int {
 	return invalidPayMethodID
 }
 
+func getProxyHttpClient() *http.Client {
+	const defaultRequestTimeout = 45 * time.Second
+
+	client := &http.Client{Timeout: defaultRequestTimeout}
+
+	switch globals.Conf.Environment {
+	// Always make tappay request through proxy in staging/production.
+	case "staging", "production":
+		proxyUrl, _ := url.Parse(globals.Conf.Donation.ProxyServer)
+		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	default:
+		// Omit intentionally
+	}
+
+	return client
+}
+
 func handleTapPayBodyParseError(body []byte) (tapPayTransactionResp, error) {
 	var minResp tapPayMinTransactionResp
 	var resp tapPayTransactionResp
@@ -848,8 +875,7 @@ func handleTapPayBodyParseError(body []byte) (tapPayTransactionResp, error) {
 }
 
 func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
-	// Setup HTTP client with timeout
-	client := &http.Client{Timeout: defaultRequestTimeout}
+	client := getProxyHttpClient()
 
 	req, _ := http.NewRequest("POST", globals.Conf.Donation.TapPayURL, bytes.NewBuffer(reqBodyJson))
 	req.Header.Add("x-api-key", key)

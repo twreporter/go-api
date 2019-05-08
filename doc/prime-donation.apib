@@ -1,10 +1,10 @@
 # Group Prime Donation
 Prime donation resources of go-api
 
-## Prime Donation [/v1/donations/prime/{id}{?user_id}]
+## Prime Donation [/v1/donations/prime/orders/{order}]
 A single Prime Donation.
 The Prime Donation is the resource in the TWReporter Donation API. 
-It reprensents one prime donation record.
+It reprensents one prime donation record identified by the order number (order).
 
 The Prime Donation resource has the following attributes;
 - id
@@ -38,8 +38,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 ### Retrieve a Single Prime Donation [GET]
 + Parameters
-    + id (number) ... ID of the Prime Donation
-    + user_id (number) ... ID of the user
+    + order (string) ... an order number of the Prime Donation
 
 + Request
 
@@ -97,7 +96,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 ### Modify a Single Prime Donation [PATCH]
 + Parameters
-    + id (number) ... ID of the Prime Donation
+    + order (string) ... an order number of the Prime Donation
 
 + Request 
 

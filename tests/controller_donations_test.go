@@ -609,7 +609,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 
 	jwt = generateJWT(user)
 	authorization = fmt.Sprintf("Bearer %s", jwt)
-	path = fmt.Sprintf("/v1/periodic-donations/%d", defaultRecordRes.Data.ID)
+	path = fmt.Sprintf("/v1/periodic-donations/orders/%s", defaultRecordRes.Data.OrderNumber)
 
 	idToken = generateIDToken(user)
 	cookie = http.Cookie{
@@ -713,7 +713,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 
 	jwt = generateJWT(user)
 	authorization = fmt.Sprintf("Bearer %s", jwt)
-	path = fmt.Sprintf("/v1/donations/prime/%d", defaultRecordRes.Data.ID)
+	path = fmt.Sprintf("/v1/donations/prime/orders/%s", defaultRecordRes.Data.OrderNumber)
 
 	idToken = generateIDToken(user)
 	cookie = http.Cookie{
@@ -824,27 +824,24 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 		Value:    maliciousIDToken,
 	}
 
+	path := fmt.Sprintf("/v1/donations/prime/orders/%s", primeRes.Data.OrderNumber)
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d", primeRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d", primeRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", maliciousAuthorization, maliciousCookie)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		recordIDNotFound := 1000
-		path := fmt.Sprintf("/v1/donations/prime/%d", recordIDNotFound)
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
+		invalidPath := "/v1/donations/prime/orders/INVALID_ORDER"
+		resp := serveHTTPWithCookies("GET", invalidPath, "", "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusOK", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/donations/prime/%d", primeRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
 		respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
 		defer resp.Result().Body.Close()
@@ -880,7 +877,7 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 	// create a new user
 	user := createUser(donorEmail)
 
-	tokenRes := createDefaultPeriodicDonationRecord(user)
+	periodicRes := createDefaultPeriodicDonationRecord(user)
 
 	jwt := generateJWT(user)
 	authorization := fmt.Sprintf("Bearer %s", jwt)
@@ -907,27 +904,24 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 		Value:    maliciousIDToken,
 	}
 
+	path := fmt.Sprintf("/v1/periodic-donations/orders/%s", periodicRes.Data.OrderNumber)
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", tokenRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
 		assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", tokenRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", maliciousAuthorization, maliciousCookie)
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		recordIDNotFound := 1000
-		path := fmt.Sprintf("/v1/periodic-donations/%d", recordIDNotFound)
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
+		invalidPath := "/v1/periodic-donations/orders/INVALID_ORDER"
+		resp := serveHTTPWithCookies("GET", invalidPath, "", "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	t.Run("StatusCode=StatusOK", func(t *testing.T) {
-		path := fmt.Sprintf("/v1/periodic-donations/%d", tokenRes.Data.ID)
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
 		assert.Equal(t, http.StatusOK, resp.Code)
 		respInBytes, _ := ioutil.ReadAll(resp.Result().Body)

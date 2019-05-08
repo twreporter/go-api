@@ -1,10 +1,10 @@
 # Group Periodic Donation
 Periodic donation resources of go-api
 
-## Periodic Donation [/v1/periodic-donations/{id}{?user_id}]
-A single Periodic Donation.
+## Periodic Donation [/v1/periodic-donations/orders/{order}]
+A single Periodic Donation
 The Periodic Donation is the resource in the TWReporter Donation API. 
-It reprensents one periodic donation record.
+It reprensents one periodic donation record identified by the order number(:order).
 
 The Periodic Donation resource has the following attributes;
 - id
@@ -39,8 +39,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 ### Retrieve a Single Periodic Donation [GET]
 + Parameters
-    + id (number) ... ID of the Periodic Donation
-    + user_id (number) ... ID of the user
+    + order (string) ... an order number of a Periodic Donation
 
 + Request
 
@@ -100,7 +99,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 ### Modify a Single Periodic Donation [PATCH]
 + Parameters
-    + id (number) ... ID of the Periodic Donation
+    + order (string) ... an order number of the Periodic Donation
 
 + Request 
 
@@ -220,9 +219,9 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                     },
                     "details": "details(string) is optional",
                     "merchant_id": "merchant_id(string) is optional",
-                    "frequency": "frequency(string) is optional, default: 'monthly'. only support 'monthly' and 'yearly'",
+                    "frequency": "frequency(string) is required. Only support 'monthly' and 'yearly'",
                     "user_id": "user_id(number) is required",
-                    "max_paid_times": "max_paid_times(number) is optional, default: 2147483647"
+                    "max_paid_times": "max_paid_times(unsigned number) is optional, default: 2147483647"
                 }
             }
 
