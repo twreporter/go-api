@@ -84,6 +84,8 @@ jobs:
           command: |
             cd /go/src/twreporter.org/go-api
             PKG_VER=""
+            DEPLOYMENT="go-api"
+            CONTAINER="go-api"
 
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
               # pkg version for staging
@@ -101,7 +103,8 @@ jobs:
             docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
             docker push gcr.io/coastal-run-106202/go-api:$PKG_VER
-            kubectl rolling-update go-api --image=gcr.io/coastal-run-106202/go-api:$PKG_VER --container=go-api
+            kubectl set image deployment ${DEPLOYMENT} ${CONTAINER}=gcr.io/coastal-run-106202/go-api:$PKG_VER --record
+            kubectl rollout status deployment ${DEPLOYMENT}
 
 workflows:
   version: 2

@@ -19,6 +19,9 @@
      - /v1/donations/others/orders/:order GET method
   * Change the donation information update link from /contribute/{frequency}/:id -> /contribute/{frequency}/:order
 
+#### Miscellaneous
+  * Improve the CI build flow
+
 ## Released
 
 ### 3.0.3
