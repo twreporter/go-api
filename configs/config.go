@@ -234,6 +234,7 @@ func buildConf() ConfYaml {
 	conf.Donation.CardSecretKey = viper.GetString("donation.card_secret_key")
 	conf.Donation.TapPayURL = viper.GetString("donation.tappay_url")
 	conf.Donation.TapPayPartnerKey = viper.GetString("donation.tappay_partner_key")
+	conf.Donation.ProxyServer = viper.GetString("donation.proxy_server")
 
 	// Algolia
 	conf.Algolia.ApplicationID = viper.GetString("algolia.application_id")
