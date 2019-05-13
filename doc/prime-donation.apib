@@ -33,6 +33,7 @@ The Prime Donation resource has the following attributes;
 - order_number
 - pay_method
 - send_receipt
+- is_anonymous
 
 The states *id* and *order_number* are assigned by the TWReporter Go API at the moment of creation.
 
@@ -115,6 +116,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             + national_id: A12345678
         + notes: 第一次捐款報導者喔
         + send_receipt: no
+        + is_anonymous: true
         + user_id: 1 (required)
 
 + Response 204
@@ -136,6 +138,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                     },
                     "notes": "notes(string) is optional",
                     "send_receipt": "send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'",
+                    "is_anonymous": "is_anonymous(bool) is optional."
                     "user_id": "user_id(number) is required"
                 }
             }
@@ -260,6 +263,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 + `order_number`: `twreporter-153985253506653918900` (required)
 + `send_receipt`: monthly (required)
 + `pay_method`: `credit_card` (required)
++ `is_anonymous`: false (required, boolean)
 + `cardholder` (required)
     + email: developer@twreporter.org (required)
     + name: 王小明 (optional)
