@@ -120,6 +120,7 @@ type (
 		PayMethod   string            `json:"pay_method"`
 		SendReceipt string            `json:"send_receipt"`
 		ToFeedback  bool              `json:"to_feedback"`
+		IsAnonymous bool              `json:"is_anonymous"`
 	}
 
 	bankTransactionTime struct {
@@ -172,6 +173,7 @@ type (
 		SendReceipt string            `json:"send_receipt"`
 		ToFeedback  bool              `json:"to_feedback"`
 		UserID      uint              `json:"user_id" binding:"required"`
+		IsAnonymous bool              `json:"is_anonymous"`
 	}
 )
 
@@ -182,6 +184,7 @@ func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m.SendReceipt = p.SendReceipt
 	m.ToFeedback = null.BoolFrom(p.ToFeedback)
 	m.UserID = p.UserID
+	m.IsAnonymous = p.IsAnonymous
 	return *m
 }
 
@@ -191,6 +194,7 @@ func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.UserID = p.UserID
+	m.IsAnonymous = p.IsAnonymous
 	return *m
 }
 
