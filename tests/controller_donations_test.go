@@ -32,6 +32,7 @@ type (
 		PayMethod   string            `json:"pay_method"`
 		SendReceipt string            `json:"send_receipt"`
 		ToFeedback  bool              `json:"to_feedback"`
+		IsAnonymous bool              `json:"is_anonymous"`
 	}
 	responseBody struct {
 		Status string         `json:"status"`
@@ -49,17 +50,18 @@ type (
 		} `json:"data"`
 	}
 	requestBody struct {
-		Amount     uint              `json:"amount"`
-		Cardholder models.Cardholder `json:"donor"`
-		Currency   string            `json:"currency"`
-		Details    string            `json:"details"`
-		Frequency  string            `json:"frequency"`
-		MerchantID string            `json:"merchant_id"`
-		PayMethod  string            `json:"pay_method"`
-		Prime      string            `json:"prime"`
-		ResultURL  linePayResultURL  `json:"result_url"` // Line pay needed only
-		UserID     uint              `json:"user_id"`
-		ToFeedback bool              `json:"to_feedback"`
+		Amount      uint              `json:"amount"`
+		Cardholder  models.Cardholder `json:"donor"`
+		Currency    string            `json:"currency"`
+		Details     string            `json:"details"`
+		Frequency   string            `json:"frequency"`
+		MerchantID  string            `json:"merchant_id"`
+		PayMethod   string            `json:"pay_method"`
+		Prime       string            `json:"prime"`
+		ResultURL   linePayResultURL  `json:"result_url"` // Line pay needed only
+		UserID      uint              `json:"user_id"`
+		ToFeedback  bool              `json:"to_feedback"`
+		IsAnonymous bool              `json:"is_anonymous"`
 	}
 )
 
@@ -308,6 +310,7 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 	//   in request body
 	// ===========================================
 	t.Run("StatusCode=StatusCreated", func(t *testing.T) {
+		const defaultAnonymity = false
 		reqBody = requestBody{
 			Amount:     testAmount,
 			Cardholder: testCardholder,
@@ -337,6 +340,8 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 		assert.Equal(t, testDetails, resBody.Data.Details)
 		assert.NotEmpty(t, resBody.Data.OrderNumber)
 		assert.Empty(t, resBody.Data.Notes)
+
+		assert.Equal(t, defaultAnonymity, resBody.Data.IsAnonymous)
 		testCardholderWithDefaultValue(t, resBody.Data.Cardholder)
 
 		// ===========================================
@@ -669,7 +674,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 		var dataAfterPatch models.PeriodicDonation
-
+		const testIsAnonymous = true
 		reqBody = map[string]interface{}{
 			"donor": map[string]string{
 				"address": "test-addres",
@@ -677,6 +682,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 			},
 			"send_receipt": "no",
 			"to_feedback":  !testFeedback,
+			"is_anonymous": testIsAnonymous,
 			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -686,6 +692,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 		Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
 		assert.Equal(t, reqBody["to_feedback"], dataAfterPatch.ToFeedback.ValueOrZero())
 		assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
+		assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
 		assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
 		assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
 	})
@@ -771,13 +778,14 @@ func TestPatchAPrimeDonation(t *testing.T) {
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 		var dataAfterPatch models.PayByPrimeDonation
-
+		const testIsAnonymous = true
 		reqBody = map[string]interface{}{
 			"donor": map[string]string{
 				"name":    "test-name",
 				"address": "test-addres",
 			},
 			"send_receipt": "no",
+			"is_anonymous": testIsAnonymous,
 			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -786,6 +794,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 
 		Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
 		assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
+		assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
 		assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
 		assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
 	})
