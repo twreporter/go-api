@@ -184,7 +184,7 @@ func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m.SendReceipt = p.SendReceipt
 	m.ToFeedback = null.BoolFrom(p.ToFeedback)
 	m.UserID = p.UserID
-	m.IsAnonymous = p.IsAnonymous
+	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
 	return *m
 }
 
@@ -194,7 +194,7 @@ func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.UserID = p.UserID
-	m.IsAnonymous = p.IsAnonymous
+	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
 	return *m
 }
 

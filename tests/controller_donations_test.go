@@ -682,7 +682,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 			},
 			"send_receipt": "no",
 			"to_feedback":  !testFeedback,
-			"is_anonymous": testIsAnonymous,
+			"is_anonymous": null.BoolFrom(testIsAnonymous),
 			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
@@ -785,7 +785,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 				"address": "test-addres",
 			},
 			"send_receipt": "no",
-			"is_anonymous": testIsAnonymous,
+			"is_anonymous": null.BoolFrom(testIsAnonymous),
 			"user_id":      user.ID,
 		}
 		reqBodyInBytes, _ = json.Marshal(reqBody)
