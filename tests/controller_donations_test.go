@@ -562,7 +562,6 @@ func createDefaultPeriodicDonationRecord(user models.User) responseBody {
 		MerchantID: testMerchantID,
 		Prime:      testPrime,
 		UserID:     user.ID,
-		ToFeedback: testFeedback,
 	}
 
 	return createDefaultDonationRecord(reqBody, path, user)

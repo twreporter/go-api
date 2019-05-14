@@ -321,6 +321,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.SendReceipt = d.SendReceipt
 	cr.ToFeedback = d.ToFeedback.ValueOrZero()
 	cr.PayMethod = payMethodCreditCard
+	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
@@ -336,6 +337,7 @@ func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.SendReceipt = d.SendReceipt
 	cr.ToFeedback = false
 	cr.Frequency = oneTimeFrequency
+	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
 }
 
 func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {
