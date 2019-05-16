@@ -245,6 +245,8 @@ CREATE TABLE `pay_by_prime_donations` (
   `card_info_expiry_date` varchar(6) DEFAULT NULL, 
   `send_receipt` enum('yearly', 'monthly', 'no') DEFAULT 'yearly',
   `notes` varchar(100) DEFAULT NULL,
+  `is_anonymous` tinyint(1) DEFAULT 0,
+
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_prime_donations_status` (`status`),
   KEY `idx_pay_by_prime_donations_pay_method` (`pay_method`),
@@ -328,6 +330,7 @@ CREATE TABLE `periodic_donations` (
   `frequency` enum('monthly', 'yearly') DEFAULT 'monthly',
   `notes` varchar(100) DEFAULT NULL,
   `max_paid_times` int NOT NULL DEFAULT 2147483647,
+  `is_anonymous` tinyint(1) DEFAULT 0,
 
   PRIMARY KEY (`id`),
   KEY `idx_periodic_donations_status` (`status`),
