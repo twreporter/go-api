@@ -22,6 +22,7 @@
 #### Miscellaneous
   * Improve the CI build flow
   * Add `is_anonymous` field to prime/periodic donation.
+  * Fine tune donation success email context.
 
 ## Released
 
