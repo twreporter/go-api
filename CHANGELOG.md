@@ -1,5 +1,6 @@
 ## Unreleased
 
+## Released
 ### 4.0.0
 #### New Feature  
   * Enforce the donation through forward-proxy
@@ -23,8 +24,6 @@
   * Improve the CI build flow
   * Add `is_anonymous` field to prime/periodic donation.
   * Fine tune donation success email context.
-
-## Released
 
 ### 3.0.3
 #### Thank you mail refinement
