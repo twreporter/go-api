@@ -3,6 +3,7 @@ package configs
 import (
 	"bytes"
 	"io/ioutil"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -60,6 +61,7 @@ donation:
     card_secret_key: test_card_secret_key
     tappay_url: 'https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime'
     tappay_partner_key: 'partner_6ID1DoDlaPrfHw6HBZsULfTYtDmWs0q0ZZGKMBpp4YICWBxgK97eK3RM'
+    proxy_sever: 'http://forward-proxy/'
 algolia:
     application_id: "" # provide your own application ID
     api_key: "" # provide your own api key
@@ -155,6 +157,7 @@ type DonationConfig struct {
 	CardSecretKey    string `yaml:"card_secret_key"`
 	TapPayURL        string `yaml:"tappay_url"`
 	TapPayPartnerKey string `yaml:"tappay_partner_key"`
+	ProxyServer      string `yaml:"proxy_server"`
 }
 
 type AlgoliaConfig struct {
@@ -231,6 +234,7 @@ func buildConf() ConfYaml {
 	conf.Donation.CardSecretKey = viper.GetString("donation.card_secret_key")
 	conf.Donation.TapPayURL = viper.GetString("donation.tappay_url")
 	conf.Donation.TapPayPartnerKey = viper.GetString("donation.tappay_partner_key")
+	conf.Donation.ProxyServer = viper.GetString("donation.proxy_server")
 
 	// Algolia
 	conf.Algolia.ApplicationID = viper.GetString("algolia.application_id")
@@ -259,6 +263,12 @@ func LoadDefaultConf() (ConfYaml, error) {
 // LoadConf load config from file and read in environment variables that match
 func LoadConf(confPath string) (ConfYaml, error) {
 	var conf ConfYaml
+
+	// Set environment variables prefix with GOAPI_
+	viper.SetEnvPrefix("GOAPI")
+	viper.AutomaticEnv()
+	// Replace the nested key delimiter "." with "_"
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	if confPath != "" {
 		content, err := ioutil.ReadFile(confPath)

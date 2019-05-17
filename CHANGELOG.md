@@ -1,4 +1,29 @@
+## Unreleased
+
 ## Released
+### 4.0.0
+#### New Feature  
+  * Enforce the donation through forward-proxy
+
+#### Breaking Change
+  * Deprecate the following donation endpoints
+     - /v1/periodic-donations/:id GET method
+     - /v1/periodic-donations/:id PATCH method
+     - /v1/donations/prime/:id GET method
+     - /v1/donations/prime/:id PATCH method
+     - /v1/donations/others/:id GET method
+  * Add the follwoing donation endpoints in replace of the above deprecated ones
+     - /v1/periodic-donations/orders/:order GET method
+     - /v1/periodic-donations/orders/:order PATCH method
+     - /v1/donations/prime/orders/:order GET method
+     - /v1/donations/prime/orders/:order PATCH method
+     - /v1/donations/others/orders/:order GET method
+  * Change the donation information update link from /contribute/{frequency}/:id -> /contribute/{frequency}/:order
+
+#### Miscellaneous
+  * Improve the CI build flow
+  * Add `is_anonymous` field to prime/periodic donation.
+  * Fine tune donation success email context.
 
 ### 3.0.3
 #### Thank you mail refinement

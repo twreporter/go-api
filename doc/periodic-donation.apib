@@ -1,10 +1,10 @@
 # Group Periodic Donation
 Periodic donation resources of go-api
 
-## Periodic Donation [/v1/periodic-donations/{id}{?user_id}]
-A single Periodic Donation.
+## Periodic Donation [/v1/periodic-donations/orders/{order}]
+A single Periodic Donation
 The Periodic Donation is the resource in the TWReporter Donation API. 
-It reprensents one periodic donation record.
+It reprensents one periodic donation record identified by the order number(:order).
 
 The Periodic Donation resource has the following attributes;
 - id
@@ -34,13 +34,13 @@ The Periodic Donation resource has the following attributes;
 - send_receipt
 - to_feedback
 - max_paid_times
+- is_anonymous
 
 The states *id* and *order_number* are assigned by the TWReporter Go API at the moment of creation.
 
 ### Retrieve a Single Periodic Donation [GET]
 + Parameters
-    + id (number) ... ID of the Periodic Donation
-    + user_id (number) ... ID of the user
+    + order (string) ... an order number of a Periodic Donation
 
 + Request
 
@@ -100,7 +100,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 ### Modify a Single Periodic Donation [PATCH]
 + Parameters
-    + id (number) ... ID of the Periodic Donation
+    + order (string) ... an order number of the Periodic Donation
 
 + Request 
 
@@ -121,6 +121,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
         + send_receipt: yearly
         + to_feedback: false
         + user_id: 1 (required)
+        + is_anonymous: true
 
 + Response 204
 
@@ -141,7 +142,8 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                     },
                     "notes": "notes(string) is optional",
                     "send_receipt": "send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'",
-                    "to_feedback": "to_feedback(bool) is optional."
+                    "to_feedback": "to_feedback(bool) is optional.",
+                    "is_anonymous": "is_anonymous(bool) is optional.",
                     "user_id": "user_id(number) is required"
                 }
             }
@@ -220,9 +222,9 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                     },
                     "details": "details(string) is optional",
                     "merchant_id": "merchant_id(string) is optional",
-                    "frequency": "frequency(string) is optional, default: 'monthly'. only support 'monthly' and 'yearly'",
+                    "frequency": "frequency(string) is required. Only support 'monthly' and 'yearly'",
                     "user_id": "user_id(number) is required",
-                    "max_paid_times": "max_paid_times(number) is optional, default: 2147483647"
+                    "max_paid_times": "max_paid_times(unsigned number) is optional, default: 2147483647"
                 }
             }
 
@@ -270,6 +272,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 + `order_number`: `twreporter-153985253506653918900` (required)
 + `send_receipt`: monthly (required)
 + `to_feedback`: true (required, boolean)
++ `is_anonymous`: false (required, boolean)
 + `cardholder` (required)
     + email: developer@twreporter.org (required)
     + name: 王小明 (optional)
@@ -279,7 +282,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
     + `zip_code`: 104 (optional)
 + `card_info` (required)
     + `bin_code`: 424242 (required)
-    + country: UNITED KINGDOM" (required)
+    + country: UNITED KINGDOM (required)
     + `country_code`: GB (required)
     + `expiry_date`: 201810 (required)
     + funding: 0 (required, number)
@@ -288,5 +291,5 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
     + level: card_level (required)
 
 ### PeriodicDonationResponse
-+ status: sucess (required)
++ status: success (required)
 + data (PeriodicDonationModel)
