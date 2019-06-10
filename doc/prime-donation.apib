@@ -253,6 +253,16 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                 "message": "unknown error."
             }
 
+## Line Pay Backend Notification [/v1/donations/prime/line-notify]
+Endpoint for tappay server to notify line pay transaction result
+### Notify Line Transaction Endpoint [POST]
+
++ Request with body (application/json)
+
+    + Attributes (TapPayLinePayNotification)
+
++ Response 204
+
 ## Data Structures
 ### PrimeDonationModel
 + id: 1 (required, number)
@@ -284,3 +294,21 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 ### PrimeDonationResponse
 + status: sucess (required)
 + data (PrimeDonationModel)
+
+### TapPayLinePayNotification
++ `rec_trade_id`: LN201711088cHQHr (required)
++ `bank_transaction_id`: TP201711088cHQHr (required)
++ `order_number`: twreporter-153985253506653918901 (required)
++ amount: 500 (required, number)
++ status: 0 (required, number)
++ msg: Success (required)
++ `transaction_time_millis`: 1510136365539 (required, number)
++ `pay_info` (required)
+    + method: CREDIT_CARD
+    + masked_credit_card_number: ************4242
+    + point: 0
++ acquirer: TW_LINE_PAY (required)
++ `card_identifier`: WANG XIAO MING
++ `bank_result_code`: 0
++ `bank_result_msg` (string, nullable)
+
