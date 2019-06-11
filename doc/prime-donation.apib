@@ -50,30 +50,16 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 + Response 200
 
-    + Attributes (PrimeDonationResponse)
-
+    + Attributes (PrimeDonationCommon)
+        
 + Response 401 (application/json)
 
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "req.Headers.Authorization": "JWT is not valid"
-                }
-            }
+    + Attributes (Error401Response)
 
 + Response 403 (application/json)
 
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "req.Headers.Authorization": "request is prohibited to the resource"
-                }
-            }
-
+    + Attributes (Error403Response)
+    
 + Response 404 (application/json)
 
     + Body
@@ -87,13 +73,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 + Response 500 (application/json)
 
-    
-    + Body
-
-            {
-                "status": "error",
-                "message": "unknown error."
-            }
+    + Attributes (Error500Response)
 
 ### Modify a Single Prime Donation [PATCH]
 + Parameters
@@ -179,7 +159,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 ### Create a Single Prime Donation [POST]
 
-+ Request 
++ Request Credit Card
 
     + Headers
 
@@ -200,58 +180,62 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 
 + Response 201
 
-    + Attributes (PrimeDonationResponse)
+    + Attributes (PrimeDonationByCreditCardResponse)
 
 + Response 400 (application/json)
 
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "prime": "prime(string) is required",
-                    "amount": "amount(number) is required",
-                    "donor": {
-                        "email": "email(string) is required",
-                    },
-                    "details": "details(string) is optional",
-                    "merchant_id": "merchant_id(string) is optional",
-                    "pay_method": "pay_method(string) is required, currently only support 'credit_card'"
-                    "user_id": "user_id(number) is required"
-                }
-            }
+    + Attributes (Error400CreatePrimeResponse)
 
 + Response 401 (application/json)
 
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "req.Headers.Authorization": "JWT is not valid"
-                }
-            }
+    + Attributes (Error401Response)
 
 + Response 403 (application/json)
 
-    + Body
-
-            {
-                "status": "fail",
-                "data": {
-                    "req.Headers.Authorization": "request is not permitted for the resource"
-                }
-            }
-
+    + Attributes (Error403Response)
+ 
 + Response 500 (application/json)
 
-    
-    + Body
+    + Attributes (Error500Response)
 
-            {
-                "status": "error",
-                "message": "unknown error."
-            }
++ Request Line Pay
+
+    + Headers
+
+            Content-Type: application/merge-patch+json
+            Cookie: id_token=<id_token>
+            Authorization: Bearer <jwt>
+            
+    + Attributes (object)
+        + amount: 500 (required, number)
+        + currency: TWD 
+        + details: 報導者單筆捐款
+        + donor (required, object)
+            + email: developer@twporter.org (required)
+        + prime: `test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9` (required)
+        + `pay_method`: `line` (required)
+        + `merchant_id`: `TW_LINE_PAY`
+        + `user_id`: 1 (required, number)
+
++ Response 201
+
+    + Attributes (PrimeDonationByLinePayResponse)
+
++ Response 400 (application/json)
+
+    + Attributes (Error400CreatePrimeResponse)
+
++ Response 401 (application/json)
+
+    + Attributes (Error401Response)
+
++ Response 403 (application/json)
+
+    + Attributes (Error403Response)
+    
++ Response 500 (application/json)
+
+    + Attributes (Error500Response)
 
 ## Line Pay Backend Notification [/v1/donations/prime/line-notify]
 Endpoint for tappay server to notify line pay transaction result
@@ -264,7 +248,7 @@ Endpoint for tappay server to notify line pay transaction result
 + Response 204
 
 ## Data Structures
-### PrimeDonationModel
+### PrimeDonationCommon
 + id: 1 (required, number)
 + amount: 500 (required, number)
 + currency: TWD (required)
@@ -281,19 +265,42 @@ Endpoint for tappay server to notify line pay transaction result
     + phone_number: +886912345678 (optional)
     + `national_id`: A12345678 (optional)
     + `zip_code`: 104 (optional)
-+ `card_info` (required)
-    + `bin_code`: 424242 (required)
-    + country: UNITED KINGDOM (required)
-    + `country_code`: GB (required)
-    + `expiry_date`: 201810 (required)
-    + funding: 0 (required, number)
-    + issuer: JPMORGAN CHASE BANK NA (required)
-    + type: 1 (required, number)
-    + level: card_level (required)
 
-### PrimeDonationResponse
-+ status: sucess (required)
-+ data (PrimeDonationModel)
+### PrimeDonationByCreditCardResponse
++ status: success (required)
++ data (PrimeDonationCommon) 
+    
+### PrimeDonationByLinePayResponse
++ status: success (required)
++ data 
+    + Include PrimeDonationCommon
+    + payment_url: `https://sandbox-redirect.tappaysdk.com/redirect/906ec8348e5e893e098e56f1c061ae178fc80d193649305e83ca8788054e839d`
+
+### Error400CreatePrimeResponse
++ status: fail
++ data
+    + prime: `prime(string) is required`
+    + amount: `amount(number) is required`
+    + donor 
+        + email: `email(string) is required`
+    + details: `details(string) is optional`
+    + `merchant_id`: `merchant_id(string) is optional`
+    + `pay_method`: `pay_method(string) is required, currently only support credit_card and line`
+    + `user_id`: `user_id(number) is required`
+    
+### Error401Response
++ status: fail
++ data
+    + `req.Headers.Authorization`: JWT is not valid
+
+### Error403Response
++ status: fail
++ data
+    + `req.Headers.Authorization`: request is not permitted for the resource
+
+### Error500Response
++ status: error
++ message: unknown error
 
 ### TapPayLinePayNotification
 + `rec_trade_id`: LN201711088cHQHr (required)
