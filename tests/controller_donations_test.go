@@ -58,7 +58,6 @@ type (
 		MerchantID  string            `json:"merchant_id"`
 		PayMethod   string            `json:"pay_method"`
 		Prime       string            `json:"prime"`
-		ResultURL   linePayResultURL  `json:"result_url"` // Line pay needed only
 		UserID      uint              `json:"user_id"`
 		ToFeedback  bool              `json:"to_feedback"`
 		IsAnonymous bool              `json:"is_anonymous"`
@@ -84,16 +83,12 @@ const (
 	oneTimeFrequency = "one_time"
 
 	creditCardPayMethod = "credit_card"
-)
+	linePayMethod       = "line"
 
-var testCardholder = models.Cardholder{
-	PhoneNumber: null.StringFrom("+886912345678"),
-	Name:        null.StringFrom("王小明"),
-	Email:       "developer@twreporter.org",
-	ZipCode:     null.StringFrom("104"),
-	Address:     null.StringFrom("台北市中山區南京東路X巷X號X樓"),
-	NationalID:  null.StringFrom("A123456789"),
-}
+	defaultPeriodicDetails = "一般線上定期定額捐款"
+	defaultOneTimeDetails  = "一般線上單筆捐款"
+	defaultCurrency        = "TWD"
+)
 
 var defaults = struct {
 	Total      uint
@@ -105,15 +100,6 @@ var defaults = struct {
 	Offset:     0,
 	Limit:      10,
 	CreditCard: "credit_card",
-}
-
-func testCardholderWithDefaultValue(t *testing.T, ch models.Cardholder) {
-	assert.Equal(t, testCardholder.PhoneNumber.ValueOrZero(), ch.PhoneNumber.ValueOrZero())
-	assert.Equal(t, testCardholder.Name.ValueOrZero(), ch.Name.ValueOrZero())
-	assert.Equal(t, testCardholder.Email, ch.Email)
-	assert.Equal(t, testCardholder.ZipCode.ValueOrZero(), ch.ZipCode.ValueOrZero())
-	assert.Equal(t, testCardholder.NationalID.ValueOrZero(), ch.NationalID.ValueOrZero())
-	assert.Equal(t, testCardholder.Address.ValueOrZero(), ch.Address.ValueOrZero())
 }
 
 func testDonationDataValidation(t *testing.T, path string, userID uint, authorization string, cookie http.Cookie) {
@@ -296,87 +282,104 @@ func testDonationDataValidation(t *testing.T, path string, userID uint, authoriz
 	})
 }
 
-func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency string, authorization string, cookie http.Cookie) {
+func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency string, paymethod string, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
-	var reqBody requestBody
 	var resBody responseBody
 	var reqBodyInBytes []byte
 	var resBodyInBytes []byte
 
+	testCardholder := models.Cardholder{
+		PhoneNumber: null.StringFrom("+886912345678"),
+		Name:        null.StringFrom("王小明"),
+		Email:       "developer@twreporter.org",
+		ZipCode:     null.StringFrom("104"),
+		Address:     null.StringFrom("台北市中山區南京東路X巷X號X樓"),
+		NationalID:  null.StringFrom("A123456789"),
+	}
+
+	cases := []struct {
+		name    string
+		reqBody requestBody
+	}{
+		{
+			name: "StatusCode=StatusCreated,full fields",
+			reqBody: requestBody{
+				Amount:     testAmount,
+				Cardholder: testCardholder,
+				Currency:   testCurrency,
+				Details:    testDetails,
+				MerchantID: testMerchantID,
+				Prime:      testPrime,
+				UserID:     userID,
+			},
+		},
+		{
+			name: "StatusCode=StatusCreated,minimum fields",
+			reqBody: requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				Frequency:  frequency,
+				MerchantID: testMerchantID,
+				Prime:      testPrime,
+				UserID:     userID,
+			},
+		},
+	}
 	// ===========================================
 	// Success
-	// - Create a Donation by Credit Card
-	// - Provide all the fields except `result_url`
-	//   in request body
+	// - Create a Donation
 	// ===========================================
-	t.Run("StatusCode=StatusCreated", func(t *testing.T) {
-		const defaultAnonymity = false
-		reqBody = requestBody{
-			Amount:     testAmount,
-			Cardholder: testCardholder,
-			Currency:   testCurrency,
-			Details:    testDetails,
-			MerchantID: testMerchantID,
-			Prime:      testPrime,
-			UserID:     userID,
-		}
 
-		if frequency == oneTimeFrequency {
-			reqBody.PayMethod = creditCardPayMethod
-		} else {
-			reqBody.Frequency = frequency
-		}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			const defaultAnonymity = false
+			if frequency == oneTimeFrequency {
+				c.reqBody.PayMethod = paymethod
+			} else {
+				c.reqBody.Frequency = frequency
+			}
 
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
-		json.Unmarshal(resBodyInBytes, &resBody)
+			reqBodyInBytes, _ = json.Marshal(c.reqBody)
+			resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+			resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
+			json.Unmarshal(resBodyInBytes, &resBody)
 
-		assert.Equal(t, http.StatusCreated, resp.Code)
-		assert.Equal(t, "success", resBody.Status)
-		assert.Equal(t, testAmount, resBody.Data.Amount)
-		assert.Equal(t, frequency, resBody.Data.Frequency)
-		assert.Equal(t, testCurrency, resBody.Data.Currency)
-		assert.Equal(t, testDetails, resBody.Data.Details)
-		assert.NotEmpty(t, resBody.Data.OrderNumber)
-		assert.Empty(t, resBody.Data.Notes)
+			assert.Equal(t, http.StatusCreated, resp.Code)
+			assert.Equal(t, "success", resBody.Status)
+			assert.Equal(t, testAmount, resBody.Data.Amount)
+			assert.Equal(t, frequency, resBody.Data.Frequency)
 
-		assert.Equal(t, defaultAnonymity, resBody.Data.IsAnonymous)
-		testCardholderWithDefaultValue(t, resBody.Data.Cardholder)
+			if c.reqBody.Currency != "" {
+				assert.Equal(t, c.reqBody.Currency, resBody.Data.Currency)
+			} else {
+				assert.Equal(t, defaultCurrency, resBody.Data.Currency)
+			}
+			if c.reqBody.Details != "" {
+				assert.Equal(t, c.reqBody.Details, resBody.Data.Details)
+			} else {
+				switch frequency {
+				case oneTimeFrequency:
+					assert.Equal(t, defaultOneTimeDetails, resBody.Data.Details)
+				case monthlyFrequency, yearlyFrequency:
+					assert.Equal(t, defaultPeriodicDetails, resBody.Data.Details)
+				}
+			}
 
-		// ===========================================
-		// Success
-		// - Create a Donation by Credit Card
-		// - Provide minimun required fields
-		// ===========================================
-		reqBody = requestBody{
-			Amount: testAmount,
-			Cardholder: models.Cardholder{
-				Email: "developer@twreporter.org",
-			},
-			Frequency:  frequency,
-			MerchantID: testMerchantID,
-			Prime:      testPrime,
-			UserID:     userID,
-		}
+			assert.NotEmpty(t, resBody.Data.OrderNumber)
+			assert.Empty(t, resBody.Data.Notes)
 
-		if frequency == oneTimeFrequency {
-			reqBody.PayMethod = creditCardPayMethod
-		} else {
-			reqBody.Frequency = frequency
-		}
+			assert.Equal(t, defaultAnonymity, resBody.Data.IsAnonymous)
+			assert.Equal(t, c.reqBody.Cardholder.PhoneNumber.ValueOrZero(), resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.Name.ValueOrZero(), resBody.Data.Cardholder.Name.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.Email, resBody.Data.Cardholder.Email)
+			assert.Equal(t, c.reqBody.Cardholder.ZipCode.ValueOrZero(), resBody.Data.Cardholder.ZipCode.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.NationalID.ValueOrZero(), resBody.Data.Cardholder.NationalID.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.Address.ValueOrZero(), resBody.Data.Cardholder.Address.ValueOrZero())
 
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
-		json.Unmarshal(resBodyInBytes, &resBody)
-
-		assert.Equal(t, http.StatusCreated, resp.Code)
-		assert.Equal(t, "success", resBody.Status)
-		assert.Equal(t, testAmount, resBody.Data.Amount)
-		assert.Equal(t, frequency, resBody.Data.Frequency)
-		assert.Equal(t, testCurrency, resBody.Data.Currency)
-	})
+		})
+	}
 
 	// ===========================================
 	// Failure (Server Error)
@@ -384,7 +387,7 @@ func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency
 	// - Invalid Prime
 	// ===========================================
 	t.Run("StatusCode=StatusInternalServerError", func(t *testing.T) {
-		reqBody = requestBody{
+		reqBody := requestBody{
 			Amount: testAmount,
 			Cardholder: models.Cardholder{
 				Email: "developer@twreporter.org",
@@ -466,8 +469,9 @@ func TestCreateADonation(t *testing.T) {
 
 	// ==========================================
 	// Test One Time Donation Creation
+	// Pay by credit card
 	// =========================================
-	testCreateADonationRecord(t, path, user.ID, oneTimeFrequency, authorization, cookie)
+	testCreateADonationRecord(t, path, user.ID, oneTimeFrequency, creditCardPayMethod, authorization, cookie)
 }
 
 func TestCreateAPeriodicDonation(t *testing.T) {
@@ -513,7 +517,7 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 	// ==========================================
 	// Test Periodic Donation Creation
 	// =========================================
-	testCreateADonationRecord(t, path, user.ID, monthlyFrequency, authorization, cookie)
+	testCreateADonationRecord(t, path, user.ID, monthlyFrequency, creditCardPayMethod, authorization, cookie)
 }
 
 func createDefaultDonationRecord(reqBody requestBody, endpoint string, user models.User) responseBody {
