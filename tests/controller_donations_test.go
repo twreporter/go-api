@@ -529,6 +529,93 @@ func createDefaultPrimeDonationRecord(user models.User) responseBody {
 	return createDefaultDonationRecord(reqBody, path, user)
 }
 
+func testDonationPatchClientError(t *testing.T, userID uint, frequency, orderNumber, authorization string, cookie http.Cookie) {
+	var reqBodyInBytes []byte
+	var resp *httptest.ResponseRecorder
+	const invalidUserID = 1000
+
+	cases := []struct {
+		name          string
+		reqBody       *map[string]interface{}
+		cookie        *http.Cookie
+		authorization string
+		orderNumber   string
+		resultCode    int
+	}{
+		{
+			name:          "StatusCode=StatusUnauthorized,Lack of Cookie",
+			authorization: authorization,
+			orderNumber:   orderNumber,
+			resultCode:    http.StatusUnauthorized,
+		},
+		{
+			name:        "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			cookie:      &cookie,
+			orderNumber: orderNumber,
+			resultCode:  http.StatusUnauthorized,
+		},
+		{
+			name:          "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqBody:       &map[string]interface{}{"user_id": invalidUserID},
+			cookie:        &cookie,
+			authorization: authorization,
+			orderNumber:   orderNumber,
+			resultCode:    http.StatusForbidden,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Unauthorized Resource",
+			reqBody: &map[string]interface{}{
+				"user_id": userID,
+				// to_feedback should be boolean
+				"to_feedback": "false",
+				// national_id should be string
+				"donor": map[string]interface{}{
+					"national_id": true,
+				},
+			},
+			cookie:        &cookie,
+			authorization: authorization,
+			orderNumber:   orderNumber,
+			resultCode:    http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusNotFound,Invalid Order Number",
+			reqBody: &map[string]interface{}{
+				"send_receipt": "no",
+				"to_feedback":  !testFeedback,
+				"user_id":      userID,
+			},
+			cookie:        &cookie,
+			authorization: authorization,
+			orderNumber:   "InvalidOrderNumber",
+			resultCode:    http.StatusNotFound,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			path := ""
+			switch frequency {
+			case oneTimeFrequency:
+				path = "/v1/donations/prime/orders/" + c.orderNumber
+			case monthlyFrequency, yearlyFrequency:
+				path = "/v1/periodic-donations/orders/" + c.orderNumber
+			}
+
+			if nil != c.reqBody {
+				reqBodyInBytes, _ = json.Marshal(c.reqBody)
+			}
+			if nil != c.cookie {
+				resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", c.authorization, *c.cookie)
+			} else {
+				resp = serveHTTP("PATCH", path, "", "application/json", c.authorization)
+			}
+			assert.Equal(t, c.resultCode, resp.Code)
+
+		})
+	}
+}
+
 func TestPatchAPeriodicDonation(t *testing.T) {
 	const donorEmail string = "periodic-donor@twreporter.org"
 	var defaultRecordRes responseBody
@@ -545,54 +632,8 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	// get record to patch
 	defaultRecordRes = createDefaultPeriodicDonationRecord(user)
 
+	testDonationPatchClientError(t, user.ID, defaultRecordRes.Data.Frequency, defaultRecordRes.Data.OrderNumber, authorization, cookie)
 	path = fmt.Sprintf("/v1/periodic-donations/orders/%s", defaultRecordRes.Data.OrderNumber)
-
-	// without cookie
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTP("PATCH", path, "", "application/json", "")
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	// without Authorization header
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTPWithCookies("PATCH", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		var otherUserID uint = 100
-		resp = serveHTTPWithCookies("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		reqBody = map[string]interface{}{
-			"user_id": user.ID,
-			// to_feedback should be boolean
-			"to_feedback": "false",
-			// national_id should be string
-			"national_id": true,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		var path string
-		var recordIDNotFound uint = 1000
-
-		path = fmt.Sprintf("/v1/periodic-donations/%d", recordIDNotFound)
-
-		reqBody = map[string]interface{}{
-			"send_receipt": "no",
-			"to_feedback":  !testFeedback,
-			"user_id":      user.ID,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNotFound, resp.Code)
-	})
 
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 		var dataAfterPatch models.PeriodicDonation
@@ -637,53 +678,9 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	// get record to patch
 	defaultRecordRes = createDefaultPrimeDonationRecord(user)
 
+	testDonationPatchClientError(t, user.ID, oneTimeFrequency, defaultRecordRes.Data.OrderNumber, authorization, cookie)
+
 	path = fmt.Sprintf("/v1/donations/prime/orders/%s", defaultRecordRes.Data.OrderNumber)
-
-	// without cookie
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTP("PATCH", path, "", "application/json", "")
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	// without Authorization header
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTPWithCookies("PATCH", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		var otherUserID uint = 100
-		resp = serveHTTPWithCookies("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		reqBody = map[string]interface{}{
-			// national_id should be string
-			"donor": map[string]interface{}{
-				"national_id": true,
-			},
-			"user_id": user.ID,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		var path string
-		var recordIDNotFound uint = 1000
-
-		path = fmt.Sprintf("/v1/donations/prime/%d", recordIDNotFound)
-		reqBody = map[string]interface{}{
-			"send_receipt": "no",
-			"user_id":      user.ID,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNotFound, resp.Code)
-	})
-
 	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 		var dataAfterPatch models.PayByPrimeDonation
 		const testIsAnonymous = true
