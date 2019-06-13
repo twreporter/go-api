@@ -705,6 +705,61 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	})
 }
 
+func testDonationGetClientError(t *testing.T, frequency, orderNumber, authorization string, cookie http.Cookie) {
+	var reqBodyInBytes []byte
+	var resp *httptest.ResponseRecorder
+
+	maliciousDonorEmail := "malicious-donor@twreporter.org"
+	maliciousUser := createUser(maliciousDonorEmail)
+	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
+
+	cases := []struct {
+		name          string
+		cookie        *http.Cookie
+		authorization string
+		orderNumber   string
+		resultCode    int
+	}{
+		{
+			name:        "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			cookie:      &cookie,
+			orderNumber: orderNumber,
+			resultCode:  http.StatusUnauthorized,
+		},
+		{
+			name:          "StatusCode=StatusForbidden,Unauthorized Resource",
+			cookie:        &maliciousCookie,
+			authorization: maliciousAuthorization,
+			orderNumber:   orderNumber,
+			resultCode:    http.StatusForbidden,
+		},
+		{
+			name:          "StatusCode=StatusNotFound,Invalid Order Number",
+			cookie:        &cookie,
+			authorization: authorization,
+			orderNumber:   "InvalidOrderNumber",
+			resultCode:    http.StatusNotFound,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			path := ""
+			switch frequency {
+			case oneTimeFrequency:
+				path = "/v1/donations/prime/orders/" + c.orderNumber
+			case monthlyFrequency, yearlyFrequency:
+				path = "/v1/periodic-donations/orders/" + c.orderNumber
+			}
+
+			resp = serveHTTPWithCookies("GET", path, string(reqBodyInBytes), "application/json", c.authorization, *c.cookie)
+			assert.Equal(t, c.resultCode, resp.Code)
+
+		})
+	}
+
+}
+
 func TestGetAPrimeDonationOfAUser(t *testing.T) {
 	// setup before test
 	donorEmail := "get-prime-donor@twreporter.org"
@@ -714,26 +769,8 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 
 	primeRes := createDefaultPrimeDonationRecord(user)
 
-	maliciousDonorEmail := "get-others-prime-donor@twreporter.org"
-	maliciousUser := createUser(maliciousDonorEmail)
-	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
-
+	testDonationGetClientError(t, primeRes.Data.Frequency, primeRes.Data.OrderNumber, authorization, cookie)
 	path := fmt.Sprintf("/v1/donations/prime/orders/%s", primeRes.Data.OrderNumber)
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", maliciousAuthorization, maliciousCookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		invalidPath := "/v1/donations/prime/orders/INVALID_ORDER"
-		resp := serveHTTPWithCookies("GET", invalidPath, "", "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNotFound, resp.Code)
-	})
 
 	t.Run("StatusCode=StatusOK", func(t *testing.T) {
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
@@ -752,14 +789,9 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 		assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
 		assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
 		assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
-		assert.Equal(t, "4242", resBody.Data.CardInfo.LastFour.ValueOrZero())
-		assert.Equal(t, "424242", resBody.Data.CardInfo.BinCode.ValueOrZero())
-		assert.Equal(t, int64(0), resBody.Data.CardInfo.Funding.ValueOrZero())
 		assert.Equal(t, testCurrency, resBody.Data.Currency)
-		assert.Equal(t, "credit_card", resBody.Data.PayMethod)
-		assert.Equal(t, "yearly", resBody.Data.SendReceipt)
-		assert.Equal(t, false, resBody.Data.ToFeedback)
-		assert.Equal(t, oneTimeFrequency, resBody.Data.Frequency)
+		assert.Equal(t, creditCardPayMethod, resBody.Data.PayMethod)
+		assert.Equal(t, yearlyFrequency, resBody.Data.SendReceipt)
 		assert.Empty(t, resBody.Data.Notes)
 		assert.NotEmpty(t, resBody.Data.OrderNumber)
 	})
@@ -773,26 +805,9 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 	authorization, cookie := helperSetupAuth(user)
 	periodicRes := createDefaultPeriodicDonationRecord(user)
 
-	maliciousDonorEmail := "get-others-periodic-donor@twreporter.org"
-	maliciousUser := createUser(maliciousDonorEmail)
-	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
+	testDonationGetClientError(t, periodicRes.Data.Frequency, periodicRes.Data.OrderNumber, authorization, cookie)
 
 	path := fmt.Sprintf("/v1/periodic-donations/orders/%s", periodicRes.Data.OrderNumber)
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", maliciousAuthorization, maliciousCookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		invalidPath := "/v1/periodic-donations/orders/INVALID_ORDER"
-		resp := serveHTTPWithCookies("GET", invalidPath, "", "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNotFound, resp.Code)
-	})
 
 	t.Run("StatusCode=StatusOK", func(t *testing.T) {
 		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
@@ -812,11 +827,8 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 		assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
 		assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
 		assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
-		assert.Equal(t, "4242", resBody.Data.CardInfo.LastFour.ValueOrZero())
-		assert.Equal(t, "424242", resBody.Data.CardInfo.BinCode.ValueOrZero())
-		assert.Equal(t, int64(0), resBody.Data.CardInfo.Funding.ValueOrZero())
 		assert.Equal(t, testCurrency, resBody.Data.Currency)
-		assert.Equal(t, "yearly", resBody.Data.SendReceipt)
+		assert.Equal(t, yearlyFrequency, resBody.Data.SendReceipt)
 		assert.Equal(t, true, resBody.Data.ToFeedback)
 		assert.Equal(t, monthlyFrequency, resBody.Data.Frequency)
 		assert.Empty(t, resBody.Data.Notes)
