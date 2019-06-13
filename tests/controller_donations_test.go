@@ -102,6 +102,22 @@ var defaults = struct {
 	CreditCard: "credit_card",
 }
 
+func helperSetupAuth(user models.User) (authorization string, cookie http.Cookie) {
+	jwt := generateJWT(user)
+	authorization = fmt.Sprintf("Bearer %s", jwt)
+
+	idToken := generateIDToken(user)
+	cookie = http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    idToken,
+	}
+
+	return
+}
+
 func testDonationCreateServerError(t *testing.T, path string, userID uint, frequency string, paymethod string, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
 	var reqBodyInBytes []byte
@@ -420,23 +436,11 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 }
 
 func TestCreateAOneTimeDonation(t *testing.T) {
-	var authorization, jwt, idToken string
-	var cookie http.Cookie
 	var path = "/v1/donations/prime"
 	var user models.User
 
 	user = getUser(Globs.Defaults.Account)
-	jwt = generateJWT(user)
-	authorization = fmt.Sprintf("Bearer %s", jwt)
-
-	idToken = generateIDToken(user)
-	cookie = http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
-	}
+	authorization, cookie := helperSetupAuth(user)
 
 	testDonationCreateClientError(t, path, user.ID, oneTimeFrequency, creditCardPayMethod, authorization, cookie)
 	testDonationCreateServerError(t, path, user.ID, oneTimeFrequency, creditCardPayMethod, authorization, cookie)
@@ -448,23 +452,11 @@ func TestCreateAOneTimeDonation(t *testing.T) {
 }
 
 func TestCreateAPeriodicDonation(t *testing.T) {
-	var authorization, idToken, jwt string
-	var cookie http.Cookie
 	var path = "/v1/periodic-donations"
 	var user models.User
 
 	user = getUser(Globs.Defaults.Account)
-	jwt = generateJWT(user)
-	authorization = fmt.Sprintf("Bearer %s", jwt)
-
-	idToken = generateIDToken(user)
-	cookie = http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
-	}
+	authorization, cookie := helperSetupAuth(user)
 
 	testDonationCreateClientError(t, path, user.ID, monthlyFrequency, creditCardPayMethod, authorization, cookie)
 	testDonationCreateServerError(t, path, user.ID, monthlyFrequency, creditCardPayMethod, authorization, cookie)
@@ -475,19 +467,7 @@ func TestCreateAPeriodicDonation(t *testing.T) {
 }
 
 func createDefaultDonationRecord(reqBody requestBody, endpoint string, user models.User) responseBody {
-	// create jwt of this user
-	jwt := generateJWT(user)
-	// prepare jwt authorization string
-	authorization := fmt.Sprintf("Bearer %s", jwt)
-
-	idToken := generateIDToken(user)
-	cookie := http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
-	}
+	authorization, cookie := helperSetupAuth(user)
 
 	// create a donation by HTTP POST request
 	reqBodyInBytes, _ := json.Marshal(reqBody)
@@ -551,11 +531,7 @@ func createDefaultPrimeDonationRecord(user models.User) responseBody {
 
 func TestPatchAPeriodicDonation(t *testing.T) {
 	const donorEmail string = "periodic-donor@twreporter.org"
-	var authorization string
-	var cookie http.Cookie
 	var defaultRecordRes responseBody
-	var idToken string
-	var jwt string
 	var path string
 	var reqBody map[string]interface{}
 	var reqBodyInBytes []byte
@@ -565,22 +541,11 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	// setup before test
 	// create a new user
 	user = createUser(donorEmail)
-
+	authorization, cookie := helperSetupAuth(user)
 	// get record to patch
 	defaultRecordRes = createDefaultPeriodicDonationRecord(user)
 
-	jwt = generateJWT(user)
-	authorization = fmt.Sprintf("Bearer %s", jwt)
 	path = fmt.Sprintf("/v1/periodic-donations/orders/%s", defaultRecordRes.Data.OrderNumber)
-
-	idToken = generateIDToken(user)
-	cookie = http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
-	}
 
 	// without cookie
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
@@ -657,11 +622,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 
 func TestPatchAPrimeDonation(t *testing.T) {
 	const donorEmail string = "prim-donor@twreporter.org"
-	var authorization string
-	var cookie http.Cookie
 	var defaultRecordRes responseBody
-	var idToken string
-	var jwt string
 	var path string
 	var reqBody map[string]interface{}
 	var reqBodyInBytes []byte
@@ -671,22 +632,12 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	// setup before test
 	// create a new user
 	user = createUser(donorEmail)
+	authorization, cookie := helperSetupAuth(user)
 
 	// get record to patch
 	defaultRecordRes = createDefaultPrimeDonationRecord(user)
 
-	jwt = generateJWT(user)
-	authorization = fmt.Sprintf("Bearer %s", jwt)
 	path = fmt.Sprintf("/v1/donations/prime/orders/%s", defaultRecordRes.Data.OrderNumber)
-
-	idToken = generateIDToken(user)
-	cookie = http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
-	}
 
 	// without cookie
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
@@ -762,33 +713,13 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 	donorEmail := "get-prime-donor@twreporter.org"
 	// create a new user
 	user := createUser(donorEmail)
+	authorization, cookie := helperSetupAuth(user)
 
 	primeRes := createDefaultPrimeDonationRecord(user)
 
-	jwt := generateJWT(user)
-	authorization := fmt.Sprintf("Bearer %s", jwt)
-
-	idToken := generateIDToken(user)
-	cookie := http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
-	}
-
 	maliciousDonorEmail := "get-others-prime-donor@twreporter.org"
 	maliciousUser := createUser(maliciousDonorEmail)
-	maliciousJwt := generateJWT(maliciousUser)
-	maliciousAuthorization := fmt.Sprintf("Bearer %s", maliciousJwt)
-	maliciousIDToken := generateIDToken(maliciousUser)
-	maliciousCookie := http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    maliciousIDToken,
-	}
+	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
 
 	path := fmt.Sprintf("/v1/donations/prime/orders/%s", primeRes.Data.OrderNumber)
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
@@ -842,33 +773,12 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 	donorEmail := "get-periodic-donor@twreporter.org"
 	// create a new user
 	user := createUser(donorEmail)
-
+	authorization, cookie := helperSetupAuth(user)
 	periodicRes := createDefaultPeriodicDonationRecord(user)
-
-	jwt := generateJWT(user)
-	authorization := fmt.Sprintf("Bearer %s", jwt)
-
-	idToken := generateIDToken(user)
-	cookie := http.Cookie{
-		Name:     "id_token",
-		Value:    idToken,
-		MaxAge:   3600,
-		Secure:   false,
-		HttpOnly: true,
-	}
 
 	maliciousDonorEmail := "get-others-periodic-donor@twreporter.org"
 	maliciousUser := createUser(maliciousDonorEmail)
-	maliciousJwt := generateJWT(maliciousUser)
-	maliciousAuthorization := fmt.Sprintf("Bearer %s", maliciousJwt)
-	maliciousIDToken := generateIDToken(maliciousUser)
-	maliciousCookie := http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    maliciousIDToken,
-	}
+	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
 
 	path := fmt.Sprintf("/v1/periodic-donations/orders/%s", periodicRes.Data.OrderNumber)
 	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
