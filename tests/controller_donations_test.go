@@ -717,7 +717,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 
 	payMethods := []string{
 		creditCardPayMethod,
-		//TODO: LineCardPayMethod
+		linePayMethod,
 	}
 
 	for _, p := range payMethods {
@@ -814,7 +814,7 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 	authorization, cookie := helperSetupAuth(user)
 	payMethods := []string{
 		creditCardPayMethod,
-		//TODO: LineCardPayMethod
+		linePayMethod,
 	}
 
 	for _, p := range payMethods {
