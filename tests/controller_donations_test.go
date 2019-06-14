@@ -21,7 +21,6 @@ type (
 	}
 	donationRecord struct {
 		Amount      uint              `json:"amount"`
-		CardInfo    models.CardInfo   `json:"card_info"`
 		Cardholder  models.Cardholder `json:"cardholder"`
 		Currency    string            `json:"currency"`
 		Details     string            `json:"details"`
@@ -33,6 +32,7 @@ type (
 		SendReceipt string            `json:"send_receipt"`
 		ToFeedback  bool              `json:"to_feedback"`
 		IsAnonymous bool              `json:"is_anonymous"`
+		PaymentUrl  string            `json:"payment_url"`
 	}
 	responseBody struct {
 		Status string         `json:"status"`
@@ -450,6 +450,10 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 			assert.Equal(t, c.reqBody.Cardholder.NationalID.ValueOrZero(), resBody.Data.Cardholder.NationalID.ValueOrZero())
 			assert.Equal(t, c.reqBody.Cardholder.Address.ValueOrZero(), resBody.Data.Cardholder.Address.ValueOrZero())
 
+			if payMethod == linePayMethod {
+				assert.NotEmpty(t, resBody.Data.PaymentUrl)
+			}
+
 		})
 	}
 
@@ -464,7 +468,7 @@ func TestCreateAOneTimeDonation(t *testing.T) {
 
 	payMethods := []string{
 		creditCardPayMethod,
-		//TODO: LineCardPayMethod
+		linePayMethod,
 	}
 
 	for _, p := range payMethods {

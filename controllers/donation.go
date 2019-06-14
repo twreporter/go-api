@@ -28,8 +28,9 @@ import (
 )
 
 const (
-	defaultCurrency   = "TWD"
-	defaultMerchantID = "twreporter_CTBC"
+	defaultCurrency           = "TWD"
+	defaultCreditCardMerchant = "GlobalTesting_CTBC"
+	defaultLineMerchant       = "GlobalTesting_LINEPAY" // TODO: Need to revise after the application is done
 
 	invalidPayMethodID = -1
 
@@ -83,6 +84,18 @@ var payMethodMap = map[string]string{
 	payMethodSamsung:    "Samsung Pay",
 }
 
+var methodToMerchant = map[string]string{
+	payMethodCreditCard: defaultCreditCardMerchant,
+	payMethodLine:       defaultLineMerchant,
+}
+
+var envToDonationHost = map[string]string{
+	"development": "test.twreporter.org",
+	"test":        "test.twreporter.org",
+	"staging":     "staging-support.twreporter.org",
+	"production":  "support.twreporter.org",
+}
+
 var cardInfoTypes = map[int64]string{
 	1: "VISA",
 	2: "MasterCard",
@@ -101,7 +114,6 @@ type (
 		MerchantID   string            `json:"merchant_id"`
 		PayMethod    string            `json:"pay_method"`
 		Prime        string            `json:"prime" binding:"required"`
-		ResultUrl    linePayResultUrl  `json:"result_url"`
 		UserID       uint              `json:"user_id" binding:"required"`
 		MaxPaidTimes uint              `json:"max_paid_times"`
 	}
@@ -120,6 +132,7 @@ type (
 		SendReceipt string            `json:"send_receipt"`
 		ToFeedback  bool              `json:"to_feedback"`
 		IsAnonymous bool              `json:"is_anonymous"`
+		PaymentUrl  string            `json:"payment_url"`
 	}
 
 	bankTransactionTime struct {
@@ -157,6 +170,7 @@ type (
 		CardSecret            cardSecret          `json:"card_secret"`
 		Status                int64               `json:"status"`
 		TransactionTimeMillis int64               `json:"transaction_time_millis"`
+		PaymentUrl            string              `json:"payment_url"`
 	}
 
 	tapPayMinTransactionResp struct {
@@ -197,7 +211,7 @@ func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	return *m
 }
 
-func (req clientReq) BuildTapPayReq(orderNumber, details string) tapPayTransactionReq {
+func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapPayTransactionReq {
 	primeReq := new(tapPayTransactionReq)
 	primeReq.Prime = req.Prime
 	primeReq.OrderNumber = orderNumber
@@ -214,7 +228,7 @@ func (req clientReq) BuildTapPayReq(orderNumber, details string) tapPayTransacti
 	if req.MerchantID != "" {
 		primeReq.MerchantID = req.MerchantID
 	} else {
-		primeReq.MerchantID = defaultMerchantID
+		primeReq.MerchantID = methodToMerchant[payMethod]
 	}
 
 	primeReq.Cardholder = req.Cardholder
@@ -230,11 +244,30 @@ func (req clientReq) BuildTapPayReq(orderNumber, details string) tapPayTransacti
 
 	primeReq.PartnerKey = globals.Conf.Donation.TapPayPartnerKey
 
+	f := ""
 	if req.Frequency == monthlyFrequency || req.Frequency == yearlyFrequency {
 		primeReq.Remember = true
+		f = req.Frequency
+	} else {
+		f = "one_time"
 	}
 
-	primeReq.ResultUrl = req.ResultUrl
+	// TODO: Update to correct redirect url
+	frontendRedirectUrl := "https://" + envToDonationHost[globals.Conf.Environment] + "/contribute/" + f + "/" + orderNumber
+
+	// Tappay server will validate the hosts provided in the result_url
+	// Wrap the backendHost to be test.twreporter.org if not in the staging or production environment
+	backendHost := ""
+	if globals.Conf.Environment == "production" || globals.Conf.Environment == "staging" {
+		backendHost = globals.Conf.App.Host
+	} else {
+		backendHost = "test.twreporter.org"
+	}
+
+	primeReq.ResultUrl = linePayResultUrl{
+		FrontendRedirectUrl: frontendRedirectUrl,
+		BackendNotifyUrl:    "https://" + backendHost + "/v1/donations/prime/line-notify",
+	}
 	return *primeReq
 }
 
@@ -480,7 +513,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	tokenDonation := reqBody.BuildTokenDraftRecord(dOrderNumber)
 
 	// Build Tappay prime request
-	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, tokenDonation.Details)
+	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, tokenDonation.Details, payMethodCreditCard)
 
 	// Create a draft periodic donation along with the first token donation record of that periodic donation
 	err = mc.Storage.CreateAPeriodicDonation(&periodicDonation, &tokenDonation)
@@ -562,7 +595,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	// Start Tappay transaction
 	// Build Tappay pay by prime request
-	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, primeDonation.Details)
+	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, primeDonation.Details, payMethod)
 
 	if err = mc.Storage.Create(&primeDonation); nil != err {
 		switch appErr := err.(type) {
@@ -590,8 +623,14 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		return 0, gin.H{}, models.NewAppError(errorWhere, err.Error(), "", http.StatusInternalServerError)
 	}
 
-	// append tappay response onto donation model
-	tapPayResp.AppendRespOnPrimeDonation(&primeDonation, statusPaid)
+	// Append tappay response onto donation model
+	// Since linepay requires extra transaction process,
+	// wait for the line-notify endpoint to update the final transaction status
+	if primeDonation.PayMethod == payMethodLine {
+		tapPayResp.AppendRespOnPrimeDonation(&primeDonation, statusPaying)
+	} else {
+		tapPayResp.AppendRespOnPrimeDonation(&primeDonation, statusPaid)
+	}
 
 	if err, _ = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id": primeDonation.ID,
@@ -602,6 +641,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// build response for clients
 	resp := new(clientResp)
 	resp.BuildFromPrimeDonationModel(primeDonation)
+	resp.PaymentUrl = tapPayResp.PaymentUrl
 
 	// send success mail asynchronously
 	go mc.sendDonationThankYouMail(*resp)
