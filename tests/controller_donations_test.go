@@ -65,12 +65,16 @@ type (
 )
 
 const (
-	testPrime           = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
-	testDetails         = "報導者小額捐款"
-	testAmount     uint = 500
-	testCurrency        = "TWD"
-	testMerchantID      = "GlobalTesting_CTBC"
-	testFeedback        = true
+	testCreditCardPrime = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
+	testLinePrime       = "ln_test_utigjeyfutj5867uyjhuty47rythfjru485768tigjfheufhtu5i6ojk"
+
+	testCreditCardMerchant = "GlobalTesting_CTBC"
+	testLineMerchant       = "GlobalTesting_LINEPAY"
+
+	testDetails       = "報導者小額捐款"
+	testAmount   uint = 500
+	testCurrency      = "TWD"
+	testFeedback      = true
 
 	testName        = "報導者測試者"
 	testAddress     = "台北市南京東路一段32巷100號10樓"
@@ -89,6 +93,16 @@ const (
 	defaultOneTimeDetails  = "一般線上單筆捐款"
 	defaultCurrency        = "TWD"
 )
+
+var methodToPrime = map[string]string{
+	creditCardPayMethod: testCreditCardPrime,
+	linePayMethod:       testLinePrime,
+}
+
+var methodToMerchant = map[string]string{
+	creditCardPayMethod: testCreditCardMerchant,
+	linePayMethod:       testLineMerchant,
+}
 
 var defaults = struct {
 	Total      uint
@@ -118,7 +132,7 @@ func helperSetupAuth(user models.User) (authorization string, cookie http.Cookie
 	return
 }
 
-func testDonationCreateServerError(t *testing.T, path string, userID uint, frequency string, paymethod string, authorization string, cookie http.Cookie) {
+func testDonationCreateServerError(t *testing.T, path string, userID uint, frequency string, payMethod string, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
 	var reqBodyInBytes []byte
 
@@ -147,7 +161,7 @@ func testDonationCreateServerError(t *testing.T, path string, userID uint, frequ
 			if nil != c.reqBody {
 				switch frequency {
 				case oneTimeFrequency:
-					c.reqBody.PayMethod = paymethod
+					c.reqBody.PayMethod = payMethod
 				case monthlyFrequency, yearlyFrequency:
 					c.reqBody.Frequency = frequency
 				}
@@ -161,7 +175,7 @@ func testDonationCreateServerError(t *testing.T, path string, userID uint, frequ
 
 }
 
-func testDonationCreateClientError(t *testing.T, path string, userID uint, frequency string, paymethod string, authorization string, cookie http.Cookie) {
+func testDonationCreateClientError(t *testing.T, path string, userID uint, frequency string, payMethod string, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
 	var reqBodyInBytes []byte
 
@@ -180,7 +194,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 					Email: "developer@twreporter.org",
 				},
 				PayMethod: creditCardPayMethod,
-				Prime:     testPrime,
+				Prime:     methodToPrime[payMethod],
 			},
 			cookie:        &cookie,
 			authorization: authorization,
@@ -205,7 +219,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			reqBody: &requestBody{
 				Amount:    testAmount,
 				PayMethod: creditCardPayMethod,
-				Prime:     testPrime,
+				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
 			cookie:        &cookie,
@@ -221,7 +235,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 					PhoneNumber: null.StringFrom("+886912345678"),
 				},
 				PayMethod: creditCardPayMethod,
-				Prime:     testPrime,
+				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
 			cookie:        &cookie,
@@ -235,7 +249,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 					Email: "developer@twreporter.org",
 				},
 				PayMethod: creditCardPayMethod,
-				Prime:     testPrime,
+				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
 			cookie:        &cookie,
@@ -249,7 +263,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				Cardholder: models.Cardholder{
 					Email: "developer@twreporter.org",
 				},
-				Prime:  testPrime,
+				Prime:  methodToPrime[payMethod],
 				UserID: userID,
 			},
 			cookie:        &cookie,
@@ -264,7 +278,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 					Email: "developer-twreporter,org",
 				},
 				PayMethod: creditCardPayMethod,
-				Prime:     testPrime,
+				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
 			cookie:        &cookie,
@@ -279,7 +293,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 					Email: "developer@twreporter.org",
 				},
 				PayMethod: creditCardPayMethod,
-				Prime:     testPrime,
+				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
 			cookie:        &cookie,
@@ -295,7 +309,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 					PhoneNumber: null.StringFrom("0912345678"),
 				},
 				PayMethod: creditCardPayMethod,
-				Prime:     testPrime,
+				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
 			cookie:        &cookie,
@@ -338,7 +352,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 	}
 }
 
-func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency string, paymethod string, authorization string, cookie http.Cookie) {
+func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency string, payMethod string, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
 	var resBody responseBody
 	var reqBodyInBytes []byte
@@ -364,8 +378,8 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 				Cardholder: testCardholder,
 				Currency:   testCurrency,
 				Details:    testDetails,
-				MerchantID: testMerchantID,
-				Prime:      testPrime,
+				MerchantID: methodToMerchant[payMethod],
+				Prime:      methodToPrime[payMethod],
 				UserID:     userID,
 			},
 		},
@@ -377,8 +391,8 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 					Email: "developer@twreporter.org",
 				},
 				Frequency:  frequency,
-				MerchantID: testMerchantID,
-				Prime:      testPrime,
+				MerchantID: methodToMerchant[payMethod],
+				Prime:      methodToPrime[payMethod],
 				UserID:     userID,
 			},
 		},
@@ -388,7 +402,7 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 		t.Run(c.name, func(t *testing.T) {
 			const defaultAnonymity = false
 			if frequency == oneTimeFrequency {
-				c.reqBody.PayMethod = paymethod
+				c.reqBody.PayMethod = payMethod
 			} else {
 				c.reqBody.Frequency = frequency
 			}
@@ -505,8 +519,8 @@ func createDefaultPeriodicDonationRecord(user models.User, frequency string) res
 		},
 		Details:    testDetails,
 		Frequency:  frequency,
-		MerchantID: testMerchantID,
-		Prime:      testPrime,
+		MerchantID: testCreditCardMerchant,
+		Prime:      testCreditCardPrime,
 		UserID:     user.ID,
 	}
 
@@ -528,9 +542,9 @@ func createDefaultPrimeDonationRecord(user models.User, payMethod string) respon
 			ZipCode:     null.StringFrom(testZipCode),
 		},
 		Details:    testDetails,
-		MerchantID: testMerchantID,
+		MerchantID: methodToMerchant[payMethod],
 		PayMethod:  payMethod,
-		Prime:      testPrime,
+		Prime:      methodToPrime[payMethod],
 		UserID:     user.ID,
 	}
 
