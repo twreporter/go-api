@@ -62,6 +62,11 @@ type (
 		ToFeedback  bool              `json:"to_feedback"`
 		IsAnonymous bool              `json:"is_anonymous"`
 	}
+
+	reqHeader struct {
+		Cookie        *http.Cookie
+		Authorization string
+	}
 )
 
 const (
@@ -178,12 +183,16 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 	var resp *httptest.ResponseRecorder
 	var reqBodyInBytes []byte
 
+	header := reqHeader{
+		Cookie:        &cookie,
+		Authorization: authorization,
+	}
+
 	cases := []struct {
-		name          string
-		reqBody       *requestBody
-		cookie        *http.Cookie
-		authorization string
-		resultCode    int
+		reqHeader
+		name       string
+		reqBody    *requestBody
+		resultCode int
 	}{
 		{
 			name: "StatusCode=StatusBadRequest,Lack of UserID",
@@ -195,9 +204,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				PayMethod: creditCardPayMethod,
 				Prime:     methodToPrime[payMethod],
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Lack of Prime",
@@ -209,9 +217,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				PayMethod: creditCardPayMethod,
 				UserID:    userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Lack of Cardholder",
@@ -221,9 +228,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Lack of Cardholder.Email",
@@ -237,9 +243,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Lack of Amount",
@@ -251,9 +256,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Lack of PayMethod",
@@ -265,9 +269,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				Prime:  methodToPrime[payMethod],
 				UserID: userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Malformed email",
@@ -280,9 +283,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Amount less than 1",
@@ -295,9 +297,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Malformed Cardholder.PhoneNumber (E.164 format)",
@@ -311,17 +312,21 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				Prime:     methodToPrime[payMethod],
 				UserID:    userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
 		},
 		{
-			name:       "StatusCode=StatusUnauthorized,Without Cookie",
+			name: "StatusCode=StatusUnauthorized,Without Cookie",
+			reqHeader: reqHeader{
+				Authorization: authorization,
+			},
 			resultCode: http.StatusUnauthorized,
 		},
 		{
-			name:       "StatusCode=StatusUnauthorized,Without Authorization Header",
-			cookie:     &cookie,
+			name: "StatusCode=StatusUnauthorized,Without Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
+			},
 			resultCode: http.StatusUnauthorized,
 		},
 		{
@@ -329,9 +334,8 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			reqBody: &requestBody{
 				UserID: 1000,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			resultCode:    http.StatusForbidden,
+			reqHeader:  header,
+			resultCode: http.StatusForbidden,
 		},
 	}
 
@@ -340,10 +344,10 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			if nil != c.reqBody {
 				reqBodyInBytes, _ = json.Marshal(c.reqBody)
 			}
-			if nil != c.cookie {
-				resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", c.authorization, *c.cookie)
+			if nil != c.Cookie {
+				resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", c.Authorization, *c.Cookie)
 			} else {
-				resp = serveHTTP("POST", path, "", "application/json", c.authorization)
+				resp = serveHTTP("POST", path, "", "application/json", c.Authorization)
 			}
 			assert.Equal(t, c.resultCode, resp.Code)
 
@@ -555,33 +559,40 @@ func testDonationPatchClientError(t *testing.T, userID uint, frequency, orderNum
 	var resp *httptest.ResponseRecorder
 	const invalidUserID = 1000
 
+	header := reqHeader{
+		Cookie:        &cookie,
+		Authorization: authorization,
+	}
+
 	cases := []struct {
-		name          string
-		reqBody       *map[string]interface{}
-		cookie        *http.Cookie
-		authorization string
-		orderNumber   string
-		resultCode    int
+		reqHeader
+		name        string
+		reqBody     *map[string]interface{}
+		orderNumber string
+		resultCode  int
 	}{
 		{
-			name:          "StatusCode=StatusUnauthorized,Lack of Cookie",
-			authorization: authorization,
-			orderNumber:   orderNumber,
-			resultCode:    http.StatusUnauthorized,
-		},
-		{
-			name:        "StatusCode=StatusUnauthorized,Lack of Authorization Header",
-			cookie:      &cookie,
+			name: "StatusCode=StatusUnauthorized,Lack of Cookie",
+			reqHeader: reqHeader{
+				Authorization: authorization,
+			},
 			orderNumber: orderNumber,
 			resultCode:  http.StatusUnauthorized,
 		},
 		{
-			name:          "StatusCode=StatusForbidden,Unauthorized Resource",
-			reqBody:       &map[string]interface{}{"user_id": invalidUserID},
-			cookie:        &cookie,
-			authorization: authorization,
-			orderNumber:   orderNumber,
-			resultCode:    http.StatusForbidden,
+			name: "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
+			},
+			orderNumber: orderNumber,
+			resultCode:  http.StatusUnauthorized,
+		},
+		{
+			name:        "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqBody:     &map[string]interface{}{"user_id": invalidUserID},
+			reqHeader:   header,
+			orderNumber: orderNumber,
+			resultCode:  http.StatusForbidden,
 		},
 		{
 			name: "StatusCode=StatusBadRequest,Incorrect request body format",
@@ -594,10 +605,9 @@ func testDonationPatchClientError(t *testing.T, userID uint, frequency, orderNum
 					"national_id": true,
 				},
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			orderNumber:   orderNumber,
-			resultCode:    http.StatusBadRequest,
+			reqHeader:   header,
+			orderNumber: orderNumber,
+			resultCode:  http.StatusBadRequest,
 		},
 		{
 			name: "StatusCode=StatusNotFound,Invalid Order Number",
@@ -606,10 +616,9 @@ func testDonationPatchClientError(t *testing.T, userID uint, frequency, orderNum
 				"to_feedback":  !testFeedback,
 				"user_id":      userID,
 			},
-			cookie:        &cookie,
-			authorization: authorization,
-			orderNumber:   "InvalidOrderNumber",
-			resultCode:    http.StatusNotFound,
+			reqHeader:   header,
+			orderNumber: "InvalidOrderNumber",
+			resultCode:  http.StatusNotFound,
 		},
 	}
 
@@ -626,10 +635,10 @@ func testDonationPatchClientError(t *testing.T, userID uint, frequency, orderNum
 			if nil != c.reqBody {
 				reqBodyInBytes, _ = json.Marshal(c.reqBody)
 			}
-			if nil != c.cookie {
-				resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", c.authorization, *c.cookie)
+			if nil != c.Cookie {
+				resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", c.Authorization, *c.Cookie)
 			} else {
-				resp = serveHTTP("PATCH", path, "", "application/json", c.authorization)
+				resp = serveHTTP("PATCH", path, "", "application/json", c.Authorization)
 			}
 			assert.Equal(t, c.resultCode, resp.Code)
 
@@ -751,31 +760,36 @@ func testDonationGetClientError(t *testing.T, frequency, orderNumber, authorizat
 	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
 
 	cases := []struct {
-		name          string
-		cookie        *http.Cookie
-		authorization string
-		orderNumber   string
-		resultCode    int
+		reqHeader
+		name        string
+		orderNumber string
+		resultCode  int
 	}{
 		{
-			name:        "StatusCode=StatusUnauthorized,Lack of Authorization Header",
-			cookie:      &cookie,
+			name: "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
+			},
 			orderNumber: orderNumber,
 			resultCode:  http.StatusUnauthorized,
 		},
 		{
-			name:          "StatusCode=StatusForbidden,Unauthorized Resource",
-			cookie:        &maliciousCookie,
-			authorization: maliciousAuthorization,
-			orderNumber:   orderNumber,
-			resultCode:    http.StatusForbidden,
+			name: "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqHeader: reqHeader{
+				Cookie:        &maliciousCookie,
+				Authorization: maliciousAuthorization,
+			},
+			orderNumber: orderNumber,
+			resultCode:  http.StatusForbidden,
 		},
 		{
-			name:          "StatusCode=StatusNotFound,Invalid Order Number",
-			cookie:        &cookie,
-			authorization: authorization,
-			orderNumber:   "InvalidOrderNumber",
-			resultCode:    http.StatusNotFound,
+			name: "StatusCode=StatusNotFound,Invalid Order Number",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			orderNumber: "InvalidOrderNumber",
+			resultCode:  http.StatusNotFound,
 		},
 	}
 
@@ -789,7 +803,7 @@ func testDonationGetClientError(t *testing.T, frequency, orderNumber, authorizat
 				path = "/v1/periodic-donations/orders/" + c.orderNumber
 			}
 
-			resp = serveHTTPWithCookies("GET", path, string(reqBodyInBytes), "application/json", c.authorization, *c.cookie)
+			resp = serveHTTPWithCookies("GET", path, string(reqBodyInBytes), "application/json", c.Authorization, *c.Cookie)
 			assert.Equal(t, c.resultCode, resp.Code)
 
 		})
