@@ -148,9 +148,8 @@ func testDonationCreateServerError(t *testing.T, path string, userID uint, frequ
 				Cardholder: models.Cardholder{
 					Email: "developer@twreporter.org",
 				},
-				Frequency: frequency,
-				Prime:     "test_prime_which_will_occurs_error",
-				UserID:    userID,
+				Prime:  "test_prime_which_will_occurs_error",
+				UserID: userID,
 			},
 			resultCode: http.StatusInternalServerError,
 		},
@@ -585,7 +584,7 @@ func testDonationPatchClientError(t *testing.T, userID uint, frequency, orderNum
 			resultCode:    http.StatusForbidden,
 		},
 		{
-			name: "StatusCode=StatusBadRequest,Unauthorized Resource",
+			name: "StatusCode=StatusBadRequest,Incorrect request body format",
 			reqBody: &map[string]interface{}{
 				"user_id": userID,
 				// to_feedback should be boolean
