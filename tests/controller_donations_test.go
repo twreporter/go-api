@@ -97,6 +97,9 @@ const (
 	defaultPeriodicDetails = "一般線上定期定額捐款"
 	defaultOneTimeDetails  = "一般線上單筆捐款"
 	defaultCurrency        = "TWD"
+
+	oneTimeOrderPathPrefix  = "/v1/donations/prime/orders/"
+	periodicOrderPathPrefix = "/v1/periodic-donations/orders/"
 )
 
 var methodToPrime = map[string]string{
@@ -554,7 +557,7 @@ func createDefaultPrimeDonationRecord(user models.User, payMethod string) respon
 	return createDefaultDonationRecord(reqBody, path, user)
 }
 
-func testDonationPatchClientError(t *testing.T, userID uint, frequency, orderNumber, authorization string, cookie http.Cookie) {
+func testDonationPatchClientError(t *testing.T, userID uint, pathPrefix, orderNumber, authorization string, cookie http.Cookie) {
 	var reqBodyInBytes []byte
 	var resp *httptest.ResponseRecorder
 	const invalidUserID = 1000
@@ -624,13 +627,7 @@ func testDonationPatchClientError(t *testing.T, userID uint, frequency, orderNum
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			path := ""
-			switch frequency {
-			case oneTimeFrequency:
-				path = "/v1/donations/prime/orders/" + c.orderNumber
-			case monthlyFrequency, yearlyFrequency:
-				path = "/v1/periodic-donations/orders/" + c.orderNumber
-			}
+			path := pathPrefix + c.orderNumber
 
 			if nil != c.reqBody {
 				reqBodyInBytes, _ = json.Marshal(c.reqBody)
@@ -670,8 +667,8 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 
 		defaultRecordRes = createDefaultPeriodicDonationRecord(user, f)
 
-		testDonationPatchClientError(t, user.ID, defaultRecordRes.Data.Frequency, defaultRecordRes.Data.OrderNumber, authorization, cookie)
-		path = fmt.Sprintf("/v1/periodic-donations/orders/%s", defaultRecordRes.Data.OrderNumber)
+		testDonationPatchClientError(t, user.ID, periodicOrderPathPrefix, defaultRecordRes.Data.OrderNumber, authorization, cookie)
+		path = periodicOrderPathPrefix + defaultRecordRes.Data.OrderNumber
 
 		t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 			var dataAfterPatch models.PeriodicDonation
@@ -723,9 +720,9 @@ func TestPatchAPrimeDonation(t *testing.T) {
 		// get record to patch
 		defaultRecordRes = createDefaultPrimeDonationRecord(user, p)
 
-		testDonationPatchClientError(t, user.ID, oneTimeFrequency, defaultRecordRes.Data.OrderNumber, authorization, cookie)
+		testDonationPatchClientError(t, user.ID, oneTimeOrderPathPrefix, defaultRecordRes.Data.OrderNumber, authorization, cookie)
 
-		path = fmt.Sprintf("/v1/donations/prime/orders/%s", defaultRecordRes.Data.OrderNumber)
+		path = oneTimeOrderPathPrefix + defaultRecordRes.Data.OrderNumber
 		t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
 			var dataAfterPatch models.PayByPrimeDonation
 			const testIsAnonymous = true
@@ -751,7 +748,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	}
 }
 
-func testDonationGetClientError(t *testing.T, frequency, orderNumber, authorization string, cookie http.Cookie) {
+func testDonationGetClientError(t *testing.T, pathPrefix, orderNumber, authorization string, cookie http.Cookie) {
 	var reqBodyInBytes []byte
 	var resp *httptest.ResponseRecorder
 
@@ -795,13 +792,7 @@ func testDonationGetClientError(t *testing.T, frequency, orderNumber, authorizat
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			path := ""
-			switch frequency {
-			case oneTimeFrequency:
-				path = "/v1/donations/prime/orders/" + c.orderNumber
-			case monthlyFrequency, yearlyFrequency:
-				path = "/v1/periodic-donations/orders/" + c.orderNumber
-			}
+			path := pathPrefix + c.orderNumber
 
 			resp = serveHTTPWithCookies("GET", path, string(reqBodyInBytes), "application/json", c.Authorization, *c.Cookie)
 			assert.Equal(t, c.resultCode, resp.Code)
@@ -826,8 +817,8 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 
 		primeRes := createDefaultPrimeDonationRecord(user, p)
 
-		testDonationGetClientError(t, primeRes.Data.Frequency, primeRes.Data.OrderNumber, authorization, cookie)
-		path := fmt.Sprintf("/v1/donations/prime/orders/%s", primeRes.Data.OrderNumber)
+		testDonationGetClientError(t, oneTimeOrderPathPrefix, primeRes.Data.OrderNumber, authorization, cookie)
+		path := oneTimeOrderPathPrefix + primeRes.Data.OrderNumber
 
 		t.Run("StatusCode=StatusOK", func(t *testing.T) {
 			resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
@@ -870,9 +861,9 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 	for _, f := range frequency {
 		periodicRes := createDefaultPeriodicDonationRecord(user, f)
 
-		testDonationGetClientError(t, periodicRes.Data.Frequency, periodicRes.Data.OrderNumber, authorization, cookie)
+		testDonationGetClientError(t, periodicOrderPathPrefix, periodicRes.Data.OrderNumber, authorization, cookie)
 
-		path := fmt.Sprintf("/v1/periodic-donations/orders/%s", periodicRes.Data.OrderNumber)
+		path := periodicOrderPathPrefix + periodicRes.Data.OrderNumber
 
 		t.Run("StatusCode=StatusOK", func(t *testing.T) {
 			resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
