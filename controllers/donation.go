@@ -501,6 +501,9 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 			tokenDonation.TappayApiStatus = null.IntFrom(tapPayResp.Status)
 			tokenDonation.Msg = tapPayResp.Msg
 			tokenDonation.Status = statusFail
+			tokenDonation.RecTradeID = tapPayResp.RecTradeID
+			tokenDonation.BankResultCode = tapPayResp.BankResultCode
+			tokenDonation.BankResultMsg = tapPayResp.BankResultMsg
 
 			periodicDonation.Status = statusInvalid
 
@@ -583,6 +586,10 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 			d.TappayApiStatus = null.IntFrom(tapPayResp.Status)
 			d.Msg = tapPayResp.Msg
 			d.Status = statusFail
+			d.RecTradeID = tapPayResp.RecTradeID
+			d.BankResultCode = tapPayResp.BankResultCode
+			d.BankResultMsg = tapPayResp.BankResultMsg
+
 			mc.Storage.UpdateByConditions(map[string]interface{}{
 				"id": primeDonation.ID,
 			}, d)
