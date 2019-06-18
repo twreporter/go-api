@@ -246,6 +246,8 @@ CREATE TABLE `pay_by_prime_donations` (
   `send_receipt` enum('yearly', 'monthly', 'no') DEFAULT 'yearly',
   `notes` varchar(100) DEFAULT NULL,
   `is_anonymous` tinyint(1) DEFAULT 0,
+  `linepay_method` enum('CREDIT_CARD', 'BALANCE', 'POINT') DEFAULT NULL,
+  `linepay_point` int DEFAULT NULL, 
 
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_prime_donations_status` (`status`),
