@@ -498,13 +498,14 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail' and mark the periodic donation as 'invalid'.
-			tokenDonation.TappayApiStatus = null.IntFrom(tapPayResp.Status)
-			tokenDonation.Msg = tapPayResp.Msg
-			tokenDonation.Status = statusFail
+			td := models.PayByCardTokenDonation{}
+			tapPayResp.AppendRespOnTokenDonation(&td, statusFail)
 
-			periodicDonation.Status = statusInvalid
+			pd := models.PeriodicDonation{}
+			pd.Status = statusInvalid
+			pd.CardInfo = tapPayResp.CardInfo
 
-			mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation)
+			mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, pd, td)
 		}
 		errMsg := err.Error()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
@@ -514,7 +515,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	// append tappay response onto donation model
 	tapPayResp.AppendRespOnPerodicDonation(&periodicDonation)
-	tapPayResp.AppendRespOnTokenDonation(&tokenDonation)
+	tapPayResp.AppendRespOnTokenDonation(&tokenDonation, statusPaid)
 
 	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation); nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
@@ -580,9 +581,8 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail'
 			d := models.PayByPrimeDonation{}
-			d.TappayApiStatus = null.IntFrom(tapPayResp.Status)
-			d.Msg = tapPayResp.Msg
-			d.Status = statusFail
+			tapPayResp.AppendRespOnPrimeDonation(&d, statusFail)
+
 			mc.Storage.UpdateByConditions(map[string]interface{}{
 				"id": primeDonation.ID,
 			}, d)
@@ -591,7 +591,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	}
 
 	// append tappay response onto donation model
-	tapPayResp.AppendRespOnPrimeDonation(&primeDonation)
+	tapPayResp.AppendRespOnPrimeDonation(&primeDonation, statusPaid)
 
 	if err, _ = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id": primeDonation.ID,
@@ -728,7 +728,7 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
 
-func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrimeDonation) {
+func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
 	m.CardInfo = resp.CardInfo
 	m.TappayResp = resp.TappayResp
 	m.TappayApiStatus = null.IntFrom(resp.Status)
@@ -748,7 +748,7 @@ func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrime
 		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
-	m.Status = statusPaid
+	m.Status = status
 }
 
 func (resp tapPayTransactionResp) AppendRespOnPerodicDonation(m *models.PeriodicDonation) {
@@ -765,7 +765,7 @@ func (resp tapPayTransactionResp) AppendRespOnPerodicDonation(m *models.Periodic
 	m.Status = statusPaid
 }
 
-func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardTokenDonation) {
+func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardTokenDonation, status string) {
 	m.TappayResp = resp.TappayResp
 	m.TappayApiStatus = null.IntFrom(resp.Status)
 
@@ -784,7 +784,7 @@ func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardT
 		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
-	m.Status = statusPaid
+	m.Status = status
 }
 
 func createHash(data string) []byte {
