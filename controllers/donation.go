@@ -28,7 +28,6 @@ import (
 )
 
 const (
-	defaultDetails    = "報導者小額捐款"
 	defaultCurrency   = "TWD"
 	defaultMerchantID = "twreporter_CTBC"
 
@@ -198,7 +197,7 @@ func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	return *m
 }
 
-func (req clientReq) BuildTapPayReq(orderNumber string) tapPayTransactionReq {
+func (req clientReq) BuildTapPayReq(orderNumber, details string) tapPayTransactionReq {
 	primeReq := new(tapPayTransactionReq)
 	primeReq.Prime = req.Prime
 	primeReq.OrderNumber = orderNumber
@@ -210,11 +209,7 @@ func (req clientReq) BuildTapPayReq(orderNumber string) tapPayTransactionReq {
 		primeReq.Currency = defaultCurrency
 	}
 
-	if req.Details != "" {
-		primeReq.Details = req.Details
-	} else {
-		primeReq.Details = defaultDetails
-	}
+	primeReq.Details = details
 
 	if req.MerchantID != "" {
 		primeReq.MerchantID = req.MerchantID
@@ -280,12 +275,19 @@ func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.Perio
 }
 
 func (req clientReq) BuildPrimeDraftRecord(orderNumber string, payMethod string) models.PayByPrimeDonation {
+	const defaultDetails = "一般線上單筆捐款"
 	m := new(models.PayByPrimeDonation)
 
 	m.Amount = req.Amount
 	m.Cardholder = req.Cardholder
 	m.Currency = req.Currency
-	m.Details = req.Details
+
+	if req.Details != "" {
+		m.Details = req.Details
+	} else {
+		m.Details = defaultDetails
+	}
+
 	m.MerchantID = req.MerchantID
 	m.UserID = req.UserID
 	m.PayMethod = payMethod
@@ -296,11 +298,18 @@ func (req clientReq) BuildPrimeDraftRecord(orderNumber string, payMethod string)
 }
 
 func (req clientReq) BuildTokenDraftRecord(orderNumber string) models.PayByCardTokenDonation {
+	const defaultDetails = "一般線上定期定額捐款"
 	m := new(models.PayByCardTokenDonation)
 
 	m.Amount = req.Amount
 	m.Currency = req.Currency
-	m.Details = req.Details
+
+	if req.Details != "" {
+		m.Details = req.Details
+	} else {
+		m.Details = defaultDetails
+	}
+
 	m.MerchantID = req.MerchantID
 	m.OrderNumber = orderNumber
 	m.Status = statusPaying
@@ -438,7 +447,6 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 // Handler for an authenticated user to create a periodic donation
 func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
 	const errWhere = "MembershipController.CreateAPeriodicDonationOfAUser"
-	const donationDetails = "第一筆定期定額捐款"
 
 	// Validate client request
 	var err error
@@ -472,8 +480,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	tokenDonation := reqBody.BuildTokenDraftRecord(dOrderNumber)
 
 	// Build Tappay prime request
-	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber)
-	tapPayReq.Details = fmt.Sprintf("%s;%s", donationDetails, tapPayReq.Details)
+	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, tokenDonation.Details)
 
 	// Create a draft periodic donation along with the first token donation record of that periodic donation
 	err = mc.Storage.CreateAPeriodicDonation(&periodicDonation, &tokenDonation)
@@ -554,7 +561,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	// Start Tappay transaction
 	// Build Tappay pay by prime request
-	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber)
+	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, primeDonation.Details)
 
 	if err = mc.Storage.Create(&primeDonation); nil != err {
 		switch appErr := err.(type) {

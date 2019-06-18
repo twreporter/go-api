@@ -58,20 +58,28 @@ type (
 		MerchantID  string            `json:"merchant_id"`
 		PayMethod   string            `json:"pay_method"`
 		Prime       string            `json:"prime"`
-		ResultURL   linePayResultURL  `json:"result_url"` // Line pay needed only
 		UserID      uint              `json:"user_id"`
 		ToFeedback  bool              `json:"to_feedback"`
 		IsAnonymous bool              `json:"is_anonymous"`
 	}
+
+	reqHeader struct {
+		Cookie        *http.Cookie
+		Authorization string
+	}
 )
 
 const (
-	testPrime           = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
-	testDetails         = "報導者小額捐款"
-	testAmount     uint = 500
-	testCurrency        = "TWD"
-	testMerchantID      = "GlobalTesting_CTBC"
-	testFeedback        = true
+	testCreditCardPrime = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
+	testLinePrime       = "ln_test_utigjeyfutj5867uyjhuty47rythfjru485768tigjfheufhtu5i6ojk"
+
+	testCreditCardMerchant = "GlobalTesting_CTBC"
+	testLineMerchant       = "GlobalTesting_LINEPAY"
+
+	testDetails       = "報導者小額捐款"
+	testAmount   uint = 500
+	testCurrency      = "TWD"
+	testFeedback      = true
 
 	testName        = "報導者測試者"
 	testAddress     = "台北市南京東路一段32巷100號10樓"
@@ -84,15 +92,24 @@ const (
 	oneTimeFrequency = "one_time"
 
 	creditCardPayMethod = "credit_card"
+	linePayMethod       = "line"
+
+	defaultPeriodicDetails = "一般線上定期定額捐款"
+	defaultOneTimeDetails  = "一般線上單筆捐款"
+	defaultCurrency        = "TWD"
+
+	oneTimeOrderPathPrefix  = "/v1/donations/prime/orders/"
+	periodicOrderPathPrefix = "/v1/periodic-donations/orders/"
 )
 
-var testCardholder = models.Cardholder{
-	PhoneNumber: null.StringFrom("+886912345678"),
-	Name:        null.StringFrom("王小明"),
-	Email:       "developer@twreporter.org",
-	ZipCode:     null.StringFrom("104"),
-	Address:     null.StringFrom("台北市中山區南京東路X巷X號X樓"),
-	NationalID:  null.StringFrom("A123456789"),
+var methodToPrime = map[string]string{
+	creditCardPayMethod: testCreditCardPrime,
+	linePayMethod:       testLinePrime,
+}
+
+var methodToMerchant = map[string]string{
+	creditCardPayMethod: testCreditCardMerchant,
+	linePayMethod:       testLineMerchant,
 }
 
 var defaults = struct {
@@ -107,429 +124,378 @@ var defaults = struct {
 	CreditCard: "credit_card",
 }
 
-func testCardholderWithDefaultValue(t *testing.T, ch models.Cardholder) {
-	assert.Equal(t, testCardholder.PhoneNumber.ValueOrZero(), ch.PhoneNumber.ValueOrZero())
-	assert.Equal(t, testCardholder.Name.ValueOrZero(), ch.Name.ValueOrZero())
-	assert.Equal(t, testCardholder.Email, ch.Email)
-	assert.Equal(t, testCardholder.ZipCode.ValueOrZero(), ch.ZipCode.ValueOrZero())
-	assert.Equal(t, testCardholder.NationalID.ValueOrZero(), ch.NationalID.ValueOrZero())
-	assert.Equal(t, testCardholder.Address.ValueOrZero(), ch.Address.ValueOrZero())
+func helperSetupAuth(user models.User) (authorization string, cookie http.Cookie) {
+	jwt := generateJWT(user)
+	authorization = fmt.Sprintf("Bearer %s", jwt)
+
+	idToken := generateIDToken(user)
+	cookie = http.Cookie{
+		HttpOnly: true,
+		MaxAge:   3600,
+		Name:     "id_token",
+		Secure:   false,
+		Value:    idToken,
+	}
+
+	return
 }
 
-func testDonationDataValidation(t *testing.T, path string, userID uint, authorization string, cookie http.Cookie) {
+func testDonationCreateServerError(t *testing.T, path string, userID uint, frequency string, payMethod string, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
-	var reqBody requestBody
 	var reqBodyInBytes []byte
 
-	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Lack of UserID
-		// ===========================================
-		reqBody = requestBody{
-			Amount: testAmount,
-			Cardholder: models.Cardholder{
-				Email: "developer@twreporter.org",
+	cases := []struct {
+		name       string
+		reqBody    *requestBody
+		resultCode int
+	}{
+		{
+			name: "StatusCode=StatusInternalServerError,Invalid Prime",
+			reqBody: &requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				Prime:  "test_prime_which_will_occurs_error",
+				UserID: userID,
 			},
-			PayMethod: creditCardPayMethod,
-			Prime:     testPrime,
-		}
+			resultCode: http.StatusInternalServerError,
+		},
+	}
 
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if nil != c.reqBody {
+				switch frequency {
+				case oneTimeFrequency:
+					c.reqBody.PayMethod = payMethod
+				case monthlyFrequency, yearlyFrequency:
+					c.reqBody.Frequency = frequency
+				}
+				reqBodyInBytes, _ = json.Marshal(c.reqBody)
+			}
+			resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
+			assert.Equal(t, c.resultCode, resp.Code)
+		})
+	}
 
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Lack of Prime
-		// ===========================================
-		reqBody = requestBody{
-			Amount: testAmount,
-			Cardholder: models.Cardholder{
-				Email: "developer@twreporter.org",
-			},
-			PayMethod: creditCardPayMethod,
-			UserID:    userID,
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Lack of Cardholder
-		// ===========================================
-		reqBody = requestBody{
-			Amount:    testAmount,
-			PayMethod: creditCardPayMethod,
-			Prime:     testPrime,
-			UserID:    userID,
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Lack of Cardholder.Email
-		// ===========================================
-		reqBody = requestBody{
-			Amount: testAmount,
-			Cardholder: models.Cardholder{
-				Name:        null.StringFrom("王小明"),
-				PhoneNumber: null.StringFrom("+886912345678"),
-			},
-			PayMethod: creditCardPayMethod,
-			Prime:     testPrime,
-			UserID:    userID,
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Lack of Amount
-		// ===========================================
-		reqBody = requestBody{
-			Cardholder: models.Cardholder{
-				Email: "developer@twreporter.org",
-			},
-			PayMethod: creditCardPayMethod,
-			Prime:     testPrime,
-			UserID:    userID,
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Lack of PayMethod
-		// ===========================================
-		reqBody = requestBody{
-			Amount: testAmount,
-			Cardholder: models.Cardholder{
-				Email: "developer@twreporter.org",
-			},
-			Prime:  testPrime,
-			UserID: userID,
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Malformed Email
-		// ===========================================
-		reqBody = requestBody{
-			Amount: testAmount,
-			Cardholder: models.Cardholder{
-				Email: "developer-twreporter,org",
-			},
-			PayMethod: creditCardPayMethod,
-			Prime:     testPrime,
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Amount is less than 1(minimum value)
-		// ===========================================
-		reqBody = requestBody{
-			Amount: 0,
-			Cardholder: models.Cardholder{
-				Email: "developer@twreporter.org",
-			},
-			Prime:  testPrime,
-			UserID: userID,
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-
-		// ===========================================
-		// Failure (Data Validation)
-		// - Create a Donation by Credit Card
-		// - Malformed Cardholder.PhoneNumber (E.164 format)
-		// ===========================================
-		reqBody = requestBody{
-			Amount: 0,
-			Cardholder: models.Cardholder{
-				Email:       "developer@twreporter.org",
-				PhoneNumber: null.StringFrom("0912345678"),
-			},
-			Prime:  testPrime,
-			UserID: userID,
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-	})
 }
 
-func testCreateADonationRecord(t *testing.T, path string, userID uint, frequency string, authorization string, cookie http.Cookie) {
+func testDonationCreateClientError(t *testing.T, path string, userID uint, frequency string, payMethod string, authorization string, cookie http.Cookie) {
 	var resp *httptest.ResponseRecorder
-	var reqBody requestBody
+	var reqBodyInBytes []byte
+
+	header := reqHeader{
+		Cookie:        &cookie,
+		Authorization: authorization,
+	}
+
+	cases := []struct {
+		reqHeader
+		name       string
+		reqBody    *requestBody
+		resultCode int
+	}{
+		{
+			name: "StatusCode=StatusBadRequest,Lack of UserID",
+			reqBody: &requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				PayMethod: creditCardPayMethod,
+				Prime:     methodToPrime[payMethod],
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Lack of Prime",
+			reqBody: &requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				PayMethod: creditCardPayMethod,
+				UserID:    userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Lack of Cardholder",
+			reqBody: &requestBody{
+				Amount:    testAmount,
+				PayMethod: creditCardPayMethod,
+				Prime:     methodToPrime[payMethod],
+				UserID:    userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Lack of Cardholder.Email",
+			reqBody: &requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Name:        null.StringFrom("王小明"),
+					PhoneNumber: null.StringFrom("+886912345678"),
+				},
+				PayMethod: creditCardPayMethod,
+				Prime:     methodToPrime[payMethod],
+				UserID:    userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Lack of Amount",
+			reqBody: &requestBody{
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				PayMethod: creditCardPayMethod,
+				Prime:     methodToPrime[payMethod],
+				UserID:    userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Lack of PayMethod",
+			reqBody: &requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				Prime:  methodToPrime[payMethod],
+				UserID: userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Malformed email",
+			reqBody: &requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Email: "developer-twreporter,org",
+				},
+				PayMethod: creditCardPayMethod,
+				Prime:     methodToPrime[payMethod],
+				UserID:    userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Amount less than 1",
+			reqBody: &requestBody{
+				Amount: 0,
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				PayMethod: creditCardPayMethod,
+				Prime:     methodToPrime[payMethod],
+				UserID:    userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Malformed Cardholder.PhoneNumber (E.164 format)",
+			reqBody: &requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Email:       "developer-twreporter,org",
+					PhoneNumber: null.StringFrom("0912345678"),
+				},
+				PayMethod: creditCardPayMethod,
+				Prime:     methodToPrime[payMethod],
+				UserID:    userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusUnauthorized,Without Cookie",
+			reqHeader: reqHeader{
+				Authorization: authorization,
+			},
+			resultCode: http.StatusUnauthorized,
+		},
+		{
+			name: "StatusCode=StatusUnauthorized,Without Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
+			},
+			resultCode: http.StatusUnauthorized,
+		},
+		{
+			name: "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqBody: &requestBody{
+				UserID: 1000,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusForbidden,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if nil != c.reqBody {
+				reqBodyInBytes, _ = json.Marshal(c.reqBody)
+			}
+			if nil != c.Cookie {
+				resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", c.Authorization, *c.Cookie)
+			} else {
+				resp = serveHTTP("POST", path, "", "application/json", c.Authorization)
+			}
+			assert.Equal(t, c.resultCode, resp.Code)
+
+		})
+	}
+}
+
+func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency string, payMethod string, authorization string, cookie http.Cookie) {
+	var resp *httptest.ResponseRecorder
 	var resBody responseBody
 	var reqBodyInBytes []byte
 	var resBodyInBytes []byte
 
-	// ===========================================
-	// Success
-	// - Create a Donation by Credit Card
-	// - Provide all the fields except `result_url`
-	//   in request body
-	// ===========================================
-	t.Run("StatusCode=StatusCreated", func(t *testing.T) {
-		const defaultAnonymity = false
-		reqBody = requestBody{
-			Amount:     testAmount,
-			Cardholder: testCardholder,
-			Currency:   testCurrency,
-			Details:    testDetails,
-			MerchantID: testMerchantID,
-			Prime:      testPrime,
-			UserID:     userID,
-		}
+	testCardholder := models.Cardholder{
+		PhoneNumber: null.StringFrom("+886912345678"),
+		Name:        null.StringFrom("王小明"),
+		Email:       "developer@twreporter.org",
+		ZipCode:     null.StringFrom("104"),
+		Address:     null.StringFrom("台北市中山區南京東路X巷X號X樓"),
+		NationalID:  null.StringFrom("A123456789"),
+	}
 
-		if frequency == oneTimeFrequency {
-			reqBody.PayMethod = creditCardPayMethod
-		} else {
-			reqBody.Frequency = frequency
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
-		json.Unmarshal(resBodyInBytes, &resBody)
-
-		assert.Equal(t, http.StatusCreated, resp.Code)
-		assert.Equal(t, "success", resBody.Status)
-		assert.Equal(t, testAmount, resBody.Data.Amount)
-		assert.Equal(t, frequency, resBody.Data.Frequency)
-		assert.Equal(t, testCurrency, resBody.Data.Currency)
-		assert.Equal(t, testDetails, resBody.Data.Details)
-		assert.NotEmpty(t, resBody.Data.OrderNumber)
-		assert.Empty(t, resBody.Data.Notes)
-
-		assert.Equal(t, defaultAnonymity, resBody.Data.IsAnonymous)
-		testCardholderWithDefaultValue(t, resBody.Data.Cardholder)
-
-		// ===========================================
-		// Success
-		// - Create a Donation by Credit Card
-		// - Provide minimun required fields
-		// ===========================================
-		reqBody = requestBody{
-			Amount: testAmount,
-			Cardholder: models.Cardholder{
-				Email: "developer@twreporter.org",
+	cases := []struct {
+		name    string
+		reqBody requestBody
+	}{
+		{
+			name: "StatusCode=StatusCreated,full fields",
+			reqBody: requestBody{
+				Amount:     testAmount,
+				Cardholder: testCardholder,
+				Currency:   testCurrency,
+				Details:    testDetails,
+				MerchantID: methodToMerchant[payMethod],
+				Prime:      methodToPrime[payMethod],
+				UserID:     userID,
 			},
-			Frequency:  frequency,
-			MerchantID: testMerchantID,
-			Prime:      testPrime,
-			UserID:     userID,
-		}
-
-		if frequency == oneTimeFrequency {
-			reqBody.PayMethod = creditCardPayMethod
-		} else {
-			reqBody.Frequency = frequency
-		}
-
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
-		json.Unmarshal(resBodyInBytes, &resBody)
-
-		assert.Equal(t, http.StatusCreated, resp.Code)
-		assert.Equal(t, "success", resBody.Status)
-		assert.Equal(t, testAmount, resBody.Data.Amount)
-		assert.Equal(t, frequency, resBody.Data.Frequency)
-		assert.Equal(t, testCurrency, resBody.Data.Currency)
-	})
-
-	// ===========================================
-	// Failure (Server Error)
-	// - Create a Donation by Credit Card
-	// - Invalid Prime
-	// ===========================================
-	t.Run("StatusCode=StatusInternalServerError", func(t *testing.T) {
-		reqBody = requestBody{
-			Amount: testAmount,
-			Cardholder: models.Cardholder{
-				Email: "developer@twreporter.org",
+		},
+		{
+			name: "StatusCode=StatusCreated,minimum fields",
+			reqBody: requestBody{
+				Amount: testAmount,
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				Frequency:  frequency,
+				MerchantID: methodToMerchant[payMethod],
+				Prime:      methodToPrime[payMethod],
+				UserID:     userID,
 			},
-			Frequency: frequency,
-			Prime:     "test_prime_which_will_occurs_error",
-			UserID:    userID,
-		}
+		},
+	}
 
-		if frequency == oneTimeFrequency {
-			reqBody.PayMethod = creditCardPayMethod
-		} else {
-			reqBody.Frequency = frequency
-		}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			const defaultAnonymity = false
+			if frequency == oneTimeFrequency {
+				c.reqBody.PayMethod = payMethod
+			} else {
+				c.reqBody.Frequency = frequency
+			}
 
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+			reqBodyInBytes, _ = json.Marshal(c.reqBody)
+			resp = serveHTTPWithCookies("POST", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+			resBodyInBytes, _ = ioutil.ReadAll(resp.Result().Body)
+			json.Unmarshal(resBodyInBytes, &resBody)
 
-		assert.Equal(t, http.StatusInternalServerError, resp.Code)
-	})
+			assert.Equal(t, http.StatusCreated, resp.Code)
+			assert.Equal(t, "success", resBody.Status)
+			assert.Equal(t, testAmount, resBody.Data.Amount)
+			assert.Equal(t, frequency, resBody.Data.Frequency)
 
-	// ===========================================
-	// Failures (Client Error)
-	// - Create a Donation by Credit Card
-	// - Request Body Data Validation Error
-	// ===========================================
-	testDonationDataValidation(t, path, userID, authorization, cookie)
+			if c.reqBody.Currency != "" {
+				assert.Equal(t, c.reqBody.Currency, resBody.Data.Currency)
+			} else {
+				assert.Equal(t, defaultCurrency, resBody.Data.Currency)
+			}
+			if c.reqBody.Details != "" {
+				assert.Equal(t, c.reqBody.Details, resBody.Data.Details)
+			} else {
+				switch frequency {
+				case oneTimeFrequency:
+					assert.Equal(t, defaultOneTimeDetails, resBody.Data.Details)
+				case monthlyFrequency, yearlyFrequency:
+					assert.Equal(t, defaultPeriodicDetails, resBody.Data.Details)
+				}
+			}
+
+			assert.NotEmpty(t, resBody.Data.OrderNumber)
+			assert.Empty(t, resBody.Data.Notes)
+
+			assert.Equal(t, defaultAnonymity, resBody.Data.IsAnonymous)
+			assert.Equal(t, c.reqBody.Cardholder.PhoneNumber.ValueOrZero(), resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.Name.ValueOrZero(), resBody.Data.Cardholder.Name.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.Email, resBody.Data.Cardholder.Email)
+			assert.Equal(t, c.reqBody.Cardholder.ZipCode.ValueOrZero(), resBody.Data.Cardholder.ZipCode.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.NationalID.ValueOrZero(), resBody.Data.Cardholder.NationalID.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.Address.ValueOrZero(), resBody.Data.Cardholder.Address.ValueOrZero())
+
+		})
+	}
+
 }
 
-func TestCreateADonation(t *testing.T) {
-	var authorization, jwt, idToken string
-	var cookie http.Cookie
+func TestCreateAOneTimeDonation(t *testing.T) {
 	var path = "/v1/donations/prime"
-	var resp *httptest.ResponseRecorder
 	var user models.User
 
 	user = getUser(Globs.Defaults.Account)
-	jwt = generateJWT(user)
-	authorization = fmt.Sprintf("Bearer %s", jwt)
+	authorization, cookie := helperSetupAuth(user)
 
-	idToken = generateIDToken(user)
-	cookie = http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
+	payMethods := []string{
+		creditCardPayMethod,
+		//TODO: LineCardPayMethod
 	}
 
-	// ===========================================
-	// Failure (Client Error)
-	// - Create a Donation Without Cookie
-	// - 401 Unauthorized
-	// ===========================================
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTP("POST", path, "", "application/json", "")
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
+	for _, p := range payMethods {
 
-	// ===========================================
-	// Failure (Client Error)
-	// - Create a Donation Without Authorization Header
-	// - 401 Unauthorized
-	// ===========================================
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTPWithCookies("POST", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	// ===========================================
-	// Failure (Client Error)
-	// - Create a Donation on Unauthorized Resource
-	// - 403 Forbidden
-	// ===========================================
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		resp = serveHTTPWithCookies("POST", path, `{"user_id":1000}`, "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	// ==========================================
-	// Test One Time Donation Creation
-	// =========================================
-	testCreateADonationRecord(t, path, user.ID, oneTimeFrequency, authorization, cookie)
+		testDonationCreateClientError(t, path, user.ID, oneTimeFrequency, p, authorization, cookie)
+		testDonationCreateServerError(t, path, user.ID, oneTimeFrequency, p, authorization, cookie)
+		testDonationCreateSuccess(t, path, user.ID, oneTimeFrequency, p, authorization, cookie)
+	}
 }
 
 func TestCreateAPeriodicDonation(t *testing.T) {
-	var authorization, idToken, jwt string
-	var cookie http.Cookie
 	var path = "/v1/periodic-donations"
-	var resp *httptest.ResponseRecorder
 	var user models.User
 
 	user = getUser(Globs.Defaults.Account)
-	jwt = generateJWT(user)
-	authorization = fmt.Sprintf("Bearer %s", jwt)
+	authorization, cookie := helperSetupAuth(user)
 
-	idToken = generateIDToken(user)
-	cookie = http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
+	frequency := []string{
+		monthlyFrequency,
+		yearlyFrequency,
 	}
 
-	// ===========================================
-	// Failure (Client Error)
-	// - Create a Periodic Donation Without Authorization Header
-	// - 401 Unauthorized
-	// ===========================================
-	t.Run("StatusCode=StatusUnauthrorized", func(t *testing.T) {
-		resp = serveHTTP("POST", path, "", "application/json", "")
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	// ===========================================
-	// Failure (Client Error)
-	// - Create a Periodic Donation on Unauthenticated Resource
-	// - 403 Forbidden
-	// ===========================================
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		resp = serveHTTPWithCookies("POST", path, `{"user_id":1000}`, "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	// ==========================================
-	// Test Periodic Donation Creation
-	// =========================================
-	testCreateADonationRecord(t, path, user.ID, monthlyFrequency, authorization, cookie)
+	for _, f := range frequency {
+		testDonationCreateClientError(t, path, user.ID, f, creditCardPayMethod, authorization, cookie)
+		testDonationCreateServerError(t, path, user.ID, f, creditCardPayMethod, authorization, cookie)
+		testDonationCreateSuccess(t, path, user.ID, f, creditCardPayMethod, authorization, cookie)
+	}
 }
 
 func createDefaultDonationRecord(reqBody requestBody, endpoint string, user models.User) responseBody {
-	// create jwt of this user
-	jwt := generateJWT(user)
-	// prepare jwt authorization string
-	authorization := fmt.Sprintf("Bearer %s", jwt)
-
-	idToken := generateIDToken(user)
-	cookie := http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
-	}
+	authorization, cookie := helperSetupAuth(user)
 
 	// create a donation by HTTP POST request
 	reqBodyInBytes, _ := json.Marshal(reqBody)
@@ -543,7 +509,7 @@ func createDefaultDonationRecord(reqBody requestBody, endpoint string, user mode
 	return resBody
 }
 
-func createDefaultPeriodicDonationRecord(user models.User) responseBody {
+func createDefaultPeriodicDonationRecord(user models.User, frequency string) responseBody {
 	// create a default periodic donation record
 	path := "/v1/periodic-donations"
 
@@ -558,16 +524,16 @@ func createDefaultPeriodicDonationRecord(user models.User) responseBody {
 			ZipCode:     null.StringFrom(testZipCode),
 		},
 		Details:    testDetails,
-		Frequency:  monthlyFrequency,
-		MerchantID: testMerchantID,
-		Prime:      testPrime,
+		Frequency:  frequency,
+		MerchantID: testCreditCardMerchant,
+		Prime:      testCreditCardPrime,
 		UserID:     user.ID,
 	}
 
 	return createDefaultDonationRecord(reqBody, path, user)
 }
 
-func createDefaultPrimeDonationRecord(user models.User) responseBody {
+func createDefaultPrimeDonationRecord(user models.User, payMethod string) responseBody {
 	// create a default prime donation record
 	path := "/v1/donations/prime"
 
@@ -582,22 +548,104 @@ func createDefaultPrimeDonationRecord(user models.User) responseBody {
 			ZipCode:     null.StringFrom(testZipCode),
 		},
 		Details:    testDetails,
-		MerchantID: testMerchantID,
-		PayMethod:  creditCardPayMethod,
-		Prime:      testPrime,
+		MerchantID: methodToMerchant[payMethod],
+		PayMethod:  payMethod,
+		Prime:      methodToPrime[payMethod],
 		UserID:     user.ID,
 	}
 
 	return createDefaultDonationRecord(reqBody, path, user)
 }
 
+func testDonationPatchClientError(t *testing.T, userID uint, pathPrefix, orderNumber, authorization string, cookie http.Cookie) {
+	var reqBodyInBytes []byte
+	var resp *httptest.ResponseRecorder
+	const invalidUserID = 1000
+
+	header := reqHeader{
+		Cookie:        &cookie,
+		Authorization: authorization,
+	}
+
+	cases := []struct {
+		reqHeader
+		name        string
+		reqBody     *map[string]interface{}
+		orderNumber string
+		resultCode  int
+	}{
+		{
+			name: "StatusCode=StatusUnauthorized,Lack of Cookie",
+			reqHeader: reqHeader{
+				Authorization: authorization,
+			},
+			orderNumber: orderNumber,
+			resultCode:  http.StatusUnauthorized,
+		},
+		{
+			name: "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
+			},
+			orderNumber: orderNumber,
+			resultCode:  http.StatusUnauthorized,
+		},
+		{
+			name:        "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqBody:     &map[string]interface{}{"user_id": invalidUserID},
+			reqHeader:   header,
+			orderNumber: orderNumber,
+			resultCode:  http.StatusForbidden,
+		},
+		{
+			name: "StatusCode=StatusBadRequest,Incorrect request body format",
+			reqBody: &map[string]interface{}{
+				"user_id": userID,
+				// to_feedback should be boolean
+				"to_feedback": "false",
+				// national_id should be string
+				"donor": map[string]interface{}{
+					"national_id": true,
+				},
+			},
+			reqHeader:   header,
+			orderNumber: orderNumber,
+			resultCode:  http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusNotFound,Invalid Order Number",
+			reqBody: &map[string]interface{}{
+				"send_receipt": "no",
+				"to_feedback":  !testFeedback,
+				"user_id":      userID,
+			},
+			reqHeader:   header,
+			orderNumber: "InvalidOrderNumber",
+			resultCode:  http.StatusNotFound,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			path := pathPrefix + c.orderNumber
+
+			if nil != c.reqBody {
+				reqBodyInBytes, _ = json.Marshal(c.reqBody)
+			}
+			if nil != c.Cookie {
+				resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", c.Authorization, *c.Cookie)
+			} else {
+				resp = serveHTTP("PATCH", path, "", "application/json", c.Authorization)
+			}
+			assert.Equal(t, c.resultCode, resp.Code)
+
+		})
+	}
+}
+
 func TestPatchAPeriodicDonation(t *testing.T) {
 	const donorEmail string = "periodic-donor@twreporter.org"
-	var authorization string
-	var cookie http.Cookie
 	var defaultRecordRes responseBody
-	var idToken string
-	var jwt string
 	var path string
 	var reqBody map[string]interface{}
 	var reqBodyInBytes []byte
@@ -607,103 +655,51 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	// setup before test
 	// create a new user
 	user = createUser(donorEmail)
+	authorization, cookie := helperSetupAuth(user)
 
-	// get record to patch
-	defaultRecordRes = createDefaultPeriodicDonationRecord(user)
-
-	jwt = generateJWT(user)
-	authorization = fmt.Sprintf("Bearer %s", jwt)
-	path = fmt.Sprintf("/v1/periodic-donations/orders/%s", defaultRecordRes.Data.OrderNumber)
-
-	idToken = generateIDToken(user)
-	cookie = http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
+	frequency := []string{
+		monthlyFrequency,
+		yearlyFrequency,
 	}
 
-	// without cookie
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTP("PATCH", path, "", "application/json", "")
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
+	for _, f := range frequency {
+		// get record to patch
 
-	// without Authorization header
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTPWithCookies("PATCH", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
+		defaultRecordRes = createDefaultPeriodicDonationRecord(user, f)
 
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		var otherUserID uint = 100
-		resp = serveHTTPWithCookies("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
+		testDonationPatchClientError(t, user.ID, periodicOrderPathPrefix, defaultRecordRes.Data.OrderNumber, authorization, cookie)
+		path = periodicOrderPathPrefix + defaultRecordRes.Data.OrderNumber
 
-	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		reqBody = map[string]interface{}{
-			"user_id": user.ID,
-			// to_feedback should be boolean
-			"to_feedback": "false",
-			// national_id should be string
-			"national_id": true,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-	})
+		t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
+			var dataAfterPatch models.PeriodicDonation
+			const testIsAnonymous = true
+			reqBody = map[string]interface{}{
+				"donor": map[string]string{
+					"address": "test-addres",
+					"name":    "test-name",
+				},
+				"send_receipt": "no",
+				"to_feedback":  !testFeedback,
+				"is_anonymous": null.BoolFrom(testIsAnonymous),
+				"user_id":      user.ID,
+			}
+			reqBodyInBytes, _ = json.Marshal(reqBody)
+			resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+			assert.Equal(t, http.StatusNoContent, resp.Code)
 
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		var path string
-		var recordIDNotFound uint = 1000
-
-		path = fmt.Sprintf("/v1/periodic-donations/%d", recordIDNotFound)
-
-		reqBody = map[string]interface{}{
-			"send_receipt": "no",
-			"to_feedback":  !testFeedback,
-			"user_id":      user.ID,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNotFound, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		var dataAfterPatch models.PeriodicDonation
-		const testIsAnonymous = true
-		reqBody = map[string]interface{}{
-			"donor": map[string]string{
-				"address": "test-addres",
-				"name":    "test-name",
-			},
-			"send_receipt": "no",
-			"to_feedback":  !testFeedback,
-			"is_anonymous": null.BoolFrom(testIsAnonymous),
-			"user_id":      user.ID,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNoContent, resp.Code)
-
-		Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
-		assert.Equal(t, reqBody["to_feedback"], dataAfterPatch.ToFeedback.ValueOrZero())
-		assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
-		assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
-		assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
-		assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
-	})
+			Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
+			assert.Equal(t, reqBody["to_feedback"], dataAfterPatch.ToFeedback.ValueOrZero())
+			assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
+			assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
+			assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
+			assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
+		})
+	}
 }
 
 func TestPatchAPrimeDonation(t *testing.T) {
 	const donorEmail string = "prim-donor@twreporter.org"
-	var authorization string
-	var cookie http.Cookie
 	var defaultRecordRes responseBody
-	var idToken string
-	var jwt string
 	var path string
 	var reqBody map[string]interface{}
 	var reqBodyInBytes []byte
@@ -713,90 +709,97 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	// setup before test
 	// create a new user
 	user = createUser(donorEmail)
+	authorization, cookie := helperSetupAuth(user)
 
-	// get record to patch
-	defaultRecordRes = createDefaultPrimeDonationRecord(user)
-
-	jwt = generateJWT(user)
-	authorization = fmt.Sprintf("Bearer %s", jwt)
-	path = fmt.Sprintf("/v1/donations/prime/orders/%s", defaultRecordRes.Data.OrderNumber)
-
-	idToken = generateIDToken(user)
-	cookie = http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
+	payMethods := []string{
+		creditCardPayMethod,
+		//TODO: LineCardPayMethod
 	}
 
-	// without cookie
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTP("PATCH", path, "", "application/json", "")
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
+	for _, p := range payMethods {
+		// get record to patch
+		defaultRecordRes = createDefaultPrimeDonationRecord(user, p)
 
-	// without Authorization header
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp = serveHTTPWithCookies("PATCH", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
+		testDonationPatchClientError(t, user.ID, oneTimeOrderPathPrefix, defaultRecordRes.Data.OrderNumber, authorization, cookie)
 
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		var otherUserID uint = 100
-		resp = serveHTTPWithCookies("PATCH", path, fmt.Sprintf(`{"user_id": %d}`, otherUserID), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
+		path = oneTimeOrderPathPrefix + defaultRecordRes.Data.OrderNumber
+		t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
+			var dataAfterPatch models.PayByPrimeDonation
+			const testIsAnonymous = true
+			reqBody = map[string]interface{}{
+				"donor": map[string]string{
+					"name":    "test-name",
+					"address": "test-addres",
+				},
+				"send_receipt": "no",
+				"is_anonymous": null.BoolFrom(testIsAnonymous),
+				"user_id":      user.ID,
+			}
+			reqBodyInBytes, _ = json.Marshal(reqBody)
+			resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+			assert.Equal(t, http.StatusNoContent, resp.Code)
 
-	t.Run("StatusCode=StatusBadRequest", func(t *testing.T) {
-		reqBody = map[string]interface{}{
-			// national_id should be string
-			"donor": map[string]interface{}{
-				"national_id": true,
+			Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
+			assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
+			assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
+			assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
+			assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
+		})
+	}
+}
+
+func testDonationGetClientError(t *testing.T, pathPrefix, orderNumber, authorization string, cookie http.Cookie) {
+	var reqBodyInBytes []byte
+	var resp *httptest.ResponseRecorder
+
+	maliciousDonorEmail := "malicious-donor@twreporter.org"
+	maliciousUser := createUser(maliciousDonorEmail)
+	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
+
+	cases := []struct {
+		reqHeader
+		name        string
+		orderNumber string
+		resultCode  int
+	}{
+		{
+			name: "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
 			},
-			"user_id": user.ID,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		var path string
-		var recordIDNotFound uint = 1000
-
-		path = fmt.Sprintf("/v1/donations/prime/%d", recordIDNotFound)
-		reqBody = map[string]interface{}{
-			"send_receipt": "no",
-			"user_id":      user.ID,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNotFound, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-		var dataAfterPatch models.PayByPrimeDonation
-		const testIsAnonymous = true
-		reqBody = map[string]interface{}{
-			"donor": map[string]string{
-				"name":    "test-name",
-				"address": "test-addres",
+			orderNumber: orderNumber,
+			resultCode:  http.StatusUnauthorized,
+		},
+		{
+			name: "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqHeader: reqHeader{
+				Cookie:        &maliciousCookie,
+				Authorization: maliciousAuthorization,
 			},
-			"send_receipt": "no",
-			"is_anonymous": null.BoolFrom(testIsAnonymous),
-			"user_id":      user.ID,
-		}
-		reqBodyInBytes, _ = json.Marshal(reqBody)
-		resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNoContent, resp.Code)
+			orderNumber: orderNumber,
+			resultCode:  http.StatusForbidden,
+		},
+		{
+			name: "StatusCode=StatusNotFound,Invalid Order Number",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			orderNumber: "InvalidOrderNumber",
+			resultCode:  http.StatusNotFound,
+		},
+	}
 
-		Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
-		assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
-		assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
-		assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
-		assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
-	})
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			path := pathPrefix + c.orderNumber
+
+			resp = serveHTTPWithCookies("GET", path, string(reqBodyInBytes), "application/json", c.Authorization, *c.Cookie)
+			assert.Equal(t, c.resultCode, resp.Code)
+
+		})
+	}
+
 }
 
 func TestGetAPrimeDonationOfAUser(t *testing.T) {
@@ -804,79 +807,43 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 	donorEmail := "get-prime-donor@twreporter.org"
 	// create a new user
 	user := createUser(donorEmail)
-
-	primeRes := createDefaultPrimeDonationRecord(user)
-
-	jwt := generateJWT(user)
-	authorization := fmt.Sprintf("Bearer %s", jwt)
-
-	idToken := generateIDToken(user)
-	cookie := http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    idToken,
+	authorization, cookie := helperSetupAuth(user)
+	payMethods := []string{
+		creditCardPayMethod,
+		//TODO: LineCardPayMethod
 	}
 
-	maliciousDonorEmail := "get-others-prime-donor@twreporter.org"
-	maliciousUser := createUser(maliciousDonorEmail)
-	maliciousJwt := generateJWT(maliciousUser)
-	maliciousAuthorization := fmt.Sprintf("Bearer %s", maliciousJwt)
-	maliciousIDToken := generateIDToken(maliciousUser)
-	maliciousCookie := http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    maliciousIDToken,
+	for _, p := range payMethods {
+
+		primeRes := createDefaultPrimeDonationRecord(user, p)
+
+		testDonationGetClientError(t, oneTimeOrderPathPrefix, primeRes.Data.OrderNumber, authorization, cookie)
+		path := oneTimeOrderPathPrefix + primeRes.Data.OrderNumber
+
+		t.Run("StatusCode=StatusOK", func(t *testing.T) {
+			resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
+			respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+			defer resp.Result().Body.Close()
+
+			// parse response into struct
+			resBody := responseBody{}
+			json.Unmarshal(respInBytes, &resBody)
+			assert.Equal(t, http.StatusOK, resp.Code)
+			assert.Equal(t, testAmount, resBody.Data.Amount)
+			assert.Equal(t, testDetails, resBody.Data.Details)
+			assert.Equal(t, donorEmail, resBody.Data.Cardholder.Email)
+			assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
+			assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
+			assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
+			assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
+			assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
+			assert.Equal(t, testCurrency, resBody.Data.Currency)
+			assert.Equal(t, p, resBody.Data.PayMethod)
+			assert.Equal(t, "yearly", resBody.Data.SendReceipt)
+			assert.Empty(t, resBody.Data.Notes)
+			assert.NotEmpty(t, resBody.Data.OrderNumber)
+		})
 	}
-
-	path := fmt.Sprintf("/v1/donations/prime/orders/%s", primeRes.Data.OrderNumber)
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", maliciousAuthorization, maliciousCookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		invalidPath := "/v1/donations/prime/orders/INVALID_ORDER"
-		resp := serveHTTPWithCookies("GET", invalidPath, "", "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNotFound, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusOK", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
-		respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
-		defer resp.Result().Body.Close()
-
-		// parse response into struct
-		resBody := responseBody{}
-		json.Unmarshal(respInBytes, &resBody)
-		assert.Equal(t, http.StatusOK, resp.Code)
-		assert.Equal(t, testAmount, resBody.Data.Amount)
-		assert.Equal(t, testDetails, resBody.Data.Details)
-		assert.Equal(t, donorEmail, resBody.Data.Cardholder.Email)
-		assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
-		assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
-		assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
-		assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
-		assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
-		assert.Equal(t, "4242", resBody.Data.CardInfo.LastFour.ValueOrZero())
-		assert.Equal(t, "424242", resBody.Data.CardInfo.BinCode.ValueOrZero())
-		assert.Equal(t, int64(0), resBody.Data.CardInfo.Funding.ValueOrZero())
-		assert.Equal(t, testCurrency, resBody.Data.Currency)
-		assert.Equal(t, "credit_card", resBody.Data.PayMethod)
-		assert.Equal(t, "yearly", resBody.Data.SendReceipt)
-		assert.Equal(t, false, resBody.Data.ToFeedback)
-		assert.Equal(t, oneTimeFrequency, resBody.Data.Frequency)
-		assert.Empty(t, resBody.Data.Notes)
-		assert.NotEmpty(t, resBody.Data.OrderNumber)
-	})
 }
 
 func TestGetAPeriodicDonationOfAUser(t *testing.T) {
@@ -884,79 +851,46 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 	donorEmail := "get-periodic-donor@twreporter.org"
 	// create a new user
 	user := createUser(donorEmail)
+	authorization, cookie := helperSetupAuth(user)
 
-	periodicRes := createDefaultPeriodicDonationRecord(user)
-
-	jwt := generateJWT(user)
-	authorization := fmt.Sprintf("Bearer %s", jwt)
-
-	idToken := generateIDToken(user)
-	cookie := http.Cookie{
-		Name:     "id_token",
-		Value:    idToken,
-		MaxAge:   3600,
-		Secure:   false,
-		HttpOnly: true,
+	frequency := []string{
+		monthlyFrequency,
+		yearlyFrequency,
 	}
 
-	maliciousDonorEmail := "get-others-periodic-donor@twreporter.org"
-	maliciousUser := createUser(maliciousDonorEmail)
-	maliciousJwt := generateJWT(maliciousUser)
-	maliciousAuthorization := fmt.Sprintf("Bearer %s", maliciousJwt)
-	maliciousIDToken := generateIDToken(maliciousUser)
-	maliciousCookie := http.Cookie{
-		HttpOnly: true,
-		MaxAge:   3600,
-		Name:     "id_token",
-		Secure:   false,
-		Value:    maliciousIDToken,
+	for _, f := range frequency {
+		periodicRes := createDefaultPeriodicDonationRecord(user, f)
+
+		testDonationGetClientError(t, periodicOrderPathPrefix, periodicRes.Data.OrderNumber, authorization, cookie)
+
+		path := periodicOrderPathPrefix + periodicRes.Data.OrderNumber
+
+		t.Run("StatusCode=StatusOK", func(t *testing.T) {
+			resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
+			assert.Equal(t, http.StatusOK, resp.Code)
+			respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+			defer resp.Result().Body.Close()
+
+			// parse response into struct
+			resBody := responseBody{}
+			json.Unmarshal(respInBytes, &resBody)
+			assert.Equal(t, http.StatusOK, resp.Code)
+			assert.Equal(t, testAmount, resBody.Data.Amount)
+			assert.Equal(t, testDetails, resBody.Data.Details)
+			assert.Equal(t, donorEmail, resBody.Data.Cardholder.Email)
+			assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
+			assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
+			assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
+			assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
+			assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
+			assert.Equal(t, testCurrency, resBody.Data.Currency)
+			assert.Equal(t, "yearly", resBody.Data.SendReceipt)
+			assert.Equal(t, true, resBody.Data.ToFeedback)
+			assert.Equal(t, f, resBody.Data.Frequency)
+			assert.Empty(t, resBody.Data.Notes)
+			assert.NotEmpty(t, resBody.Data.OrderNumber)
+		})
 	}
-
-	path := fmt.Sprintf("/v1/periodic-donations/orders/%s", periodicRes.Data.OrderNumber)
-	t.Run("StatusCode=StatusUnauthorized", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", "", cookie)
-		assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusForbidden", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", maliciousAuthorization, maliciousCookie)
-		assert.Equal(t, http.StatusForbidden, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusNotFound", func(t *testing.T) {
-		invalidPath := "/v1/periodic-donations/orders/INVALID_ORDER"
-		resp := serveHTTPWithCookies("GET", invalidPath, "", "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusNotFound, resp.Code)
-	})
-
-	t.Run("StatusCode=StatusOK", func(t *testing.T) {
-		resp := serveHTTPWithCookies("GET", path, "", "application/json", authorization, cookie)
-		assert.Equal(t, http.StatusOK, resp.Code)
-		respInBytes, _ := ioutil.ReadAll(resp.Result().Body)
-		defer resp.Result().Body.Close()
-
-		// parse response into struct
-		resBody := responseBody{}
-		json.Unmarshal(respInBytes, &resBody)
-		assert.Equal(t, http.StatusOK, resp.Code)
-		assert.Equal(t, testAmount, resBody.Data.Amount)
-		assert.Equal(t, testDetails, resBody.Data.Details)
-		assert.Equal(t, donorEmail, resBody.Data.Cardholder.Email)
-		assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
-		assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
-		assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
-		assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
-		assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
-		assert.Equal(t, "4242", resBody.Data.CardInfo.LastFour.ValueOrZero())
-		assert.Equal(t, "424242", resBody.Data.CardInfo.BinCode.ValueOrZero())
-		assert.Equal(t, int64(0), resBody.Data.CardInfo.Funding.ValueOrZero())
-		assert.Equal(t, testCurrency, resBody.Data.Currency)
-		assert.Equal(t, "yearly", resBody.Data.SendReceipt)
-		assert.Equal(t, true, resBody.Data.ToFeedback)
-		assert.Equal(t, monthlyFrequency, resBody.Data.Frequency)
-		assert.Empty(t, resBody.Data.Notes)
-		assert.NotEmpty(t, resBody.Data.OrderNumber)
-	})
 }
 
 /* GetDonationsOfAUser is not implemented yet
