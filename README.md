@@ -82,6 +82,43 @@ aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}
 
 Otherwise, you have to change the `utils/mail.go` to integrate with your email service.
 
+### Database Migrations
+Go-api integrates [go-migrate](https://github.com/golang-migrate/migrate) to do the schema version control. You can follow the instructions to install the cli from [here](https://github.com/golang-migrate/migrate/tree/master/cli).
+
+Basic operations are listed below:
+
+Create
+
+```
+# Create migration pair files up/down_000001_$FILE_NAME.$FILE_EXTENSION in $FILE_DIR
+migrate create -ext $FILE_EXTENSION -dir $FILE_DIR -seq $FILE_NAME 
+```
+
+Up
+
+```
+# Upgrade to the latest version in migration directory
+migrate -databsae $DATABASE_CONNECTION -path $MIGRATION_DIR up
+```
+
+Down (CAUTION)
+
+```
+# Remove all the existing versions change
+migrate -database $DATABASE_CONNECTION -path $MIGRATION_DIR down
+```
+
+Goto
+
+```
+# Upgrade/Downgrade to the specific versions
+migrate -database $DATABASE_CONNECTION -path $MIGRATION_DIR goto $VERSION
+```
+
+more details in [FAQ](https://github.com/golang-migrate/migrate/blob/master/FAQ.md) and [godoc](https://godoc.org/github.com/mattes/migrate)(old repo)
+
+
+
 ## Functional Testing
 ### Prerequisite
 * Make sure the environment you run the test has a running `MySQL` server and `MongoDB` server<br/>
