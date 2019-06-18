@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"gopkg.in/guregu/null.v3"
 
@@ -66,6 +67,19 @@ type (
 	reqHeader struct {
 		Cookie        *http.Cookie
 		Authorization string
+	}
+
+	tapPayRequestBody struct {
+		RecTradeID        string         `json:"rec_trade_id"`
+		BankTransactionID string         `json:"bank_transaction_id"`
+		OrderNumber       string         `json:"order_number"`
+		Amount            uint           `json:"amount"`
+		Status            int            `json:"status"`
+		TransactionTime   int64          `json:"transaction_time_millis"`
+		PayInfo           models.PayInfo `json:"pay_info"`
+		Acquirer          string         `json:"acquirer"`
+		BankResultCode    string         `json:"bank_result_code"`
+		BankResultMsg     string         `json:"bank_result_msg"`
 	}
 )
 
@@ -893,6 +907,196 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 			assert.Equal(t, f, resBody.Data.Frequency)
 			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
+		})
+	}
+}
+
+func TestLinePayNotify(t *testing.T) {
+	const testDonorEmail = "test@twreporter.org"
+	const testOrderNumber = "ValidOrderNumber"
+	const testRecTradeID = "ValidRecTradeID"
+	const testBankTransactionID = "ValidBankTransactionID"
+	const oldBankResultMsg = "Old"
+	const newBankResultMsg = "New"
+	const oldBankResultCode = "Old"
+	const newBankResultCode = "New"
+	const notifyPath = "/v1/donations/prime/line-notify"
+	const statusPaying = "paying"
+	const statusPaid = "paid"
+
+	startTransactionTime := time.Now()
+	endTransactionTime := startTransactionTime.Add(30 * time.Second)
+
+	user := createUser(testDonorEmail)
+	record := models.PayByPrimeDonation{
+		Amount: testAmount,
+		Cardholder: models.Cardholder{
+			Email: testDonorEmail,
+		},
+		Currency:    testCurrency,
+		UserID:      user.ID,
+		OrderNumber: testOrderNumber,
+		PayMethod:   linePayMethod,
+		Status:      statusPaying,
+		TappayResp: models.TappayResp{
+			RecTradeID:        testRecTradeID,
+			BankTransactionID: testBankTransactionID,
+		},
+	}
+
+	type resultPatchField struct {
+		Method         string `json:"method"`
+		LastFour       string `json:"last_four"`
+		Point          int64  `json:"point"`
+		Status         string `json:"status"`
+		BankResultCode string `json:"bank_result_code"`
+		BankResultMsg  string `json:"bank_result_msg"`
+	}
+
+	db := Globs.GormDB
+	cases := []struct {
+		name          string
+		preRecord     *models.PayByPrimeDonation
+		reqBody       tapPayRequestBody
+		resultCode    int
+		resultCompare *resultPatchField
+	}{
+		{
+			name: "StatusCode=StatusBadRequest,Invalid Line Pay Method",
+			reqBody: tapPayRequestBody{
+				PayInfo: models.PayInfo{
+					Method: null.StringFrom("Invalid Method"),
+				},
+			},
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name:      "StatusCode=StatusUnprocessableEntity,Unknown OrderNumber",
+			preRecord: &record,
+			reqBody: tapPayRequestBody{
+				OrderNumber: "UnknownOrderNumber",
+				PayInfo: models.PayInfo{
+					Method:                 null.StringFrom("CREDIT_CARD"),
+					MaskedCreditCardNumber: null.StringFrom("************5566"),
+					Point: null.IntFrom(0),
+				},
+			},
+			resultCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:      "StatusCode=StatusUnprocessableEntity,Unknown RecTradeID",
+			preRecord: &record,
+			reqBody: tapPayRequestBody{
+				RecTradeID: "UnknownRecTradeID",
+				PayInfo: models.PayInfo{
+					Method:                 null.StringFrom("CREDIT_CARD"),
+					MaskedCreditCardNumber: null.StringFrom("************5566"),
+					Point: null.IntFrom(0),
+				},
+			},
+			resultCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:      "StatusCode=StatusUnprocessableEntity,Unknown BankTransactionID",
+			preRecord: &record,
+			reqBody: tapPayRequestBody{
+				BankTransactionID: "UnknownBankTransactionID",
+				PayInfo: models.PayInfo{
+					Method:                 null.StringFrom("CREDIT_CARD"),
+					MaskedCreditCardNumber: null.StringFrom("************5566"),
+					Point: null.IntFrom(0),
+				},
+			},
+			resultCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:      "StatusCode=StatusNoContent,Success linepay info using credit card",
+			preRecord: &record,
+			reqBody: tapPayRequestBody{
+				RecTradeID:        testRecTradeID,
+				BankTransactionID: testBankTransactionID,
+				OrderNumber:       testOrderNumber,
+				Amount:            testAmount,
+				Status:            0,
+				TransactionTime:   endTransactionTime.Unix() * 1000, //millisecond
+				PayInfo: models.PayInfo{
+					Method:                 null.StringFrom("CREDIT_CARD"),
+					MaskedCreditCardNumber: null.StringFrom("************5566"),
+					Point: null.IntFrom(0),
+				},
+				Acquirer:       "Test Acquirer",
+				BankResultMsg:  newBankResultMsg,
+				BankResultCode: newBankResultCode,
+			},
+			resultCode: http.StatusNoContent,
+			resultCompare: &resultPatchField{
+				Method:         "CREDIT_CARD",
+				LastFour:       "5566",
+				Point:          0,
+				Status:         statusPaid,
+				BankResultMsg:  newBankResultMsg,
+				BankResultCode: newBankResultCode,
+			},
+		},
+		{
+			name:      "StatusCode=StatusNoContent,Success linepay info using balance but with redundant credit card number",
+			preRecord: &record,
+			reqBody: tapPayRequestBody{
+				RecTradeID:        testRecTradeID,
+				BankTransactionID: testBankTransactionID,
+				OrderNumber:       testOrderNumber,
+				Amount:            testAmount,
+				Status:            0,
+				TransactionTime:   endTransactionTime.Unix() * 1000, //millisecond
+				PayInfo: models.PayInfo{
+					Method:                 null.StringFrom("BALANCE"),
+					MaskedCreditCardNumber: null.StringFrom("************5566"),
+					Point: null.IntFrom(0),
+				},
+				Acquirer:       "Test Acquirer",
+				BankResultMsg:  newBankResultMsg,
+				BankResultCode: newBankResultCode,
+			},
+			resultCode: http.StatusNoContent,
+			resultCompare: &resultPatchField{
+				Method:         "BALANCE",
+				Point:          0,
+				Status:         statusPaid,
+				BankResultMsg:  newBankResultMsg,
+				BankResultCode: newBankResultCode,
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var reqBodyInBytes []byte
+
+			if c.preRecord != nil {
+				db.Model(&c.preRecord).Create(c.preRecord)
+
+				defer func() {
+					db.Unscoped().Delete(c.preRecord)
+				}()
+			}
+
+			reqBodyInBytes, _ = json.Marshal(&c.reqBody)
+
+			resp := serveHTTP("POST", notifyPath, string(reqBodyInBytes), "application/json", "")
+
+			assert.Equal(t, c.resultCode, resp.Code)
+
+			// Check if the transaction information updated correctly
+			if c.resultCode == http.StatusNoContent {
+				m := models.PayByPrimeDonation{}
+				db.Where("order_number = ?", c.preRecord.OrderNumber).Find(&m)
+				assert.Equal(t, c.resultCompare.Method, m.TappayResp.PayInfo.Method.String)
+				assert.Equal(t, c.resultCompare.LastFour, m.CardInfo.LastFour.String)
+				assert.Equal(t, c.resultCompare.Point, m.TappayResp.PayInfo.Point.Int64)
+				assert.Equal(t, c.resultCompare.Status, m.Status)
+				assert.Equal(t, c.resultCompare.BankResultMsg, m.BankResultMsg.String)
+				assert.Equal(t, c.resultCompare.BankResultCode, m.BankResultCode.String)
+			}
 		})
 	}
 }
