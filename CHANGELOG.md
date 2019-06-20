@@ -1,7 +1,8 @@
 ## Unreleased
 ## Released
 ### 4.0.1
-- Bug fix: fix wrong address in the success email
+#### Bug Fix
+- Fix wrong address in the success email
 
 ### 4.0.0
 #### New Feature  
