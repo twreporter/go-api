@@ -1,6 +1,9 @@
 ## Unreleased
-
 ## Released
+### 4.0.1
+#### Bug Fix
+- Fix wrong address in the success email
+
 ### 4.0.0
 #### New Feature  
   * Enforce the donation through forward-proxy
