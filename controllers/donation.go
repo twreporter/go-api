@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -58,6 +59,10 @@ const (
 	payMethodGoogle     = "google"
 	payMethodApple      = "apple"
 	payMethodSamsung    = "samsung"
+
+	linePayMethodCreditCard = "CREDIT_CARD"
+	linePayMethodBalance    = "BALANCE"
+	linePayMethodPoint      = "POINT"
 )
 
 // pay type Enum
@@ -171,6 +176,8 @@ type (
 		Status                int64               `json:"status"`
 		TransactionTimeMillis int64               `json:"transaction_time_millis"`
 		PaymentUrl            string              `json:"payment_url"`
+		Amount                int                 `json:"amount"`
+		OrderNumber           string              `json:"order_number"`
 	}
 
 	tapPayMinTransactionResp struct {
@@ -767,6 +774,51 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 
 	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
+func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H, error) {
+	var reqBody tapPayTransactionResp
+
+	if _, valid := bindRequestJSONBody(c, &reqBody); valid == false {
+		return http.StatusBadRequest, gin.H{}, nil
+	}
+
+	// Validate Line Pay Method
+	if valid := validateLinePayMethod(reqBody.PayInfo.Method.String); valid == false {
+		return http.StatusBadRequest, gin.H{}, nil
+	}
+
+	if linePayMethodCreditCard == reqBody.PayInfo.Method.String {
+		// Validate Line Pay Masked Credit Card Number format
+		// sample: ************1234
+		re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
+
+		if re.MatchString(reqBody.PayInfo.MaskedCreditCardNumber.String) == false {
+			return http.StatusBadRequest, gin.H{}, nil
+		}
+	}
+
+	updateData := models.PayByPrimeDonation{}
+	if tapPayRespStatusSuccess == reqBody.Status {
+		reqBody.AppendLinePayOnPrimeDonation(&updateData, statusPaid)
+	} else {
+		reqBody.AppendLinePayOnPrimeDonation(&updateData, statusFail)
+	}
+
+	err, rowsAffected := mc.Storage.UpdateByConditions(map[string]interface{}{
+		"order_number":        reqBody.OrderNumber,
+		"rec_trade_id":        reqBody.TappayResp.RecTradeID,
+		"bank_transaction_id": reqBody.TappayResp.BankTransactionID,
+		"amount":              reqBody.Amount,
+	}, updateData)
+
+	switch {
+	case err != nil:
+		return http.StatusInternalServerError, gin.H{}, err
+	case rowsAffected == 0:
+		return http.StatusUnprocessableEntity, gin.H{}, err
+	}
+
+	return http.StatusNoContent, gin.H{}, nil
+}
 
 func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
 	m.CardInfo = resp.CardInfo
@@ -824,6 +876,17 @@ func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardT
 		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
+	m.Status = status
+}
+
+func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
+	m.TappayResp.PayInfo = resp.TappayResp.PayInfo
+
+	if resp.TappayResp.PayInfo.Method.String == linePayMethodCreditCard {
+		m.CardInfo.LastFour = null.StringFrom(strings.Replace(resp.TappayResp.PayInfo.MaskedCreditCardNumber.String, "*", "", -1))
+	}
+	m.TappayResp.BankResultMsg = resp.TappayResp.BankResultMsg
+	m.TappayResp.BankResultCode = resp.TappayResp.BankResultCode
 	m.Status = status
 }
 
@@ -976,4 +1039,23 @@ func validatePayMethod(payMethod string) error {
 
 	errMsg := fmt.Sprintf("Unsupported pay_method. Only support payment by %s", strings.Join(payMethodCollections, ", "))
 	return errors.New(errMsg)
+}
+
+func validateLinePayMethod(method string) bool {
+	valid := false
+
+	linePayMethods := []string{
+		linePayMethodCreditCard,
+		linePayMethodBalance,
+		linePayMethodPoint,
+	}
+
+	for _, m := range linePayMethods {
+		if m == method {
+			valid = true
+			break
+		}
+	}
+
+	return valid
 }
