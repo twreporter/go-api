@@ -7,6 +7,7 @@ import (
 )
 
 type TappayResp struct {
+	PayInfo                  `json:"pay_info"`
 	Acquirer                 string      `gorm:"type:varchar(50);not null" json:"acquirer"`
 	AuthCode                 string      `gorm:"type:varchar(6);not null" json:"auth_code"`
 	BankResultCode           null.String `gorm:"type:varchar(50)" json:"bank_result_code"`
@@ -40,6 +41,14 @@ type Cardholder struct {
 	NationalID  null.String `gorm:"column:cardholder_national_id;type:varchar(20)" json:"national_id"`
 	PhoneNumber null.String `gorm:"column:cardholder_phone_number;type:varchar(20)" json:"phone_number"`
 	ZipCode     null.String `gorm:"column:cardholder_zip_code;type:varchar(10)" json:"zip_code"`
+}
+
+// https://docs.tappaysdk.com/tutorial/zh/back.html#request-body pay_info
+// masked_credit_card_number will be preprocessed and stored in the CardInfo.LastFour
+type PayInfo struct {
+	Method                 null.String `gorm:"column:linepay_method;type:ENUM('CREDIT_CARD', 'BALANCE', 'POINT')" json:"method"`
+	MaskedCreditCardNumber null.String `gorm:"-" json:"masked_credit_card_number"`
+	Point                  null.Int    `gorm:"column:linepay_point;type:int;" json:"point"`
 }
 
 type PayByPrimeDonation struct {
