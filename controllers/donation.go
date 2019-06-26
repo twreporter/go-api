@@ -775,39 +775,39 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
 func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H, error) {
-	var reqBody tapPayTransactionResp
+	var callbackPayload tapPayTransactionResp
 
-	if _, valid := bindRequestJSONBody(c, &reqBody); valid == false {
+	if _, valid := bindRequestJSONBody(c, &callbackPayload); valid == false {
 		return http.StatusBadRequest, gin.H{}, nil
 	}
 
 	// Validate Line Pay Method
-	if valid := validateLinePayMethod(reqBody.PayInfo.Method.String); valid == false {
+	if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
 		return http.StatusBadRequest, gin.H{}, nil
 	}
 
-	if linePayMethodCreditCard == reqBody.PayInfo.Method.String {
+	if linePayMethodCreditCard == callbackPayload.PayInfo.Method.String {
 		// Validate Line Pay Masked Credit Card Number format
 		// sample: ************1234
 		re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
 
-		if re.MatchString(reqBody.PayInfo.MaskedCreditCardNumber.String) == false {
+		if re.MatchString(callbackPayload.PayInfo.MaskedCreditCardNumber.String) == false {
 			return http.StatusBadRequest, gin.H{}, nil
 		}
 	}
 
 	updateData := models.PayByPrimeDonation{}
-	if tapPayRespStatusSuccess == reqBody.Status {
-		reqBody.AppendLinePayOnPrimeDonation(&updateData, statusPaid)
+	if tapPayRespStatusSuccess == callbackPayload.Status {
+		callbackPayload.AppendLinePayOnPrimeDonation(&updateData, statusPaid)
 	} else {
-		reqBody.AppendLinePayOnPrimeDonation(&updateData, statusFail)
+		callbackPayload.AppendLinePayOnPrimeDonation(&updateData, statusFail)
 	}
 
 	err, rowsAffected := mc.Storage.UpdateByConditions(map[string]interface{}{
-		"order_number":        reqBody.OrderNumber,
-		"rec_trade_id":        reqBody.TappayResp.RecTradeID,
-		"bank_transaction_id": reqBody.TappayResp.BankTransactionID,
-		"amount":              reqBody.Amount,
+		"order_number":        callbackPayload.OrderNumber,
+		"rec_trade_id":        callbackPayload.TappayResp.RecTradeID,
+		"bank_transaction_id": callbackPayload.TappayResp.BankTransactionID,
+		"amount":              callbackPayload.Amount,
 	}, updateData)
 
 	switch {

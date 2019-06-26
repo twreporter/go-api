@@ -31,7 +31,7 @@ DB_ADDRESS ?= 127.0.0.1
 DB_PORT ?= 3306
 
 # Migration
-MIGRATION_NAME ?= $(shell bash -c 'read -p "Migration name: " migration_name; echo $$migration_name')
+MIGRATION_NAME ?= $(shell read -p "Migration name: " migration_name; echo $$migration_name)
 MIGRATION_EXT ?= "sql"
 MIGRATION_DIR ?= "migrations"
 SCHEMA_VERSION ?= $(shell read -p "Schema version: " schema_version; echo $$schema_version)
