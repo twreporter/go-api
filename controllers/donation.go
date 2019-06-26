@@ -109,6 +109,12 @@ var cardInfoTypes = map[int64]string{
 	5: "AMEX",
 }
 
+var linePayMethods = []string{
+	linePayMethodCreditCard,
+	linePayMethodBalance,
+	linePayMethodPoint,
+}
+
 type (
 	clientReq struct {
 		Amount       uint              `json:"amount" binding:"required"`
@@ -777,12 +783,14 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H, error) {
 	var callbackPayload tapPayTransactionResp
 
-	if _, valid := bindRequestJSONBody(c, &callbackPayload); valid == false {
+	if failData, valid := bindRequestJSONBody(c, &callbackPayload); valid == false {
+		log.Errorf("Fail to bind callback payload, %v", failData)
 		return http.StatusBadRequest, gin.H{}, nil
 	}
 
 	// Validate Line Pay Method
 	if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
+		log.Errorf("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
 		return http.StatusBadRequest, gin.H{}, nil
 	}
 
@@ -792,6 +800,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
 
 		if re.MatchString(callbackPayload.PayInfo.MaskedCreditCardNumber.String) == false {
+			log.Errorf("Invalid line pay credit number format: %s", callbackPayload.PayInfo.MaskedCreditCardNumber.String)
 			return http.StatusBadRequest, gin.H{}, nil
 		}
 	}
@@ -802,18 +811,20 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 	} else {
 		callbackPayload.AppendLinePayOnPrimeDonation(&updateData, statusFail)
 	}
-
-	err, rowsAffected := mc.Storage.UpdateByConditions(map[string]interface{}{
+	conditions := map[string]interface{}{
 		"order_number":        callbackPayload.OrderNumber,
 		"rec_trade_id":        callbackPayload.TappayResp.RecTradeID,
 		"bank_transaction_id": callbackPayload.TappayResp.BankTransactionID,
 		"amount":              callbackPayload.Amount,
-	}, updateData)
+	}
+	err, rowsAffected := mc.Storage.UpdateByConditions(conditions, updateData)
 
 	switch {
 	case err != nil:
+		log.Errorf("Unexpected error: %v", err)
 		return http.StatusInternalServerError, gin.H{}, err
 	case rowsAffected == 0:
+		log.Errorf("No corresponding record to patch, condition: %v", conditions)
 		return http.StatusUnprocessableEntity, gin.H{}, err
 	}
 
@@ -1043,12 +1054,6 @@ func validatePayMethod(payMethod string) error {
 
 func validateLinePayMethod(method string) bool {
 	valid := false
-
-	linePayMethods := []string{
-		linePayMethodCreditCard,
-		linePayMethodBalance,
-		linePayMethodPoint,
-	}
 
 	for _, m := range linePayMethods {
 		if m == method {
