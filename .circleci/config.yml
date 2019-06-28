@@ -66,6 +66,20 @@ jobs:
           keys:
           - go-mod-{{ checksum "go.sum" }}
 
+      - run:
+          name: Install dockerize for health check mysql status
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+          command: |
+            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
+      - run:
+          name: Waiting for mysql to be ready
+          command: |
+            dockerize -wait tcp://${MYSQL_HOST}:3306 -timeout 30s
+
       # run tests!
       - run: go test ./...
             
