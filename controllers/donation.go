@@ -176,6 +176,7 @@ type (
 
 	tapPayTransactionResp struct {
 		models.TappayResp
+		models.PayInfo
 		BankTransactionTime   bankTransactionTime `json:"bank_transaction_time"`
 		CardInfo              models.CardInfo     `json:"card_info"`
 		CardSecret            cardSecret          `json:"card_secret"`
@@ -891,13 +892,13 @@ func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardT
 }
 
 func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
-	m.TappayResp.PayInfo = resp.TappayResp.PayInfo
+	m.PayInfo = resp.PayInfo
 
-	if resp.TappayResp.PayInfo.Method.String == linePayMethodCreditCard {
-		m.CardInfo.LastFour = null.StringFrom(strings.Replace(resp.TappayResp.PayInfo.MaskedCreditCardNumber.String, "*", "", -1))
+	if resp.PayInfo.Method.String == linePayMethodCreditCard {
+		m.CardInfo.LastFour = null.StringFrom(strings.Replace(resp.PayInfo.MaskedCreditCardNumber.String, "*", "", -1))
 	}
-	m.TappayResp.BankResultMsg = resp.TappayResp.BankResultMsg
-	m.TappayResp.BankResultCode = resp.TappayResp.BankResultCode
+	m.BankResultMsg = resp.BankResultMsg
+	m.BankResultCode = resp.BankResultCode
 	m.Status = status
 }
 
