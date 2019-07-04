@@ -7,7 +7,6 @@ import (
 )
 
 type TappayResp struct {
-	PayInfo                  `json:"pay_info"`
 	Acquirer                 string      `gorm:"type:varchar(50);not null" json:"acquirer"`
 	AuthCode                 string      `gorm:"type:varchar(6);not null" json:"auth_code"`
 	BankResultCode           null.String `gorm:"type:varchar(50)" json:"bank_result_code"`
@@ -55,6 +54,7 @@ type PayByPrimeDonation struct {
 	CardInfo
 	Cardholder
 	TappayResp
+	PayInfo     `json:"pay_info"`
 	Amount      uint       `gorm:"not null" json:"amount"`
 	CreatedAt   time.Time  `json:"created_at"`
 	Currency    string     `gorm:"type:varchar(3);default:'TWD';not null" json:"currency"`

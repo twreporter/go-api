@@ -70,16 +70,16 @@ type (
 	}
 
 	tapPayRequestBody struct {
-		RecTradeID        string         `json:"rec_trade_id"`
-		BankTransactionID string         `json:"bank_transaction_id"`
-		OrderNumber       string         `json:"order_number"`
-		Amount            uint           `json:"amount"`
-		Status            int            `json:"status"`
-		TransactionTime   int64          `json:"transaction_time_millis"`
-		PayInfo           models.PayInfo `json:"pay_info"`
-		Acquirer          string         `json:"acquirer"`
-		BankResultCode    string         `json:"bank_result_code"`
-		BankResultMsg     string         `json:"bank_result_msg"`
+		models.PayInfo
+		RecTradeID        string `json:"rec_trade_id"`
+		BankTransactionID string `json:"bank_transaction_id"`
+		OrderNumber       string `json:"order_number"`
+		Amount            uint   `json:"amount"`
+		Status            int    `json:"status"`
+		TransactionTime   int64  `json:"transaction_time_millis"`
+		Acquirer          string `json:"acquirer"`
+		BankResultCode    string `json:"bank_result_code"`
+		BankResultMsg     string `json:"bank_result_msg"`
 	}
 )
 
@@ -978,7 +978,7 @@ func TestLinePayNotify(t *testing.T) {
 				PayInfo: models.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
-					Point: null.IntFrom(0),
+					Point:                  null.IntFrom(0),
 				},
 			},
 			resultCode: http.StatusUnprocessableEntity,
@@ -991,7 +991,7 @@ func TestLinePayNotify(t *testing.T) {
 				PayInfo: models.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
-					Point: null.IntFrom(0),
+					Point:                  null.IntFrom(0),
 				},
 			},
 			resultCode: http.StatusUnprocessableEntity,
@@ -1004,7 +1004,7 @@ func TestLinePayNotify(t *testing.T) {
 				PayInfo: models.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
-					Point: null.IntFrom(0),
+					Point:                  null.IntFrom(0),
 				},
 			},
 			resultCode: http.StatusUnprocessableEntity,
@@ -1022,7 +1022,7 @@ func TestLinePayNotify(t *testing.T) {
 				PayInfo: models.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
-					Point: null.IntFrom(0),
+					Point:                  null.IntFrom(0),
 				},
 				Acquirer:       "Test Acquirer",
 				BankResultMsg:  newBankResultMsg,
@@ -1051,7 +1051,7 @@ func TestLinePayNotify(t *testing.T) {
 				PayInfo: models.PayInfo{
 					Method:                 null.StringFrom("BALANCE"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
-					Point: null.IntFrom(0),
+					Point:                  null.IntFrom(0),
 				},
 				Acquirer:       "Test Acquirer",
 				BankResultMsg:  newBankResultMsg,
@@ -1090,9 +1090,9 @@ func TestLinePayNotify(t *testing.T) {
 			if c.resultCode == http.StatusNoContent {
 				m := models.PayByPrimeDonation{}
 				db.Where("order_number = ?", c.preRecord.OrderNumber).Find(&m)
-				assert.Equal(t, c.resultCompare.Method, m.TappayResp.PayInfo.Method.String)
+				assert.Equal(t, c.resultCompare.Method, m.PayInfo.Method.String)
 				assert.Equal(t, c.resultCompare.LastFour, m.CardInfo.LastFour.String)
-				assert.Equal(t, c.resultCompare.Point, m.TappayResp.PayInfo.Point.Int64)
+				assert.Equal(t, c.resultCompare.Point, m.PayInfo.Point.Int64)
 				assert.Equal(t, c.resultCompare.Status, m.Status)
 				assert.Equal(t, c.resultCompare.BankResultMsg, m.BankResultMsg.String)
 				assert.Equal(t, c.resultCompare.BankResultCode, m.BankResultCode.String)
