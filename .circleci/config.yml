@@ -2,10 +2,51 @@
 #
 version: 2
 jobs:
-  build:
+  prepare:
     docker:
-      # specify the version you desire here
-      - image: thereporter/circleci-go-api:1.10-alpine3.8
+      - image: circleci/golang:1.12.6
+        environment:
+          GO111MODULE: "on"
+
+    working_directory: /go/src/twreporter.org/go-api
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - go-mod-{{ checksum "go.sum" }}
+      
+      - run:
+          name: Download module dependencies
+          command: |
+            go mod download
+
+      - run:
+          name: Verify module checksum
+          command: |
+            go mod verify
+
+      - save_cache:
+          paths:
+            - /go/pkg/mod
+          key: go-mod-{{ checksum "go.sum" }}
+      
+      - run:
+          name: Save pkg version to a file
+          command: go run ./.circleci/scripts/read-changelog.go > .pkg-version
+      
+      - persist_to_workspace:
+          root: /go/src/twreporter.org/go-api
+          paths:
+            - ./*
+
+  test:
+    docker:
+      - image: circleci/golang:1.12.6
+        environment:  
+          GO111MODULE: "on"
       - image: circleci/mongo:3.2
       - image: circleci/mysql:5.7
         environment:
@@ -18,39 +59,36 @@ jobs:
     working_directory: /go/src/twreporter.org/go-api
 
     steps:
-      - checkout
+      - attach_workspace:
+          at: .
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
-          - dependencies-{{ checksum "glide.lock" }}
-          # fallback to using the latest cache if no exact match is found
-          - dependencies-
+          - go-mod-{{ checksum "go.sum" }}
 
-      - run: glide install
+      - run:
+          name: Install dockerize for health check mysql status
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+          command: |
+            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-      - save_cache:
-          paths:
-            - vendor
-          key: dependencies-{{ checksum "glide.lock" }}
+      - run:
+          name: Waiting for mysql to be ready
+          command: |
+            dockerize -wait tcp://${MYSQL_HOST}:3306 -timeout 30s
 
       # run tests!
-      - run: go test $(glide novendor)
-      - run:
-          name: Save pkg version to a file
-          command: go run ./.circleci/scripts/read-changelog.go > .pkg-version
-
-      - run:
-          name: save SHA to a file
-          command: echo $CIRCLE_SHA1 > .circle-sha
-      - persist_to_workspace:
-          root: /go/src/twreporter.org/go-api
-          paths:
-            - ./*
-
-  deploy:
+      - run: go test ./...
+            
+  build_and_deploy:
     docker:
       - image: google/cloud-sdk
+    
+    working_directory: /go/src/twreporter.org/go-api
+    
     steps:
       - run:
           name: Connect to container cluster
@@ -74,7 +112,8 @@ jobs:
 
             echo "CLUSTER_NAME: ${CLUSTER_NAME}"
             gcloud --quiet container clusters get-credentials $CLUSTER_NAME
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       
       - attach_workspace:
           at: /go/src/twreporter.org/go-api
@@ -110,10 +149,13 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build
-      - deploy:
+      - prepare
+      - test:
           requires:
-            - build
+            - prepare
+      - build_and_deploy:
+          requires:
+            - test
           filters:
             branches:
               only:

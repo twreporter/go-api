@@ -1,8 +1,9 @@
 # Directories
-vendor
 .idea
 .vscode
 build
+vendor
+tmp
 
 # Files
 .DS_Store
@@ -11,7 +12,7 @@ gin-bin*
 configs/config.json
 cloud_sql_proxy
 dump.rdb
-
+runner.conf
 
 # Builds
 dev-env-setup/mysql/initdb.sql
