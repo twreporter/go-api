@@ -59,16 +59,16 @@ func TestBookmarkAuthorization(t *testing.T) {
 	/** START - Fail to pass Authorization **/
 	// without Authorization header
 	resp = serveHTTP("GET", path, "", "", "")
-	assert.Equal(t, resp.Code, 401)
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 
 	// wrong jwt in Authorization header
 	resp = serveHTTP("GET", path, "", "", "")
-	assert.Equal(t, resp.Code, 401)
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	/** END - Fail to pass Authorization **/
 
 	// Pass Authroization
 	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", generateJWT(user)))
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
 func TestCreateABookmarkOfAUser(t *testing.T) {
@@ -84,17 +84,17 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 
 	/** START - Add bookmark successfully **/
 	resp = serveHTTP("POST", path, bookmarkJSONStr, "application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 201)
+	assert.Equal(t, http.StatusCreated, resp.Code)
 
 	// add another bookmark
 	resp = serveHTTP("POST", path, bookmarkJSONStr2, "application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 201)
+	assert.Equal(t, http.StatusCreated, resp.Code)
 	/** END - Add bookmark successfully **/
 
 	/** START - Fail to add bookmark **/
 	// malformed JSON
 	resp = serveHTTP("POST", path, badBookmarkJSON, "application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 400)
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 	// user is not existed
 	var fakeID uint = 100
@@ -102,7 +102,7 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 	log.Info("jwt:", jwt)
 	resp = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), bookmarkJSONStr,
 		"application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 404)
+	assert.Equal(t, http.StatusNotFound, resp.Code)
 	/** END - Fail to add bookmark **/
 }
 
@@ -119,22 +119,24 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 	/** START - List bookmarks successfully **/
 	// List empty array of bookmarks of the user
 	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	// List non-empty array of bookmarks of the user
 	// add a bookmark into the user
 	_ = serveHTTP("POST", path, bookmarkJSONStr, "application/json", fmt.Sprintf("Bearer %v", jwt))
 	// get bookmarks of the user
 	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	body, _ := ioutil.ReadAll(resp.Result().Body)
 
 	res := Response{}
 	json.Unmarshal(body, &res)
 
-	assert.Equal(t, res.Meta.Limit, 10)
-	assert.Equal(t, res.Meta.Offset, 0)
+	const defaultLimit = 10
+	const defaultOffset = 0
+	assert.Equal(t, defaultLimit, res.Meta.Limit)
+	assert.Equal(t, defaultOffset, res.Meta.Offset)
 	assert.NotZero(t, res.Meta.Total)
 	/** END - List bookmarks successfully **/
 
@@ -144,7 +146,7 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 	jwt, _ = utils.RetrieveV1Token(fakeID, "test@twreporter.org")
 
 	resp = serveHTTP("GET", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 404)
+	assert.Equal(t, http.StatusNotFound, resp.Code)
 	/** END - Fail to list bookmark **/
 }
 
@@ -159,14 +161,14 @@ func TestGetABookmarkOfAUser(t *testing.T) {
 
 	/** START - Fail to get a bookmark of a user **/
 	resp := serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 404)
+	assert.Equal(t, http.StatusNotFound, resp.Code)
 
 	// add a bookmark onto a user
 	_ = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", user.ID), bookmarkJSONStr2, "application/json", fmt.Sprintf("Bearer %v", jwt))
 
 	// still fail to get the bookmark of the user because of host is not provided
 	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 404)
+	assert.Equal(t, http.StatusNotFound, resp.Code)
 
 	/** END - Fail to get a bookmark of a user **/
 
@@ -175,14 +177,14 @@ func TestGetABookmarkOfAUser(t *testing.T) {
 	path = path + "?host=www.twreporter.org"
 	// get the bookmark of the user
 	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	body, _ := ioutil.ReadAll(resp.Result().Body)
 
 	res := Response{}
 	json.Unmarshal(body, &res)
 
-	assert.Equal(t, res.Bookmark.Slug, "mock-article-2")
+	assert.Equal(t, "mock-article-2", res.Bookmark.Slug)
 	/** END - get a bookmark of user **/
 }
 

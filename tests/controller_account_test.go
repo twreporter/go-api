@@ -24,21 +24,21 @@ func TestSignIn(t *testing.T) {
 	// JSON POST body
 	resp = serveHTTP("POST", "/v1/signin", fmt.Sprintf("{\"email\":\"%s\"}", Globs.Defaults.Account),
 		"application/json", "")
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	// form POST body
 	resp = serveHTTP("POST", "/v1/signin", fmt.Sprintf("email=%s", Globs.Defaults.Account),
 		"application/x-www-form-urlencoded", "")
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	// neither JSON nor form POST body
 	resp = serveHTTP("POST", "/v1/signin", "", "application/text", "")
-	assert.Equal(t, resp.Code, 400)
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 	// sign in with different email
 	resp = serveHTTP("POST", "/v1/signin", fmt.Sprintf("{\"email\":\"%s\"}", "contact@twreporter.org"),
 		"application/json", "")
-	assert.Equal(t, resp.Code, 201)
+	assert.Equal(t, http.StatusCreated, resp.Code)
 
 	// END - test signup endpoint //
 }
@@ -53,11 +53,11 @@ func TestActivate(t *testing.T) {
 	activateToken := user.ActivateToken
 	resp = serveHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", Globs.Defaults.Account, activateToken), "", "", "")
 	fmt.Print(resp.Body)
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	// test activate fails
 	resp = serveHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", Globs.Defaults.Account, ""), "", "", "")
-	assert.Equal(t, resp.Code, 401)
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	// END - test activate endpoint v1//
 
 	// Renew token for v2 endpoint validation
@@ -80,7 +80,7 @@ func TestActivate(t *testing.T) {
 	fmt.Print(resp.Body)
 
 	// validate status code
-	assert.Equal(t, resp.Code, http.StatusTemporaryRedirect)
+	assert.Equal(t, http.StatusTemporaryRedirect, resp.Code)
 	cookies := resp.Result().Cookies()
 
 	cookieMap := make(map[string]http.Cookie)
@@ -92,7 +92,7 @@ func TestActivate(t *testing.T) {
 
 	// test activate fails
 	resp = serveHTTP("GET", fmt.Sprintf("/v2/auth/activate?email=%v&token=%v", Globs.Defaults.Account, ""), "", "", "")
-	assert.Equal(t, resp.Code, http.StatusTemporaryRedirect)
+	assert.Equal(t, http.StatusTemporaryRedirect, resp.Code)
 	// END - test activate endpoint v2//
 
 }
