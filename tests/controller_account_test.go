@@ -98,33 +98,64 @@ func TestActivate(t *testing.T) {
 }
 
 func TestRenewJWT(t *testing.T) {
-	user := getReporterAccount(Globs.Defaults.Account)
-	jwt, _ := utils.RetrieveV1Token(user.ID, user.Email)
+	reporterAccount := getReporterAccount(Globs.Defaults.Account)
+	jwt, _ := utils.RetrieveV1Token(reporterAccount.UserID, reporterAccount.Email)
 
-	// START - test renew jwt endpoint //
-	// renew jwt successfully
-	resp := serveHTTP("GET", fmt.Sprintf("/v1/token/%v", user.ID), "", "application/json", fmt.Sprintf("Bearer %v", jwt))
-	body, _ := ioutil.ReadAll(resp.Result().Body)
-
-	res := struct {
-		Status string `json:"status"`
-		Data   struct {
+	type (
+		tokenDesc struct {
 			Token     string `json:"token"`
 			TokenType string `json:"token_type"`
-		} `json:"data"`
-	}{}
-	json.Unmarshal(body, &res)
+		}
 
-	assert.Equal(t, resp.Code, 200)
-	assert.Equal(t, res.Status, "success")
-	assert.Equal(t, res.Data.TokenType, "Bearer")
-	assert.NotEmpty(t, res.Data.Token)
+		respBody struct {
+			Status string    `json:"status"`
+			Data   tokenDesc `json:"data"`
+		}
+	)
 
-	// fail to renew jwt
-	jwt = "testjwt"
-	resp = serveHTTP("GET", fmt.Sprintf("/v1/token/%v", user.ID), "", "application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 401)
-	// End - test renew jwt endpoint //
+	const invalidJwt = "INVALIDJWT"
+	cases := []struct {
+		name     string
+		renewJwt string
+		resp     *respBody
+		respCode int
+	}{
+		{
+			name:     "StatusUnauthorized,Unable to renew invalid jwt",
+			renewJwt: invalidJwt,
+			resp:     nil,
+			respCode: http.StatusUnauthorized,
+		},
+		{
+			name:     "StatusOk,Succeed to renew jwt",
+			renewJwt: jwt,
+			resp: &respBody{
+				Status: "success",
+				Data: tokenDesc{
+					TokenType: "Bearer",
+				},
+			},
+			respCode: http.StatusOK,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resp := serveHTTP("GET", fmt.Sprintf("/v1/token/%v", reporterAccount.UserID), "", "application/json", fmt.Sprintf("Bearer %v", tc.renewJwt))
+			assert.Equal(t, tc.respCode, resp.Code)
+
+			// Validate response body
+			if tc.resp != nil {
+				bodyJson, _ := ioutil.ReadAll(resp.Result().Body)
+				body := respBody{}
+				json.Unmarshal(bodyJson, &body)
+
+				assert.Equal(t, tc.resp.Status, body.Status)
+				assert.Equal(t, tc.resp.Data.TokenType, body.Data.TokenType)
+				assert.NotEmpty(t, body.Data.Token)
+			}
+		})
+	}
 }
 
 /*
