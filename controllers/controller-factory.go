@@ -2,10 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"go/build"
 	"net/http"
 	"os"
-	"path"
 
 	// "gopkg.in/mgo.v2/bson"
 	"github.com/jinzhu/gorm"
@@ -14,6 +12,7 @@ import (
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/services"
 	"twreporter.org/go-api/storage"
+	"twreporter.org/go-api/utils"
 	//log "github.com/Sirupsen/logrus"
 )
 
@@ -64,19 +63,17 @@ func (cf *ControllerFactory) GetNewsController() *NewsController {
 
 // GetMailController returns *MailController struct
 func (cf *ControllerFactory) GetMailController() *MailController {
-	var gopath string
-	var filepath string
 	var contrl *MailController
 
 	contrl = NewMailController(cf.mailService, nil)
 
-	gopath = os.Getenv("GOPATH")
-	if gopath == "" {
-		gopath = build.Default.GOPATH
-	}
-	filepath = path.Join(gopath, "src/twreporter.org/go-api/template")
+	templateDir := os.Getenv("GOAPI_HTML_TEMPLATE_DIR")
 
-	contrl.LoadTemplateFiles(fmt.Sprintf("%s/signin.tmpl", filepath), fmt.Sprintf("%s/success-donation.tmpl", filepath))
+	if templateDir == "" {
+		templateDir = utils.GetProjectRoot() + "/template"
+	}
+
+	contrl.LoadTemplateFiles(fmt.Sprintf("%s/signin.tmpl", templateDir), fmt.Sprintf("%s/success-donation.tmpl", templateDir))
 
 	return contrl
 }
