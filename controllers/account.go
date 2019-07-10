@@ -232,7 +232,6 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	}
 
 	const errorWhere = "MembershipController.SignInV2"
-	const SignInMailSubject = "登入報導者"
 	var activateHost string
 	var activeToken string
 	var appErr *models.AppError

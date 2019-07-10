@@ -62,7 +62,7 @@ func (contrl *MailController) LoadTemplateFiles(filenames ...string) {
 // SendActivation retrieves email and activation link from rqeuest body,
 // and invoke MailService to send activation mail
 func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error) {
-	const subject = "登入報導者"
+	const subject = "歡迎登入報導者，體驗會員專屬功能"
 	var err error
 	var failData gin.H
 	var mailBody string
