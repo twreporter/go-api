@@ -1,4 +1,5 @@
 ## Unreleased
+## Released
 ### 5.0.1
 
 #### Donations
@@ -7,7 +8,6 @@
 #### Miscellaneous
 - Revise login email template
 
-## Released
 ### 5.0.0
 
 #### Breaking Change
