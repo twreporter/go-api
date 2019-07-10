@@ -10,7 +10,6 @@ require (
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
 	github.com/codegangsta/negroni v1.0.0 // indirect
-	github.com/denisenkom/go-mssqldb v0.0.0-20190515213511-eb9f6a1743f3 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/gin-contrib/cors v0.0.0-20170708080947-567de1916927
@@ -19,6 +18,7 @@ require (
 	github.com/gin-gonic/gin v1.3.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
+	github.com/golang-migrate/migrate/v4 v4.2.5
 	github.com/gorilla/mux v1.7.2 // indirect
 	github.com/gorilla/sessions v1.1.1 // indirect
 	github.com/jinzhu/copier v0.0.0-20180308034124-7e38e58719c3
@@ -27,12 +27,10 @@ require (
 	github.com/jinzhu/now v1.0.1 // indirect
 	github.com/json-iterator/go v1.1.5 // indirect
 	github.com/kidstuff/mongostore v0.0.0-20180412085134-db2a8b4fac1f // indirect
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.1.1 // indirect
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
 	github.com/matryer/try v0.0.0-20161228173917-9ac251b645a2 // indirect
 	github.com/mattn/go-isatty v0.0.2 // indirect
-	github.com/mattn/go-sqlite3 v1.10.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
@@ -41,8 +39,8 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/tidwall/gjson v0.0.0-20170511035225-0623bd8fbdbf
 	github.com/tidwall/match v0.0.0-20160830173930-173748da739a // indirect
-	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
-	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
+	golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734
+	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v8 v8.15.1
 	gopkg.in/guregu/null.v3 v3.4.0

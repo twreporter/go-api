@@ -24,21 +24,21 @@ func TestSignIn(t *testing.T) {
 	// JSON POST body
 	resp = serveHTTP("POST", "/v1/signin", fmt.Sprintf("{\"email\":\"%s\"}", Globs.Defaults.Account),
 		"application/json", "")
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	// form POST body
 	resp = serveHTTP("POST", "/v1/signin", fmt.Sprintf("email=%s", Globs.Defaults.Account),
 		"application/x-www-form-urlencoded", "")
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	// neither JSON nor form POST body
 	resp = serveHTTP("POST", "/v1/signin", "", "application/text", "")
-	assert.Equal(t, resp.Code, 400)
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 	// sign in with different email
 	resp = serveHTTP("POST", "/v1/signin", fmt.Sprintf("{\"email\":\"%s\"}", "contact@twreporter.org"),
 		"application/json", "")
-	assert.Equal(t, resp.Code, 201)
+	assert.Equal(t, http.StatusCreated, resp.Code)
 
 	// END - test signup endpoint //
 }
@@ -53,11 +53,11 @@ func TestActivate(t *testing.T) {
 	activateToken := user.ActivateToken
 	resp = serveHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", Globs.Defaults.Account, activateToken), "", "", "")
 	fmt.Print(resp.Body)
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 
 	// test activate fails
 	resp = serveHTTP("GET", fmt.Sprintf("/v1/activate?email=%v&token=%v", Globs.Defaults.Account, ""), "", "", "")
-	assert.Equal(t, resp.Code, 401)
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	// END - test activate endpoint v1//
 
 	// Renew token for v2 endpoint validation
@@ -80,7 +80,7 @@ func TestActivate(t *testing.T) {
 	fmt.Print(resp.Body)
 
 	// validate status code
-	assert.Equal(t, resp.Code, http.StatusTemporaryRedirect)
+	assert.Equal(t, http.StatusTemporaryRedirect, resp.Code)
 	cookies := resp.Result().Cookies()
 
 	cookieMap := make(map[string]http.Cookie)
@@ -92,39 +92,70 @@ func TestActivate(t *testing.T) {
 
 	// test activate fails
 	resp = serveHTTP("GET", fmt.Sprintf("/v2/auth/activate?email=%v&token=%v", Globs.Defaults.Account, ""), "", "", "")
-	assert.Equal(t, resp.Code, http.StatusTemporaryRedirect)
+	assert.Equal(t, http.StatusTemporaryRedirect, resp.Code)
 	// END - test activate endpoint v2//
 
 }
 
 func TestRenewJWT(t *testing.T) {
-	user := getReporterAccount(Globs.Defaults.Account)
-	jwt, _ := utils.RetrieveV1Token(user.ID, user.Email)
+	reporterAccount := getReporterAccount(Globs.Defaults.Account)
+	jwt, _ := utils.RetrieveV1Token(reporterAccount.UserID, reporterAccount.Email)
 
-	// START - test renew jwt endpoint //
-	// renew jwt successfully
-	resp := serveHTTP("GET", fmt.Sprintf("/v1/token/%v", user.ID), "", "application/json", fmt.Sprintf("Bearer %v", jwt))
-	body, _ := ioutil.ReadAll(resp.Result().Body)
-
-	res := struct {
-		Status string `json:"status"`
-		Data   struct {
+	type (
+		tokenDesc struct {
 			Token     string `json:"token"`
 			TokenType string `json:"token_type"`
-		} `json:"data"`
-	}{}
-	json.Unmarshal(body, &res)
+		}
 
-	assert.Equal(t, resp.Code, 200)
-	assert.Equal(t, res.Status, "success")
-	assert.Equal(t, res.Data.TokenType, "Bearer")
-	assert.NotEmpty(t, res.Data.Token)
+		respBody struct {
+			Status string    `json:"status"`
+			Data   tokenDesc `json:"data"`
+		}
+	)
 
-	// fail to renew jwt
-	jwt = "testjwt"
-	resp = serveHTTP("GET", fmt.Sprintf("/v1/token/%v", user.ID), "", "application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, resp.Code, 401)
-	// End - test renew jwt endpoint //
+	const invalidJwt = "INVALIDJWT"
+	cases := []struct {
+		name     string
+		renewJwt string
+		resp     *respBody
+		respCode int
+	}{
+		{
+			name:     "StatusUnauthorized,Unable to renew invalid jwt",
+			renewJwt: invalidJwt,
+			resp:     nil,
+			respCode: http.StatusUnauthorized,
+		},
+		{
+			name:     "StatusOk,Succeed to renew jwt",
+			renewJwt: jwt,
+			resp: &respBody{
+				Status: "success",
+				Data: tokenDesc{
+					TokenType: "Bearer",
+				},
+			},
+			respCode: http.StatusOK,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resp := serveHTTP("GET", fmt.Sprintf("/v1/token/%v", reporterAccount.UserID), "", "application/json", fmt.Sprintf("Bearer %v", tc.renewJwt))
+			assert.Equal(t, tc.respCode, resp.Code)
+
+			// Validate response body
+			if tc.resp != nil {
+				bodyJson, _ := ioutil.ReadAll(resp.Result().Body)
+				body := respBody{}
+				json.Unmarshal(bodyJson, &body)
+
+				assert.Equal(t, tc.resp.Status, body.Status)
+				assert.Equal(t, tc.resp.Data.TokenType, body.Data.TokenType)
+				assert.NotEmpty(t, body.Data.Token)
+			}
+		})
+	}
 }
 
 /*

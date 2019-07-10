@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -30,32 +31,32 @@ func TestGetAPost(t *testing.T) {
 	// Post Not Found //
 	resp := serveHTTP("GET", "/v1/posts/post-not-found", "",
 		"", "")
-	assert.Equal(t, resp.Code, 404)
+	assert.Equal(t, http.StatusNotFound, resp.Code)
 	// Post Not Found //
 
 	// Get a post without full url param //
 	resp = serveHTTP("GET", "/v1/posts/"+Globs.Defaults.MockPostSlug1, "",
 		"", "")
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
 	res := postResponse{}
 	json.Unmarshal(body, &res)
-	assert.Equal(t, res.Record.ID, Globs.Defaults.PostID1)
-	assert.Equal(t, len(res.Record.Relateds), 0)
-	assert.Equal(t, res.Record.Full, false)
+	assert.Equal(t, Globs.Defaults.PostID1, res.Record.ID)
+	assert.Equal(t, 0, len(res.Record.Relateds))
+	assert.Equal(t, false, res.Record.Full)
 	// Get a post without full url param //
 
 	// Get a post with full url param //
 	resp = serveHTTP("GET", "/v1/posts/"+Globs.Defaults.MockPostSlug1+"?full=true", "",
 		"", "")
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 	body, _ = ioutil.ReadAll(resp.Result().Body)
 	res = postResponse{}
 	json.Unmarshal(body, &res)
-	assert.Equal(t, res.Record.ID, Globs.Defaults.PostID1)
-	assert.Equal(t, len(res.Record.Relateds), 1)
-	assert.Equal(t, res.Record.Relateds[0].ID, Globs.Defaults.PostID2)
-	assert.Equal(t, res.Record.Full, true)
+	assert.Equal(t, Globs.Defaults.PostID1, res.Record.ID)
+	assert.Equal(t, 1, len(res.Record.Relateds))
+	assert.Equal(t, Globs.Defaults.PostID2, res.Record.Relateds[0].ID)
+	assert.Equal(t, true, res.Record.Full)
 	// Get a post with full url param //
 }
 
@@ -66,11 +67,11 @@ func TestGetPosts(t *testing.T) {
 	// Start -- Get all the posts //
 	resp = serveHTTP("GET", "/v1/posts", "",
 		"", "")
-	assert.Equal(t, resp.Code, 200)
+	assert.Equal(t, http.StatusOK, resp.Code)
 	body, _ := ioutil.ReadAll(resp.Result().Body)
 	res := postsResponse{}
 	json.Unmarshal(body, &res)
-	assert.Equal(t, len(res.Records), 2)
+	assert.Equal(t, 2, len(res.Records))
 
 	post := res.Records[0]
 	assert.Equal(t, post.ID, Globs.Defaults.PostCol2.ID)
