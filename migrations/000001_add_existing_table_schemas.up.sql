@@ -1,11 +1,6 @@
---
--- Table structure for table `bookmarks`
---
-
-DROP TABLE IF EXISTS `bookmarks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `bookmarks` (
+CREATE TABLE IF NOT EXISTS `bookmarks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -25,14 +20,9 @@ CREATE TABLE `bookmarks` (
 ) ENGINE=InnoDB AUTO_INCREMENT=119 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `users`
---
-
-DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -58,14 +48,9 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=790 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `o_auth_accounts`
---
-
-DROP TABLE IF EXISTS `o_auth_accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `o_auth_accounts` (
+CREATE TABLE IF NOT EXISTS `o_auth_accounts` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -87,14 +72,9 @@ CREATE TABLE `o_auth_accounts` (
 ) ENGINE=InnoDB AUTO_INCREMENT=758 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `services`
---
-
-DROP TABLE IF EXISTS `services`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `services` (
+CREATE TABLE IF NOT EXISTS `services` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -106,14 +86,9 @@ CREATE TABLE `services` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `registrations`
---
-
-DROP TABLE IF EXISTS `registrations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `registrations` (
+CREATE TABLE IF NOT EXISTS `registrations` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -130,14 +105,9 @@ CREATE TABLE `registrations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `reporter_accounts`
---
-
-DROP TABLE IF EXISTS `reporter_accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `reporter_accounts` (
+CREATE TABLE IF NOT EXISTS `reporter_accounts` (
   `user_id` int(10) unsigned NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -153,14 +123,9 @@ CREATE TABLE `reporter_accounts` (
 ) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `users_bookmarks`
---
-
-DROP TABLE IF EXISTS `users_bookmarks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `users_bookmarks` (
+CREATE TABLE IF NOT EXISTS `users_bookmarks` (
   `user_id` int(10) unsigned NOT NULL,
   `bookmark_id` int(10) unsigned NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -172,15 +137,9 @@ CREATE TABLE `users_bookmarks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-
---
--- Table structure for table `web_push_subs
---
-
-DROP TABLE IF EXISTS `web_push_subs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `web_push_subs` (
+CREATE TABLE IF NOT EXISTS `web_push_subs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `endpoint` varchar(500) NOT NULL,
   `crc32_endpoint` int(10) unsigned NOT NULL,
@@ -195,15 +154,9 @@ CREATE TABLE `web_push_subs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-
---
--- Table structure for table `pay_by_prime_donations`
---
-
-DROP TABLE IF EXISTS `pay_by_prime_donations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `pay_by_prime_donations` (
+CREATE TABLE IF NOT EXISTS `pay_by_prime_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -246,8 +199,6 @@ CREATE TABLE `pay_by_prime_donations` (
   `send_receipt` enum('yearly', 'monthly', 'no') DEFAULT 'yearly',
   `notes` varchar(100) DEFAULT NULL,
   `is_anonymous` tinyint(1) DEFAULT 0,
-  `linepay_method` enum('CREDIT_CARD', 'BALANCE', 'POINT') DEFAULT NULL,
-  `linepay_point` int DEFAULT NULL, 
 
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_prime_donations_status` (`status`),
@@ -257,14 +208,9 @@ CREATE TABLE `pay_by_prime_donations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `pay_by_other_method_donations`
---
-
-DROP TABLE IF EXISTS `pay_by_other_method_donations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `pay_by_other_method_donations` (
+CREATE TABLE IF NOT EXISTS `pay_by_other_method_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -291,14 +237,9 @@ CREATE TABLE `pay_by_other_method_donations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `periodic_donations`
---
-
-DROP TABLE IF EXISTS `periodic_donations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `periodic_donations` (
+CREATE TABLE IF NOT EXISTS `periodic_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -343,15 +284,9 @@ CREATE TABLE `periodic_donations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-
---
--- Table structure for table `pay_by_card_token_donations`
---
-
-DROP TABLE IF EXISTS `pay_by_card_token_donations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `pay_by_card_token_donations` (
+CREATE TABLE IF NOT EXISTS `pay_by_card_token_donations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -42,10 +42,19 @@ type Cardholder struct {
 	ZipCode     null.String `gorm:"column:cardholder_zip_code;type:varchar(10)" json:"zip_code"`
 }
 
+// https://docs.tappaysdk.com/tutorial/zh/back.html#request-body pay_info
+// masked_credit_card_number will be preprocessed and stored in the CardInfo.LastFour
+type PayInfo struct {
+	Method                 null.String `gorm:"column:linepay_method;type:ENUM('CREDIT_CARD', 'BALANCE', 'POINT')" json:"method"`
+	MaskedCreditCardNumber null.String `gorm:"-" json:"masked_credit_card_number"`
+	Point                  null.Int    `gorm:"column:linepay_point;type:int;" json:"point"`
+}
+
 type PayByPrimeDonation struct {
 	CardInfo
 	Cardholder
 	TappayResp
+	PayInfo     `json:"pay_info"`
 	Amount      uint       `gorm:"not null" json:"amount"`
 	CreatedAt   time.Time  `json:"created_at"`
 	Currency    string     `gorm:"type:varchar(3);default:'TWD';not null" json:"currency"`
