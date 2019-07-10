@@ -1,4 +1,9 @@
 ## Unreleased
+### 5.0.1
+
+#### Miscellaneous
+- Revise login email template
+
 ## Released
 ### 5.0.0
 
