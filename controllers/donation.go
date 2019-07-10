@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -28,9 +29,9 @@ import (
 )
 
 const (
-	defaultDetails    = "報導者小額捐款"
-	defaultCurrency   = "TWD"
-	defaultMerchantID = "twreporter_CTBC"
+	defaultCurrency           = "TWD"
+	defaultCreditCardMerchant = "GlobalTesting_CTBC"
+	defaultLineMerchant       = "GlobalTesting_LINEPAY" // TODO: Need to revise after the application is done
 
 	invalidPayMethodID = -1
 
@@ -58,6 +59,10 @@ const (
 	payMethodGoogle     = "google"
 	payMethodApple      = "apple"
 	payMethodSamsung    = "samsung"
+
+	linePayMethodCreditCard = "CREDIT_CARD"
+	linePayMethodBalance    = "BALANCE"
+	linePayMethodPoint      = "POINT"
 )
 
 // pay type Enum
@@ -84,12 +89,30 @@ var payMethodMap = map[string]string{
 	payMethodSamsung:    "Samsung Pay",
 }
 
+var methodToMerchant = map[string]string{
+	payMethodCreditCard: defaultCreditCardMerchant,
+	payMethodLine:       defaultLineMerchant,
+}
+
+var envToDonationHost = map[string]string{
+	"development": "test.twreporter.org",
+	"test":        "test.twreporter.org",
+	"staging":     "staging-support.twreporter.org",
+	"production":  "support.twreporter.org",
+}
+
 var cardInfoTypes = map[int64]string{
 	1: "VISA",
 	2: "MasterCard",
 	3: "JCB",
 	4: "Union Pay",
 	5: "AMEX",
+}
+
+var linePayMethods = []string{
+	linePayMethodCreditCard,
+	linePayMethodBalance,
+	linePayMethodPoint,
 }
 
 type (
@@ -102,7 +125,6 @@ type (
 		MerchantID   string            `json:"merchant_id"`
 		PayMethod    string            `json:"pay_method"`
 		Prime        string            `json:"prime" binding:"required"`
-		ResultUrl    linePayResultUrl  `json:"result_url"`
 		UserID       uint              `json:"user_id" binding:"required"`
 		MaxPaidTimes uint              `json:"max_paid_times"`
 	}
@@ -121,6 +143,7 @@ type (
 		SendReceipt string            `json:"send_receipt"`
 		ToFeedback  bool              `json:"to_feedback"`
 		IsAnonymous bool              `json:"is_anonymous"`
+		PaymentUrl  string            `json:"payment_url"`
 	}
 
 	bankTransactionTime struct {
@@ -153,11 +176,15 @@ type (
 
 	tapPayTransactionResp struct {
 		models.TappayResp
+		models.PayInfo
 		BankTransactionTime   bankTransactionTime `json:"bank_transaction_time"`
 		CardInfo              models.CardInfo     `json:"card_info"`
 		CardSecret            cardSecret          `json:"card_secret"`
 		Status                int64               `json:"status"`
 		TransactionTimeMillis int64               `json:"transaction_time_millis"`
+		PaymentUrl            string              `json:"payment_url"`
+		Amount                int                 `json:"amount"`
+		OrderNumber           string              `json:"order_number"`
 	}
 
 	tapPayMinTransactionResp struct {
@@ -198,7 +225,7 @@ func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	return *m
 }
 
-func (req clientReq) BuildTapPayReq(orderNumber string) tapPayTransactionReq {
+func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapPayTransactionReq {
 	primeReq := new(tapPayTransactionReq)
 	primeReq.Prime = req.Prime
 	primeReq.OrderNumber = orderNumber
@@ -210,16 +237,12 @@ func (req clientReq) BuildTapPayReq(orderNumber string) tapPayTransactionReq {
 		primeReq.Currency = defaultCurrency
 	}
 
-	if req.Details != "" {
-		primeReq.Details = req.Details
-	} else {
-		primeReq.Details = defaultDetails
-	}
+	primeReq.Details = details
 
 	if req.MerchantID != "" {
 		primeReq.MerchantID = req.MerchantID
 	} else {
-		primeReq.MerchantID = defaultMerchantID
+		primeReq.MerchantID = methodToMerchant[payMethod]
 	}
 
 	primeReq.Cardholder = req.Cardholder
@@ -235,11 +258,30 @@ func (req clientReq) BuildTapPayReq(orderNumber string) tapPayTransactionReq {
 
 	primeReq.PartnerKey = globals.Conf.Donation.TapPayPartnerKey
 
+	f := ""
 	if req.Frequency == monthlyFrequency || req.Frequency == yearlyFrequency {
 		primeReq.Remember = true
+		f = req.Frequency
+	} else {
+		f = "one_time"
 	}
 
-	primeReq.ResultUrl = req.ResultUrl
+	// TODO: Update to correct redirect url
+	frontendRedirectUrl := "https://" + envToDonationHost[globals.Conf.Environment] + "/contribute/" + f + "/" + orderNumber
+
+	// Tappay server will validate the hosts provided in the result_url
+	// Wrap the backendHost to be test.twreporter.org if not in the staging or production environment
+	backendHost := ""
+	if globals.Conf.Environment == "production" || globals.Conf.Environment == "staging" {
+		backendHost = globals.Conf.App.Host
+	} else {
+		backendHost = "test.twreporter.org"
+	}
+
+	primeReq.ResultUrl = linePayResultUrl{
+		FrontendRedirectUrl: frontendRedirectUrl,
+		BackendNotifyUrl:    "https://" + backendHost + "/v1/donations/prime/line-notify",
+	}
 	return *primeReq
 }
 
@@ -280,12 +322,19 @@ func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.Perio
 }
 
 func (req clientReq) BuildPrimeDraftRecord(orderNumber string, payMethod string) models.PayByPrimeDonation {
+	const defaultDetails = "一般線上單筆捐款"
 	m := new(models.PayByPrimeDonation)
 
 	m.Amount = req.Amount
 	m.Cardholder = req.Cardholder
 	m.Currency = req.Currency
-	m.Details = req.Details
+
+	if req.Details != "" {
+		m.Details = req.Details
+	} else {
+		m.Details = defaultDetails
+	}
+
 	m.MerchantID = req.MerchantID
 	m.UserID = req.UserID
 	m.PayMethod = payMethod
@@ -296,11 +345,18 @@ func (req clientReq) BuildPrimeDraftRecord(orderNumber string, payMethod string)
 }
 
 func (req clientReq) BuildTokenDraftRecord(orderNumber string) models.PayByCardTokenDonation {
+	const defaultDetails = "一般線上定期定額捐款"
 	m := new(models.PayByCardTokenDonation)
 
 	m.Amount = req.Amount
 	m.Currency = req.Currency
-	m.Details = req.Details
+
+	if req.Details != "" {
+		m.Details = req.Details
+	} else {
+		m.Details = defaultDetails
+	}
+
 	m.MerchantID = req.MerchantID
 	m.OrderNumber = orderNumber
 	m.Status = statusPaying
@@ -438,7 +494,6 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 // Handler for an authenticated user to create a periodic donation
 func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
 	const errWhere = "MembershipController.CreateAPeriodicDonationOfAUser"
-	const donationDetails = "第一筆定期定額捐款"
 
 	// Validate client request
 	var err error
@@ -472,8 +527,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	tokenDonation := reqBody.BuildTokenDraftRecord(dOrderNumber)
 
 	// Build Tappay prime request
-	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber)
-	tapPayReq.Details = fmt.Sprintf("%s;%s", donationDetails, tapPayReq.Details)
+	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, tokenDonation.Details, payMethodCreditCard)
 
 	// Create a draft periodic donation along with the first token donation record of that periodic donation
 	err = mc.Storage.CreateAPeriodicDonation(&periodicDonation, &tokenDonation)
@@ -491,13 +545,14 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail' and mark the periodic donation as 'invalid'.
-			tokenDonation.TappayApiStatus = null.IntFrom(tapPayResp.Status)
-			tokenDonation.Msg = tapPayResp.Msg
-			tokenDonation.Status = statusFail
+			td := models.PayByCardTokenDonation{}
+			tapPayResp.AppendRespOnTokenDonation(&td, statusFail)
 
-			periodicDonation.Status = statusInvalid
+			pd := models.PeriodicDonation{}
+			pd.Status = statusInvalid
+			pd.CardInfo = tapPayResp.CardInfo
 
-			mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation)
+			mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, pd, td)
 		}
 		errMsg := err.Error()
 		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
@@ -507,7 +562,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	// append tappay response onto donation model
 	tapPayResp.AppendRespOnPerodicDonation(&periodicDonation)
-	tapPayResp.AppendRespOnTokenDonation(&tokenDonation)
+	tapPayResp.AppendRespOnTokenDonation(&tokenDonation, statusPaid)
 
 	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation); nil != err {
 		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
@@ -554,7 +609,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 	// Start Tappay transaction
 	// Build Tappay pay by prime request
-	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber)
+	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, primeDonation.Details, payMethod)
 
 	if err = mc.Storage.Create(&primeDonation); nil != err {
 		switch appErr := err.(type) {
@@ -573,9 +628,8 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail'
 			d := models.PayByPrimeDonation{}
-			d.TappayApiStatus = null.IntFrom(tapPayResp.Status)
-			d.Msg = tapPayResp.Msg
-			d.Status = statusFail
+			tapPayResp.AppendRespOnPrimeDonation(&d, statusFail)
+
 			mc.Storage.UpdateByConditions(map[string]interface{}{
 				"id": primeDonation.ID,
 			}, d)
@@ -583,8 +637,14 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		return 0, gin.H{}, models.NewAppError(errorWhere, err.Error(), "", http.StatusInternalServerError)
 	}
 
-	// append tappay response onto donation model
-	tapPayResp.AppendRespOnPrimeDonation(&primeDonation)
+	// Append tappay response onto donation model
+	// Since linepay requires extra transaction process,
+	// wait for the line-notify endpoint to update the final transaction status
+	if primeDonation.PayMethod == payMethodLine {
+		tapPayResp.AppendRespOnPrimeDonation(&primeDonation, statusPaying)
+	} else {
+		tapPayResp.AppendRespOnPrimeDonation(&primeDonation, statusPaid)
+	}
 
 	if err, _ = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id": primeDonation.ID,
@@ -595,6 +655,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// build response for clients
 	resp := new(clientResp)
 	resp.BuildFromPrimeDonationModel(primeDonation)
+	resp.PaymentUrl = tapPayResp.PaymentUrl
 
 	// send success mail asynchronously
 	go mc.sendDonationThankYouMail(*resp)
@@ -720,8 +781,58 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 
 	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
+func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H, error) {
+	var callbackPayload tapPayTransactionResp
 
-func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrimeDonation) {
+	if failData, valid := bindRequestJSONBody(c, &callbackPayload); valid == false {
+		log.Errorf("Fail to bind callback payload, %v", failData)
+		return http.StatusBadRequest, gin.H{}, nil
+	}
+
+	// Validate Line Pay Method
+	if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
+		log.Errorf("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
+		return http.StatusBadRequest, gin.H{}, nil
+	}
+
+	if linePayMethodCreditCard == callbackPayload.PayInfo.Method.String {
+		// Validate Line Pay Masked Credit Card Number format
+		// sample: ************1234
+		re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
+
+		if re.MatchString(callbackPayload.PayInfo.MaskedCreditCardNumber.String) == false {
+			log.Errorf("Invalid line pay credit number format: %s", callbackPayload.PayInfo.MaskedCreditCardNumber.String)
+			return http.StatusBadRequest, gin.H{}, nil
+		}
+	}
+
+	updateData := models.PayByPrimeDonation{}
+	if tapPayRespStatusSuccess == callbackPayload.Status {
+		callbackPayload.AppendLinePayOnPrimeDonation(&updateData, statusPaid)
+	} else {
+		callbackPayload.AppendLinePayOnPrimeDonation(&updateData, statusFail)
+	}
+	conditions := map[string]interface{}{
+		"order_number":        callbackPayload.OrderNumber,
+		"rec_trade_id":        callbackPayload.TappayResp.RecTradeID,
+		"bank_transaction_id": callbackPayload.TappayResp.BankTransactionID,
+		"amount":              callbackPayload.Amount,
+	}
+	err, rowsAffected := mc.Storage.UpdateByConditions(conditions, updateData)
+
+	switch {
+	case err != nil:
+		log.Errorf("Unexpected error: %v", err)
+		return http.StatusInternalServerError, gin.H{}, err
+	case rowsAffected == 0:
+		log.Errorf("No corresponding record to patch, condition: %v", conditions)
+		return http.StatusUnprocessableEntity, gin.H{}, err
+	}
+
+	return http.StatusNoContent, gin.H{}, nil
+}
+
+func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
 	m.CardInfo = resp.CardInfo
 	m.TappayResp = resp.TappayResp
 	m.TappayApiStatus = null.IntFrom(resp.Status)
@@ -741,7 +852,7 @@ func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrime
 		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
-	m.Status = statusPaid
+	m.Status = status
 }
 
 func (resp tapPayTransactionResp) AppendRespOnPerodicDonation(m *models.PeriodicDonation) {
@@ -758,7 +869,7 @@ func (resp tapPayTransactionResp) AppendRespOnPerodicDonation(m *models.Periodic
 	m.Status = statusPaid
 }
 
-func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardTokenDonation) {
+func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardTokenDonation, status string) {
 	m.TappayResp = resp.TappayResp
 	m.TappayApiStatus = null.IntFrom(resp.Status)
 
@@ -777,7 +888,18 @@ func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardT
 		m.BankTransactionEndTime = null.TimeFrom(etm)
 	}
 
-	m.Status = statusPaid
+	m.Status = status
+}
+
+func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
+	m.PayInfo = resp.PayInfo
+
+	if resp.PayInfo.Method.String == linePayMethodCreditCard {
+		m.CardInfo.LastFour = null.StringFrom(strings.Replace(resp.PayInfo.MaskedCreditCardNumber.String, "*", "", -1))
+	}
+	m.BankResultMsg = resp.BankResultMsg
+	m.BankResultCode = resp.BankResultCode
+	m.Status = status
 }
 
 func createHash(data string) []byte {
@@ -929,4 +1051,17 @@ func validatePayMethod(payMethod string) error {
 
 	errMsg := fmt.Sprintf("Unsupported pay_method. Only support payment by %s", strings.Join(payMethodCollections, ", "))
 	return errors.New(errMsg)
+}
+
+func validateLinePayMethod(method string) bool {
+	valid := false
+
+	for _, m := range linePayMethods {
+		if m == method {
+			valid = true
+			break
+		}
+	}
+
+	return valid
 }

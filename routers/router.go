@@ -108,6 +108,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 		return mc.GetADonationOfAUser(c, globals.PrimeDonationType)
 	}))
 
+	v1Group.POST("/donations/prime/line-notify", ginResponseWrapper(mc.PatchLinePayOfAUser))
 	// TODO
 	// donations derived from the periodic donation
 	// v1Group.GET("/users/:userID/donations/token/:id", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
