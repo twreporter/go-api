@@ -1,6 +1,9 @@
 ## Unreleased
 ### 5.0.1
 
+#### Donations
+- Change the default value of `send_receipt` column of `periodic_donations` and `pay_by_prime_donations` table to `no`.
+
 #### Miscellaneous
 - Revise login email template
 
