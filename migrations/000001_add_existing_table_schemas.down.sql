@@ -1,4 +1,4 @@
-/* SET FOREIGN_KEY_CHECKS=0 */;
+SET FOREIGN_KEY_CHECKS=0;
 
 DROP TABLE IF EXISTS `bookmarks`;
 DROP TABLE IF EXISTS `users`;
@@ -13,4 +13,4 @@ DROP TABLE IF EXISTS `pay_by_other_method_donations`;
 DROP TABLE IF EXISTS `periodic_donations`;
 DROP TABLE IF EXISTS `pay_by_card_token_donations`;
 
-/* SET FOREIGN_KEY_CHECKS=1 */;
+SET FOREIGN_KEY_CHECKS=1;
