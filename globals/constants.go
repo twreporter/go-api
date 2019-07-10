@@ -49,12 +49,12 @@ const (
 	InfographicSection = "infographics_section"
 
 	// index page categories
-	HumanRightsAndSociety   = "human_rights_society"
-	EnvironmentAndEducation = "environment_education"
-	PoliticsAndEconomy      = "politics_economy"
-	CultureAndArt           = "culture_art"
+	HumanRightsAndSociety   = "human_rights_and_society"
+	EnvironmentAndEducation = "environment_and_education"
+	PoliticsAndEconomy      = "politics_and_economy"
+	CultureAndArt           = "culture_and_art"
 	International           = "international"
-	LivingAndMedicalCare    = "living_medical_care"
+	LivingAndMedicalCare    = "living_and_medical_care"
 
 	// table name
 	TableUsersBookmarks            = "users_bookmarks"
