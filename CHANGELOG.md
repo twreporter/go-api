@@ -1,5 +1,8 @@
 ## Unreleased
 ## Released
+### 4.0.2
+- Update globals/constants.go: change field names of categories
+
 ### 4.0.1
 #### Bug Fix
 - Fix wrong address in the success email
