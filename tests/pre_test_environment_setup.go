@@ -8,9 +8,11 @@ import (
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
+	"twreporter.org/go-api/utils"
 )
 
 const (
@@ -26,14 +28,36 @@ const (
 	mgoThemeCol      = "themes"
 )
 
-func runGormMigration(gormDB *gorm.DB) {
-	values := []interface{}{&models.User{}, &models.OAuthAccount{}, &models.ReporterAccount{}, &models.Bookmark{}, &models.Registration{}, &models.Service{}, &models.UsersBookmarks{}, &models.WebPushSubscription{}, &models.PeriodicDonation{}, &models.PayByPrimeDonation{}, &models.PayByCardTokenDonation{}}
-	for _, value := range values {
-		gormDB.DropTable(value)
+func runMySQLMigration(gormDB *gorm.DB) {
+	// Make sure there is no existing schemas
+	dropStmt := []byte(`
+		SET FOREIGN_KEY_CHECKS = 0;
+		SET GROUP_CONCAT_MAX_LEN=32768;
+		SET @tables = NULL;
+		SELECT GROUP_CONCAT(table_schema, '.', table_name) INTO @tables
+		FROM information_schema.tables
+		WHERE table_schema = (SELECT DATABASE());
+		SELECT IFNULL(@tables,"dummy") INTO @tables;
+
+		SET @tables = CONCAT("DROP TABLE IF EXISTS ", @tables);
+		PREPARE stmt FROM @tables;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+		SET FOREIGN_KEY_CHECKS = 1;
+	`)
+	gormDB.Exec(string(dropStmt))
+
+	m, err := utils.GetMigrateInstance(gormDB.DB())
+
+	if nil != err {
+		panic("unable to get migrate instance: " + err.Error())
 	}
-	if err := gormDB.Set("gorm:table_options", "ENGINE=InnoDB default CHARSET=utf8mb4").AutoMigrate(values...).Error; err != nil {
-		panic(fmt.Sprintf("No error should happen when create table, but got %+v", err))
+
+	// Upgrade to the latest migrations
+	if err = m.Up(); err != nil {
+		panic("unable to migrate mysql: " + err.Error())
 	}
+
 }
 
 func runMgoMigration(mgoDB *mgo.Session) {
@@ -101,7 +125,7 @@ func openGormConnection() (db *gorm.DB, err error) {
 	} else {
 		dbhost = "tcp(127.0.0.1:3306)"
 	}
-	db, err = gorm.Open("mysql", fmt.Sprintf("gorm:gorm@%v/gorm?charset=utf8mb4,utf8&parseTime=True", dbhost))
+	db, err = gorm.Open("mysql", fmt.Sprintf("gorm:gorm@%v/gorm?charset=utf8mb4,utf8&parseTime=True&multiStatements=true", dbhost))
 
 	if os.Getenv("DEBUG") == "true" {
 		db.LogMode(true)
@@ -143,7 +167,7 @@ func setUpDBEnvironment() (*gorm.DB, *mgo.Session) {
 	}
 
 	// set up tables in gorm DB
-	runGormMigration(gormDB)
+	runMySQLMigration(gormDB)
 
 	// set up default records in gorm DB
 	setGormDefaultRecords(gormDB)

@@ -1,10 +1,15 @@
 package utils
 
 import (
+	"database/sql"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/matryer/try.v1"
 	"gopkg.in/mgo.v2"
@@ -68,4 +73,16 @@ func InitMongoDB() (*mgo.Session, error) {
 	session.SetMode(mgo.Eventual, true)
 
 	return session, nil
+}
+
+// Get the migrate instance for operating migration
+func GetMigrateInstance(dbInstance *sql.DB) (*migrate.Migrate, error) {
+	const migrateMysqlDriver = "mysql"
+	const migrateSourceDriver = "file"
+	var migrateSourceDir string = filepath.Join(GetProjectRoot(), "migrations")
+
+	driver, _ := mysql.WithInstance(dbInstance, &mysql.Config{})
+
+	sourceUrl := fmt.Sprintf("%s://%s", migrateSourceDriver, migrateSourceDir)
+	return migrate.NewWithDatabaseInstance(sourceUrl, migrateMysqlDriver, driver)
 }
