@@ -1,6 +1,34 @@
 ## Unreleased
 ## Released
-### 4.0.2
+### 5.0.0
+
+#### Breaking Change
+- Dependency management migration: `glide` -> `go module`
+- Go version upgrade: 1.10 -> 1.12.6
+
+#### New Features
+- Line pay support
+
+#### CircleCI refactoring
+- Update dockerfile
+- Update circleci script
+- Add mysql health check in circleci script
+
+#### Code refactoring
+- Refactor the auth setup: this patch extracts the auth tokens creation( authorization header,
+cookie) into helper function.
+
+- Refactor donation patch error: this patch refactor the donation patch errors into table-driven tests.
+
+- Refactor donation get error: this patch refactors the donation get error into table-driven tests.
+
+- Improve error records: this patch improves the error record fields by recordind extra
+`rec_trade_id`, `bank_result_code` and `bank_result_msg`.
+
+#### Bug fix
+- Fix wrong address in the success email
+
+#### Miscellaneous
 - Update globals/constants.go: change field names of categories
 
 ### 4.0.1
