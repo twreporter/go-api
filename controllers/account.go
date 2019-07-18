@@ -430,6 +430,11 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 		secure = true
 	}
 
+	parameters := u.Query()
+	parameters.Add("login_time", fmt.Sprintf("%d", time.Now().Unix()))
+	u.RawQuery = parameters.Encode()
+	destination = u.String()
+
 	c.SetCookie("id_token", idToken, idTokenExpiration, defaultPath, defaultDomain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
