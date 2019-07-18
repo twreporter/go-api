@@ -1,5 +1,10 @@
 ## Unreleased
 ## Released
+### 5.0.2
+
+#### Login
+- Append login_time query param on login redirect destionation url
+
 ### 5.0.1
 
 #### Donations
