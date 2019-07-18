@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
@@ -310,6 +311,7 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 
 	parameters := u.Query()
 	parameters.Add("login", oauthType)
+	parameters.Add("login_time", fmt.Sprintf("%d", time.Now().Unix()))
 
 	u.RawQuery = parameters.Encode()
 	destination = u.String()
