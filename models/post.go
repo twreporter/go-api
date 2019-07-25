@@ -58,4 +58,5 @@ type Post struct {
 	PublishedDate              time.Time       `bson:"publishedDate" json:"published_date"`
 	UpdatedAt                  time.Time       `bson:"updatedAt" json:"updated_at"`
 	Full                       bool            `bson:"-" json:"full"`
+	IsExternal                 bool            `bson:"is_external" json:"is_external"`
 }
