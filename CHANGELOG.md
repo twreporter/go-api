@@ -1,5 +1,11 @@
 ## Unreleased
 ## Released
+
+### 5.0.3
+
+#### Models
+- models/post.go: add `is_external` field in `Post` struct
+
 ### 5.0.2
 
 #### Login
