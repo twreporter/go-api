@@ -1,4 +1,10 @@
 ## Unreleased
+
+### 5.0.4
+
+#### Improvement
+- Fix missing transaction time error when the transaction fails
+
 ## Released
 
 ### 5.0.3
