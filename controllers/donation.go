@@ -837,8 +837,10 @@ func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrime
 	m.TappayResp = resp.TappayResp
 	m.TappayApiStatus = null.IntFrom(resp.Status)
 
-	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
-	m.TransactionTime = null.TimeFrom(ttm)
+	if resp.TransactionTimeMillis > 0 {
+		ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
+		m.TransactionTime = null.TimeFrom(ttm)
+	}
 
 	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
 	if nil == err {
@@ -873,8 +875,10 @@ func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardT
 	m.TappayResp = resp.TappayResp
 	m.TappayApiStatus = null.IntFrom(resp.Status)
 
-	ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
-	m.TransactionTime = null.TimeFrom(ttm)
+	if resp.TransactionTimeMillis > 0 {
+		ttm := time.Unix(resp.TransactionTimeMillis/secToMsec, (resp.TransactionTimeMillis%secToMsec)*msecToNanosec)
+		m.TransactionTime = null.TimeFrom(ttm)
+	}
 
 	t, err := strconv.ParseInt(resp.BankTransactionTime.StartTimeMillis, 10, strconv.IntSize)
 	if nil == err {

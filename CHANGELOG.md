@@ -1,6 +1,11 @@
 ## Unreleased
 ## Released
 
+### 5.0.4
+
+#### Improvement
+- Fix missing transaction time error when the transaction fails
+
 ### 5.0.3
 
 #### Models
