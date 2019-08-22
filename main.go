@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"twreporter.org/go-api/configs"
@@ -20,6 +21,8 @@ func main() {
 	var err error
 	var cf *controllers.ControllerFactory
 
+	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.JSONFormatter{})
 	globals.Conf, err = configs.LoadConf("")
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))

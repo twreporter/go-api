@@ -1,7 +1,9 @@
 package routers
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-contrib/cors"
@@ -36,8 +38,54 @@ func ginResponseWrapper(fn wrappedFn) func(c *gin.Context) {
 
 // SetupRouter ...
 func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
-	engine := gin.Default()
+	engine := gin.New()
 
+	engine.Use(gin.LoggerWithConfig(
+		gin.LoggerConfig{
+			Output: os.Stdout,
+			Formatter: func(param gin.LogFormatterParams) string {
+				type (
+					httpLog struct {
+						RequestMethod string `json:"requestMethod"`
+						RequestUrl    string `json:"requestUrl"`
+						Status        int    `json:"status"`
+						UserAgent     string `json:"userAgent"`
+						RemoteIp      string `json:"remoteIp"`
+						Latency       string `json:"latency"`
+						Protocol      string `json:"protocol"`
+					}
+
+					stackdriverLog struct {
+						HttpRequest httpLog `json:"httpRequest"`
+						Severity    string  `json:"severity"`
+						Timestamp   string  `json:"timestamp"`
+					}
+				)
+
+				s := stackdriverLog{
+					HttpRequest: httpLog{
+						RequestMethod: param.Method,
+						RequestUrl:    param.Request.URL.String(),
+						Status:        param.StatusCode,
+						UserAgent:     param.Request.UserAgent(),
+						RemoteIp:      param.ClientIP,
+						Latency:       param.Latency.String(),
+						Protocol:      param.Request.Proto,
+					},
+					Severity:  "DEBUG",
+					Timestamp: param.TimeStamp.String(),
+				}
+
+				sjson, err := json.Marshal(s)
+
+				if err != nil {
+					log.Error(err)
+				}
+
+				return string(sjson)
+			},
+		}))
+	engine.Use(gin.Recovery())
 	config := cors.DefaultConfig()
 
 	var allowOrigins = globals.Conf.Cors.AllowOrigins
