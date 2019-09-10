@@ -1101,6 +1101,158 @@ func TestLinePayNotify(t *testing.T) {
 	}
 }
 
+func TestGetVerificationOfATransaction(t *testing.T) {
+	user := createUser("testDonor@twreporter.org")
+	maliciousUser := createUser("testMaliciousDonor@twreporter.org")
+
+	authorization, cookie := helperSetupAuth(user)
+	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
+
+	record := models.PayByPrimeDonation{
+		Amount: testAmount,
+		Cardholder: models.Cardholder{
+			Email: user.Email.String,
+		},
+		Currency:    testCurrency,
+		UserID:      user.ID,
+		OrderNumber: "ValidOrderNumber1",
+		PayMethod:   linePayMethod,
+		Status:      "paid",
+		TappayResp: models.TappayResp{
+			RecTradeID:        "ValidRecTradeID1",
+			BankTransactionID: "ValidBankTransactionID1",
+			TappayApiStatus:   null.IntFrom(0),
+		},
+	}
+
+	failRecord := models.PayByPrimeDonation{
+		Amount: testAmount,
+		Cardholder: models.Cardholder{
+			Email: user.Email.String,
+		},
+		Currency:    testCurrency,
+		UserID:      user.ID,
+		OrderNumber: "ValidOrderNumber1",
+		PayMethod:   linePayMethod,
+		Status:      "fail",
+		TappayResp: models.TappayResp{
+			RecTradeID:        "ValidRecTradeID1",
+			BankTransactionID: "ValidBankTransactionID1",
+			TappayApiStatus:   null.IntFrom(421), // Gateway Timeout Error
+		},
+	}
+
+	type (
+		verificationData struct {
+			RecTradeID        string `json:"rec_trade_id"`
+			BankTransactionID string `json:"bank_transaction_id"`
+			TappayApiStatus   int    `json:"tappay_api_status"`
+		}
+		verificationResp struct {
+			Status string           `json:"status"`
+			Data   verificationData `json:"data"`
+		}
+	)
+
+	db := Globs.GormDB
+	cases := []struct {
+		reqHeader
+		name          string
+		preRecord     *models.PayByPrimeDonation
+		orderNumber   string
+		resultCode    int
+		resultCompare *verificationResp
+	}{
+		{
+			name: "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
+			},
+			orderNumber: record.OrderNumber,
+			resultCode:  http.StatusUnauthorized,
+		},
+		{
+			name: "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqHeader: reqHeader{
+				Cookie:        &maliciousCookie,
+				Authorization: maliciousAuthorization,
+			},
+			preRecord:   &record,
+			orderNumber: record.OrderNumber,
+			resultCode:  http.StatusForbidden,
+		},
+		{
+			name: "StatusCode=StatusNotFound,Invalid Order Number",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			preRecord:   &record,
+			orderNumber: "InvalidOrderNumber",
+			resultCode:  http.StatusNotFound,
+		},
+		{
+			name: "StatusCode=StatusOK,Transaction Success",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			preRecord:   &record,
+			orderNumber: record.OrderNumber,
+			resultCode:  http.StatusOK,
+			resultCompare: &verificationResp{
+				Status: "success",
+				Data: verificationData{
+					RecTradeID:        record.RecTradeID,
+					BankTransactionID: record.BankTransactionID,
+					TappayApiStatus:   int(record.TappayApiStatus.Int64),
+				},
+			},
+		},
+		{
+			name: "StatusCode=StatusOK,Transaction fail:gateway timeout ",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			preRecord:   &failRecord,
+			orderNumber: failRecord.OrderNumber,
+			resultCode:  http.StatusOK,
+			resultCompare: &verificationResp{
+				Status: "success",
+				Data: verificationData{
+					RecTradeID:        failRecord.RecTradeID,
+					BankTransactionID: failRecord.BankTransactionID,
+					TappayApiStatus:   int(failRecord.TappayApiStatus.Int64),
+				},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if c.preRecord != nil {
+				db.Model(c.preRecord).Create(c.preRecord)
+
+				defer func() {
+					db.Unscoped().Delete(c.preRecord)
+				}()
+			}
+
+			path := fmt.Sprintf("/v1/donations/prime/orders/%s/transaction_verification", c.orderNumber)
+			resp := serveHTTPWithCookies("GET", path, "", "application/json", c.reqHeader.Authorization, *c.reqHeader.Cookie)
+			assert.Equal(t, c.resultCode, resp.Code)
+
+			if c.resultCompare != nil {
+				expect, _ := json.Marshal(c.resultCompare)
+				respBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+				assert.JSONEq(t, string(expect), string(respBodyInBytes))
+			}
+		})
+	}
+
+}
+
 /* GetDonationsOfAUser is not implemented yet
 func TestGetDonations(t *testing.T) {
 	var resBody responseBodyForList
