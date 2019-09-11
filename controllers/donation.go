@@ -781,6 +781,42 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 
 	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
+
+func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (int, gin.H, error) {
+	var d models.PayByPrimeDonation
+
+	orderNumber := c.Param("order")
+	err := mc.Storage.GetByConditions(map[string]interface{}{
+		"order_number": orderNumber,
+	}, &d)
+	_userID := uint(d.UserID)
+
+	if err != nil {
+		appErr, _ := err.(*models.AppError)
+		if appErr.StatusCode == http.StatusNotFound {
+			return appErr.StatusCode, gin.H{"status": "fail", "data": gin.H{
+				"req.URL": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
+			}}, nil
+		}
+		return 0, gin.H{}, err
+	}
+
+	// Compare with the auth-user-id in context extracted from access_token
+	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
+
+	if fmt.Sprint(_userID) != fmt.Sprint(authUserID) {
+		return http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+			"req.Headers.Authorization": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI),
+		}}, nil
+	}
+
+	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
+		"rec_trade_id":        d.RecTradeID,
+		"bank_transaction_id": d.BankTransactionID,
+		"tappay_api_status":   d.TappayApiStatus.Int64,
+	}}, nil
+}
+
 func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H, error) {
 	var callbackPayload tapPayTransactionResp
 
