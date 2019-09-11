@@ -266,22 +266,25 @@ func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapP
 		f = "one_time"
 	}
 
-	// TODO: Update to correct redirect url
-	frontendRedirectUrl := "https://" + envToDonationHost[globals.Conf.Environment] + "/contribute/" + f + "/" + orderNumber
+	// Only build resultUrl during linepay transaction
+	if payMethod == payMethodLine {
+		frontendRedirectUrl := "https://" + envToDonationHost[globals.Conf.Environment] + "/contribute/line/" + f + "/" + orderNumber
 
-	// Tappay server will validate the hosts provided in the result_url
-	// Wrap the backendHost to be test.twreporter.org if not in the staging or production environment
-	backendHost := ""
-	if globals.Conf.Environment == "production" || globals.Conf.Environment == "staging" {
-		backendHost = globals.Conf.App.Host
-	} else {
-		backendHost = "test.twreporter.org"
+		// Tappay server will validate the hosts provided in the result_url
+		// Wrap the backendHost to be test.twreporter.org if not in the staging or production environment
+		backendHost := ""
+		if globals.Conf.Environment == "production" || globals.Conf.Environment == "staging" {
+			backendHost = globals.Conf.App.Host
+		} else {
+			backendHost = "test.twreporter.org"
+		}
+
+		primeReq.ResultUrl = linePayResultUrl{
+			FrontendRedirectUrl: frontendRedirectUrl,
+			BackendNotifyUrl:    "https://" + backendHost + "/v1/donations/prime/line-notify",
+		}
 	}
 
-	primeReq.ResultUrl = linePayResultUrl{
-		FrontendRedirectUrl: frontendRedirectUrl,
-		BackendNotifyUrl:    "https://" + backendHost + "/v1/donations/prime/line-notify",
-	}
 	return *primeReq
 }
 
