@@ -831,10 +831,12 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		return http.StatusBadRequest, gin.H{}, nil
 	}
 
-	// Validate Line Pay Method
-	if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
-		log.Errorf("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
-		return http.StatusBadRequest, gin.H{}, nil
+	// Validate Line Pay Method if PayInfo is set
+	if callbackPayload.PayInfo.Method.IsZero() == false {
+		if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
+			log.Errorf("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
+			return http.StatusBadRequest, gin.H{}, nil
+		}
 	}
 
 	if linePayMethodCreditCard == callbackPayload.PayInfo.Method.String {
@@ -951,6 +953,7 @@ func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardT
 
 func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
 	m.PayInfo = resp.PayInfo
+	m.TappayApiStatus = null.IntFrom(resp.Status)
 
 	if resp.PayInfo.Method.String == linePayMethodCreditCard {
 		m.CardInfo.LastFour = null.StringFrom(strings.Replace(resp.PayInfo.MaskedCreditCardNumber.String, "*", "", -1))

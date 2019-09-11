@@ -912,17 +912,25 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 }
 
 func TestLinePayNotify(t *testing.T) {
-	const testDonorEmail = "test@twreporter.org"
-	const testOrderNumber = "ValidOrderNumber"
-	const testRecTradeID = "ValidRecTradeID"
-	const testBankTransactionID = "ValidBankTransactionID"
-	const oldBankResultMsg = "Old"
-	const newBankResultMsg = "New"
-	const oldBankResultCode = "Old"
-	const newBankResultCode = "New"
-	const notifyPath = "/v1/donations/prime/line-notify"
-	const statusPaying = "paying"
-	const statusPaid = "paid"
+	const (
+		testDonorEmail        = "test@twreporter.org"
+		testOrderNumber       = "ValidOrderNumber"
+		testRecTradeID        = "ValidRecTradeID"
+		testBankTransactionID = "ValidBankTransactionID"
+		testAcquirer          = "Test Acquirer"
+
+		oldBankResultMsg  = "Old"
+		newBankResultMsg  = "New"
+		oldBankResultCode = "Old"
+		newBankResultCode = "New"
+		errBankResultMsg  = "Bank Error Msg"
+		errBankResultCode = "Bank Error Code"
+
+		notifyPath   = "/v1/donations/prime/line-notify"
+		statusPaying = "paying"
+		statusPaid   = "paid"
+		statusFail   = "fail"
+	)
 
 	startTransactionTime := time.Now()
 	endTransactionTime := startTransactionTime.Add(30 * time.Second)
@@ -945,12 +953,13 @@ func TestLinePayNotify(t *testing.T) {
 	}
 
 	type resultPatchField struct {
-		Method         string `json:"method"`
-		LastFour       string `json:"last_four"`
-		Point          int64  `json:"point"`
-		Status         string `json:"status"`
-		BankResultCode string `json:"bank_result_code"`
-		BankResultMsg  string `json:"bank_result_msg"`
+		Method          string `json:"method"`
+		LastFour        string `json:"last_four"`
+		Point           int64  `json:"point"`
+		Status          string `json:"status"`
+		BankResultCode  string `json:"bank_result_code"`
+		BankResultMsg   string `json:"bank_result_msg"`
+		TappayApiStatus int64
 	}
 
 	db := Globs.GormDB
@@ -1024,18 +1033,19 @@ func TestLinePayNotify(t *testing.T) {
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
 					Point:                  null.IntFrom(0),
 				},
-				Acquirer:       "Test Acquirer",
+				Acquirer:       testAcquirer,
 				BankResultMsg:  newBankResultMsg,
 				BankResultCode: newBankResultCode,
 			},
 			resultCode: http.StatusNoContent,
 			resultCompare: &resultPatchField{
-				Method:         "CREDIT_CARD",
-				LastFour:       "5566",
-				Point:          0,
-				Status:         statusPaid,
-				BankResultMsg:  newBankResultMsg,
-				BankResultCode: newBankResultCode,
+				Method:          "CREDIT_CARD",
+				LastFour:        "5566",
+				Point:           0,
+				Status:          statusPaid,
+				BankResultMsg:   newBankResultMsg,
+				BankResultCode:  newBankResultCode,
+				TappayApiStatus: 0,
 			},
 		},
 		{
@@ -1053,17 +1063,40 @@ func TestLinePayNotify(t *testing.T) {
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
 					Point:                  null.IntFrom(0),
 				},
-				Acquirer:       "Test Acquirer",
+				Acquirer:       testAcquirer,
 				BankResultMsg:  newBankResultMsg,
 				BankResultCode: newBankResultCode,
 			},
 			resultCode: http.StatusNoContent,
 			resultCompare: &resultPatchField{
-				Method:         "BALANCE",
-				Point:          0,
-				Status:         statusPaid,
-				BankResultMsg:  newBankResultMsg,
-				BankResultCode: newBankResultCode,
+				Method:          "BALANCE",
+				Point:           0,
+				Status:          statusPaid,
+				BankResultMsg:   newBankResultMsg,
+				BankResultCode:  newBankResultCode,
+				TappayApiStatus: 0,
+			},
+		},
+		{
+			name:      "StatusCode=StatusNoContent, Linepay Transaction cancelled",
+			preRecord: &record,
+			reqBody: tapPayRequestBody{
+				RecTradeID:        testRecTradeID,
+				BankTransactionID: testBankTransactionID,
+				OrderNumber:       testOrderNumber,
+				Amount:            testAmount,
+				Status:            924,                              // error code for gateway timeout
+				TransactionTime:   endTransactionTime.Unix() * 1000, // millisecond
+				Acquirer:          testAcquirer,
+				BankResultMsg:     errBankResultMsg,
+				BankResultCode:    errBankResultCode,
+			},
+			resultCode: http.StatusNoContent,
+			resultCompare: &resultPatchField{
+				Status:          statusFail,
+				BankResultMsg:   errBankResultMsg,
+				BankResultCode:  errBankResultCode,
+				TappayApiStatus: 924,
 			},
 		},
 	}
@@ -1096,6 +1129,7 @@ func TestLinePayNotify(t *testing.T) {
 				assert.Equal(t, c.resultCompare.Status, m.Status)
 				assert.Equal(t, c.resultCompare.BankResultMsg, m.BankResultMsg.String)
 				assert.Equal(t, c.resultCompare.BankResultCode, m.BankResultCode.String)
+				assert.Equal(t, c.resultCompare.TappayApiStatus, m.TappayApiStatus.Int64)
 			}
 		})
 	}
