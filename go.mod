@@ -18,7 +18,7 @@ require (
 	github.com/gin-gonic/gin v1.3.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
-	github.com/golang-migrate/migrate/v4 v4.2.5
+	github.com/golang-migrate/migrate/v4 v4.6.1
 	github.com/gorilla/mux v1.7.2 // indirect
 	github.com/gorilla/sessions v1.1.1 // indirect
 	github.com/jinzhu/copier v0.0.0-20180308034124-7e38e58719c3
