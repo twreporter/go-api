@@ -657,8 +657,11 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	resp.BuildFromPrimeDonationModel(primeDonation)
 	resp.PaymentUrl = tapPayResp.PaymentUrl
 
+	// only send mail if the transaction completed.
 	// send success mail asynchronously
-	go mc.sendDonationThankYouMail(*resp)
+	if primeDonation.Status == statusPaid {
+		go mc.sendDonationThankYouMail(*resp)
+	}
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -863,6 +866,18 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 	case rowsAffected == 0:
 		log.Errorf("No corresponding record to patch, condition: %v", conditions)
 		return http.StatusUnprocessableEntity, gin.H{}, err
+	}
+
+	if updateData.Status == statusPaid {
+		var d models.PayByPrimeDonation
+		mail := new(clientResp)
+
+		mc.Storage.GetByConditions(map[string]interface{}{
+			"order_number": callbackPayload.OrderNumber,
+		}, &d)
+		mail.BuildFromPrimeDonationModel(d)
+
+		go mc.sendDonationThankYouMail(*mail)
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
