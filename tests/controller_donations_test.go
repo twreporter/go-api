@@ -114,6 +114,10 @@ const (
 
 	oneTimeOrderPathPrefix  = "/v1/donations/prime/orders/"
 	periodicOrderPathPrefix = "/v1/periodic-donations/orders/"
+
+	statusPaying = "paying"
+	statusPaid   = "paid"
+	statusFail   = "fail"
 )
 
 var methodToPrime = map[string]string{
@@ -926,10 +930,7 @@ func TestLinePayNotify(t *testing.T) {
 		errBankResultMsg  = "Bank Error Msg"
 		errBankResultCode = "Bank Error Code"
 
-		notifyPath   = "/v1/donations/prime/line-notify"
-		statusPaying = "paying"
-		statusPaid   = "paid"
-		statusFail   = "fail"
+		notifyPath = "/v1/donations/prime/line-notify"
 	)
 
 	startTransactionTime := time.Now()
@@ -1180,7 +1181,7 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 		verificationData struct {
 			RecTradeID        string `json:"rec_trade_id"`
 			BankTransactionID string `json:"bank_transaction_id"`
-			TappayApiStatus   int    `json:"tappay_api_status"`
+			Status            string `json:"status"`
 		}
 		verificationResp struct {
 			Status string           `json:"status"`
@@ -1239,7 +1240,7 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 				Data: verificationData{
 					RecTradeID:        record.RecTradeID,
 					BankTransactionID: record.BankTransactionID,
-					TappayApiStatus:   int(record.TappayApiStatus.Int64),
+					Status:            statusPaid,
 				},
 			},
 		},
@@ -1257,7 +1258,7 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 				Data: verificationData{
 					RecTradeID:        failRecord.RecTradeID,
 					BankTransactionID: failRecord.BankTransactionID,
-					TappayApiStatus:   int(failRecord.TappayApiStatus.Int64),
+					Status:            statusFail,
 				},
 			},
 		},

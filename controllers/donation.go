@@ -819,7 +819,7 @@ func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
 		"rec_trade_id":        d.RecTradeID,
 		"bank_transaction_id": d.BankTransactionID,
-		"tappay_api_status":   d.TappayApiStatus.Int64,
+		"status":              d.Status,
 	}}, nil
 }
 
