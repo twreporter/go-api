@@ -266,22 +266,25 @@ func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapP
 		f = "one_time"
 	}
 
-	// TODO: Update to correct redirect url
-	frontendRedirectUrl := "https://" + envToDonationHost[globals.Conf.Environment] + "/contribute/" + f + "/" + orderNumber
+	// Only build resultUrl during linepay transaction
+	if payMethod == payMethodLine {
+		frontendRedirectUrl := "https://" + envToDonationHost[globals.Conf.Environment] + "/contribute/line/" + f + "/" + orderNumber
 
-	// Tappay server will validate the hosts provided in the result_url
-	// Wrap the backendHost to be test.twreporter.org if not in the staging or production environment
-	backendHost := ""
-	if globals.Conf.Environment == "production" || globals.Conf.Environment == "staging" {
-		backendHost = globals.Conf.App.Host
-	} else {
-		backendHost = "test.twreporter.org"
+		// Tappay server will validate the hosts provided in the result_url
+		// Wrap the backendHost to be test.twreporter.org if not in the staging or production environment
+		backendHost := ""
+		if globals.Conf.Environment == "production" || globals.Conf.Environment == "staging" {
+			backendHost = globals.Conf.App.Host
+		} else {
+			backendHost = "test.twreporter.org"
+		}
+
+		primeReq.ResultUrl = linePayResultUrl{
+			FrontendRedirectUrl: frontendRedirectUrl,
+			BackendNotifyUrl:    "https://" + backendHost + "/v1/donations/prime/line-notify",
+		}
 	}
 
-	primeReq.ResultUrl = linePayResultUrl{
-		FrontendRedirectUrl: frontendRedirectUrl,
-		BackendNotifyUrl:    "https://" + backendHost + "/v1/donations/prime/line-notify",
-	}
 	return *primeReq
 }
 
@@ -657,8 +660,11 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	resp.BuildFromPrimeDonationModel(primeDonation)
 	resp.PaymentUrl = tapPayResp.PaymentUrl
 
+	// only send mail if the transaction completed.
 	// send success mail asynchronously
-	go mc.sendDonationThankYouMail(*resp)
+	if primeDonation.Status == statusPaid {
+		go mc.sendDonationThankYouMail(*resp)
+	}
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -781,6 +787,42 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 
 	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
+
+func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (int, gin.H, error) {
+	var d models.PayByPrimeDonation
+
+	orderNumber := c.Param("order")
+	err := mc.Storage.GetByConditions(map[string]interface{}{
+		"order_number": orderNumber,
+	}, &d)
+	_userID := uint(d.UserID)
+
+	if err != nil {
+		appErr, _ := err.(*models.AppError)
+		if appErr.StatusCode == http.StatusNotFound {
+			return appErr.StatusCode, gin.H{"status": "fail", "data": gin.H{
+				"req.URL": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
+			}}, nil
+		}
+		return 0, gin.H{}, err
+	}
+
+	// Compare with the auth-user-id in context extracted from access_token
+	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
+
+	if fmt.Sprint(_userID) != fmt.Sprint(authUserID) {
+		return http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+			"req.Headers.Authorization": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI),
+		}}, nil
+	}
+
+	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
+		"rec_trade_id":        d.RecTradeID,
+		"bank_transaction_id": d.BankTransactionID,
+		"status":              d.Status,
+	}}, nil
+}
+
 func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H, error) {
 	var callbackPayload tapPayTransactionResp
 
@@ -789,10 +831,12 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		return http.StatusBadRequest, gin.H{}, nil
 	}
 
-	// Validate Line Pay Method
-	if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
-		log.Errorf("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
-		return http.StatusBadRequest, gin.H{}, nil
+	// Validate Line Pay Method if PayInfo is set
+	if callbackPayload.PayInfo.Method.IsZero() == false {
+		if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
+			log.Errorf("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
+			return http.StatusBadRequest, gin.H{}, nil
+		}
 	}
 
 	if linePayMethodCreditCard == callbackPayload.PayInfo.Method.String {
@@ -827,6 +871,18 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 	case rowsAffected == 0:
 		log.Errorf("No corresponding record to patch, condition: %v", conditions)
 		return http.StatusUnprocessableEntity, gin.H{}, err
+	}
+
+	if updateData.Status == statusPaid {
+		var d models.PayByPrimeDonation
+		mail := new(clientResp)
+
+		mc.Storage.GetByConditions(map[string]interface{}{
+			"order_number": callbackPayload.OrderNumber,
+		}, &d)
+		mail.BuildFromPrimeDonationModel(d)
+
+		go mc.sendDonationThankYouMail(*mail)
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
@@ -897,6 +953,7 @@ func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardT
 
 func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
 	m.PayInfo = resp.PayInfo
+	m.TappayApiStatus = null.IntFrom(resp.Status)
 
 	if resp.PayInfo.Method.String == linePayMethodCreditCard {
 		m.CardInfo.LastFour = null.StringFrom(strings.Replace(resp.PayInfo.MaskedCreditCardNumber.String, "*", "", -1))

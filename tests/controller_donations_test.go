@@ -114,6 +114,10 @@ const (
 
 	oneTimeOrderPathPrefix  = "/v1/donations/prime/orders/"
 	periodicOrderPathPrefix = "/v1/periodic-donations/orders/"
+
+	statusPaying = "paying"
+	statusPaid   = "paid"
+	statusFail   = "fail"
 )
 
 var methodToPrime = map[string]string{
@@ -912,17 +916,22 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 }
 
 func TestLinePayNotify(t *testing.T) {
-	const testDonorEmail = "test@twreporter.org"
-	const testOrderNumber = "ValidOrderNumber"
-	const testRecTradeID = "ValidRecTradeID"
-	const testBankTransactionID = "ValidBankTransactionID"
-	const oldBankResultMsg = "Old"
-	const newBankResultMsg = "New"
-	const oldBankResultCode = "Old"
-	const newBankResultCode = "New"
-	const notifyPath = "/v1/donations/prime/line-notify"
-	const statusPaying = "paying"
-	const statusPaid = "paid"
+	const (
+		testDonorEmail        = "test@twreporter.org"
+		testOrderNumber       = "ValidOrderNumber"
+		testRecTradeID        = "ValidRecTradeID"
+		testBankTransactionID = "ValidBankTransactionID"
+		testAcquirer          = "Test Acquirer"
+
+		oldBankResultMsg  = "Old"
+		newBankResultMsg  = "New"
+		oldBankResultCode = "Old"
+		newBankResultCode = "New"
+		errBankResultMsg  = "Bank Error Msg"
+		errBankResultCode = "Bank Error Code"
+
+		notifyPath = "/v1/donations/prime/line-notify"
+	)
 
 	startTransactionTime := time.Now()
 	endTransactionTime := startTransactionTime.Add(30 * time.Second)
@@ -945,12 +954,13 @@ func TestLinePayNotify(t *testing.T) {
 	}
 
 	type resultPatchField struct {
-		Method         string `json:"method"`
-		LastFour       string `json:"last_four"`
-		Point          int64  `json:"point"`
-		Status         string `json:"status"`
-		BankResultCode string `json:"bank_result_code"`
-		BankResultMsg  string `json:"bank_result_msg"`
+		Method          string `json:"method"`
+		LastFour        string `json:"last_four"`
+		Point           int64  `json:"point"`
+		Status          string `json:"status"`
+		BankResultCode  string `json:"bank_result_code"`
+		BankResultMsg   string `json:"bank_result_msg"`
+		TappayApiStatus int64
 	}
 
 	db := Globs.GormDB
@@ -1024,18 +1034,19 @@ func TestLinePayNotify(t *testing.T) {
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
 					Point:                  null.IntFrom(0),
 				},
-				Acquirer:       "Test Acquirer",
+				Acquirer:       testAcquirer,
 				BankResultMsg:  newBankResultMsg,
 				BankResultCode: newBankResultCode,
 			},
 			resultCode: http.StatusNoContent,
 			resultCompare: &resultPatchField{
-				Method:         "CREDIT_CARD",
-				LastFour:       "5566",
-				Point:          0,
-				Status:         statusPaid,
-				BankResultMsg:  newBankResultMsg,
-				BankResultCode: newBankResultCode,
+				Method:          "CREDIT_CARD",
+				LastFour:        "5566",
+				Point:           0,
+				Status:          statusPaid,
+				BankResultMsg:   newBankResultMsg,
+				BankResultCode:  newBankResultCode,
+				TappayApiStatus: 0,
 			},
 		},
 		{
@@ -1053,17 +1064,40 @@ func TestLinePayNotify(t *testing.T) {
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
 					Point:                  null.IntFrom(0),
 				},
-				Acquirer:       "Test Acquirer",
+				Acquirer:       testAcquirer,
 				BankResultMsg:  newBankResultMsg,
 				BankResultCode: newBankResultCode,
 			},
 			resultCode: http.StatusNoContent,
 			resultCompare: &resultPatchField{
-				Method:         "BALANCE",
-				Point:          0,
-				Status:         statusPaid,
-				BankResultMsg:  newBankResultMsg,
-				BankResultCode: newBankResultCode,
+				Method:          "BALANCE",
+				Point:           0,
+				Status:          statusPaid,
+				BankResultMsg:   newBankResultMsg,
+				BankResultCode:  newBankResultCode,
+				TappayApiStatus: 0,
+			},
+		},
+		{
+			name:      "StatusCode=StatusNoContent, Linepay Transaction cancelled",
+			preRecord: &record,
+			reqBody: tapPayRequestBody{
+				RecTradeID:        testRecTradeID,
+				BankTransactionID: testBankTransactionID,
+				OrderNumber:       testOrderNumber,
+				Amount:            testAmount,
+				Status:            924,                              // error code for gateway timeout
+				TransactionTime:   endTransactionTime.Unix() * 1000, // millisecond
+				Acquirer:          testAcquirer,
+				BankResultMsg:     errBankResultMsg,
+				BankResultCode:    errBankResultCode,
+			},
+			resultCode: http.StatusNoContent,
+			resultCompare: &resultPatchField{
+				Status:          statusFail,
+				BankResultMsg:   errBankResultMsg,
+				BankResultCode:  errBankResultCode,
+				TappayApiStatus: 924,
 			},
 		},
 	}
@@ -1096,9 +1130,162 @@ func TestLinePayNotify(t *testing.T) {
 				assert.Equal(t, c.resultCompare.Status, m.Status)
 				assert.Equal(t, c.resultCompare.BankResultMsg, m.BankResultMsg.String)
 				assert.Equal(t, c.resultCompare.BankResultCode, m.BankResultCode.String)
+				assert.Equal(t, c.resultCompare.TappayApiStatus, m.TappayApiStatus.Int64)
 			}
 		})
 	}
+}
+
+func TestGetVerificationOfATransaction(t *testing.T) {
+	user := createUser("testDonor@twreporter.org")
+	maliciousUser := createUser("testMaliciousDonor@twreporter.org")
+
+	authorization, cookie := helperSetupAuth(user)
+	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
+
+	record := models.PayByPrimeDonation{
+		Amount: testAmount,
+		Cardholder: models.Cardholder{
+			Email: user.Email.String,
+		},
+		Currency:    testCurrency,
+		UserID:      user.ID,
+		OrderNumber: "ValidOrderNumber1",
+		PayMethod:   linePayMethod,
+		Status:      "paid",
+		TappayResp: models.TappayResp{
+			RecTradeID:        "ValidRecTradeID1",
+			BankTransactionID: "ValidBankTransactionID1",
+			TappayApiStatus:   null.IntFrom(0),
+		},
+	}
+
+	failRecord := models.PayByPrimeDonation{
+		Amount: testAmount,
+		Cardholder: models.Cardholder{
+			Email: user.Email.String,
+		},
+		Currency:    testCurrency,
+		UserID:      user.ID,
+		OrderNumber: "ValidOrderNumber1",
+		PayMethod:   linePayMethod,
+		Status:      "fail",
+		TappayResp: models.TappayResp{
+			RecTradeID:        "ValidRecTradeID1",
+			BankTransactionID: "ValidBankTransactionID1",
+			TappayApiStatus:   null.IntFrom(421), // Gateway Timeout Error
+		},
+	}
+
+	type (
+		verificationData struct {
+			RecTradeID        string `json:"rec_trade_id"`
+			BankTransactionID string `json:"bank_transaction_id"`
+			Status            string `json:"status"`
+		}
+		verificationResp struct {
+			Status string           `json:"status"`
+			Data   verificationData `json:"data"`
+		}
+	)
+
+	db := Globs.GormDB
+	cases := []struct {
+		reqHeader
+		name          string
+		preRecord     *models.PayByPrimeDonation
+		orderNumber   string
+		resultCode    int
+		resultCompare *verificationResp
+	}{
+		{
+			name: "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
+			},
+			orderNumber: record.OrderNumber,
+			resultCode:  http.StatusUnauthorized,
+		},
+		{
+			name: "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqHeader: reqHeader{
+				Cookie:        &maliciousCookie,
+				Authorization: maliciousAuthorization,
+			},
+			preRecord:   &record,
+			orderNumber: record.OrderNumber,
+			resultCode:  http.StatusForbidden,
+		},
+		{
+			name: "StatusCode=StatusNotFound,Invalid Order Number",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			preRecord:   &record,
+			orderNumber: "InvalidOrderNumber",
+			resultCode:  http.StatusNotFound,
+		},
+		{
+			name: "StatusCode=StatusOK,Transaction Success",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			preRecord:   &record,
+			orderNumber: record.OrderNumber,
+			resultCode:  http.StatusOK,
+			resultCompare: &verificationResp{
+				Status: "success",
+				Data: verificationData{
+					RecTradeID:        record.RecTradeID,
+					BankTransactionID: record.BankTransactionID,
+					Status:            statusPaid,
+				},
+			},
+		},
+		{
+			name: "StatusCode=StatusOK,Transaction fail:gateway timeout ",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			preRecord:   &failRecord,
+			orderNumber: failRecord.OrderNumber,
+			resultCode:  http.StatusOK,
+			resultCompare: &verificationResp{
+				Status: "success",
+				Data: verificationData{
+					RecTradeID:        failRecord.RecTradeID,
+					BankTransactionID: failRecord.BankTransactionID,
+					Status:            statusFail,
+				},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if c.preRecord != nil {
+				db.Model(c.preRecord).Create(c.preRecord)
+
+				defer func() {
+					db.Unscoped().Delete(c.preRecord)
+				}()
+			}
+
+			path := fmt.Sprintf("/v1/donations/prime/orders/%s/transaction_verification", c.orderNumber)
+			resp := serveHTTPWithCookies("GET", path, "", "application/json", c.reqHeader.Authorization, *c.reqHeader.Cookie)
+			assert.Equal(t, c.resultCode, resp.Code)
+
+			if c.resultCompare != nil {
+				expect, _ := json.Marshal(c.resultCompare)
+				respBodyInBytes, _ := ioutil.ReadAll(resp.Result().Body)
+				assert.JSONEq(t, string(expect), string(respBodyInBytes))
+			}
+		})
+	}
+
 }
 
 /* GetDonationsOfAUser is not implemented yet
