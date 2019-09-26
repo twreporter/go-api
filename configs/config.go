@@ -62,6 +62,7 @@ donation:
     tappay_url: 'https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime'
     tappay_partner_key: 'partner_6ID1DoDlaPrfHw6HBZsULfTYtDmWs0q0ZZGKMBpp4YICWBxgK97eK3RM'
     proxy_sever: 'http://forward-proxy/'
+    tappay_record_url: 'https://sandbox.tappaysdk.com/tpc/transaction/query'
 algolia:
     application_id: "" # provide your own application ID
     api_key: "" # provide your own api key
@@ -158,6 +159,7 @@ type DonationConfig struct {
 	TapPayURL        string `yaml:"tappay_url"`
 	TapPayPartnerKey string `yaml:"tappay_partner_key"`
 	ProxyServer      string `yaml:"proxy_server"`
+	TapPayRecordURL  string `yaml:"tappay_record_url"`
 }
 
 type AlgoliaConfig struct {
@@ -235,6 +237,7 @@ func buildConf() ConfYaml {
 	conf.Donation.TapPayURL = viper.GetString("donation.tappay_url")
 	conf.Donation.TapPayPartnerKey = viper.GetString("donation.tappay_partner_key")
 	conf.Donation.ProxyServer = viper.GetString("donation.proxy_server")
+	conf.Donation.TapPayRecordURL = viper.GetString("donation.tappay_record_url")
 
 	// Algolia
 	conf.Algolia.ApplicationID = viper.GetString("algolia.application_id")

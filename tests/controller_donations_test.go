@@ -12,6 +12,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/stretchr/testify/assert"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 )
 
@@ -1286,6 +1287,231 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 		})
 	}
 
+}
+
+func TestQueryTappayServer(t *testing.T) {
+	type (
+		filter struct {
+			OrderNumber string `json:"order_number"`
+		}
+
+		requestBody struct {
+			RecordsPerPage uint   `json:"records_per_page"`
+			Filters        filter `json:"filters"`
+		}
+
+		tradeRecord struct {
+			RecordStatus int `json:"record_status"`
+		}
+
+		tappayRecord struct {
+			Status       int           `json:"status"`
+			Msg          string        `json:"msg"`
+			TradeRecords []tradeRecord `json:"trade_records"`
+		}
+
+		responseBody struct {
+			Status string       `json:"status"`
+			Data   tappayRecord `json:"data"`
+		}
+	)
+
+	user := createUser("testDonor@twreporter.org")
+	maliciousUser := createUser("testMaliciousDonor@twreporter.org")
+
+	authorization, cookie := helperSetupAuth(user)
+	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
+
+	dbRecord := models.PayByPrimeDonation{
+		Amount: testAmount,
+		Cardholder: models.Cardholder{
+			Email: user.Email.String,
+		},
+		Currency:    testCurrency,
+		UserID:      user.ID,
+		OrderNumber: "ValidOrderNumber1",
+		PayMethod:   linePayMethod,
+		Status:      statusPaying,
+		TappayResp: models.TappayResp{
+			RecTradeID:        "ValidRecTradeID1",
+			BankTransactionID: "ValidBankTransactionID1",
+			TappayApiStatus:   null.IntFrom(0),
+		},
+	}
+
+	transactionSuccessRecord := tappayRecord{
+		Status: 0,
+		Msg:    "",
+		TradeRecords: []tradeRecord{
+			tradeRecord{
+				RecordStatus: 0,
+			},
+		},
+	}
+
+	transactionFailRecord := tappayRecord{
+		Status: 0,
+		Msg:    "",
+		TradeRecords: []tradeRecord{
+			tradeRecord{
+				RecordStatus: -1,
+			},
+		},
+	}
+
+	queryFailRecord := tappayRecord{
+		Status: 421,
+		Msg:    "Gateway timeout",
+	}
+
+	cases := []struct {
+		reqHeader
+		name             string
+		reqBody          *requestBody
+		preRecord        *models.PayByPrimeDonation
+		stubTappayServer *httptest.Server
+		resultCode       int
+		resultCompare    *tappayRecord
+	}{
+		{
+			name: "StatusCode=StatusUnauthorized,Lack of Authorization Header",
+			reqHeader: reqHeader{
+				Cookie: &cookie,
+			},
+			resultCode: http.StatusUnauthorized,
+		},
+		{
+			name: "StatusCode=StatusForbidden,Unauthorized Resource",
+			reqHeader: reqHeader{
+				Cookie:        &maliciousCookie,
+				Authorization: maliciousAuthorization,
+			},
+			reqBody: &requestBody{
+				Filters: filter{
+					OrderNumber: "ValidOrderNumber1",
+				},
+			},
+			preRecord:  &dbRecord,
+			resultCode: http.StatusForbidden,
+		},
+		{
+			name: "StatusCode=StatusNotFound,Invalid Order Number",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			reqBody: &requestBody{
+				Filters: filter{
+					OrderNumber: "Invalid Order Number",
+				},
+			},
+			preRecord:  &dbRecord,
+			resultCode: http.StatusNotFound,
+		},
+		{
+			name: "StatusCode=StatusOK,Query Success&Transaction Success",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			reqBody: &requestBody{
+				Filters: filter{
+					OrderNumber: "ValidOrderNumber1",
+				},
+			},
+			preRecord: &dbRecord,
+			stubTappayServer: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("Content-Type", "application/json")
+				resp, _ := json.Marshal(transactionSuccessRecord)
+				w.Write(resp)
+			})),
+			resultCode:    http.StatusOK,
+			resultCompare: &transactionSuccessRecord,
+		},
+		{
+			name: "StatusCode=StatusOK,Query Success&Transaction Fail",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			reqBody: &requestBody{
+				Filters: filter{
+					OrderNumber: "ValidOrderNumber1",
+				},
+			},
+			preRecord: &dbRecord,
+			stubTappayServer: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("Content-Type", "application/json")
+				resp, _ := json.Marshal(transactionFailRecord)
+				w.Write(resp)
+			})),
+			resultCode:    http.StatusOK,
+			resultCompare: &transactionFailRecord,
+		},
+		{
+			name: "StatusCode=StatusOK,Query Fail",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+
+			reqBody: &requestBody{
+				Filters: filter{
+					OrderNumber: "ValidOrderNumber1",
+				},
+			},
+			preRecord: &dbRecord,
+			stubTappayServer: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("Content-Type", "application/json")
+				resp, _ := json.Marshal(queryFailRecord)
+				w.Write(resp)
+			})),
+			resultCode:    http.StatusOK,
+			resultCompare: &queryFailRecord,
+		},
+	}
+
+	db := Globs.GormDB
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if c.preRecord != nil {
+				db.Model(c.preRecord).Create(c.preRecord)
+
+				defer func() {
+					db.Unscoped().Delete(c.preRecord)
+				}()
+			}
+
+			// Stub out tappay server if the request would be sent
+			if c.stubTappayServer != nil {
+				defer c.stubTappayServer.Close()
+
+				// Overwrite the tappay record server to stub server
+				url := globals.Conf.Donation.TapPayRecordURL
+				globals.Conf.Donation.TapPayRecordURL = c.stubTappayServer.URL
+				defer func() {
+					globals.Conf.Donation.TapPayRecordURL = url
+				}()
+			}
+
+			path := "/v1/tappay_query"
+
+			var body []byte
+			if c.reqBody != nil {
+				body, _ = json.Marshal(c.reqBody)
+			}
+
+			resp := serveHTTPWithCookies(http.MethodPost, path, string(body), "application/json", c.reqHeader.Authorization, *c.reqHeader.Cookie)
+			assert.Equal(t, c.resultCode, resp.Code)
+
+			if c.resultCompare != nil {
+				bodyJSON, _ := ioutil.ReadAll(resp.Body)
+				var body responseBody
+				json.Unmarshal(bodyJSON, &body)
+				assert.Exactly(t, *c.resultCompare, body.Data)
+			}
+		})
+	}
 }
 
 /* GetDonationsOfAUser is not implemented yet
