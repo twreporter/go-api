@@ -1543,19 +1543,11 @@ Only the linepay is required to do this verfication</p>
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
     "<span class="hljs-attribute">msg</span>": <span class="hljs-value"><span class="hljs-string">"\"\""</span></span>,
-    "<span class="hljs-attribute">trade_records</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">record_status</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
-      "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"test"</span></span>,
-      "<span class="hljs-attribute">time</span>": <span class="hljs-value"><span class="hljs-number">1531132760413</span></span>,
-      "<span class="hljs-attribute">details</span>": <span class="hljs-value"><span class="hljs-string">"test_details"</span></span>,
-      "<span class="hljs-attribute">bank_transaction_id</span>": <span class="hljs-value"><span class="hljs-string">"TP20180709sMwjVd"</span></span>,
-      "<span class="hljs-attribute">rec_trade_id</span>": <span class="hljs-value"><span class="hljs-string">"D20180709sMwjVd"</span></span>,
-      "<span class="hljs-attribute">auth_code</span>": <span class="hljs-value"><span class="hljs-string">"103126"</span></span>,
-      "<span class="hljs-attribute">bank_result_code</span>": <span class="hljs-value"><span class="hljs-string">"0"</span></span>,
-      "<span class="hljs-attribute">bank_result_msg</span>": <span class="hljs-value"><span class="hljs-string">"test_bank_result_msg"</span></span>,
-      "<span class="hljs-attribute">bank_transaction_start_millis</span>": <span class="hljs-value"><span class="hljs-number">1531132760437</span></span>,
-      "<span class="hljs-attribute">bank_transaction_end_millis</span>": <span class="hljs-value"><span class="hljs-number">1531132760437</span>
-    </span>}
+    "<span class="hljs-attribute">trade_records</span>": <span class="hljs-value">[
+      {
+        "<span class="hljs-attribute">record_status</span>": <span class="hljs-value"><span class="hljs-number">0</span>
+      </span>}
+    ]
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -1573,55 +1565,15 @@ Only the linepay is required to do this verfication</p>
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">trade_records</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
-          "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
-            "<span class="hljs-attribute">record_status</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">order_number</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">time</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">details</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">bank_transaction_id</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">rec_trade_id</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">auth_code</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">bank_result_code</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">bank_result_msg</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">bank_transaction_start_millis</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">bank_transaction_end_millis</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">record_status</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+              </span>}
             </span>}
-          </span>}</span>,
-          "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
-            <span class="hljs-string">"record_status"</span>,
-            <span class="hljs-string">"order_number"</span>,
-            <span class="hljs-string">"time"</span>,
-            <span class="hljs-string">"details"</span>,
-            <span class="hljs-string">"bank_transaction_id"</span>,
-            <span class="hljs-string">"rec_trade_id"</span>,
-            <span class="hljs-string">"auth_code"</span>,
-            <span class="hljs-string">"bank_result_code"</span>,
-            <span class="hljs-string">"bank_result_msg"</span>,
-            <span class="hljs-string">"bank_transaction_start_millis"</span>,
-            <span class="hljs-string">"bank_transaction_end_millis"</span>
-          ]
+          </span>}
         </span>}
       </span>}</span>,
       "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
