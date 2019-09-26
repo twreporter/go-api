@@ -1,0 +1,71 @@
+# Group Tappay Synchronization
+
+## Tappay Record [/v1/tappay_query]
+
+### Post to get a tappay record[POST]
+Post to get a tappay record
+
++ Request
+
+    + Attributes (TappayServerRequest)
+
+    + Headers
+
+            Content-Type: application/json
+            Cookie: id_token=<id_token>
+            Authorization: Bearer <jwt>
+ 
++ Response 200
+
+    + Attributes 
+        + status: Success (required)
+        + data (TappayServerResponse) (required)
+
++ Response 401 (application/json)
+
+    + Attributes (Error401Response)
+
++ Response 403 (application/json)
+
+    + Attributes (Error403Response)
+ 
++ Response 404 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "filters": {
+                        "order_number": "not found"
+                    }
+                }
+            }
+   
++ Response 500
+    
+    + Attributes (Error500Response)
+       
+## Data Structures
+### TappayServerRequest
++ records_per_page: `1` (optional, number)
++ filters
+    + `order_number`: `twreporter-153371414230837160610` (required)
+
+### TappayTradeRecords
++ record_status: 0 (required, number)
++ order_number: test (required)
++ time: 1531132760413(required, number)
++ details: test_details (required, string)
++ bank_transaction_id: TP20180709sMwjVd (required)
++ rec_trade_id: D20180709sMwjVd (required)
++ auth_code: 103126(required)
++ bank_result_code: 0 (required)
++ bank_result_msg: test_bank_result_msg (required)
++ bank_transaction_start_millis: 1531132760437 (required, number)
++ bank_transaction_end_millis: 1531132760437(required, number)
+
+### TappayServerResponse
++ status: `0` (required, number)
++ msg: "" (required)
++ trade_records (TappayTradeRecords) (required)
