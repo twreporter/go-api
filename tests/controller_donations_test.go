@@ -667,17 +667,16 @@ func testDonationPatchClientError(t *testing.T, userID uint, pathPrefix, orderNu
 }
 
 func TestPatchAPeriodicDonation(t *testing.T) {
-	const donorEmail string = "periodic-donor@twreporter.org"
 	var defaultRecordRes responseBody
 	var path string
 	var reqBody map[string]interface{}
 	var reqBodyInBytes []byte
 	var resp *httptest.ResponseRecorder
-	var user models.User
 
 	// setup before test
 	// create a new user
-	user = createUser(donorEmail)
+	user := createUser("periodic-donor@twreporter.org")
+	defer func() { deleteUser(user) }()
 	authorization, cookie := helperSetupAuth(user)
 
 	frequency := []string{
@@ -721,17 +720,16 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 }
 
 func TestPatchAPrimeDonation(t *testing.T) {
-	const donorEmail string = "prim-donor@twreporter.org"
 	var defaultRecordRes responseBody
 	var path string
 	var reqBody map[string]interface{}
 	var reqBodyInBytes []byte
 	var resp *httptest.ResponseRecorder
-	var user models.User
 
 	// setup before test
 	// create a new user
-	user = createUser(donorEmail)
+	user := createUser("prim-donor@twreporter.org")
+	defer func() { deleteUser(user) }()
 	authorization, cookie := helperSetupAuth(user)
 
 	payMethods := []string{
@@ -775,8 +773,8 @@ func testDonationGetClientError(t *testing.T, pathPrefix, orderNumber, authoriza
 	var reqBodyInBytes []byte
 	var resp *httptest.ResponseRecorder
 
-	maliciousDonorEmail := "malicious-donor@twreporter.org"
-	maliciousUser := createUser(maliciousDonorEmail)
+	maliciousUser := createUser("malicious-donor@twreporter.org")
+	defer func() { deleteUser(maliciousUser) }()
 	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
 
 	cases := []struct {
@@ -827,9 +825,10 @@ func testDonationGetClientError(t *testing.T, pathPrefix, orderNumber, authoriza
 
 func TestGetAPrimeDonationOfAUser(t *testing.T) {
 	// setup before test
-	donorEmail := "get-prime-donor@twreporter.org"
 	// create a new user
+	donorEmail := "get-prime-donor@twreporter.org"
 	user := createUser(donorEmail)
+	defer func() { deleteUser(user) }()
 	authorization, cookie := helperSetupAuth(user)
 	payMethods := []string{
 		creditCardPayMethod,
@@ -874,6 +873,7 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 	donorEmail := "get-periodic-donor@twreporter.org"
 	// create a new user
 	user := createUser(donorEmail)
+	defer func() { deleteUser(user) }()
 	authorization, cookie := helperSetupAuth(user)
 
 	frequency := []string{
@@ -938,6 +938,7 @@ func TestLinePayNotify(t *testing.T) {
 	endTransactionTime := startTransactionTime.Add(30 * time.Second)
 
 	user := createUser(testDonorEmail)
+	defer func() { deleteUser(user) }()
 	record := models.PayByPrimeDonation{
 		Amount: testAmount,
 		Cardholder: models.Cardholder{
@@ -1139,7 +1140,10 @@ func TestLinePayNotify(t *testing.T) {
 
 func TestGetVerificationOfATransaction(t *testing.T) {
 	user := createUser("testDonor@twreporter.org")
+	defer func() { deleteUser(user) }()
+
 	maliciousUser := createUser("testMaliciousDonor@twreporter.org")
+	defer func() { deleteUser(maliciousUser) }()
 
 	authorization, cookie := helperSetupAuth(user)
 	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
@@ -1316,8 +1320,10 @@ func TestQueryTappayServer(t *testing.T) {
 		}
 	)
 
-	user := createUser("testDonor@twreporter.org")
+	user := createUser("testDonorEmailr@twreporter.org")
+	defer func() { deleteUser(user) }()
 	maliciousUser := createUser("testMaliciousDonor@twreporter.org")
+	defer func() { deleteUser(maliciousUser) }()
 
 	authorization, cookie := helperSetupAuth(user)
 	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
