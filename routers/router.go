@@ -107,6 +107,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.GET("/donations/prime/orders/:order", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.PrimeDonationType)
 	}))
+	v1Group.GET("/donations/prime/orders/:order/transaction_verification", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetVerificationInfoOfADonation))
 
 	v1Group.POST("/donations/prime/line-notify", ginResponseWrapper(mc.PatchLinePayOfAUser))
 	// TODO
