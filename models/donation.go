@@ -66,7 +66,7 @@ type PayByPrimeDonation struct {
 	OrderNumber string     `gorm:"type:varchar(50);not null" json:"order_number"`
 	PayMethod   string     `gorm:"type:ENUM('credit_card','line','apple','google','samsung');not null;index:idx_pay_by_prime_donations_cardholder_email_pay_method" json:"pay_method"`
 	SendReceipt string     `gorm:"type:ENUM('no', 'yearly', 'monthly');default:'yearly'" json:"send_receipt"`
-	Status      string     `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
+	Status      string     `gorm:"type:ENUM('paying','paid','fail','refunded');not null" json:"status"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 	UserID      uint       `gorm:"type:int(10);unsigned;not null" json:"user_id"`
 	IsAnonymous null.Bool  `gorm:"type:tinyint(1);default:0" json:"is_anonymous"`
@@ -83,7 +83,7 @@ type PayByCardTokenDonation struct {
 	MerchantID  string     `gorm:"type:varchar(30);not null" json:"merchant_id"`
 	OrderNumber string     `gorm:"type:varchar(50);not null" json:"order_number"`
 	PeriodicID  uint       `gorm:"not null;index:idx_pay_by_card_token_donations_periodic_id" json:"periodic_id"`
-	Status      string     `gorm:"type:ENUM('paying','paid','fail');not null" json:"status"`
+	Status      string     `gorm:"type:ENUM('paying','paid','fail','refunded');not null" json:"status"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
