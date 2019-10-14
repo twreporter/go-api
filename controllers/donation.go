@@ -192,6 +192,22 @@ type (
 		Msg    string `json:"msg"`
 	}
 
+	tradeRecord struct {
+		RecordStatus int `json:"record_status"`
+	}
+
+	tapPayTransactionRecordResp struct {
+		Status       int           `json:"status"`
+		Msg          string        `json:"msg"`
+		TradeRecords []tradeRecord `json:"trade_records"`
+	}
+
+	tapPayTransactionRecordReq struct {
+		PartnerKey     string      `json:"partner_key"`
+		RecordsPerPage uint        `json:"records_per_page"`
+		Filters        queryFilter `json:"filters"`
+	}
+
 	payType int
 
 	patchBody struct {
@@ -201,6 +217,15 @@ type (
 		ToFeedback  bool              `json:"to_feedback"`
 		UserID      uint              `json:"user_id" binding:"required"`
 		IsAnonymous bool              `json:"is_anonymous"`
+	}
+
+	queryFilter struct {
+		OrderNumber string `json:"order_number" binding:"required"`
+	}
+
+	queryReq struct {
+		RecordsPerPage uint        `json:"records_per_page"`
+		Filters        queryFilter `json:"filters" binding:"required,dive"`
 	}
 )
 
@@ -888,6 +913,49 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 	return http.StatusNoContent, gin.H{}, nil
 }
 
+func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, error) {
+	var (
+		reqBody queryReq
+		d       models.PayByPrimeDonation
+	)
+
+	if failData, valid := bindRequestJSONBody(c, &reqBody); valid == false {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
+	}
+
+	err := mc.Storage.GetByConditions(map[string]interface{}{
+		"order_number": reqBody.Filters.OrderNumber,
+	}, &d)
+	recordUserID := uint(d.UserID)
+
+	if err != nil {
+		appErr, _ := err.(*models.AppError)
+		if appErr.StatusCode == http.StatusNotFound {
+			return appErr.StatusCode, gin.H{"status": "fail", "data": gin.H{
+				"filters": fmt.Sprintf("%v cannot address a found resource", reqBody.Filters),
+			}}, nil
+		}
+		return 0, gin.H{}, err
+	}
+
+	// Compare with the auth-user-id in context extracted from access_token
+	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
+
+	if fmt.Sprint(recordUserID) != fmt.Sprint(authUserID) {
+		return http.StatusForbidden, gin.H{"status": "fail", "data": gin.H{
+			"req.Headers.Authorization": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI),
+		}}, nil
+	}
+
+	tapPayResp, err := reqBody.QueryServer()
+
+	if err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, nil
+	}
+
+	return http.StatusOK, gin.H{"status": "success", "data": tapPayResp}, nil
+}
+
 func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
 	m.CardInfo = resp.CardInfo
 	m.TappayResp = resp.TappayResp
@@ -911,6 +979,50 @@ func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrime
 	}
 
 	m.Status = status
+}
+
+func (q queryReq) QueryServer() (tapPayTransactionRecordResp, error) {
+	client := getProxyHttpClient()
+
+	tapPayReq := q.BuildTapPayRecordReq()
+	reqBodyJson, _ := json.Marshal(&tapPayReq)
+	req, _ := http.NewRequest(http.MethodPost, globals.Conf.Donation.TapPayRecordURL, bytes.NewBuffer(reqBodyJson))
+	req.Header.Add("x-api-key", globals.Conf.Donation.TapPayPartnerKey)
+	req.Header.Add("Content-Type", "application/json")
+
+	rawResp, err := client.Do(req)
+
+	if err != nil {
+		return tapPayTransactionRecordResp{}, errors.New("cannot request to tap pay server")
+	}
+	defer rawResp.Body.Close()
+
+	body, err := ioutil.ReadAll(rawResp.Body)
+	if err != nil {
+		return tapPayTransactionRecordResp{}, errors.New("Cannot read response from tap pay server")
+	}
+
+	resp := tapPayTransactionRecordResp{}
+
+	json.Unmarshal(body, &resp)
+
+	return resp, nil
+
+}
+
+func (q queryReq) BuildTapPayRecordReq() (t tapPayTransactionRecordReq) {
+	const defaultRecordPerPage = 1
+
+	t.PartnerKey = globals.Conf.Donation.TapPayPartnerKey
+
+	if q.RecordsPerPage == 0 {
+		t.RecordsPerPage = defaultRecordPerPage
+	} else {
+		t.RecordsPerPage = q.RecordsPerPage
+	}
+	t.Filters = q.Filters
+
+	return
 }
 
 func (resp tapPayTransactionResp) AppendRespOnPerodicDonation(m *models.PeriodicDonation) {
