@@ -1,7 +1,7 @@
 ## Unreleased
 
 ## Released
-### 5.1.0-rc.1(Current), 2019-10-15
+### 5.1.0(Current), 2019-10-15
 #### Notable Changes
 - feature:
   - add `/v1/tappay_query` endpoint for querying TapPay Record API 
