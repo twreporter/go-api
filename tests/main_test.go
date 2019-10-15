@@ -211,6 +211,14 @@ func createUser(email string) models.User {
 	return user
 }
 
+func deleteUser(user models.User) {
+	db := Globs.GormDB
+
+	// Remove corresponding reporter account
+	db.Unscoped().Delete(user.ReporterAccount)
+	db.Unscoped().Delete(user)
+}
+
 func getUser(email string) (user models.User) {
 	as := storage.NewGormStorage(Globs.GormDB)
 	user, _ = as.GetUserByEmail(email)

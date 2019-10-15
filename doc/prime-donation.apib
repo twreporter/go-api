@@ -155,6 +155,47 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                 "message": "unknown error."
             }
 
+## Transaction Verification Information [/v1/donations/prime/orders/{order}/transaction_verification]
+Endpoint for frontend server to retrieve information for transaction verification.
+Only the linepay is required to do this verfication
+### Retrieve verification information of an order [GET]
++ Parameters
+    + order (string) ... an order number of the Prime Donation
+
++ Request
+
+    + Headers 
+
+              Cookie: id_token=<id_token>
+              Authorization: Bearer <jwt>
+
++ Response 200
+
+    + Attributes (VerificationInformation)
+        
++ Response 401 (application/json)
+
+    + Attributes (Error401Response)
+
++ Response 403 (application/json)
+
+    + Attributes (Error403Response)
+    
++ Response 404 (application/json)
+
+    + Body
+
+            {
+                "status": "fail",
+                "data": {
+                    "req.URL": "url can not address a resource"
+                }
+            }
+
++ Response 500 (application/json)
+
+    + Attributes (Error500Response)
+
 ## Prime Donation [/v1/donations/prime]
 
 ### Create a Single Prime Donation [POST]
@@ -322,3 +363,7 @@ Endpoint for tappay server to notify line pay transaction result
 + `bank_result_code`: 0 (optional, number)
 + `bank_result_msg` (string, nullable)
 
+### VerificationInformation
++ `rec_trade_id`: LN201711088cHQHr (required)
++ `bank_transaction_id`: TP201711088cHQHr (required)
++ status: paying
