@@ -112,8 +112,7 @@ jobs:
 
             echo "CLUSTER_NAME: ${CLUSTER_NAME}"
             gcloud --quiet container clusters get-credentials $CLUSTER_NAME
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       
       - attach_workspace:
           at: /go/src/twreporter.org/go-api
