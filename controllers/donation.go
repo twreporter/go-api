@@ -851,6 +851,8 @@ func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (
 func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H, error) {
 	var callbackPayload tapPayTransactionResp
 
+	time.Sleep(15 * time.Second)
+
 	if failData, valid := bindRequestJSONBody(c, &callbackPayload); valid == false {
 		log.Errorf("Fail to bind callback payload, %v", failData)
 		return http.StatusBadRequest, gin.H{}, nil
