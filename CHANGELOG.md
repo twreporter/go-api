@@ -1,6 +1,6 @@
 ## Unreleased
 
-### 5.1.1
+### 5.1.1-rc.2
 - sleep 15 secs in tappay be notify endpoint
 - commit revert: sleep 15 secs in tappay be notify endpoint
 
