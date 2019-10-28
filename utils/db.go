@@ -54,6 +54,7 @@ func InitMongoDB() (*mgo.Session, error) {
 	var timeout = globals.Conf.DB.Mongo.Timeout
 	// Set connection timeout
 	session, err := mgo.DialWithTimeout(globals.Conf.DB.Mongo.URL, time.Duration(timeout)*time.Second)
+	log.Info("connect to mongodb ", globals.Conf.DB.Mongo.URL)
 
 	if err != nil {
 		log.Error("Establishing a new session to the mongo occurs error: ", err.Error())
