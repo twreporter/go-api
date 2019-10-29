@@ -17,7 +17,7 @@ jobs:
       - restore_cache:
           keys:
           - go-mod-{{ checksum "go.sum" }}
-      
+
       - run:
           name: Download module dependencies
           command: |
@@ -32,11 +32,11 @@ jobs:
           paths:
             - /go/pkg/mod
           key: go-mod-{{ checksum "go.sum" }}
-      
+
       - run:
           name: Save pkg version to a file
           command: go run ./.circleci/scripts/read-changelog.go > .pkg-version
-      
+
       - persist_to_workspace:
           root: /go/src/twreporter.org/go-api
           paths:
@@ -45,7 +45,7 @@ jobs:
   test:
     docker:
       - image: circleci/golang:1.12.6
-        environment:  
+        environment:
           GO111MODULE: "on"
       - image: circleci/mongo:3.2
       - image: circleci/mysql:5.7
@@ -82,40 +82,46 @@ jobs:
 
       # run tests!
       - run: go test ./...
-            
+
   build_and_deploy:
     docker:
       - image: google/cloud-sdk
-    
+
     working_directory: /go/src/twreporter.org/go-api
-    
+
     steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /go/src/twreporter.org/go-api
+
       - run:
           name: Connect to container cluster
           command: |
-            # GOOGLE_AUTH, GOOGLE_PROJECT_ID, GOOGLE_COMPUTE_ZONE,
-            # GOOGLE_STAGING_CLUSTER_NAME and GOOGLE_CLUSTER_NAME
+            # GOOGLE_AUTH, GOOGLE_PROJECT_ID,
+            # GOOGLE_CLUSTER_NAME and K8S_CLUSTER_NAME
             # is defined in Environment Variables of circleci project
             echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
             gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             CLUSTER_NAME=""
 
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-              CLUSTER_NAME=${GOOGLE_STAGING_CLUSTER_NAME}
+              gcloud --quiet config set compute/zone asia-east1
+              CLUSTER_NAME=${K8S_CLUSTER_NAME}
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
+              # TODO
+              # After new cluster settle down,
+              # change asia-east1-a -> asia-east1
+              # change ${GOOGLE_CLUSTER_NAME} -> ${K8S_CLUSTER_NAME}
+              gcloud --quiet config set compute/zone asia-east1-a
               CLUSTER_NAME=${GOOGLE_CLUSTER_NAME}
             fi
 
             echo "CLUSTER_NAME: ${CLUSTER_NAME}"
             gcloud --quiet container clusters get-credentials $CLUSTER_NAME
-      - setup_remote_docker
-      
-      - attach_workspace:
-          at: /go/src/twreporter.org/go-api
 
       - run:
           name: Build, push and deploy Docker image
@@ -124,12 +130,14 @@ jobs:
             PKG_VER=""
             DEPLOYMENT="go-api"
             CONTAINER="go-api"
+            CLUSTER_NAMESPACE="default"
 
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
               # pkg version for staging
               PKG_VER="staging-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
+              CLUSTER_NAMESPACE="staging"
             fi
-            
+
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
               # pkg version for release
               PKG_VER="$(cat .pkg-version)"
@@ -141,8 +149,8 @@ jobs:
             docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
             docker push gcr.io/coastal-run-106202/go-api:$PKG_VER
-            kubectl set image deployment ${DEPLOYMENT} ${CONTAINER}=gcr.io/coastal-run-106202/go-api:$PKG_VER --record
-            kubectl rollout status deployment ${DEPLOYMENT}
+            kubectl set image deployment ${DEPLOYMENT} ${CONTAINER}=gcr.io/coastal-run-106202/go-api:$PKG_VER --record -n $CLUSTER_NAMESPACE
+            kubectl rollout status deployment ${DEPLOYMENT} -n $CLUSTER_NAMESPACE
 
 workflows:
   version: 2
