@@ -1,5 +1,13 @@
 ## Unreleased
 
+### 5.1.1-rc.3
+#### Notable Changes
+- build:
+  - update circleci config for new cluster
+
+#### Commits
+- [[5a88338](https://github.com/twreporter/go-api/commit/5a88338fdd6570b03b65e8c5d38d61d24d48ef6a)] - update circleci config due to k8s cluster change(nickhsine) 
+
 ### 5.1.1-rc.2
 - sleep 15 secs in tappay be notify endpoint
 - commit revert: sleep 15 secs in tappay be notify endpoint
