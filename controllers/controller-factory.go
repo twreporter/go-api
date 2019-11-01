@@ -24,18 +24,6 @@ type ControllerFactory struct {
 	mailService services.MailService
 }
 
-// GetGoogleController returns Google struct
-func (cf *ControllerFactory) GetGoogleController() Google {
-	gs := storage.NewGormStorage(cf.gormDB)
-	return Google{Storage: gs}
-}
-
-// GetFacebookController returns Facebook struct
-func (cf *ControllerFactory) GetFacebookController() Facebook {
-	gs := storage.NewGormStorage(cf.gormDB)
-	return Facebook{Storage: gs}
-}
-
 // GetOAuthController returns OAuth struct
 func (cf *ControllerFactory) GetOAuthController(oauthType string) (oauth *OAuth) {
 	gs := storage.NewGormStorage(cf.gormDB)

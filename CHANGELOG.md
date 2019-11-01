@@ -1,7 +1,20 @@
 ## Unreleased
 
 ## Released
-### 5.1.0(Current), 2019-10-15
+### 5.1.1(Current), 2019-11-01
+#### Notable Changes
+- build:
+  - update circleci config for new cluster
+- oauth:
+  - remove v1 oauth endpoints
+  - upgrade Facebook Graph API: v2.8 -> v3.2
+
+#### Commits 
+- [[cddb19d](https://github.com/twreporter/go-api/commit/cddb19de136f61960da09857ca461eabfb13a4ad)] - remove /v1/auth/faceboook and /v1/auth/google oauth endpoints(nickhsine)
+- [[06e4cbf](https://github.com/twreporter/go-api/commit/06e4cbf6da206c4180aded3cf084129621e7f94a)] - update controllers/oauth.go: upgrade facebook graph API from v2.8 to v3.2(nickhsine)
+- [[5a88338](https://github.com/twreporter/go-api/commit/5a88338fdd6570b03b65e8c5d38d61d24d48ef6a)] - update circleci config due to k8s cluster change(nickhsine) 
+
+### 5.1.0, 2019-10-15
 #### Notable Changes
 - feature:
   - add `/v1/tappay_query` endpoint for querying TapPay Record API 
