@@ -145,18 +145,6 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v1Group.GET("/search/posts", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchPosts)
 
 	// =============================
-	// v1 oauth endpoints
-	// =============================
-	authGroup := v1Group.Group("/auth")
-
-	gc := cf.GetGoogleController()
-	authGroup.GET("/google", middlewares.SetCacheControl("no-store"), gc.BeginAuth)
-	authGroup.GET("/google/callback", middlewares.SetCacheControl("no-store"), gc.Authenticate)
-	fc := cf.GetFacebookController()
-	authGroup.GET("/facebook", middlewares.SetCacheControl("no-store"), fc.BeginAuth)
-	authGroup.GET("/facebook/callback", middlewares.SetCacheControl("no-store"), fc.Authenticate)
-
-	// =============================
 	// mail service endpoints
 	// =============================
 

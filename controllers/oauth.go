@@ -275,7 +275,7 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 		oauthType = globals.GoogleOAuth
 	} else {
 		var oauthInfo facebookOauthInfoRaw
-		userInfoEndpoint = "https://graph.facebook.com/v2.8/me?fields=id,name,email,picture,birthday,first_name,last_name,gender"
+		userInfoEndpoint = "https://graph.facebook.com/v3.2/me?fields=id,name,email,picture,birthday,first_name,last_name,gender"
 		err = getOauthUserInfo(c, o.oauthConf, userInfoEndpoint, &oauthInfo)
 		copier.Copy(&oauthUser, &oauthInfo)
 		oauthType = globals.FacebookOAuth

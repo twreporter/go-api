@@ -1,5 +1,15 @@
 ## Unreleased
 
+### 5.1.1-rc.4
+#### Notable Changes
+- oauth:
+  - remove v1 oauth endpoints
+  - upgrade Facebook Graph API: v2.8 -> v3.2
+
+#### Commits 
+- [[cddb19d](https://github.com/twreporter/go-api/commit/cddb19de136f61960da09857ca461eabfb13a4ad)] - remove /v1/auth/faceboook and /v1/auth/google oauth endpoints(nickhsine)
+- [[06e4cbf](https://github.com/twreporter/go-api/commit/06e4cbf6da206c4180aded3cf084129621e7f94a)] - update controllers/oauth.go: upgrade facebook graph API from v2.8 to v3.2(nickhsine)
+
 ### 5.1.1-rc.3
 #### Notable Changes
 - build:
