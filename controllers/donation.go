@@ -162,16 +162,17 @@ type (
 	}
 
 	tapPayTransactionReq struct {
-		Amount      uint              `json:"amount"`
-		Cardholder  models.Cardholder `json:"cardholder"`
-		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		MerchantID  string            `json:"merchant_id"`
-		OrderNumber string            `json:"order_number"`
-		PartnerKey  string            `json:"partner_key"`
-		Prime       string            `json:"prime"`
-		Remember    bool              `json:"remember"`
-		ResultUrl   linePayResultUrl  `json:"result_url"`
+		Amount                 uint              `json:"amount"`
+		Cardholder             models.Cardholder `json:"cardholder"`
+		Currency               string            `json:"currency"`
+		Details                string            `json:"details"`
+		MerchantID             string            `json:"merchant_id"`
+		OrderNumber            string            `json:"order_number"`
+		PartnerKey             string            `json:"partner_key"`
+		Prime                  string            `json:"prime"`
+		Remember               bool              `json:"remember"`
+		ResultUrl              linePayResultUrl  `json:"result_url"`
+		LinePayProductImageUrl string            `json:"line_pay_product_image_url"`
 	}
 
 	tapPayTransactionResp struct {
@@ -291,7 +292,7 @@ func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapP
 		f = "one_time"
 	}
 
-	// Only build resultUrl during linepay transaction
+	// Only build resultUrl and linePayProductImageUrl during linepay transaction
 	if payMethod == payMethodLine {
 		frontendRedirectUrl := "https://" + envToDonationHost[globals.Conf.Environment] + "/contribute/line/" + f + "/" + orderNumber
 
@@ -308,6 +309,8 @@ func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapP
 			FrontendRedirectUrl: frontendRedirectUrl,
 			BackendNotifyUrl:    "https://" + backendHost + "/v1/donations/prime/line-notify",
 		}
+
+		primeReq.LinePayProductImageUrl = globals.Conf.Donation.LinePayProductImageUrl
 	}
 
 	return *primeReq
