@@ -63,7 +63,7 @@ donation:
     tappay_partner_key: 'partner_6ID1DoDlaPrfHw6HBZsULfTYtDmWs0q0ZZGKMBpp4YICWBxgK97eK3RM'
     proxy_sever: 'http://forward-proxy/'
     tappay_record_url: 'https://sandbox.tappaysdk.com/tpc/transaction/query'
-    line_pay_product_image_url: 'https://www.twreporter.org/images/launcher-icon-128x128.png'
+    line_pay_product_image_url: 'https://www.twreporter.org/images/linepay-logo-84x84.png'
 algolia:
     application_id: "" # provide your own application ID
     api_key: "" # provide your own api key
