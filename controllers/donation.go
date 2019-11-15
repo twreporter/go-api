@@ -172,7 +172,7 @@ type (
 		Prime                  string            `json:"prime"`
 		Remember               bool              `json:"remember"`
 		ResultUrl              linePayResultUrl  `json:"result_url"`
-		LinePayProductImageUrl string            `json:"line_pay_product_image_url"`
+		LinePayProductImageUrl null.String       `json:"line_pay_product_image_url"`
 	}
 
 	tapPayTransactionResp struct {
@@ -310,7 +310,7 @@ func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapP
 			BackendNotifyUrl:    "https://" + backendHost + "/v1/donations/prime/line-notify",
 		}
 
-		primeReq.LinePayProductImageUrl = globals.Conf.Donation.LinePayProductImageUrl
+		primeReq.LinePayProductImageUrl = null.StringFrom(globals.Conf.Donation.LinePayProductImageUrl)
 	}
 
 	return *primeReq
