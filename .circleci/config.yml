@@ -106,9 +106,10 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             CLUSTER_NAME=""
 
-            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-              gcloud --quiet config set compute/zone asia-east1
+            if [ "${CIRCLE_BRANCH}" == "staging" ] || [ "${CIRCLE_BRANCH}" == "next" ]; then
+              gcloud --quiet config set compute/region asia-east1
               CLUSTER_NAME=${K8S_CLUSTER_NAME}
+              gcloud --quiet container clusters get-credentials $CLUSTER_NAME --region=asia-east1
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
@@ -119,9 +120,6 @@ jobs:
               gcloud --quiet config set compute/zone asia-east1-a
               CLUSTER_NAME=${GOOGLE_CLUSTER_NAME}
             fi
-
-            echo "CLUSTER_NAME: ${CLUSTER_NAME}"
-            gcloud --quiet container clusters get-credentials $CLUSTER_NAME
 
       - run:
           name: Build, push and deploy Docker image
@@ -136,6 +134,12 @@ jobs:
               # pkg version for staging
               PKG_VER="staging-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
               CLUSTER_NAMESPACE="staging"
+            fi
+
+
+            if [ "${CIRCLE_BRANCH}" == "next" ]; then
+              PKG_VER="next-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
+              CLUSTER_NAMESPACE="production"
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
@@ -168,3 +172,4 @@ workflows:
               only:
                 - release
                 - staging
+                - next
