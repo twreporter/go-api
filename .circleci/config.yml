@@ -185,8 +185,8 @@ jobs:
             grep /kustomize/v |\
             sort | tail -n 1 |\
             xargs curl -O -L
-            tar xzf ./kustomize_v*_${opsys}_amd64.tar.gz
-            ./kustomize version
+            tar xzf ./kustomize_v*_${opsys}_amd64.tar.gz -C /usr/bin
+            kustomize version
 
       - run:
           name: Prepare for kubernetes config build
