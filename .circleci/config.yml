@@ -193,7 +193,7 @@ jobs:
           command: |
             cd "${K8S_CONFIG_REPO}/${APP}/overlays/${ENVIRONMENT}"
 
-            kustomize edit set image "${APP}=gcr.io/coastal-run-106202/${APP}:${PKG_VER}"
+            kustomize edit set image "gcr.io/coastal-run-106202/${APP}:${PKG_VER}"
 
       - run:
           name: Deploy to Google Kubernetes Engine
