@@ -1,4 +1,11 @@
 ## Unreleased
+### 5.1.2
+#### Notable Changes
+- donation:
+  - add `line_pay_product_image_url` linepay icon
+
+- db_schema:
+  - increase size of `bank_result_msg` column
 
 ## Released
 ### 5.1.1(Current), 2019-11-01

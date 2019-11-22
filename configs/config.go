@@ -63,6 +63,7 @@ donation:
     tappay_partner_key: 'partner_6ID1DoDlaPrfHw6HBZsULfTYtDmWs0q0ZZGKMBpp4YICWBxgK97eK3RM'
     proxy_sever: 'http://forward-proxy/'
     tappay_record_url: 'https://sandbox.tappaysdk.com/tpc/transaction/query'
+    line_pay_product_image_url: 'https://www.twreporter.org/images/linepay-logo-84x84.png'
 algolia:
     application_id: "" # provide your own application ID
     api_key: "" # provide your own api key
@@ -155,11 +156,12 @@ type GoogleConfig struct {
 }
 
 type DonationConfig struct {
-	CardSecretKey    string `yaml:"card_secret_key"`
-	TapPayURL        string `yaml:"tappay_url"`
-	TapPayPartnerKey string `yaml:"tappay_partner_key"`
-	ProxyServer      string `yaml:"proxy_server"`
-	TapPayRecordURL  string `yaml:"tappay_record_url"`
+	CardSecretKey          string `yaml:"card_secret_key"`
+	TapPayURL              string `yaml:"tappay_url"`
+	TapPayPartnerKey       string `yaml:"tappay_partner_key"`
+	ProxyServer            string `yaml:"proxy_server"`
+	TapPayRecordURL        string `yaml:"tappay_record_url"`
+	LinePayProductImageUrl string `yaml:"line_pay_product_image_url"`
 }
 
 type AlgoliaConfig struct {
@@ -238,6 +240,7 @@ func buildConf() ConfYaml {
 	conf.Donation.TapPayPartnerKey = viper.GetString("donation.tappay_partner_key")
 	conf.Donation.ProxyServer = viper.GetString("donation.proxy_server")
 	conf.Donation.TapPayRecordURL = viper.GetString("donation.tappay_record_url")
+	conf.Donation.LinePayProductImageUrl = viper.GetString("donation.line_pay_product_image_url")
 
 	// Algolia
 	conf.Algolia.ApplicationID = viper.GetString("algolia.application_id")
