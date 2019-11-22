@@ -118,7 +118,7 @@ jobs:
               PKG_VER="next-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
               CLUSTER_NAME=${K8S_CLUSTER_NAME}
               CLUSTER_NAMESPACE="production"
-              ENVIRONMENT="production"
+              ENVIRONMENT="next"
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
