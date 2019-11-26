@@ -96,60 +96,96 @@ jobs:
           at: /go/src/twreporter.org/go-api
 
       - run:
-          name: Connect to container cluster
+          name: Setup custom environment variables
           command: |
-            # GOOGLE_AUTH, GOOGLE_PROJECT_ID,
-            # GOOGLE_CLUSTER_NAME and K8S_CLUSTER_NAME
-            # is defined in Environment Variables of circleci project
-            echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
-            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            CLUSTER_NAME=""
-
-            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-              gcloud --quiet config set compute/zone asia-east1
-              CLUSTER_NAME=${K8S_CLUSTER_NAME}
-            fi
-
-            if [ "${CIRCLE_BRANCH}" == "release" ]; then
-              # TODO
-              # After new cluster settle down,
-              # change asia-east1-a -> asia-east1
-              # change ${GOOGLE_CLUSTER_NAME} -> ${K8S_CLUSTER_NAME}
-              gcloud --quiet config set compute/zone asia-east1-a
-              CLUSTER_NAME=${GOOGLE_CLUSTER_NAME}
-            fi
-
-            echo "CLUSTER_NAME: ${CLUSTER_NAME}"
-            gcloud --quiet container clusters get-credentials $CLUSTER_NAME
-
-      - run:
-          name: Build, push and deploy Docker image
-          command: |
-            cd /go/src/twreporter.org/go-api
-            PKG_VER=""
-            DEPLOYMENT="go-api"
-            CONTAINER="go-api"
+            # K8S_CLUSTER_NAME is defined in the organization context twreporter.
+            APP="go-api"
+            CLUSTER_NAME=${K8S_CLUSTER_NAME}
             CLUSTER_NAMESPACE="default"
+            DEPLOYMENT="go-api"
+            ENVIRONMENT=""
+            PKG_VER="latest"
 
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
               # pkg version for staging
               PKG_VER="staging-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
               CLUSTER_NAMESPACE="staging"
+              ENVIRONMENT="staging"
+            fi
+
+
+            if [ "${CIRCLE_BRANCH}" == "next" ]; then
+              PKG_VER="next-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
+              CLUSTER_NAMESPACE="production"
+              ENVIRONMENT="next"
             fi
 
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
               # pkg version for release
               PKG_VER="$(cat .pkg-version)"
+              CLUSTER_NAMESPACE="production"
+              ENVIRONMENT="release"
             fi
 
+            echo "export PKG_VER=${PKG_VER}" >> $BASH_ENV
+            echo "export DEPLOYMENT=${DEPLOYMENT}" >> $BASH_ENV
+            echo "export APP=${APP}" >> $BASH_ENV
+            echo "export CLUSTER_NAME=${CLUSTER_NAME}" >> $BASH_ENV
+            echo "export CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE}" >> $BASH_ENV
+            echo "export ENVIRONMENT=${ENVIRONMENT}" >> $BASH_ENV
+
+      - run:
+          name: Connect to container cluster
+          command: |
+            # GOOGLE_AUTH is defined in Environment Variables of circleci project
+            # GOOGLE_PROJECT_ID is defined in the organization context twreporter
+            echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
+            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet container clusters get-credentials $CLUSTER_NAME --region=asia-east1
+
+      - run:
+          name: Build and push docker image
+          command: |
             # aws config
             echo ${AWS_CREDENTIALS} | base64 -i --decode > ./aws_credentials
 
-            docker build -t gcr.io/coastal-run-106202/go-api:$PKG_VER .
+            docker build -t gcr.io/coastal-run-106202/${APP}:$PKG_VER .
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
-            docker push gcr.io/coastal-run-106202/go-api:$PKG_VER
-            kubectl set image deployment ${DEPLOYMENT} ${CONTAINER}=gcr.io/coastal-run-106202/go-api:$PKG_VER --record -n $CLUSTER_NAMESPACE
+            docker push gcr.io/coastal-run-106202/${APP}:$PKG_VER
+      
+      - run:
+          name: Fetch Kubernetes config source
+          command: |
+            gcloud source repos clone ${K8S_CONFIG_REPO} 
+      
+      - run:
+          name: Install kustomize binaries
+          command: |
+            opsys=linux
+
+            curl -s "https://api.github.com/repos/kubernetes-sigs/kustomize/releases" |\
+            grep browser_download |\
+            grep $opsys |\
+            cut -d '"' -f 4 |\
+            grep /kustomize/v |\
+            sort | tail -n 1 |\
+            xargs curl -O -L
+            tar xzf ./kustomize_v*_${opsys}_amd64.tar.gz -C /usr/bin
+            kustomize version
+
+      - run:
+          name: Prepare for kubernetes config build
+          command: |
+            # K8S_CONFIG_REPO is defined in the organization context twreporter.
+            cd "${K8S_CONFIG_REPO}/${APP}/overlays/${ENVIRONMENT}"
+
+            kustomize edit set image "gcr.io/coastal-run-106202/${APP}:${PKG_VER}"
+
+      - run:
+          name: Deploy to Google Kubernetes Engine
+          command: |
+            kustomize build "${K8S_CONFIG_REPO}/${APP}/overlays/${ENVIRONMENT}" | kubectl apply -f -
             kubectl rollout status deployment ${DEPLOYMENT} -n $CLUSTER_NAMESPACE
 
 workflows:
@@ -161,6 +197,7 @@ workflows:
           requires:
             - prepare
       - build_and_deploy:
+          context: twreporter
           requires:
             - test
           filters:
@@ -168,3 +205,4 @@ workflows:
               only:
                 - release
                 - staging
+                - next

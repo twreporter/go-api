@@ -10,7 +10,7 @@ type TappayResp struct {
 	Acquirer                 string      `gorm:"type:varchar(50);not null" json:"acquirer"`
 	AuthCode                 string      `gorm:"type:varchar(6);not null" json:"auth_code"`
 	BankResultCode           null.String `gorm:"type:varchar(50)" json:"bank_result_code"`
-	BankResultMsg            null.String `gorm:"type:varchar(50)" json:"bank_result_msg"`
+	BankResultMsg            null.String `gorm:"type:varchar(128)" json:"bank_result_msg"`
 	BankTransactionEndTime   null.Time   `json:"bank_transaction_end_time"`
 	BankTransactionID        string      `gorm:"type:varchar(50);not null" json:"bank_transaction_id"`
 	BankTransactionStartTime null.Time   `json:"bank_transaction_start_time"`
