@@ -1,22 +1,33 @@
 ## Unreleased
-### 5.1.2
+
+## Released
+### 5.1.1(Current), 2019-11-26
 #### Notable Changes
 - donation:
   - add `line_pay_product_image_url` linepay icon
-
 - db_schema:
   - increase size of `bank_result_msg` column
-
-## Released
-### 5.1.1(Current), 2019-11-01
-#### Notable Changes
 - build:
+  - Include the kubernetes config during deployment
   - update circleci config for new cluster
 - oauth:
   - remove v1 oauth endpoints
   - upgrade Facebook Graph API: v2.8 -> v3.2
 
-#### Commits 
+#### Commits
+- [[b9796f8](https://github.com/twreporter/go-api/commit/b9796f8d13987e9ba22b7f6252e03e31b495925f)] - Update config for release environment(babygoat)
+- [[986c9f8](https://github.com/twreporter/go-api/commit/986c9f8d96cee3f0e21a94c755569b85cc55a51a)] - Fix incorrect environment setup(babygoat)
+- [[e13e89a](https://github.com/twreporter/go-api/commit/e131e89aebb8c187bd68cc17417bd67bc5d14648)] - Do not overwrite the default image name(babygoat)
+- [[4087761](https://github.com/twreporter/go-api/commit/40877613d48baa6cdec2c63f8ce02042186a81c9)] - Increase bank_result_msg column(Ching-Yang, Tseng)
+- [[c17bc98](https://github.com/twreporter/go-api/commit/c17bc986967f70900e219ba248c1c2c8c4e56d56)] - Fix incorrect kustomize PATH(babygoat)
+- [[483ece5](https://github.com/twreporter/go-api/commit/483ece556f8ad77a2e858e864832368159e5a89a)] - Fix incorrect context injection(babygoat)
+- [[cfcbd5e](https://github.com/twreporter/go-api/commit/cfcbd5ed5d71a87d55fb518325e320ccca12f95b)] - Fix missing package version file(babygoat)
+- [[105e34c](https://github.com/twreporter/go-api/commit/105e34c9fc5d0cf71195b5a1f0450a6b82ac3252)] - Include kubernetes config during deployment(babygoat)
+- [[d873dd3](https://github.com/twreporter/go-api/commit/d873dd34ec4b84f42264016c8c509c0195613a7c)] - Only send linepay logo url during linepay trx(babygoat)
+- [[fc3cbbc](https://github.com/twreporter/go-api/commit/fc3cbbc36fbe36a249f714bea9db073357585e03)] - Update linepay merchant logo(babygoat)
+- [[a74f8ef](https://github.com/twreporter/go-api/commit/a74f8efc218dd7bc79cf400061d52021abb3b9ec)] - Provide valid icon image link(babygoat)
+g for next branch(babygoat)
+- [[35000c3](https://github.com/twreporter/go-api/commit/35000c3847846ba6440ca63dd1c635f973d220b7)] - Add linepay icon during transaction(babygoat)
 - [[cddb19d](https://github.com/twreporter/go-api/commit/cddb19de136f61960da09857ca461eabfb13a4ad)] - remove /v1/auth/faceboook and /v1/auth/google oauth endpoints(nickhsine)
 - [[06e4cbf](https://github.com/twreporter/go-api/commit/06e4cbf6da206c4180aded3cf084129621e7f94a)] - update controllers/oauth.go: upgrade facebook graph API from v2.8 to v3.2(nickhsine)
 - [[5a88338](https://github.com/twreporter/go-api/commit/5a88338fdd6570b03b65e8c5d38d61d24d48ef6a)] - update circleci config due to k8s cluster change(nickhsine) 

@@ -98,17 +98,17 @@ jobs:
       - run:
           name: Setup custom environment variables
           command: |
-            PKG_VER="latest"
-            DEPLOYMENT="go-api"
+            # K8S_CLUSTER_NAME is defined in the organization context twreporter.
             APP="go-api"
+            CLUSTER_NAME=${K8S_CLUSTER_NAME}
             CLUSTER_NAMESPACE="default"
-            CLUSTER_NAME=""
+            DEPLOYMENT="go-api"
             ENVIRONMENT=""
+            PKG_VER="latest"
 
             if [ "${CIRCLE_BRANCH}" == "staging" ]; then
               # pkg version for staging
               PKG_VER="staging-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
-              CLUSTER_NAME=${K8S_CLUSTER_NAME}
               CLUSTER_NAMESPACE="staging"
               ENVIRONMENT="staging"
             fi
@@ -116,7 +116,6 @@ jobs:
 
             if [ "${CIRCLE_BRANCH}" == "next" ]; then
               PKG_VER="next-$(cat .pkg-version)-$CIRCLE_BUILD_NUM"
-              CLUSTER_NAME=${K8S_CLUSTER_NAME}
               CLUSTER_NAMESPACE="production"
               ENVIRONMENT="next"
             fi
@@ -124,8 +123,8 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "release" ]; then
               # pkg version for release
               PKG_VER="$(cat .pkg-version)"
-              CLUSTER_NAME=${GOOGLE_CLUSTER_NAME}
-              ENVIRONMENT="production"
+              CLUSTER_NAMESPACE="production"
+              ENVIRONMENT="release"
             fi
 
             echo "export PKG_VER=${PKG_VER}" >> $BASH_ENV
@@ -138,25 +137,12 @@ jobs:
       - run:
           name: Connect to container cluster
           command: |
-            # GOOGLE_AUTH, GOOGLE_PROJECT_ID,
-            # GOOGLE_CLUSTER_NAME and K8S_CLUSTER_NAME
-            # is defined in Environment Variables of circleci project
+            # GOOGLE_AUTH is defined in Environment Variables of circleci project
+            # GOOGLE_PROJECT_ID is defined in the organization context twreporter
             echo ${GOOGLE_AUTH} | base64 -i --decode > ${HOME}/gcp-key.json
             gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-
-            if [ "${CIRCLE_BRANCH}" == "staging" ] || [ "${CIRCLE_BRANCH}" == "next" ]; then
-              gcloud --quiet container clusters get-credentials $CLUSTER_NAME --region=asia-east1
-            fi
-
-            if [ "${CIRCLE_BRANCH}" == "release" ]; then
-              # TODO
-              # After new cluster settle down,
-              # change asia-east1-a -> asia-east1
-              # change ${GOOGLE_CLUSTER_NAME} -> ${K8S_CLUSTER_NAME}
-              gcloud --quiet config set compute/zone asia-east1-a
-              gcloud --quiet container clusters get-credentials $CLUSTER_NAME
-            fi
+            gcloud --quiet container clusters get-credentials $CLUSTER_NAME --region=asia-east1
 
       - run:
           name: Build and push docker image
@@ -191,6 +177,7 @@ jobs:
       - run:
           name: Prepare for kubernetes config build
           command: |
+            # K8S_CONFIG_REPO is defined in the organization context twreporter.
             cd "${K8S_CONFIG_REPO}/${APP}/overlays/${ENVIRONMENT}"
 
             kustomize edit set image "gcr.io/coastal-run-106202/${APP}:${PKG_VER}"
