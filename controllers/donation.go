@@ -94,13 +94,6 @@ var methodToMerchant = map[string]string{
 	payMethodLine:       defaultLineMerchant,
 }
 
-var envToDonationHost = map[string]string{
-	"development": "test.twreporter.org",
-	"test":        "test.twreporter.org",
-	"staging":     "staging-support.twreporter.org",
-	"production":  "support.twreporter.org",
-}
-
 var cardInfoTypes = map[int64]string{
 	1: "VISA",
 	2: "MasterCard",
@@ -294,7 +287,7 @@ func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapP
 
 	// Only build resultUrl and linePayProductImageUrl during linepay transaction
 	if payMethod == payMethodLine {
-		frontendRedirectUrl := "https://" + envToDonationHost[globals.Conf.Environment] + "/contribute/line/" + f + "/" + orderNumber
+		frontendRedirectUrl := "https://" + globals.Conf.Donation.FrontendHost + "/contribute/line/" + f + "/" + orderNumber
 
 		// Tappay server will validate the hosts provided in the result_url
 		// Wrap the backendHost to be test.twreporter.org if not in the staging or production environment
