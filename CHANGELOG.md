@@ -1,4 +1,12 @@
 ## Unreleased
+### 5.1.2
+- donation:
+  - Config frontend host of linepay in runtime
+
+#### Commits
+- [[23df36d](https://github.com/twreporter/go-api/commit/23df36df3d85a4de180de14ce1817928d574b4d0)] - Config frontend host of linepay in runtime(babygoat)
+
+#### Commits
 
 ## Released
 ### 5.1.1(Current), 2019-11-26
