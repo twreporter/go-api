@@ -86,9 +86,6 @@ func setGormDefaultRecords(gormDB *gorm.DB) {
 	_, _ = ms.InsertUserByReporterAccount(ra)
 
 	ms.CreateService(models.ServiceJSON{Name: Globs.Defaults.Service})
-
-	ms.CreateRegistration(Globs.Defaults.Service, models.RegistrationJSON{Email: Globs.Defaults.Account, ActivateToken: Globs.Defaults.Token})
-
 }
 
 func setMgoDefaultRecords(mgoDB *mgo.Session) {

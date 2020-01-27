@@ -12,7 +12,7 @@ import (
 
 // MembershipStorage defines the methods we need to implement,
 // in order to fulfill the functionalities a membership system needs.
-// Such as, let user signup, login w/o oauth, CRUD bookmarks, CRUD registrations.
+// Such as, let user signup, login w/o oauth, CRUD bookmarks.
 type MembershipStorage interface {
 	/** Close DB Connection **/
 	Close() error
