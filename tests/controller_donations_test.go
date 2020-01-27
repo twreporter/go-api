@@ -144,7 +144,7 @@ var defaults = struct {
 }
 
 func helperSetupAuth(user models.User) (authorization string, cookie http.Cookie) {
-	jwt := generateJWT(user)
+	jwt := generateIDToken(user)
 	authorization = fmt.Sprintf("Bearer %s", jwt)
 
 	idToken := generateIDToken(user)
@@ -1531,7 +1531,7 @@ func TestGetDonations(t *testing.T) {
 
 	defaultUser := getUser(Globs.Defaults.Account)
 	user := getUser(donorEmail)
-	jwt := generateJWT(user)
+	jwt := generateIDToken(user)
 	authorization := fmt.Sprintf("Bearer %s", jwt)
 
 	// ===========================================
@@ -1558,7 +1558,7 @@ func TestGetDonations(t *testing.T) {
 	// - 404 Not Found Error
 	// ===========================================
 	path = "/v1/users/1000/donations"
-	jwt = generateJWT(models.User{
+	jwt = generateIDToken(models.User{
 		ID:    1000,
 		Email: null.StringFrom("unknown@twreporter.org"),
 	})

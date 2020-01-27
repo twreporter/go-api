@@ -77,19 +77,6 @@ func (idc IDTokenJWTClaims) Valid() error {
 	return nil
 }
 
-func RetrieveV1Token(userID uint, email string) (string, error) {
-	claims := ReporterJWTClaims{
-		userID,
-		email,
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Second * time.Duration(globals.Conf.App.JwtExpiration)).Unix(),
-			Issuer:    globals.Conf.App.JwtIssuer,
-			Audience:  globals.Conf.App.JwtAudience,
-		},
-	}
-	return genToken(claims, globals.Conf.App.JwtSecret)
-}
-
 func RetrieveV2IDToken(userID uint, email, firstName, lastName string, expiration int) (string, error) {
 	claims := IDTokenJWTClaims{
 		userID,

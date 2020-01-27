@@ -11,9 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/guregu/null.v3"
 	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/utils"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 type bookmarkJSON struct {
@@ -67,7 +64,7 @@ func TestBookmarkAuthorization(t *testing.T) {
 	/** END - Fail to pass Authorization **/
 
 	// Pass Authroization
-	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", generateJWT(user)))
+	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", generateIDToken(user)))
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
@@ -80,7 +77,7 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 	user = getUser(Globs.Defaults.Account)
 	path = fmt.Sprintf("/v1/users/%v/bookmarks", user.ID)
 
-	var jwt = generateJWT(user)
+	var jwt = generateIDToken(user)
 
 	/** START - Add bookmark successfully **/
 	resp = serveHTTP("POST", path, bookmarkJSONStr, "application/json", fmt.Sprintf("Bearer %v", jwt))
@@ -98,11 +95,10 @@ func TestCreateABookmarkOfAUser(t *testing.T) {
 
 	// user is not existed
 	var fakeID uint = 100
-	jwt, _ = utils.RetrieveV1Token(fakeID, "test@twreporter.org")
-	log.Info("jwt:", jwt)
+	jwt = "INVALIDJWT"
 	resp = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), bookmarkJSONStr,
 		"application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusNotFound, resp.Code)
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	/** END - Fail to add bookmark **/
 }
 
@@ -114,7 +110,7 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 
 	user = getUser(Globs.Defaults.Account)
 	path = fmt.Sprintf("/v1/users/%v/bookmarks?offset=0", user.ID)
-	jwt = generateJWT(user)
+	jwt = generateIDToken(user)
 
 	/** START - List bookmarks successfully **/
 	// List empty array of bookmarks of the user
@@ -141,12 +137,12 @@ func TestGetBookmarksOfAUser(t *testing.T) {
 	/** END - List bookmarks successfully **/
 
 	/** START - Fail to list bookmark **/
-	// user is not existed
+	// user is not existed (i.e. invalid jwt)
 	var fakeID uint = 100
-	jwt, _ = utils.RetrieveV1Token(fakeID, "test@twreporter.org")
+	jwt = "INVALID JWT"
 
 	resp = serveHTTP("GET", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusNotFound, resp.Code)
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	/** END - Fail to list bookmark **/
 }
 
@@ -156,7 +152,7 @@ func TestGetABookmarkOfAUser(t *testing.T) {
 	var jwt string
 
 	user = getUser(Globs.Defaults.Account)
-	jwt = generateJWT(user)
+	jwt = generateIDToken(user)
 	path = fmt.Sprintf("/v1/users/%v/bookmarks/mock-article-2", user.ID)
 
 	/** START - Fail to get a bookmark of a user **/
@@ -270,7 +266,7 @@ func TestDeleteBookmark(t *testing.T) {
 	db := Globs.GormDB
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			jwt := generateJWT(tc.deleteInfo.User)
+			jwt := generateIDToken(tc.deleteInfo.User)
 
 			if tc.mockBookMark != nil {
 				reqBody, _ := json.Marshal(tc.mockBookMark)

@@ -80,10 +80,6 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// membership service endpoints
 	// =============================
 	mc := cf.GetMembershipController()
-	// endpoints for account
-	v1Group.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SignIn))
-	v1Group.GET("/activate", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.Activate))
-	v1Group.GET("/token/:userID", middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.RenewJWT))
 	// endpoints for bookmarks of users
 	v1Group.GET("/users/:userID/bookmarks", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
 	v1Group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
