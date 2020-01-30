@@ -10,9 +10,11 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
 )
 
@@ -35,10 +37,8 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 		Destination string `json:"destination" form:"destination"`
 	}
 
-	const errorWhere = "MembershipController.SignInV2"
 	var activateHost string
 	var activeToken string
-	var appErr *models.AppError
 	var email string
 	var err error
 	var matchedUser models.User
@@ -78,7 +78,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	// generate active token
 	activeToken, err = utils.GenerateRandomString(8)
 	if err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Generating active token occurs error", err.Error(), http.StatusInternalServerError)
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Generating active token occurs error"}, err
 	}
 
 	// get reporter account by email from reporter_account table
@@ -89,23 +89,20 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 		ra.ActivateToken = activeToken
 		ra.ActExpTime = time.Now().Add(time.Duration(15) * time.Minute)
 		if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
-			return 0, gin.H{}, models.NewAppError(errorWhere, "Updating DB occurs error", err.Error(), http.StatusInternalServerError)
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Updating DB occurs error"}, err
 		}
 
 		statusCode = http.StatusOK
 	} else {
 		// account is not signed in before
-		appErr = err.(*models.AppError)
-
-		// internal server error
-		if appErr.StatusCode != http.StatusNotFound {
-			return 0, gin.H{}, appErr
+		if !storage.IsNotFound(err) {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("internal server error. %s", err.Error())}, err
 		}
 
 		ra = models.ReporterAccount{
 			Email:         email,
 			ActivateToken: activeToken,
-			// expire time is one day
+			// expire time is 15 minute
 			ActExpTime: time.Now().Add(time.Duration(15) * time.Minute),
 		}
 
@@ -116,9 +113,8 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 			// create records both in reporter_accounts and users table
 			_, err = mc.Storage.InsertUserByReporterAccount(ra)
 			if err != nil {
-				return 0, gin.H{}, models.NewAppError(errorWhere, "Inserting new record into DB occurs error", err.Error(), http.StatusInternalServerError)
+				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
 			}
-
 		} else {
 			// if user existed,
 			// create a record in reporter_accounts table
@@ -126,7 +122,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 			ra.UserID = matchedUser.ID
 			err = mc.Storage.InsertReporterAccount(ra)
 			if err != nil {
-				return 0, gin.H{}, models.NewAppError(errorWhere, "Inserting new record into DB occurs error", err.Error(), http.StatusInternalServerError)
+				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
 			}
 		}
 
@@ -147,7 +143,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
 
 	if err != nil {
-		return 0, gin.H{}, models.NewAppError(errorWhere, "Sending activation email occurs error", err.Error(), http.StatusInternalServerError)
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Sending activation email occurs error"}, err
 	}
 
 	return statusCode, gin.H{"status": "success", "data": SignInBody{
@@ -160,9 +156,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 // if validated, then sign in successfully,
 // otherwise, sign in unsuccessfully.
 func (mc *MembershipController) ActivateV2(c *gin.Context) {
-	const errorWhere = "MembershipController.ActivateV2"
 	var defaultDomain = globals.Conf.App.Domain
-	var err error
 	var ra models.ReporterAccount
 	var user models.User
 
@@ -180,8 +174,8 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	// Error clean up
 	defer func() {
 		if nil != err {
-			appErr := err.(*models.AppError)
-			log.Error(appErr.Error())
+			// Client side error. Do not trigger error reporting
+			log.Errorf("%v", err)
 
 			//Always redirect to a designated page
 			c.Redirect(http.StatusTemporaryRedirect, authErrorPage)
@@ -195,13 +189,13 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 
 	// check expire time
 	if ra.ActExpTime.Sub(time.Now()) < time.Duration(0) {
-		err = models.NewAppError(errorWhere, "", "ActivateToken is expired", http.StatusUnauthorized)
+		err = errors.New("ActivateToken is expired")
 		return
 	}
 
 	// validate token
 	if ra.ActivateToken != token {
-		err = models.NewAppError(errorWhere, "", "Token is invalid", http.StatusUnauthorized)
+		err = errors.New("Token is invalid")
 		return
 	}
 
@@ -221,7 +215,6 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	// Create id token for jwt endpoint retrival
 	idToken, err := utils.RetrieveV2IDToken(user.ID, user.Email.ValueOrZero(), user.FirstName.ValueOrZero(), user.LastName.ValueOrZero(), idTokenExpiration)
 	if nil != err {
-		log.Error(errorWhere + "(): " + err.Error())
 		idToken = "twreporter-id-token"
 	}
 
@@ -244,7 +237,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 }
 
 // TokenDispatch returns the `access_token` in payload for frontend server
-func (mc *MembershipController) TokenDispatch(c *gin.Context) {
+func (mc *MembershipController) TokenDispatch(c *gin.Context) (int, gin.H, error) {
 	const acccessTokenExpiration = 60 * 60 * 24 * 14 // 2week
 	const idTokenKey = "id_token"
 	var accessToken string
@@ -254,34 +247,26 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) {
 	var user models.User
 
 	if idToken, err = c.Cookie(idTokenKey); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{"req.Headers.Cookies.id_token": err.Error()}})
-		return
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{"req.Headers.Cookies.id_token": err.Error()}}, nil
 	}
 
 	if _, _, err = new(jwt.Parser).ParseUnverified(idToken, claims); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{"req.Headers.Cookies.id_token": err.Error()}})
-		return
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": gin.H{"req.Headers.Cookies.id_token": err.Error()}}, nil
 	}
 
 	user, err = mc.Storage.GetUserByID(fmt.Sprint(claims.UserID))
-	if nil != err {
-		appErr := err.(*models.AppError)
-		log.Error(appErr.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "cannot get user data"})
-		return
+	if err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "cannot get user data"}, err
 	}
 
 	accessToken, err = utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), acccessTokenExpiration)
 	if err != nil {
-		appErr := err.(*models.AppError)
-		log.Error(appErr.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Error occurs during generating access_token JWT"})
-		return
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Error occurs during generating access_token JWT"}, err
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{
+	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
 		"jwt": accessToken,
-	}})
+	}}, nil
 }
 
 // TokenInvalidate deletes the id_token stored in the client side

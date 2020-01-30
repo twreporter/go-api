@@ -12,7 +12,6 @@ import (
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/middlewares"
-	"twreporter.org/go-api/models"
 )
 
 const (
@@ -25,10 +24,7 @@ func ginResponseWrapper(fn wrappedFn) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		statusCode, obj, err := fn(c)
 		if err != nil {
-			appErr := err.(*models.AppError)
-			log.Error(appErr.Error())
-			c.JSON(appErr.StatusCode, gin.H{"status": "error", "message": appErr.Message})
-			return
+			log.Errorf("%+v", err)
 		}
 		c.JSON(statusCode, obj)
 	}
@@ -129,11 +125,11 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// endpoints for authors
 	v1Group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ginResponseWrapper(nc.GetAuthors))
 	// endpoints for posts
-	v1Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), nc.GetPosts)
-	v1Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), nc.GetAPost)
+	v1Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetPosts))
+	v1Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetAPost))
 	// endpoints for topics
-	v1Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), nc.GetTopics)
-	v1Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), nc.GetATopic)
+	v1Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetTopics))
+	v1Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetATopic))
 	v1Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), nc.GetIndexPageContents)
 	v1Group.GET("/index_page_categories", middlewares.SetCacheControl("public,max-age=1800"), nc.GetCategoriesPosts)
 	// endpoints for search
@@ -178,7 +174,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// =============================
 	v2AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SignInV2))
 	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
-	v2AuthGroup.POST("/token", middlewares.ValidateAuthentication(), middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
+	v2AuthGroup.POST("/token", middlewares.ValidateAuthentication(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.TokenDispatch))
 	v2AuthGroup.GET("/logout", mc.TokenInvalidate)
 	return engine
 }

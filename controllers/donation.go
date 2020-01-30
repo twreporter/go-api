@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -21,11 +20,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/pkg/errors"
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
 
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/storage"
 )
 
 const (
@@ -517,8 +518,6 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 
 // Handler for an authenticated user to create a periodic donation
 func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
-	const errWhere = "MembershipController.CreateAPeriodicDonationOfAUser"
-
 	// Validate client request
 	var err error
 	var reqBody clientReq
@@ -556,9 +555,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	// Create a draft periodic donation along with the first token donation record of that periodic donation
 	err = mc.Storage.CreateAPeriodicDonation(&periodicDonation, &tokenDonation)
 	if nil != err {
-		errMsg := "Unable to create a draft periodic donation and the first card token transaction record"
-		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
-		return 0, gin.H{}, models.NewAppError(errWhere, errMsg, err.Error(), http.StatusInternalServerError)
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Unable to create a draft periodic donation and the first card token transaction record"}, err
 	}
 
 	// Start Tappay transaction
@@ -578,10 +575,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 			mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, pd, td)
 		}
-		errMsg := err.Error()
-		log.Error(fmt.Sprintf("%s: %s", errWhere, errMsg))
-
-		return 0, gin.H{}, models.NewAppError(errWhere, errMsg, "", http.StatusInternalServerError)
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}
 
 	// append tappay response onto donation model
@@ -589,7 +583,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	tapPayResp.AppendRespOnTokenDonation(&tokenDonation, statusPaid)
 
 	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation); nil != err {
-		log.Error(fmt.Sprintf("%s: %s", errWhere, err.Error()))
+		log.Errorf("%+v", err)
 	}
 
 	// build response for clients
@@ -636,12 +630,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	tapPayReq := reqBody.BuildTapPayReq(dOrderNumber, primeDonation.Details, payMethod)
 
 	if err = mc.Storage.Create(&primeDonation); nil != err {
-		switch appErr := err.(type) {
-		case *models.AppError:
-			return 0, gin.H{}, models.NewAppError(errorWhere, "Fails to create a draft prime record", appErr.Error(), appErr.StatusCode)
-		default:
-			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("Unknown Error Type. Fails to create a draft prime record. %v", err.Error())}, nil
-		}
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Fails to create a draft prime record"}, err
 	}
 
 	tapPayReqJson, _ := json.Marshal(tapPayReq)
@@ -658,7 +647,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 				"id": primeDonation.ID,
 			}, d)
 		}
-		return 0, gin.H{}, models.NewAppError(errorWhere, err.Error(), "", http.StatusInternalServerError)
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}
 
 	// Append tappay response onto donation model
@@ -673,7 +662,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	if err, _ = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id": primeDonation.ID,
 	}, primeDonation); nil != err {
-		log.Error(err.Error())
+		log.Errorf("%+v", err)
 	}
 
 	// build response for clients
@@ -788,13 +777,12 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 	}
 
 	if err != nil {
-		appErr, _ := err.(*models.AppError)
-		if appErr.StatusCode == http.StatusNotFound {
-			return appErr.StatusCode, gin.H{"status": "fail", "data": gin.H{
+		if storage.IsNotFound(err) {
+			return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
 				"req.URL": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
 			}}, nil
 		}
-		return 0, gin.H{}, err
+		return toResponse(err)
 	}
 
 	// Compare with the auth-user-id in context extracted from access_token
@@ -819,13 +807,12 @@ func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (
 	_userID := uint(d.UserID)
 
 	if err != nil {
-		appErr, _ := err.(*models.AppError)
-		if appErr.StatusCode == http.StatusNotFound {
-			return appErr.StatusCode, gin.H{"status": "fail", "data": gin.H{
+		if storage.IsNotFound(err) {
+			return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
 				"req.URL": fmt.Sprintf("%s cannot address a found resource", c.Request.RequestURI),
 			}}, nil
 		}
-		return 0, gin.H{}, err
+		return toResponse(err)
 	}
 
 	// Compare with the auth-user-id in context extracted from access_token
@@ -925,13 +912,12 @@ func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, e
 	recordUserID := uint(d.UserID)
 
 	if err != nil {
-		appErr, _ := err.(*models.AppError)
-		if appErr.StatusCode == http.StatusNotFound {
-			return appErr.StatusCode, gin.H{"status": "fail", "data": gin.H{
+		if storage.IsNotFound(err) {
+			return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
 				"filters": fmt.Sprintf("%v cannot address a found resource", reqBody.Filters),
 			}}, nil
 		}
-		return 0, gin.H{}, err
+		return toResponse(err)
 	}
 
 	// Compare with the auth-user-id in context extracted from access_token

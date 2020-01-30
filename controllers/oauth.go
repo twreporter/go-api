@@ -8,19 +8,20 @@ import (
 	"net/url"
 	"time"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/storage"
-	"twreporter.org/go-api/utils"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/google"
 	"gopkg.in/guregu/null.v3"
+
+	"twreporter.org/go-api/globals"
+	"twreporter.org/go-api/models"
+	"twreporter.org/go-api/storage"
+	"twreporter.org/go-api/utils"
 )
 
 const defaultDestination = "https://www.twreporter.org/"
@@ -101,20 +102,20 @@ func getOauthUserInfo(c *gin.Context, conf *oauth2.Config, userInfoEndpoint stri
 	state := c.Query("state")
 	if state != retrievedState {
 		log.Warnf("expect state is %s, but actual state is %s", retrievedState, state)
-		return models.NewAppError("getOauthUserInfo", "oauth fails", "Invalid oauth state", 500)
+		return errors.New("Invalid oauth state")
 	}
 
 	code := c.Query("code")
 	token, err := conf.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		return models.NewAppError("getOauthUserInfo", "oauth code exchange failed", err.Error(), http.StatusInternalServerError)
+		return errors.WithStack(err)
 	}
 
 	client := conf.Client(oauth2.NoContext, token)
 	response, err := client.Get(userInfoEndpoint)
 
 	if err != nil {
-		return models.NewAppError("getOauthUserInfo", "cannot get user info by using Google API", err.Error(), http.StatusInternalServerError)
+		return errors.WithStack(err)
 	}
 
 	defer response.Body.Close()
@@ -122,11 +123,11 @@ func getOauthUserInfo(c *gin.Context, conf *oauth2.Config, userInfoEndpoint stri
 	userInfo, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		return models.NewAppError("getOauthUserInfo", "error parsing user data", err.Error(), http.StatusInternalServerError)
+		return errors.WithStack(err)
 	}
 
 	if err = json.Unmarshal(userInfo, &oauthUser); err != nil {
-		return models.NewAppError("getOauthUserInfo", "can not unmarshal user data", err.Error(), http.StatusInternalServerError)
+		return errors.WithStack(err)
 	}
 
 	return nil
@@ -134,40 +135,32 @@ func getOauthUserInfo(c *gin.Context, conf *oauth2.Config, userInfoEndpoint stri
 
 // In order to avoid from storing user info repeatedly,
 // findOrCreateUser handles how to store oauth users in the storage.
-func findOrCreateUser(oauthUser models.OAuthAccount, storage storage.MembershipStorage) (user models.User, err error) {
-	var appErr *models.AppError
-
+func findOrCreateUser(oauthUser models.OAuthAccount, ms storage.MembershipStorage) (user models.User, err error) {
 	// get the record from o_auth_accounts table
-	_, err = storage.GetOAuthData(oauthUser.AId, oauthUser.Type)
+	_, err = ms.GetOAuthData(oauthUser.AId, oauthUser.Type)
 
 	// oAuth account is not existed
 	// sign in by oauth for the first time
 	if err != nil {
-		appErr = appErrorTypeAssertion(err)
-
-		// return internal server error
-		if appErr.StatusCode != http.StatusNotFound {
+		if !storage.IsNotFound(err) {
 			return user, err
 		}
 
 		// email is provided in oAuth response
 		if oauthUser.Email.Valid {
 			// get the record from users table
-			user, err = storage.GetUserByEmail(oauthUser.Email.String)
+			user, err = ms.GetUserByEmail(oauthUser.Email.String)
 
 			// record is not existed in users table
 			if err != nil {
-				appErr = err.(*models.AppError)
-
-				// return internal server error
-				if appErr.StatusCode != http.StatusNotFound {
+				if !storage.IsNotFound(err) {
 					return user, err
 				}
 
 				// no record in users table with this email
 				// create a record in users table
 				// and create a record in o_auth_accounts table
-				if user, err = storage.InsertUserByOAuth(oauthUser); err != nil {
+				if user, err = ms.InsertUserByOAuth(oauthUser); err != nil {
 					return user, err
 				}
 			} else {
@@ -175,7 +168,7 @@ func findOrCreateUser(oauthUser models.OAuthAccount, storage storage.MembershipS
 				// create record in o_auth_accounts table
 				// and connect it to the user record
 				oauthUser.UserID = user.ID
-				if err = storage.InsertOAuthAccount(oauthUser); err != nil {
+				if err = ms.InsertOAuthAccount(oauthUser); err != nil {
 					return user, err
 				}
 			}
@@ -183,18 +176,18 @@ func findOrCreateUser(oauthUser models.OAuthAccount, storage storage.MembershipS
 			// email is not provided in oAuth response
 			// create a record in users table
 			// and also create a record in o_auth_accounts table
-			if user, err = storage.InsertUserByOAuth(oauthUser); err != nil {
+			if user, err = ms.InsertUserByOAuth(oauthUser); err != nil {
 				return user, err
 			}
 		}
 	} else {
 		// user signed in before
-		if user, err = storage.GetUserDataByOAuth(oauthUser); err != nil {
+		if user, err = ms.GetUserDataByOAuth(oauthUser); err != nil {
 			return user, err
 		}
 
 		// update existing OAuth data
-		if _, err = storage.UpdateOAuthData(oauthUser); err != nil {
+		if _, err = ms.UpdateOAuthData(oauthUser); err != nil {
 			return user, err
 		}
 	}
@@ -282,7 +275,7 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	}
 
 	if err != nil {
-		log.Errorf("oauth fails while getting user info from api, error message:\n%s", err.Error())
+		log.Errorf("%+v", errors.Wrap(err, "oauth fails while getting user info from api, error message:"))
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
 	}
@@ -290,13 +283,13 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	oauthUser.Type = oauthType
 
 	if matchUser, err = findOrCreateUser(oauthUser, o.Storage); err != nil {
-		log.Errorf("oauth fails due to database operation error:\n%s", err.Error())
+		log.Errorf("%+v", errors.Wrap(err, "oauth fails due to database operation error:"))
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
 	}
 
 	if token, err = utils.RetrieveV2IDToken(matchUser.ID, matchUser.Email.ValueOrZero(), matchUser.FirstName.ValueOrZero(), matchUser.LastName.ValueOrZero(), idTokenExpiration); err != nil {
-		log.Errorf("oauth fails due to generate JWT error:\n%s", err.Error())
+		log.Errorf("%+v", errors.Wrap(err, "oauth fails due to generate JWT error:"))
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
 	}

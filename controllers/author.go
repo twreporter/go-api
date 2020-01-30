@@ -30,7 +30,7 @@ func (nc *NewsController) GetAuthors(c *gin.Context) (int, gin.H, error) {
 	authors, total, err = nc.Storage.GetFullAuthors(limit, offset, sort)
 
 	if err != nil {
-		return 0, gin.H{}, err
+		return toResponse(err)
 	}
 
 	return http.StatusOK, gin.H{

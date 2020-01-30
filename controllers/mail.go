@@ -3,15 +3,14 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
 	"twreporter.org/go-api/services"
@@ -79,15 +78,13 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 	}{
 		reqBody.ActivateLink,
 	}); err != nil {
-		log.Error(err)
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create activate mail body"}, nil
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create activate mail body"}, errors.WithStack(err)
 	}
 
 	mailBody = out.String()
 
 	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
-		log.Error(err)
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send activate mail to %s", reqBody.Email)}, nil
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send activate mail to %s", reqBody.Email)}, err
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
@@ -132,16 +129,14 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	}
 
 	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "success-donation.tmpl", templateData); err != nil {
-		log.Error(err)
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create donation success mail body"}, nil
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create donation success mail body"}, errors.WithStack(err)
 	}
 
 	mailBody = out.String()
 
 	// send email through mail service
 	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
-		log.Error(err)
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send donation success mail to %s", reqBody.Email)}, nil
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send donation success mail to %s", reqBody.Email)}, err
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
@@ -156,7 +151,7 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	var accessToken string
 
 	if body, err = json.Marshal(reqBody); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	// Setup HTTP client with timeout
@@ -168,14 +163,14 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	if rawResp, err = client.Do(req); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	defer rawResp.Body.Close()
 
 	if rawResp.StatusCode != http.StatusNoContent {
 		if body, err = ioutil.ReadAll(rawResp.Body); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		errMsg := fmt.Sprintf("receive error status code(%d) from %s. error response: %s", rawResp.StatusCode, endpoint, string(body))
