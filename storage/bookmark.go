@@ -2,9 +2,11 @@ package storage
 
 import (
 	"fmt"
-	"net/http"
+	"strconv"
+
+	"github.com/pkg/errors"
+
 	"twreporter.org/go-api/models"
-	// log "github.com/Sirupsen/logrus"
 )
 
 var (
@@ -16,10 +18,10 @@ func (g *GormStorage) GetABookmarkBySlug(slug string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
 	err := g.db.First(&bookmark, "slug = ?", slug).Error
 	if err != nil {
-		return bookmark, g.NewStorageError(err, "GormStorage.GetABookmarkBySlug", fmt.Sprintf("get bookmark(slug: '%s') occurs error", slug))
+		return bookmark, errors.Wrap(err, fmt.Sprintf("get bookmark(slug: '%s') occurs error", slug))
 	}
 
-	return bookmark, err
+	return bookmark, nil
 }
 
 // GetABookmarkByID ...
@@ -27,115 +29,92 @@ func (g *GormStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
 	err := g.db.First(&bookmark, "id = ?", id).Error
 	if err != nil {
-		return bookmark, g.NewStorageError(err, "GormStorage.GetABookmarkByID", fmt.Sprintf("get bookmark(id: '%s') occurs error", id))
+		return bookmark, errors.Wrap(err, fmt.Sprintf("get bookmark(id: '%s') occurs error", id))
 	}
 
-	return bookmark, err
+	return bookmark, nil
 }
 
 // GetABookmarkOfAUser get a bookmark of a user
-func (g *GormStorage) GetABookmarkOfAUser(userID string, bookmarkSlug string, bookmarkHost string) (models.Bookmark, error) {
-	var bookmarks []models.Bookmark
+func (g *GormStorage) GetABookmarkOfAUser(userID string, slug string, host string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
-	var user models.User
-	var err error
 
-	if user, err = g.GetUserByID(userID); err != nil {
-		return bookmark, err
-	}
-
-	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmarks).Error
+	err := g.db.Preload("Users", "id = ?", userID).Where("slug = ? and host = ?", slug, host).First(&bookmark).Error
 
 	if err != nil {
-		return bookmark, g.NewStorageError(err, "GormStorage.GetABookmarkOfAUser",
-			fmt.Sprintf("get bookmark(slug: '%s', host: '%s') from user(id: '%s') occurs error", bookmarkSlug, bookmarkHost, userID))
+		return bookmark, errors.Wrap(err, fmt.Sprintf("get bookmark(slug: '%s', host: '%s') from user(id: '%s') occurs error", slug, host, userID))
 	}
 
-	for _, ele := range bookmarks {
-		if ele.Slug == bookmarkSlug && ele.Host == bookmarkHost {
-			return ele, nil
-		}
-	}
-
-	return bookmark, models.NewAppError("GormStorage.GetABookmarkOfAUser", "Record not found", fmt.Sprintf("User %s does not have the bookmark whose slug is %s and host is %s", userID, bookmarkSlug, bookmarkHost), http.StatusNotFound)
+	return bookmark, nil
 }
 
 // GetBookmarksOfAUser lists bookmarks of the user
 func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]models.Bookmark, int, error) {
 	var bookmarks []models.Bookmark
-	var user models.User
-	var err error
-
-	if user, err = g.GetUserByID(id); err != nil {
-		return bookmarks, 0, err
-	}
 
 	// The reason I write the raw sql statement, not use gorm association(see the following commented code),
 	// err = g.db.Model(&user).Limit(limit).Offset(offset).Order("created_at desc").Related(&bookmarks, bookmarksStr).Error
 	// is because I need to sort/limit/offset the records occording to `users_bookmarks`.`created_at`.
-	err = g.db.Raw("SELECT `users_bookmarks`.created_at AS users_bookmarks_created_at, `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND ((`users_bookmarks`.`user_id` IN (?))) ORDER BY users_bookmarks_created_at desc LIMIT ? OFFSET ?", id, limit, offset).Scan(&bookmarks).Error
+	err := g.db.Raw("SELECT `users_bookmarks`.created_at AS users_bookmarks_created_at, `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND ((`users_bookmarks`.`user_id` IN (?))) ORDER BY users_bookmarks_created_at desc LIMIT ? OFFSET ?", id, limit, offset).Scan(&bookmarks).Error
 
 	if err != nil {
-		return bookmarks, 0, g.NewStorageError(err, "GormStorage.GetBookmarksOfAUser", fmt.Sprintf("get bookmarks of the user(id: %s) with conditions(limit: %d, offset: %d)  occurs error", id, limit, offset))
+		return bookmarks, 0, errors.Wrap(err, fmt.Sprintf("get bookmarks of the user(id: %s) with conditions(limit: %d, offset: %d) occurs error", id, limit, offset))
 	}
 
-	total := g.db.Model(&user).Association(bookmarksStr).Count()
+	userID, _ := strconv.Atoi(id)
+	total := g.db.Model(models.User{ID: uint(userID)}).Association(bookmarksStr).Count()
 
-	return bookmarks, total, err
+	return bookmarks, total, nil
 }
 
 // CreateABookmarkOfAUser this func will create a bookmark and build the relationship between the bookmark and the user
 func (g *GormStorage) CreateABookmarkOfAUser(userID string, bookmark models.Bookmark) (models.Bookmark, error) {
 	var _bookmark = bookmark
-	var err error
-	var user models.User
 
-	if user, err = g.GetUserByID(userID); err != nil {
-		return _bookmark, err
+	user, err := g.GetUserByID(userID)
+	if err != nil {
+		return _bookmark, errors.WithStack(err)
 	}
 
 	// get first matched record, or create a new one
 	err = g.db.Where("slug = ? AND host = ?", bookmark.Slug, bookmark.Host).FirstOrCreate(&_bookmark).Error
 
 	if err != nil {
-		return _bookmark, g.NewStorageError(err, "GormStorage.CreateABookmarkOfAUser", fmt.Sprintf("create a bookmark(%#v) occurs error", bookmark))
+		return _bookmark, errors.Wrap(err, fmt.Sprintf("create a bookmark(%#v) occurs error", bookmark))
 	}
 
 	// update the bookmark fields
-	err = g.db.Model(&_bookmark).Updates(bookmark).Error
+	/*err = g.db.Model(&_bookmark).Updates(bookmark).Error
 
 	if err != nil {
 		return _bookmark, g.NewStorageError(err, "GormStorage.CreateABookmarkOfAUser", fmt.Sprintf("update a bookmark(%#v) occurs error", bookmark))
-	}
+	}*/
 
 	err = g.db.Model(&user).Association(bookmarksStr).Append(_bookmark).Error
 	if err != nil {
-		return _bookmark, g.NewStorageError(err, "GormStorage.CreateABookmarkOfAUser", fmt.Sprintf("append the bookmark(%#v) to the user(id: %s) occurs error", bookmark, userID))
+		return _bookmark, errors.Wrap(err, fmt.Sprintf("append the bookmark(%#v) to the user(id: %s) occurs error", bookmark, userID))
 	}
 
-	return _bookmark, err
+	return _bookmark, nil
 }
 
 // DeleteABookmarkOfAUser this func will delete the relationship between the user and the bookmark
 func (g *GormStorage) DeleteABookmarkOfAUser(userID, bookmarkID string) error {
-	var err error
-	var bookmark models.Bookmark
-	var user models.User
-
-	if user, err = g.GetUserByID(userID); err != nil {
-		return err
+	user, err := g.GetUserByID(userID)
+	if err != nil {
+		return errors.WithStack(err)
 	}
 
-	bookmark, err = g.GetABookmarkByID(bookmarkID)
+	bookmark, err := g.GetABookmarkByID(bookmarkID)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	// The reason why here find before delete is to make sure it will return error if record is not found
 	err = g.db.Model(&user).Association(bookmarksStr).Find(&bookmark).Delete(bookmark).Error
 	if err != nil {
-		return g.NewStorageError(err, "GormStorage.DeleteABookmarkOfAUser", fmt.Sprintf("delete bookmark(id: %s) from user(id: %s) occurs error", bookmarkID, userID))
+		return errors.Wrap(err, fmt.Sprintf("delete bookmark(id: %s) from user(id: %s) occurs error", bookmarkID, userID))
 	}
 
-	return err
+	return nil
 }
