@@ -6,9 +6,10 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
+
 	"twreporter.org/go-api/models"
-	//log "github.com/Sirupsen/logrus"
 )
 
 // ErrRecordNotFound record not found error, happens when haven't find any matched data when looking up with a struct
@@ -28,11 +29,39 @@ func IsRecordNotFoundError(err error) bool {
 	return err == ErrRecordNotFound
 }
 
+func IsNotFound(err error) bool {
+	cause := errors.Cause(err)
+
+	switch cause {
+	case ErrRecordNotFound:
+		return true
+	case ErrMgoNotFound:
+		return true
+	default:
+		// omit intentionally
+	}
+	return false
+}
+
 // IsDuplicateEntryError check if err belongs to mysql.MySQLError and its error number is equal to ErrDuplicateEntry
 func IsDuplicateEntryError(err error) bool {
 	errStruct, ok := err.(*mysql.MySQLError)
 	if ok && errStruct.Number == ErrDuplicateEntry {
 		return true
+	}
+	return false
+}
+
+func IsConflict(err error) bool {
+	cause := errors.Cause(err)
+
+	switch e := cause.(type) {
+	case *mysql.MySQLError:
+		return e.Number == ErrDuplicateEntry
+	case *mgo.LastError:
+		return e.Code == ErrMgoDuplicateEntry
+	default:
+		// omit intentionally
 	}
 	return false
 }
