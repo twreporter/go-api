@@ -2,18 +2,14 @@ package controllers
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 
-	// "gopkg.in/mgo.v2/bson"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
 	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/services"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
-	//log "github.com/Sirupsen/logrus"
 )
 
 // ControllerFactory generates controlloers by given persistent storage connection
@@ -87,14 +83,5 @@ func NewControllerFactory(gormDB *gorm.DB, mgoSession *mgo.Session, mailSvc serv
 		gormDB:      gormDB,
 		mgoSession:  mgoSession,
 		mailService: mailSvc,
-	}
-}
-
-func appErrorTypeAssertion(err error) *models.AppError {
-	switch appErr := err.(type) {
-	case *models.AppError:
-		return appErr
-	default:
-		return models.NewAppError("AppErrorTypeAssertion", "unknown error type", err.Error(), http.StatusInternalServerError)
 	}
 }
