@@ -511,7 +511,7 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 	}
 
 	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {
-		log.Warnf("fail to send %s donation(order_number: %s) thank you mail due to %s", donationType, body.OrderNumber, err.Error())
+		log.Errorf("%+v", errors.Wrap(err, fmt.Sprintf("fail to send %s donation(order_number: %s) mail", donationType, body.OrderNumber)))
 	}
 
 }
@@ -582,6 +582,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	tapPayResp.AppendRespOnPerodicDonation(&periodicDonation)
 	tapPayResp.AppendRespOnTokenDonation(&tokenDonation, statusPaid)
 
+	// since the donation already succeeded, return transaction success even if the information patch fails
 	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation); nil != err {
 		log.Errorf("%+v", err)
 	}
@@ -598,7 +599,6 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 // Handler for an authenticated user to create an one-time donation
 func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin.H, error) {
-	const errorWhere = "MembershipController.CreateADonationOfAUser"
 	var err error
 	var reqBody clientReq
 	var tapPayResp tapPayTransactionResp
@@ -659,6 +659,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		tapPayResp.AppendRespOnPrimeDonation(&primeDonation, statusPaid)
 	}
 
+	// since the donation already succeeded, return transaction success even if the information patch fails
 	if err, _ = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id": primeDonation.ID,
 	}, primeDonation); nil != err {
@@ -874,11 +875,10 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 
 	switch {
 	case err != nil:
-		log.Errorf("Unexpected error: %v", err)
 		return http.StatusInternalServerError, gin.H{}, err
 	case rowsAffected == 0:
 		log.Errorf("No corresponding record to patch, condition: %v", conditions)
-		return http.StatusUnprocessableEntity, gin.H{}, err
+		return http.StatusUnprocessableEntity, gin.H{}, nil
 	}
 
 	if updateData.Status == statusPaid {
@@ -1072,7 +1072,7 @@ func decrypt(data string, key string) string {
 	nonce, ciphertext := byteData[:nonceSize], byteData[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if nil != err {
-		log.Error(err.Error())
+		log.Errorf("%+v", errors.WithStack(err))
 	}
 
 	return string(plaintext)
@@ -1088,7 +1088,7 @@ func encrypt(data string, key string) string {
 	gcm, err := cipher.NewGCM(block)
 	if nil != err {
 		//fallback to store plaintext instead
-		log.Error("cannot create a block cipher with the given key")
+		log.Errorf("%+v", errors.Wrap(err, "cannot create a block cipher with the given key"))
 		return data
 	}
 
@@ -1097,7 +1097,7 @@ func encrypt(data string, key string) string {
 	// generate random nonce for encryption
 	if _, err := io.ReadFull(rand.Reader, nonce); nil != err {
 		//fallback to store plaintext instead
-		log.Error("cannot generate a nonce")
+		log.Errorf("%+v", errors.Wrap(err, "cannot generate a nonce"))
 		return data
 	}
 
@@ -1143,18 +1143,17 @@ func handleTapPayBodyParseError(body []byte) (tapPayTransactionResp, error) {
 	var err error
 
 	if err = json.Unmarshal(body, &minResp); nil != err {
-		return tapPayTransactionResp{}, errors.New("Cannot unmarshal json response from tap pay server")
+		return tapPayTransactionResp{}, errors.Wrap(err, "Cannot unmarshal json response from tap pay server")
 	}
 
 	if tapPayRespStatusSuccess != minResp.Status {
-		log.Error("tap pay msg: " + minResp.Msg)
-		err = errors.New("Cannot make success transaction on tap pay")
+		return tapPayTransactionResp{}, errors.Wrap(err, fmt.Sprintf("Cannot make success transaction on tap pay, msg: %s", minResp.Msg))
 	}
 
 	resp.Status = minResp.Status
 	resp.Msg = minResp.Msg
 
-	return resp, err
+	return resp, nil
 }
 
 func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
@@ -1168,8 +1167,7 @@ func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
 
 	// If fail to sending request
 	if nil != err {
-		log.Error(err.Error())
-		return tapPayTransactionResp{}, errors.New("cannot request to tap pay server")
+		return tapPayTransactionResp{}, errors.Wrap(err, "cannot request to tap pay server")
 	}
 	defer rawResp.Body.Close()
 
@@ -1177,8 +1175,7 @@ func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
 	// TODO: Might require a mechanism to notify users
 	body, err := ioutil.ReadAll(rawResp.Body)
 	if nil != err {
-		log.Error(err.Error())
-		return tapPayTransactionResp{}, errors.New("Cannot read response from tap pay server")
+		return tapPayTransactionResp{}, errors.Wrap(err, "Cannot read response from tap pay server")
 	}
 
 	resp := tapPayTransactionResp{}
@@ -1187,11 +1184,9 @@ func serveHttp(key string, reqBodyJson []byte) (tapPayTransactionResp, error) {
 
 	switch {
 	case nil != err:
-		log.Error(err.Error())
 		return handleTapPayBodyParseError(body)
 	case tapPayRespStatusSuccess != resp.Status:
-		log.Error("tap pay msg: " + resp.Msg)
-		return resp, errors.New("Cannot make success transaction on tap pay")
+		return resp, errors.New(fmt.Sprintf("Cannot make success transaction on tap pay, msg: %s", resp.Msg))
 	default:
 		// Omit intentionally
 	}

@@ -101,8 +101,7 @@ func getOauthUserInfo(c *gin.Context, conf *oauth2.Config, userInfoEndpoint stri
 	retrievedState := session.Get("state")
 	state := c.Query("state")
 	if state != retrievedState {
-		log.Warnf("expect state is %s, but actual state is %s", retrievedState, state)
-		return errors.New("Invalid oauth state")
+		return errors.New(fmt.Sprintf("expect state is %s, but actual state is %s", retrievedState, state))
 	}
 
 	code := c.Query("code")
@@ -250,6 +249,12 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	var token string
 	var userInfoEndpoint string
 
+	defer func() {
+		if err != nil {
+			log.Errorf("%+v", err)
+		}
+	}()
+
 	session = sessions.Default(c)
 
 	if retrievedDestination = session.Get("destination"); retrievedDestination != nil {
@@ -275,7 +280,7 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	}
 
 	if err != nil {
-		log.Errorf("%+v", errors.Wrap(err, "oauth fails while getting user info from api, error message:"))
+		err = errors.Wrap(err, "oauth fails while getting user info from api, error message:")
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
 	}
@@ -283,13 +288,13 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	oauthUser.Type = oauthType
 
 	if matchUser, err = findOrCreateUser(oauthUser, o.Storage); err != nil {
-		log.Errorf("%+v", errors.Wrap(err, "oauth fails due to database operation error:"))
+		err = errors.Wrap(err, "oauth fails due to database operation error:")
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
 	}
 
 	if token, err = utils.RetrieveV2IDToken(matchUser.ID, matchUser.Email.ValueOrZero(), matchUser.FirstName.ValueOrZero(), matchUser.LastName.ValueOrZero(), idTokenExpiration); err != nil {
-		log.Errorf("%+v", errors.Wrap(err, "oauth fails due to generate JWT error:"))
+		err = errors.Wrap(err, "oauth fails due to generate JWT error:")
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
 	}
