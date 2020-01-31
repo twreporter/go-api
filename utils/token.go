@@ -1,14 +1,12 @@
 package utils
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/pkg/errors"
 
 	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
-	//log "github.com/Sirupsen/logrus"
 )
 
 type AuthTokenType int
@@ -137,8 +135,7 @@ func genToken(claims jwt.Claims, secret string) (string, error) {
 	tokenString, err = token.SignedString([]byte(secret))
 
 	if err != nil {
-		return "", models.NewAppError(errorWhere, "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)
+		return "", errors.Wrap(err, "internal server error: fail to generate token")
 	}
-
 	return tokenString, nil
 }
