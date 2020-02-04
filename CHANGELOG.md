@@ -1,7 +1,17 @@
 ## Unreleased
 
 ## Released
-### 5.1.1(Current), 2019-11-26
+
+### 5.1.2(Current), 2020-02-04
+#### Notable Changes
+- donation:
+  - Config frontend host of linepay in runtime
+
+#### Commits
+- [[23df36d](https://github.com/twreporter/go-api/commit/23df36df3d85a4de180de14ce1817928d574b4d0)] - Config frontend host of linepay in runtime(babygoat)
+- [[3a7948e](https://github.com/twreporter/go-api/commit/3a7948eade39583544189a59ddb799e62b7acac0)] - bug: show latest review and photo articles
+
+### 5.1.1, 2019-11-26
 #### Notable Changes
 - donation:
   - add `line_pay_product_image_url` linepay icon

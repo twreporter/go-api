@@ -30,18 +30,19 @@ var Globs globalVariables
 
 func init() {
 	var defaults = defaultVariables{
-		Account: "developer@twreporter.org",
-		Service: "default_service",
-		Token:   "default_token",
-		ImgID1:  bson.NewObjectId(),
-		ImgID2:  bson.NewObjectId(),
-		VideoID: bson.NewObjectId(),
-		PostID1: bson.NewObjectId(),
-		PostID2: bson.NewObjectId(),
-		TopicID: bson.NewObjectId(),
-		TagID:   bson.NewObjectId(),
-		CatID:   bson.NewObjectId(),
-		ThemeID: bson.NewObjectId(),
+		Account:          "developer@twreporter.org",
+		Service:          "default_service",
+		Token:            "default_token",
+		ImgID1:           bson.NewObjectId(),
+		ImgID2:           bson.NewObjectId(),
+		VideoID:          bson.NewObjectId(),
+		PostID1:          bson.NewObjectId(),
+		PostID2:          bson.NewObjectId(),
+		TopicID:          bson.NewObjectId(),
+		TagID:            bson.NewObjectId(),
+		CatReviewID:      bson.ObjectIdHex(configs.ReviewListID),
+		CatPhotographyID: bson.ObjectIdHex(configs.PhotographyListID),
+		ThemeID:          bson.NewObjectId(),
 
 		MockPostSlug1: "mock-post-slug-1",
 		MockTopicSlug: "mock-topic-slug",
@@ -109,11 +110,15 @@ func init() {
 	}
 	defaults.TagCol = tag
 
-	cat := models.Category{
-		ID:   defaults.CatID,
-		Name: "mock postcategory",
+	defaults.CatReviewCol = models.Category{
+		ID:   defaults.CatReviewID,
+		Name: "評論",
 	}
-	defaults.CatCol = cat
+
+	defaults.CatPhotographyCol = models.Category{
+		ID:   defaults.CatPhotographyID,
+		Name: "攝影",
+	}
 
 	theme := models.Theme{
 		ID:            defaults.ThemeID,
@@ -126,12 +131,12 @@ func init() {
 		ID:               defaults.PostID1,
 		Slug:             defaults.MockPostSlug1,
 		Name:             "mock post slug 1",
-		Style:            "article",
+		Style:            "article:v2:default",
 		State:            "published",
 		ThemeOrigin:      defaults.ThemeID,
 		PublishedDate:    time.Now(),
 		HeroImageOrigin:  defaults.ImgID1,
-		CategoriesOrigin: []bson.ObjectId{defaults.CatID},
+		CategoriesOrigin: []bson.ObjectId{defaults.CatPhotographyID},
 		OgImageOrigin:    defaults.ImgID1,
 		IsFeatured:       true,
 		TopicOrigin:      defaults.TopicID,
@@ -143,12 +148,12 @@ func init() {
 		ID:                         defaults.PostID2,
 		Slug:                       "mock-post-slug-2",
 		Name:                       "mock post slug 2",
-		Style:                      "review",
+		Style:                      "article:v2:default",
 		State:                      "published",
 		ThemeOrigin:                defaults.ThemeID,
 		PublishedDate:              post1.PublishedDate.Add(time.Duration(1) * time.Minute),
 		HeroImageOrigin:            defaults.ImgID2,
-		CategoriesOrigin:           []bson.ObjectId{defaults.CatID},
+		CategoriesOrigin:           []bson.ObjectId{defaults.CatReviewID},
 		OgImageOrigin:              defaults.ImgID2,
 		IsFeatured:                 false,
 		LeadingImagePortraitOrigin: defaults.ImgID1,
