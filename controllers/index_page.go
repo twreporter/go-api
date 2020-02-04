@@ -118,7 +118,11 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 		globals.ReviewsSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
-				Style: "review",
+				Categories: models.MongoQueryComparison{
+					In: []bson.ObjectId{
+						bson.ObjectIdHex(configs.ReviewListID),
+					},
+				},
 			},
 			Limit:        4,
 			Offset:       0,
@@ -138,7 +142,11 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 		globals.PhotoSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
-				Style: "article:v2:photo",
+				Categories: models.MongoQueryComparison{
+					In: []bson.ObjectId{
+						bson.ObjectIdHex(configs.PhotographyListID),
+					},
+				},
 			},
 			Limit:        6,
 			Offset:       0,

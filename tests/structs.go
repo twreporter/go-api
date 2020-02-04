@@ -14,26 +14,28 @@ type defaultVariables struct {
 	Token   string
 
 	// objectID
-	ImgID1  bson.ObjectId
-	ImgID2  bson.ObjectId
-	VideoID bson.ObjectId
-	PostID1 bson.ObjectId
-	PostID2 bson.ObjectId
-	TopicID bson.ObjectId
-	TagID   bson.ObjectId
-	CatID   bson.ObjectId
-	ThemeID bson.ObjectId
+	ImgID1           bson.ObjectId
+	ImgID2           bson.ObjectId
+	VideoID          bson.ObjectId
+	PostID1          bson.ObjectId
+	PostID2          bson.ObjectId
+	TopicID          bson.ObjectId
+	TagID            bson.ObjectId
+	CatReviewID      bson.ObjectId
+	CatPhotographyID bson.ObjectId
+	ThemeID          bson.ObjectId
 
 	// collection
-	ImgCol1  models.MongoImage
-	ImgCol2  models.MongoImage
-	VideoCol models.MongoVideo
-	PostCol1 models.Post
-	PostCol2 models.Post
-	TagCol   models.Tag
-	CatCol   models.Category
-	TopicCol models.Topic
-	ThemeCol models.Theme
+	ImgCol1           models.MongoImage
+	ImgCol2           models.MongoImage
+	VideoCol          models.MongoVideo
+	PostCol1          models.Post
+	PostCol2          models.Post
+	TagCol            models.Tag
+	CatReviewCol      models.Category
+	CatPhotographyCol models.Category
+	TopicCol          models.Topic
+	ThemeCol          models.Theme
 
 	MockPostSlug1 string
 	MockTopicSlug string
