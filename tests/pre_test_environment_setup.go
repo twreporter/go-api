@@ -101,7 +101,8 @@ func setMgoDefaultRecords(mgoDB *mgo.Session) {
 
 	// insert tag and postcategory
 	mgoDB.DB(mgoDBName).C(mgoTagCol).Insert(Globs.Defaults.TagCol)
-	mgoDB.DB(mgoDBName).C(mgoCategoriesCol).Insert(Globs.Defaults.CatCol)
+	mgoDB.DB(mgoDBName).C(mgoCategoriesCol).Insert(Globs.Defaults.CatReviewCol)
+	mgoDB.DB(mgoDBName).C(mgoCategoriesCol).Insert(Globs.Defaults.CatPhotographyCol)
 
 	// insert post1 and post2
 	mgoDB.DB(mgoDBName).C(mgoPostCol).Insert(Globs.Defaults.PostCol1)
