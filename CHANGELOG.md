@@ -1,8 +1,11 @@
 ## Unreleased
 
 ## Released
+### 5.1.3(Current), 2020-02-05
+#### Commits
+- [[f9ae74a](https://github.com/twreporter/go-api/commit/f9ae74ab9960027b0bfadc1ceaca2adebe6a9b0d)] - fix: handle url query parsing failure 
 
-### 5.1.2(Current), 2020-02-04
+### 5.1.2, 2020-02-04
 #### Notable Changes
 - donation:
   - Config frontend host of linepay in runtime
