@@ -14,9 +14,18 @@ import (
 func (nc *NewsController) GetTopics(c *gin.Context) {
 	var total int
 	var topics []models.Topic
-	var err error
 
-	mq, limit, offset, sort, full := nc.GetQueryParam(c)
+	err, mq, limit, offset, sort, full := nc.GetQueryParam(c)
+
+	// response empty records if parsing url query param occurs error
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{
+			Total:  total,
+			Offset: offset,
+			Limit:  limit,
+		}})
+		return
+	}
 
 	if limit == 0 {
 		limit = 10
