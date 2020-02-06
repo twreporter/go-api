@@ -175,7 +175,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	defer func() {
 		if nil != err {
 			// Client side error. Do not trigger error reporting
-			log.Errorf("%v", err)
+			log.Infof("%v", err)
 
 			//Always redirect to a designated page
 			c.Redirect(http.StatusTemporaryRedirect, authErrorPage)

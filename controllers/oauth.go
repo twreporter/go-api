@@ -251,7 +251,7 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 
 	defer func() {
 		if err != nil {
-			log.Errorf("%+v", err)
+			log.Infof("%v", err)
 		}
 	}()
 

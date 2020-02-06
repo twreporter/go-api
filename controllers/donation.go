@@ -584,7 +584,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	// since the donation already succeeded, return transaction success even if the information patch fails
 	if err = mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, periodicDonation, tokenDonation); nil != err {
-		log.Errorf("%+v", err)
+		log.Infof("%v", err)
 	}
 
 	// build response for clients
@@ -663,7 +663,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	if err, _ = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id": primeDonation.ID,
 	}, primeDonation); nil != err {
-		log.Errorf("%+v", err)
+		log.Infof("%v", err)
 	}
 
 	// build response for clients
@@ -836,14 +836,14 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 	var callbackPayload tapPayTransactionResp
 
 	if failData, valid := bindRequestJSONBody(c, &callbackPayload); valid == false {
-		log.Errorf("Fail to bind callback payload, %v", failData)
+		log.Infof("Fail to bind callback payload, %v", failData)
 		return http.StatusBadRequest, gin.H{}, nil
 	}
 
 	// Validate Line Pay Method if PayInfo is set
 	if callbackPayload.PayInfo.Method.IsZero() == false {
 		if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
-			log.Errorf("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
+			log.Infof("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
 			return http.StatusBadRequest, gin.H{}, nil
 		}
 	}
@@ -854,7 +854,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
 
 		if re.MatchString(callbackPayload.PayInfo.MaskedCreditCardNumber.String) == false {
-			log.Errorf("Invalid line pay credit number format: %s", callbackPayload.PayInfo.MaskedCreditCardNumber.String)
+			log.Infof("Invalid line pay credit number format: %s", callbackPayload.PayInfo.MaskedCreditCardNumber.String)
 			return http.StatusBadRequest, gin.H{}, nil
 		}
 	}
@@ -877,7 +877,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 	case err != nil:
 		return http.StatusInternalServerError, gin.H{}, err
 	case rowsAffected == 0:
-		log.Errorf("No corresponding record to patch, condition: %v", conditions)
+		log.Infof("No corresponding record to patch, condition: %v", conditions)
 		return http.StatusUnprocessableEntity, gin.H{}, nil
 	}
 
@@ -1072,7 +1072,7 @@ func decrypt(data string, key string) string {
 	nonce, ciphertext := byteData[:nonceSize], byteData[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if nil != err {
-		log.Errorf("%+v", errors.WithStack(err))
+		log.Infof("%+v", errors.WithStack(err))
 	}
 
 	return string(plaintext)
@@ -1088,7 +1088,7 @@ func encrypt(data string, key string) string {
 	gcm, err := cipher.NewGCM(block)
 	if nil != err {
 		//fallback to store plaintext instead
-		log.Errorf("%+v", errors.Wrap(err, "cannot create a block cipher with the given key"))
+		log.Infof("%+v", errors.Wrap(err, "cannot create a block cipher with the given key"))
 		return data
 	}
 
@@ -1097,7 +1097,7 @@ func encrypt(data string, key string) string {
 	// generate random nonce for encryption
 	if _, err := io.ReadFull(rand.Reader, nonce); nil != err {
 		//fallback to store plaintext instead
-		log.Errorf("%+v", errors.Wrap(err, "cannot generate a nonce"))
+		log.Infof("%+v", errors.Wrap(err, "cannot generate a nonce"))
 		return data
 	}
 
