@@ -13,7 +13,7 @@ import (
 // which define the rule we retrieve topics from storage.
 func (nc *NewsController) GetTopics(c *gin.Context) {
 	var total int
-	var topics []models.Topic
+	var topics []models.Topic = make([]models.Topic, 0)
 
 	err, mq, limit, offset, sort, full := nc.GetQueryParam(c)
 
@@ -45,6 +45,12 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 		appErr := err.(*models.AppError)
 		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
 		return
+	}
+
+	// make sure `response.records`
+	// would be `[]` rather than  `null`
+	if topics == nil {
+		topics = make([]models.Topic, 0)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{
