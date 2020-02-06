@@ -1,7 +1,7 @@
 ## Unreleased
 
 ## Released
-### 5.1.3-rc.1(Current), 2020-02-06
+### 5.1.3(Current), 2020-02-06
 
 #### Notable Changes
 - /v1/(posts|topics):
