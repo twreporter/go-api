@@ -17,7 +17,7 @@ func (nc *NewsController) GetAuthors(c *gin.Context) (int, gin.H, error) {
 	var err error
 	var total int
 
-	_, limit, offset, sort, _ := nc.GetQueryParam(c)
+	_, _, limit, offset, sort, _ := nc.GetQueryParam(c)
 
 	if limit == 0 {
 		limit = defaultLimit
