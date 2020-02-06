@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	//"encoding/json"
 	// log "github.com/Sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
@@ -35,10 +36,32 @@ type MongoQuery struct {
 	IDs        MongoQueryComparison `bson:"_id,omitempty" json:"ids"`
 }
 
+func (query MongoQuery) ValidObjectIds(ids []bson.ObjectId) bool {
+	for _, id := range ids {
+		if !id.Valid() {
+			return false
+		}
+	}
+	return true
+}
+
 // UnmarshalQueryString is type-specific functions of MongoQuery type
 func (query *MongoQuery) UnmarshalQueryString(qs string) error {
 	if err := bson.UnmarshalJSON([]byte(qs), &query); err != nil {
 		return err
+	}
+
+	if !query.ValidObjectIds(query.Categories.In) {
+		return errors.New("Category id should be a mongo ObjectId")
+	}
+	if !query.ValidObjectIds(query.Tags.In) {
+		return errors.New("Tag id should be a mongo ObjectId")
+	}
+	if !query.ValidObjectIds(query.Topics.In) {
+		return errors.New("Topic id should be a mongo ObjectId")
+	}
+	if !query.ValidObjectIds(query.IDs.In) {
+		return errors.New("id should be a mongo ObjectId")
 	}
 
 	return nil

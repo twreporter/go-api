@@ -13,10 +13,19 @@ import (
 // which define the rule we retrieve topics from storage.
 func (nc *NewsController) GetTopics(c *gin.Context) {
 	var total int
-	var topics []models.Topic
-	var err error
+	var topics []models.Topic = make([]models.Topic, 0)
 
-	mq, limit, offset, sort, full := nc.GetQueryParam(c)
+	err, mq, limit, offset, sort, full := nc.GetQueryParam(c)
+
+	// response empty records if parsing url query param occurs error
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{
+			Total:  total,
+			Offset: offset,
+			Limit:  limit,
+		}})
+		return
+	}
 
 	if limit == 0 {
 		limit = 10
@@ -36,6 +45,12 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 		appErr := err.(*models.AppError)
 		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
 		return
+	}
+
+	// make sure `response.records`
+	// would be `[]` rather than  `null`
+	if topics == nil {
+		topics = make([]models.Topic, 0)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{

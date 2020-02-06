@@ -19,7 +19,7 @@ func NewNewsController(s storage.NewsStorage) *NewsController {
 }
 
 // GetQueryParam pares url param
-func (nc *NewsController) GetQueryParam(c *gin.Context) (mq models.MongoQuery, limit int, offset int, sort string, full bool) {
+func (nc *NewsController) GetQueryParam(c *gin.Context) (err error, mq models.MongoQuery, limit int, offset int, sort string, full bool) {
 	where := c.Query("where")
 	_limit := c.Query("limit")
 	_offset := c.Query("offset")
@@ -43,7 +43,7 @@ func (nc *NewsController) GetQueryParam(c *gin.Context) (mq models.MongoQuery, l
 		where = "{}"
 	}
 
-	_ = models.GetQuery(where, &mq)
+	err = models.GetQuery(where, &mq)
 
 	return
 }
