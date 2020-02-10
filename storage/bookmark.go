@@ -83,13 +83,6 @@ func (g *GormStorage) CreateABookmarkOfAUser(userID string, bookmark models.Book
 		return _bookmark, errors.Wrap(err, fmt.Sprintf("create a bookmark(%#v) occurs error", bookmark))
 	}
 
-	// update the bookmark fields
-	/*err = g.db.Model(&_bookmark).Updates(bookmark).Error
-
-	if err != nil {
-		return _bookmark, g.NewStorageError(err, "GormStorage.CreateABookmarkOfAUser", fmt.Sprintf("update a bookmark(%#v) occurs error", bookmark))
-	}*/
-
 	err = g.db.Model(&user).Association(bookmarksStr).Append(_bookmark).Error
 	if err != nil {
 		return _bookmark, errors.Wrap(err, fmt.Sprintf("append the bookmark(%#v) to the user(id: %s) occurs error", bookmark, userID))
