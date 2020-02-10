@@ -4,22 +4,24 @@ import (
 	"net/http"
 	"strconv"
 
-	"twreporter.org/go-api/globals"
-
+	log "github.com/Sirupsen/logrus"
 	"github.com/algolia/algoliasearch-client-go/algoliasearch"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+
+	"twreporter.org/go-api/globals"
 )
 
-// _Search - search records from algolia webservice
-func (nc *NewsController) _Search(c *gin.Context, indexName string) {
+// search - search records from algolia webservice
+func search(c *gin.Context, indexName string) {
 	var err error
 	var hitsPerPage int
 	var page int
 	var res algoliasearch.QueryRes
 
 	filters := c.Query("filters")
-	hitsPerPage, err = strconv.Atoi(c.Query("hitsPerPage"))
-	page, err = strconv.Atoi(c.Query("page"))
+	hitsPerPage, _ = strconv.Atoi(c.Query("hitsPerPage"))
+	page, _ = strconv.Atoi(c.Query("page"))
 	keywords := c.Query("keywords")
 
 	client := algoliasearch.NewClient(globals.Conf.Algolia.ApplicationID, globals.Conf.Algolia.APIKey)
@@ -32,8 +34,8 @@ func (nc *NewsController) _Search(c *gin.Context, indexName string) {
 	})
 
 	if err != nil {
+		log.Errorf("%+v", errors.WithStack(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
-		return
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -41,10 +43,10 @@ func (nc *NewsController) _Search(c *gin.Context, indexName string) {
 
 // SearchAuthors - search authors from algolia webservice
 func (nc *NewsController) SearchAuthors(c *gin.Context) {
-	nc._Search(c, "contacts-index-v2")
+	search(c, "contacts-index-v2")
 }
 
 // SearchPosts - search posts of authors from algolia webservice
 func (nc *NewsController) SearchPosts(c *gin.Context) {
-	nc._Search(c, "posts-index-v2")
+	search(c, "posts-index-v2")
 }

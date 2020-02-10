@@ -3,8 +3,8 @@ package storage
 import (
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
 	"twreporter.org/go-api/models"
@@ -12,7 +12,7 @@ import (
 
 // MembershipStorage defines the methods we need to implement,
 // in order to fulfill the functionalities a membership system needs.
-// Such as, let user signup, login w/o oauth, CRUD bookmarks, CRUD registrations.
+// Such as, let user signup, login w/o oauth, CRUD bookmarks.
 type MembershipStorage interface {
 	/** Close DB Connection **/
 	Close() error
@@ -77,14 +77,10 @@ func (gs *GormStorage) Close() error {
 
 // Get method of MembershipStorage interface
 func (gs *GormStorage) Get(id uint, m interface{}) error {
-	var err error
-	var errWhere string = "GormStorage.Get"
-
-	err = gs.db.Where("id = ?", id).Find(m).Error
+	err := gs.db.Where("id = ?", id).Find(m).Error
 
 	if err != nil {
-		log.Error(err.Error())
-		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not get the record(id: %d)", id))
+		return errors.Wrap(err, fmt.Sprintf("can not get the record(id: %d)", id))
 	}
 
 	return nil
@@ -92,14 +88,10 @@ func (gs *GormStorage) Get(id uint, m interface{}) error {
 
 // GetByConditions method of MembershipStorage interface
 func (gs *GormStorage) GetByConditions(cond map[string]interface{}, m interface{}) error {
-	var err error
-	var errWhere string = "GormStorage.GetByConditions"
-
-	err = gs.db.Where(cond).Find(m).Error
+	err := gs.db.Where(cond).Find(m).Error
 
 	if err != nil {
-		log.Error(err.Error())
-		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not get the record(where: %v)", cond))
+		return errors.Wrap(err, fmt.Sprintf("can not get the record(where: %v)", cond))
 	}
 
 	return nil
@@ -107,16 +99,13 @@ func (gs *GormStorage) GetByConditions(cond map[string]interface{}, m interface{
 
 // UpdateByConditions method of MembershipStorage interface
 func (gs *GormStorage) UpdateByConditions(cond map[string]interface{}, m interface{}) (err error, rowsAffected int64) {
-	var errWhere string = "GormStorage.UpdateByConditions"
-
 	// caution:
 	// it will perform batch updates if cond is zero value and primary key of m is zero value
 	updates := gs.db.Model(m).Where(cond).Updates(m)
 	err = updates.Error
 
 	if err != nil {
-		log.Error(err.Error())
-		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not update the record(where: %v)", cond)), 0
+		return errors.Wrap(err, fmt.Sprintf("can not update the record(where: %v)", cond)), 0
 	}
 
 	rowsAffected = updates.RowsAffected
@@ -131,14 +120,10 @@ func (gs *GormStorage) Delete(id uint, m interface{}) error {
 
 // Create method of MembershipStorage interface
 func (gs *GormStorage) Create(m interface{}) error {
-	var err error
-	var errWhere string = "GormStorage.Create"
-
-	err = gs.db.Create(m).Error
+	err := gs.db.Create(m).Error
 
 	if nil != err {
-		log.Error(err.Error())
-		return gs.NewStorageError(err, errWhere, fmt.Sprintf("can not create the record(%#v)", m))
+		return errors.Wrap(err, fmt.Sprintf("can not create the record(%#v)", m))
 	}
 
 	return nil

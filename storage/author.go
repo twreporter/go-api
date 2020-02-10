@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2/bson"
 
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
-	//	log "github.com/Sirupsen/logrus"
 )
 
 // GetFullAuthors finds the authors according to mongo aggregation pipeline stages
@@ -42,13 +42,13 @@ func (m *MongoStorage) GetFullAuthors(limit int, offset int, sort string) ([]mod
 
 	collection := m.db.DB(globals.Conf.DB.Mongo.DBname).C("contacts")
 	if total, err = collection.Count(); err != nil {
-		return authors, 0, m.NewStorageError(err, "MongoStorage.GetFullAuthors", "can not get total count of authors")
+		return authors, 0, errors.Wrap(err, "can not get total count of authors")
 	}
 
 	pipe := collection.Pipe(pipeline)
 
 	if err = pipe.All(&results); err != nil {
-		return authors, 0, m.NewStorageError(err, "MongoStorage.GetFullAuthors", "can not get authors from storage")
+		return authors, 0, errors.Wrap(err, "can not get authors from storage")
 	}
 
 	// Copy fields/values from `author`s to `FullAuthor`s

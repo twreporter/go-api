@@ -186,11 +186,6 @@ func requestWithBody(method, path, body string) (req *http.Request) {
 	return
 }
 
-func generateJWT(user models.User) (jwt string) {
-	jwt, _ = utils.RetrieveV1Token(user.ID, user.Email.String)
-	return
-}
-
 func generateIDToken(user models.User) (jwt string) {
 	jwt, _ = utils.RetrieveV2IDToken(user.ID, user.Email.ValueOrZero(), user.FirstName.ValueOrZero(), user.LastName.ValueOrZero(), 3600)
 	return

@@ -5,24 +5,32 @@ import (
 	"net/http"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/pkg/errors"
+
 	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/routers"
 	"twreporter.org/go-api/services"
 	"twreporter.org/go-api/utils"
-
-	log "github.com/Sirupsen/logrus"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 func main() {
 	var err error
 	var cf *controllers.ControllerFactory
 
+	defer func() {
+		if err != nil {
+			log.Errorf("%+v", err)
+		}
+	}()
+
 	globals.Conf, err = configs.LoadConf("")
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		err = errors.Wrap(err, "Fatal error config file")
+		return
 	}
 
 	// set up database connection
@@ -30,14 +38,14 @@ func main() {
 	db, err := utils.InitDB(10, 5)
 	defer db.Close()
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	log.Info("Connecting to MongoDB replica")
 	session, err := utils.InitMongoDB()
 	defer session.Close()
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	// mailSender := services.NewSMTPMailService() // use office365 to send mails
@@ -61,7 +69,7 @@ func main() {
 	}
 
 	if err = s.ListenAndServe(); err != nil {
-		log.Error("Fail to start HTTP server", err.Error())
+		err = errors.Wrap(err, "Fail to start HTTP server")
 	}
-
+	return
 }

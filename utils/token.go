@@ -1,14 +1,12 @@
 package utils
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/pkg/errors"
 
 	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
-	//log "github.com/Sirupsen/logrus"
 )
 
 type AuthTokenType int
@@ -77,19 +75,6 @@ func (idc IDTokenJWTClaims) Valid() error {
 	return nil
 }
 
-func RetrieveV1Token(userID uint, email string) (string, error) {
-	claims := ReporterJWTClaims{
-		userID,
-		email,
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Second * time.Duration(globals.Conf.App.JwtExpiration)).Unix(),
-			Issuer:    globals.Conf.App.JwtIssuer,
-			Audience:  globals.Conf.App.JwtAudience,
-		},
-	}
-	return genToken(claims, globals.Conf.App.JwtSecret)
-}
-
 func RetrieveV2IDToken(userID uint, email, firstName, lastName string, expiration int) (string, error) {
 	claims := IDTokenJWTClaims{
 		userID,
@@ -150,8 +135,7 @@ func genToken(claims jwt.Claims, secret string) (string, error) {
 	tokenString, err = token.SignedString([]byte(secret))
 
 	if err != nil {
-		return "", models.NewAppError(errorWhere, "internal server error: fail to generate token", err.Error(), http.StatusInternalServerError)
+		return "", errors.Wrap(err, "internal server error: fail to generate token")
 	}
-
 	return tokenString, nil
 }

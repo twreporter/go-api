@@ -2,23 +2,20 @@ package services
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"mime"
-	"net/http"
 	"net/mail"
 	"net/smtp"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"twreporter.org/go-api/configs"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
-
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/pkg/errors"
+
+	"twreporter.org/go-api/configs"
+	"twreporter.org/go-api/globals"
 )
 
 // MailService defines an interface to be implemented
@@ -50,8 +47,7 @@ func (s *AmazonMailStrategy) Send(to, subject, body string) error {
 	emailSettings := s.conf
 
 	if len(emailSettings.SenderAddress) == 0 {
-		log.Warn("AmazonMailStrategy.config.SenderAddress is not set")
-		return nil
+		return errors.New("AmazonMailStrategy.config.SenderAddress is not set")
 	}
 
 	// Create a new session and specify an AWS Region.
@@ -59,7 +55,7 @@ func (s *AmazonMailStrategy) Send(to, subject, body string) error {
 		Region: aws.String(emailSettings.AwsRegion)},
 	)
 	if err != nil {
-		return models.NewAppError("AmazonMailSender.Send", "cannot create a session to AWS", err.Error(), http.StatusInternalServerError)
+		return errors.Wrap(err, "cannot create a session to AWS")
 	}
 
 	// Create an SES client in the session.
@@ -109,18 +105,7 @@ func (s *AmazonMailStrategy) Send(to, subject, body string) error {
 
 	// Display error messages if they occur.
 	if err != nil {
-		ec := ""
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case ses.ErrCodeMessageRejected:
-				ec = ses.ErrCodeMessageRejected + ": "
-			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				ec = ses.ErrCodeMailFromDomainNotVerifiedException + ": "
-			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				ec = ses.ErrCodeConfigurationSetDoesNotExistException + ": "
-			}
-		}
-		return models.NewAppError("AmazonMailSender.Send", "internal server error: fail to send email", ec+err.Error(), http.StatusInternalServerError)
+		return errors.Wrap(err, "internal server error: fail to send email")
 	}
 
 	return nil
@@ -142,8 +127,7 @@ func (s *SMTPMailStrategy) Send(to, subject, body string) error {
 	emailSettings := s.conf
 
 	if len(emailSettings.Server) == 0 {
-		log.Info("utils.mail.send: SMTPServer is not set")
-		return nil
+		return errors.New("utils.mail.send: SMTPServer is not set")
 	}
 
 	log.WithFields(log.Fields{
@@ -164,7 +148,7 @@ func (s *SMTPMailStrategy) Send(to, subject, body string) error {
 	err := smtp.SendMail(addr, auth, emailSettings.Username, []string{to}, []byte(message))
 
 	if err != nil {
-		return models.NewAppError("SMTPEmailSender.Send", "internal server error: fail to send email", err.Error(), http.StatusInternalServerError)
+		return errors.Wrap(err, "internal server error: fail to send email")
 	}
 
 	return nil
