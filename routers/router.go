@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/mongo"
 	"github.com/gin-gonic/gin"
+	f "github.com/twreporter/logformatter"
 
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/globals"
@@ -31,8 +32,17 @@ func ginResponseWrapper(fn wrappedFn) func(c *gin.Context) {
 }
 
 // SetupRouter ...
-func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
-	engine := gin.Default()
+func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
+	switch globals.Conf.Environment {
+	case "production", "staging":
+		// Disable default logger(stdout/stderr)
+		gin.SetMode(gin.ReleaseMode)
+		engine = gin.New()
+		engine.Use(middlewares.Recovery())
+		engine.Use(gin.LoggerWithFormatter(f.NewGinLogFormatter()))
+	default:
+		engine = gin.Default()
+	}
 
 	config := cors.DefaultConfig()
 
@@ -43,16 +53,12 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 		switch globals.Conf.Environment {
 		case globals.DevelopmentEnvironment:
 			config.AllowAllOrigins = true
-			break
 		case globals.StagingEnvironment:
 			config.AllowOrigins = []string{globals.MainSiteStagingOrigin, globals.SupportSiteStagingOrigin, globals.AccountsSiteStagingOrigin}
-			break
 		case globals.ProductionEnvironment:
 			config.AllowOrigins = []string{globals.MainSiteOrigin, globals.SupportSiteOrigin, globals.AccountsSiteOrigin}
-			break
 		default:
 			// omit intentionally
-			break
 		}
 	}
 
@@ -176,5 +182,5 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
 	v2AuthGroup.POST("/token", middlewares.ValidateAuthentication(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.TokenDispatch))
 	v2AuthGroup.GET("/logout", mc.TokenInvalidate)
-	return engine
+	return
 }
