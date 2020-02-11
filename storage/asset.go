@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 
 	"twreporter.org/go-api/models"

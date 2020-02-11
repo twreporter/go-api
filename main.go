@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/controllers"

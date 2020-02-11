@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/algolia/algoliasearch-client-go/algoliasearch"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"twreporter.org/go-api/globals"
 )

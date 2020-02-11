@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/guregu/null.v3"
 
 	"twreporter.org/go-api/configs/constants"

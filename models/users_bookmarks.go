@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	//"twreporter.org/go-api/globals"
-	//log "github.com/Sirupsen/logrus"
 )
 
 // UsersBookmarks users and bookmarks many-to-many table

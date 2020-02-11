@@ -3,11 +3,11 @@ package routers
 import (
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/mongo"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	f "github.com/twreporter/logformatter"
 
 	"twreporter.org/go-api/controllers"

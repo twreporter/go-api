@@ -7,10 +7,10 @@ import (
 	"net/url"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
