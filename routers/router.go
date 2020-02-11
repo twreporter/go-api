@@ -25,7 +25,11 @@ func ginResponseWrapper(fn wrappedFn) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		statusCode, obj, err := fn(c)
 		if err != nil {
-			log.Errorf("%+v", err)
+			if globals.Conf.Environment == "development" {
+				log.Errorf("%+v", err)
+			} else {
+				log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+			}
 		}
 		c.JSON(statusCode, obj)
 	}

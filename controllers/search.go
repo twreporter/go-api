@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	f "github.com/twreporter/logformatter"
 
 	"twreporter.org/go-api/globals"
 )
@@ -34,7 +35,11 @@ func search(c *gin.Context, indexName string) {
 	})
 
 	if err != nil {
-		log.Errorf("%+v", errors.WithStack(err))
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", errors.WithStack(err))
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(errors.WithStack(err)))
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal server error", "error": err.Error()})
 	}
 

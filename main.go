@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	f "github.com/twreporter/logformatter"
 
 	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/controllers"
@@ -23,7 +24,11 @@ func main() {
 
 	defer func() {
 		if err != nil {
-			log.Errorf("%+v", err)
+			if globals.Conf.Environment == "development" {
+				log.Errorf("%+v", err)
+			} else {
+				log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+			}
 		}
 	}()
 
@@ -32,6 +37,8 @@ func main() {
 		err = errors.Wrap(err, "Fatal error config file")
 		return
 	}
+
+	configLogger()
 
 	// set up database connection
 	log.Info("Connecting to MySQL cloud")
@@ -72,4 +79,19 @@ func main() {
 		err = errors.Wrap(err, "Fail to start HTTP server")
 	}
 	return
+}
+
+func configLogger() {
+	env := globals.Conf.Environment
+	switch env {
+	// production/staging environments writes the log into standard output
+	// and delegates log collector (fluentd) in k8s cluster to export to
+	// stackdriver sink.
+	case "production", "staging":
+		log.SetOutput(os.Stdout)
+		log.SetFormatter(f.NewStackdriverFormatter("go-api", env))
+	// development environment reports the log location
+	default:
+		log.SetReportCaller(true)
+	}
 }

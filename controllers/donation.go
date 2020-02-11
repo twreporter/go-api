@@ -21,6 +21,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	f "github.com/twreporter/logformatter"
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
 
@@ -511,7 +512,14 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 	}
 
 	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {
-		log.Errorf("%+v", errors.Wrap(err, fmt.Sprintf("fail to send %s donation(order_number: %s) mail", donationType, body.OrderNumber)))
+
+		err = errors.Wrap(err, fmt.Sprintf("fail to send %s donation(order_number: %s) mail", donationType, body.OrderNumber))
+
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", err)
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
 	}
 
 }
