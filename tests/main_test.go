@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	//log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"

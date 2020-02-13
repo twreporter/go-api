@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 
-	//log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/models"
 )

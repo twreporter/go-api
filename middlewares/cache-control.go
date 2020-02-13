@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	//log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 )
 

@@ -10,7 +10,6 @@ import (
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/utils"
 
-	// log "github.com/Sirupsen/logrus"
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"

@@ -3,7 +3,6 @@ package storage
 import (
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
-	//log "github.com/Sirupsen/logrus"
 )
 
 // _GetTopics finds the topics according to query string and also get the embedded assets

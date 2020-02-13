@@ -8,11 +8,11 @@ import (
 	"net/smtp"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/globals"

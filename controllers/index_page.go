@@ -10,7 +10,7 @@ import (
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/models"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // IndexPageQueryStruct struct for querying.
