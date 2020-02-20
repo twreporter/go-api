@@ -8,10 +8,10 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/scrypt"
 
 	"twreporter.org/go-api/globals"
-	//log "github.com/Sirupsen/logrus"
 )
 
 // GenerateRandomBytes returns securely generated random bytes.
@@ -23,7 +23,7 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 	_, err := rand.Read(b)
 	// Note that err == nil only if we read len(b) bytes.
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return b, nil
@@ -41,7 +41,7 @@ func GenerateRandomString(s int) (string, error) {
 func GenerateEncryptedPassword(password []byte) (string, error) {
 	salt := []byte(globals.Conf.Encrypt.Salt)
 	key, err := scrypt.Key(password, salt, 16384, 8, 1, 32)
-	return fmt.Sprintf("%x", key), err
+	return fmt.Sprintf("%x", key), errors.WithStack(err)
 }
 
 // GetProjectRoot returns absolute path of current project root.

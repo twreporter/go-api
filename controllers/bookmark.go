@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	// log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+
 	"twreporter.org/go-api/models"
 )
 
@@ -27,24 +28,21 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) (int, gin.H,
 		host := c.Query("host")
 
 		if bookmark, err = mc.Storage.GetABookmarkOfAUser(userID, bookmarkSlug, host); err != nil {
-			return 0, gin.H{}, err
+			return toResponse(err)
 		}
 
 		return http.StatusOK, gin.H{"status": "ok", "record": bookmark}, nil
 	}
 
-	_limit := c.Query("limit")
-	_offset := c.Query("offset")
-
-	limit, _ := strconv.Atoi(_limit)
-	offset, _ := strconv.Atoi(_offset)
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	offset, _ := strconv.Atoi(c.Query("offset"))
 
 	if limit == 0 {
 		limit = 10
 	}
 
 	if bookmarks, total, err = mc.Storage.GetBookmarksOfAUser(userID, limit, offset); err != nil {
-		return 0, gin.H{}, err
+		return toResponse(err)
 	}
 
 	// TODO The response JSON should be like
@@ -64,12 +62,11 @@ func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) (int, gin.H,
 
 // DeleteABookmarkOfAUser given userID and bookmarkHref, this func will remove the relationship between user and bookmark
 func (mc *MembershipController) DeleteABookmarkOfAUser(c *gin.Context) (int, gin.H, error) {
-
 	bookmarkID := c.Param("bookmarkID")
 	userID := c.Param("userID")
 
 	if err := mc.Storage.DeleteABookmarkOfAUser(userID, bookmarkID); err != nil {
-		return 0, gin.H{}, err
+		return toResponse(err)
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
@@ -83,11 +80,13 @@ func (mc *MembershipController) CreateABookmarkOfAUser(c *gin.Context) (int, gin
 
 	userID := c.Param("userID")
 	if bookmark, err = mc.parseBookmarkPOSTBody(c); err != nil {
-		return 0, gin.H{}, err
+		// For legacy code, the response returns with status "error"
+		// TODO rewrite with status "fail"
+		return http.StatusBadRequest, gin.H{"status": "error", "message": err.Error()}, nil
 	}
 
 	if bookmark, err = mc.Storage.CreateABookmarkOfAUser(userID, bookmark); err != nil {
-		return 0, gin.H{}, err
+		return toResponse(err)
 	}
 
 	// TODO The response JSON should be like
@@ -99,12 +98,10 @@ func (mc *MembershipController) CreateABookmarkOfAUser(c *gin.Context) (int, gin
 }
 
 func (mc *MembershipController) parseBookmarkPOSTBody(c *gin.Context) (models.Bookmark, error) {
-	var err error
 	var bm models.Bookmark
 
-	if err = c.Bind(&bm); err != nil {
-		return models.Bookmark{}, models.NewAppError("MembershipController.parseBookmarkPOSTBody", "POST body is neither JSON nor x-www-form-urlencoded", err.Error(), http.StatusBadRequest)
+	if err := c.Bind(&bm); err != nil {
+		return models.Bookmark{}, errors.Wrap(err, "POST body is neither JSON nor x-www-form-urlencoded")
 	}
-
 	return bm, nil
 }

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"twreporter.org/go-api/storage"
-	//log "github.com/Sirupsen/logrus"
 )
 
 // NewMembershipController ...

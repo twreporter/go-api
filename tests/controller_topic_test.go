@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	//log "github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"twreporter.org/go-api/models"
 )

@@ -11,7 +11,7 @@ import (
 // GetTopics receive HTTP GET method request, and return the topics.
 // `query`, `limit`, `offset` and `sort` are the url query params,
 // which define the rule we retrieve topics from storage.
-func (nc *NewsController) GetTopics(c *gin.Context) {
+func (nc *NewsController) GetTopics(c *gin.Context) (int, gin.H, error) {
 	var total int
 	var topics []models.Topic = make([]models.Topic, 0)
 
@@ -19,12 +19,11 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 
 	// response empty records if parsing url query param occurs error
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{
+		return http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{
 			Total:  total,
 			Offset: offset,
 			Limit:  limit,
-		}})
-		return
+		}}, nil
 	}
 
 	if limit == 0 {
@@ -42,9 +41,7 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 	}
 
 	if err != nil {
-		appErr := err.(*models.AppError)
-		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
-		return
+		return toPostResponse(err)
 	}
 
 	// make sure `response.records`
@@ -53,17 +50,15 @@ func (nc *NewsController) GetTopics(c *gin.Context) {
 		topics = make([]models.Topic, 0)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{
+	return http.StatusOK, gin.H{"status": "ok", "records": topics, "meta": models.MetaOfResponse{
 		Total:  total,
 		Offset: offset,
 		Limit:  limit,
-	}})
-	return
-
+	}}, nil
 }
 
 // GetATopic receive HTTP GET method request, and return the certain post.
-func (nc *NewsController) GetATopic(c *gin.Context) {
+func (nc *NewsController) GetATopic(c *gin.Context) (int, gin.H, error) {
 	var topics []models.Topic
 	var err error
 
@@ -81,15 +76,12 @@ func (nc *NewsController) GetATopic(c *gin.Context) {
 	}
 
 	if err != nil {
-		appErr := err.(*models.AppError)
-		c.JSON(appErr.StatusCode, gin.H{"status": appErr.Message, "error": err.Error()})
-		return
+		return toPostResponse(err)
 	}
 
 	if len(topics) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"status": "Record Not Found", "error": "Record Not Found"})
-		return
+		return http.StatusNotFound, gin.H{"status": "Record Not Found", "error": "Record Not Found"}, nil
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "record": topics[0]})
+	return http.StatusOK, gin.H{"status": "ok", "record": topics[0]}, nil
 }

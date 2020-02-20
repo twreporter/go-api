@@ -1,9 +1,7 @@
 package models
 
 import (
-	"errors"
-	//"encoding/json"
-	// log "github.com/Sirupsen/logrus"
+	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -48,7 +46,7 @@ func (query MongoQuery) ValidObjectIds(ids []bson.ObjectId) bool {
 // UnmarshalQueryString is type-specific functions of MongoQuery type
 func (query *MongoQuery) UnmarshalQueryString(qs string) error {
 	if err := bson.UnmarshalJSON([]byte(qs), &query); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	if !query.ValidObjectIds(query.Categories.In) {

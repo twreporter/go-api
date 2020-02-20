@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/models"
 
-	log "github.com/Sirupsen/logrus"
+	"twreporter.org/go-api/models"
 )
 
 // _StringToPscalCase - change WORD to pscal-case
@@ -188,7 +189,7 @@ func (m *MongoStorage) _GetAssetsByIDs(ids []bson.ObjectId, collectionName strin
 	_, err := m.GetDocuments(query, 0, 0, "_id", collectionName, v)
 
 	if err != nil {
-		return m.NewStorageError(err, "MongoStorage._GetAssetsByIDs", fmt.Sprintf("get assets %s by ids %v occurs error", collectionName, ids))
+		return errors.Wrap(err, fmt.Sprintf("get assets %s by ids %v occurs error", collectionName, ids))
 	}
 
 	return nil

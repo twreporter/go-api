@@ -3,16 +3,16 @@ package routers
 import (
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/mongo"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	f "github.com/twreporter/logformatter"
 
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/middlewares"
-	"twreporter.org/go-api/models"
 )
 
 const (
@@ -25,18 +25,28 @@ func ginResponseWrapper(fn wrappedFn) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		statusCode, obj, err := fn(c)
 		if err != nil {
-			appErr := err.(*models.AppError)
-			log.Error(appErr.Error())
-			c.JSON(appErr.StatusCode, gin.H{"status": "error", "message": appErr.Message})
-			return
+			if globals.Conf.Environment == "development" {
+				log.Errorf("%+v", err)
+			} else {
+				log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+			}
 		}
 		c.JSON(statusCode, obj)
 	}
 }
 
 // SetupRouter ...
-func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
-	engine := gin.Default()
+func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
+	switch globals.Conf.Environment {
+	case "production", "staging":
+		// Disable default logger(stdout/stderr)
+		gin.SetMode(gin.ReleaseMode)
+		engine = gin.New()
+		engine.Use(middlewares.Recovery())
+		engine.Use(gin.LoggerWithFormatter(f.NewGinLogFormatter()))
+	default:
+		engine = gin.Default()
+	}
 
 	config := cors.DefaultConfig()
 
@@ -47,16 +57,12 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 		switch globals.Conf.Environment {
 		case globals.DevelopmentEnvironment:
 			config.AllowAllOrigins = true
-			break
 		case globals.StagingEnvironment:
 			config.AllowOrigins = []string{globals.MainSiteStagingOrigin, globals.SupportSiteStagingOrigin, globals.AccountsSiteStagingOrigin}
-			break
 		case globals.ProductionEnvironment:
 			config.AllowOrigins = []string{globals.MainSiteOrigin, globals.SupportSiteOrigin, globals.AccountsSiteOrigin}
-			break
 		default:
 			// omit intentionally
-			break
 		}
 	}
 
@@ -80,10 +86,6 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// membership service endpoints
 	// =============================
 	mc := cf.GetMembershipController()
-	// endpoints for account
-	v1Group.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SignIn))
-	v1Group.GET("/activate", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.Activate))
-	v1Group.GET("/token/:userID", middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.RenewJWT))
 	// endpoints for bookmarks of users
 	v1Group.GET("/users/:userID/bookmarks", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
 	v1Group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
@@ -133,11 +135,11 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// endpoints for authors
 	v1Group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ginResponseWrapper(nc.GetAuthors))
 	// endpoints for posts
-	v1Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), nc.GetPosts)
-	v1Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), nc.GetAPost)
+	v1Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetPosts))
+	v1Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetAPost))
 	// endpoints for topics
-	v1Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), nc.GetTopics)
-	v1Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), nc.GetATopic)
+	v1Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetTopics))
+	v1Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetATopic))
 	v1Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), nc.GetIndexPageContents)
 	v1Group.GET("/index_page_categories", middlewares.SetCacheControl("public,max-age=1800"), nc.GetCategoriesPosts)
 	// endpoints for search
@@ -182,7 +184,7 @@ func SetupRouter(cf *controllers.ControllerFactory) *gin.Engine {
 	// =============================
 	v2AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SignInV2))
 	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
-	v2AuthGroup.POST("/token", middlewares.ValidateAuthentication(), middlewares.SetCacheControl("no-store"), mc.TokenDispatch)
+	v2AuthGroup.POST("/token", middlewares.ValidateAuthentication(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.TokenDispatch))
 	v2AuthGroup.GET("/logout", mc.TokenInvalidate)
-	return engine
+	return
 }

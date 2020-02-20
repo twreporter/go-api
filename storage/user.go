@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/guregu/null.v3"
+
 	"twreporter.org/go-api/configs/constants"
 	"twreporter.org/go-api/models"
 )
@@ -17,7 +18,7 @@ func (gs *GormStorage) GetUserByID(userID string) (models.User, error) {
 
 	// SELECT * FROM users WHERE ID = $userID
 	if err := gs.db.First(&user, "id = ?", userID).Error; err != nil {
-		return user, gs.NewStorageError(err, "GormStorage.GetUserByID", fmt.Sprintf("get user(id: %s) error", userID))
+		return user, errors.Wrap(err, fmt.Sprintf("get user(id: %s) error", userID))
 	}
 
 	return user, nil
@@ -30,25 +31,27 @@ func (gs *GormStorage) GetUserByEmail(email string) (models.User, error) {
 	// SELECT * FROM users WHERE email = $email
 	err := gs.db.First(&user, "email = ?", email).Error
 	if err != nil {
-		return user, gs.NewStorageError(err, "GormStorage.GetOAuthData", fmt.Sprintf("get user(email: %s) error", email))
+		return user, errors.Wrap(err, fmt.Sprintf("get user(email: %s) error", email))
 	}
-	return user, err
+
+	return user, nil
 }
 
 // GetOAuthData gets the corresponding OAuth by using the OAuth information
 func (gs *GormStorage) GetOAuthData(aid null.String, aType string) (models.OAuthAccount, error) {
-	log.Info("Getting the matching OAuth data", aid)
+	log.Debug("Getting the matching OAuth data", aid)
 	oac := models.OAuthAccount{}
 	err := gs.db.Where(&models.OAuthAccount{Type: aType, AId: aid}).Last(&oac).Error
 	if err != nil {
-		return oac, gs.NewStorageError(err, "GormStorage.GetOAuthData", "get oauth account error")
+		return oac, errors.Wrap(err, "get oauth account error")
 	}
-	return oac, err
+
+	return oac, nil
 }
 
 // GetUserDataByOAuth gets the corresponding user data by using the OAuth information
 func (gs *GormStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User, error) {
-	log.Info("Getting the matching User data")
+	log.Debug("Getting the matching User data")
 
 	user := models.User{}
 
@@ -59,35 +62,45 @@ func (gs *GormStorage) GetUserDataByOAuth(oac models.OAuthAccount) (models.User,
 
 	err = gs.db.Model(&matO).Related(&user).Error
 	if err != nil {
-		log.Error("stroage.storage_user.get_user_data_by_oauth.select_record_error: ", err)
+		return user, errors.WithStack(err)
 	}
-	return user, err
+
+	return user, nil
 }
 
 // GetReporterAccountData get the corresponding Reporter account by comparing email and password
 func (gs *GormStorage) GetReporterAccountData(email string) (models.ReporterAccount, error) {
 	log.WithFields(log.Fields{
 		"email": email,
-	}).Info("Getting the matching Reporter account data")
+	}).Debug("Getting the matching Reporter account data")
 
 	ra := models.ReporterAccount{}
 	err := gs.db.Where(&models.ReporterAccount{Email: email}).Find(&ra).Error
-	return ra, gs.NewStorageError(err, "GormStorage.GetReporterAccountData", fmt.Sprintf("get reporter account(email: %s) error", email))
+
+	if err != nil {
+		return ra, errors.Wrap(err, fmt.Sprintf("get reporter account(email: %s) error", email))
+	}
+
+	return ra, nil
 }
 
 // GetUserDataByReporterAccount get user data from user table by providing its reporter account data
 func (gs *GormStorage) GetUserDataByReporterAccount(ra models.ReporterAccount) (models.User, error) {
-	log.Info("Getting the matching User data by reporter account")
+	log.Debug("Getting the matching User data by reporter account")
 	user := models.User{}
 	err := gs.db.Model(ra).Related(&user).Error
-	return user, err
+	if err != nil {
+		return user, errors.WithStack(err)
+	}
+
+	return user, nil
 }
 
 // InsertOAuthAccount insert  a new record into o_auth_accounts table
 func (gs *GormStorage) InsertOAuthAccount(account models.OAuthAccount) error {
 	err := gs.db.Create(&account).Error
 	if err != nil {
-		return gs.NewStorageError(err, "GormStorage.InsertOAuthAccount", fmt.Sprint("create oauth account error"))
+		return errors.Wrap(err, "create oauth account error")
 	}
 	return nil
 }
@@ -96,14 +109,14 @@ func (gs *GormStorage) InsertOAuthAccount(account models.OAuthAccount) error {
 func (gs *GormStorage) InsertReporterAccount(account models.ReporterAccount) error {
 	err := gs.db.Create(&account).Error
 	if err != nil {
-		return gs.NewStorageError(err, "GormStorage.InsertReporterAccount", fmt.Sprint("create reporter account error"))
+		return errors.Wrap(err, "create reporter account error")
 	}
 	return nil
 }
 
 // InsertUserByOAuth insert a new user into db after the oath loginin
 func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user models.User, err error) {
-	log.Info("Inserting user data")
+	log.Debug("Inserting user data")
 	user = models.User{
 		OAuthAccounts:    []models.OAuthAccount{omodel},
 		Email:            omodel.Email,
@@ -114,7 +127,11 @@ func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user model
 		RegistrationDate: null.TimeFrom(time.Now()),
 	}
 	err = gs.db.Create(&user).Error
-	return user, err
+	if err != nil {
+		return user, errors.WithStack(err)
+	}
+
+	return user, nil
 }
 
 // InsertUserByReporterAccount insert a new user into db after the sign up
@@ -125,12 +142,17 @@ func (gs *GormStorage) InsertUserByReporterAccount(raModel models.ReporterAccoun
 		RegistrationDate: null.NewTime(time.Now(), true),
 	}
 	err := gs.db.Create(&user).Error
-	return user, err
+
+	if err != nil {
+		return user, errors.WithStack(err)
+	}
+
+	return user, nil
 }
 
 // UpdateOAuthData updates the corresponding OAuth by using the OAuth information
 func (gs *GormStorage) UpdateOAuthData(newData models.OAuthAccount) (models.OAuthAccount, error) {
-	log.Info("Getting the matching OAuth data", newData.AId)
+	log.Debug("Getting the matching OAuth data", newData.AId)
 	matO, err := gs.GetOAuthData(newData.AId, newData.Type)
 	if err != nil {
 		return matO, err
@@ -141,13 +163,22 @@ func (gs *GormStorage) UpdateOAuthData(newData models.OAuthAccount) (models.OAut
 	matO.LastName = newData.LastName
 	matO.Gender = newData.Gender
 	matO.Picture = newData.Picture
-	gs.db.Save(&matO)
+	err = gs.db.Save(&matO).Error
 
-	return matO, err
+	if err != nil {
+		return matO, errors.WithStack(err)
+	}
+
+	return matO, nil
 }
 
 // UpdateReporterAccount update a reporter account
 func (gs *GormStorage) UpdateReporterAccount(ra models.ReporterAccount) error {
 	err := gs.db.Model(&ra).Updates(&ra).Error
-	return err
+
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }

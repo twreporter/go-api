@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	//log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"twreporter.org/go-api/models"
 )
@@ -13,20 +12,16 @@ import (
 // IsWebPushSubscribed - which handles the HTTP Get request,
 // and try to check if the web push subscription is existed or not
 func (mc *MembershipController) IsWebPushSubscribed(c *gin.Context) (int, gin.H, error) {
-	const errorWhere = "MembershipController.IsWebPushSubscribed"
-	var endpoint = c.Query("endpoint")
-	var err error
-	var crc32Endpoint uint32
-	var wpSub models.WebPushSubscription
-
+	endpoint := c.Query("endpoint")
 	if endpoint == "" {
 		return http.StatusNotFound, gin.H{"status": "error", "message": "Fail to get a web push subscription since you do not provide endpoint in URL query param"}, nil
 	}
 
-	crc32Endpoint = crc32.Checksum([]byte(endpoint), crc32.IEEETable)
+	crc32Endpoint := crc32.Checksum([]byte(endpoint), crc32.IEEETable)
 
-	if wpSub, err = mc.Storage.GetAWebPushSubscription(crc32Endpoint, endpoint); err != nil {
-		return 0, gin.H{}, err
+	wpSub, err := mc.Storage.GetAWebPushSubscription(crc32Endpoint, endpoint)
+	if err != nil {
+		return toResponse(err)
 	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": wpSub}, nil
@@ -43,7 +38,6 @@ func (mc *MembershipController) SubscribeWebPush(c *gin.Context) (int, gin.H, er
 		UserID         string `json:"user_id" form:"user_id"`
 	}
 
-	const errorWhere = "MembershipController.SubscribeWebPush"
 	var endpoint string
 	var err error
 	var expirationTime int64
@@ -79,7 +73,7 @@ func (mc *MembershipController) SubscribeWebPush(c *gin.Context) (int, gin.H, er
 	}
 
 	if err = mc.Storage.CreateAWebPushSubscription(wpSub); err != nil {
-		return 0, gin.H{}, err
+		return toResponse(err)
 	}
 
 	return http.StatusCreated, gin.H{"status": "success", "data": sBody}, nil
