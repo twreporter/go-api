@@ -50,7 +50,7 @@
 - api/donation:
   - add `line_pay_product_image_url` linepay icon
   - increase size of `bank_result_msg` column
-- core:
+- chore:
   - Include the kubernetes config during deployment
   - update circleci config for new cluster
 - api/auth:
