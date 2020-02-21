@@ -1,5 +1,7 @@
 ## Unreleased
-### 6.0.0
+
+## Released
+### 6.0.0 (Current), 2020-02-21
 
 #### Notable Changes
 
@@ -23,8 +25,7 @@
 - [[2c9aaf3](https://github.com/twreporter/go-api/commit/2c9aaf3d5ccfacf7f9fb9e1db6c91cff3fbc625e)] - Wrap storage error with pkg/errors(Ching-Yang, Tseng)
 - [[66b08d0](https://github.com/twreporter/go-api/commit/66b08d077adcda53a84c412389417ae087115314)] - Remove deprecated routes(Ching-Yang, Tseng)
 
-## Released
-### 5.1.3(Current), 2020-02-06
+### 5.1.3, 2020-02-06
 
 #### Notable Changes
 - api/news:
