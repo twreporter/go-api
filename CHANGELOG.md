@@ -1,10 +1,34 @@
 ## Unreleased
 
 ## Released
-### 5.1.3(Current), 2020-02-06
+### 6.0.0 (Current), 2020-02-21
 
 #### Notable Changes
-- /v1/(posts|topics):
+
+- core:
+  - Rewrite error handle with pkg/errors
+  - Integrate log formatter on staging/production for stackdriver
+
+#### Commits
+- [[493272f](https://github.com/twreporter/go-api/commit/493272f53ffbf44b2058f414f98f3daf994b2e05)] - Update logformatter for the gin format fix(babygoat)
+- [[4def9e9](https://github.com/twreporter/go-api/commit/4def9e956929bde9efc6bd2d0ad4f71601b4f453)] - Setup logger(babygoat)
+- [[53e87d7](https://github.com/twreporter/go-api/commit/53e87d79b955dd10175011212944fe00516d6232)] - Fix gin 1.4.0 import and logrus module typo(babygoat)
+- [[fb2e6de](https://github.com/twreporter/go-api/commit/fb2e6de66116528bd9458b066c182ae4fff99968)] - Add the recovery middleware in production(babygoat)
+- [[7764efd](https://github.com/twreporter/go-api/commit/7764efd65672b0f92e8b3e50d098da16d8e6be96)] - Remove vague bookmark update(babygoat)
+- [[8292b52](https://github.com/twreporter/go-api/commit/8292b52b52ec58c2a4740929ca80275c46765d78)] - Adjust log severity(babygoat)
+- [[812a76d](https://github.com/twreporter/go-api/commit/812a76d60f2eb065742ecaa72870c9903ee886f4)] - Remove unnecessary error log(babygoat)
+- [[8472775](https://github.com/twreporter/go-api/commit/8472775a2b04875bd123cdba5cda870cbf6ebab0)] - Remove AppError(babygoat)
+- [[b206e53](https://github.com/twreporter/go-api/commit/b206e53d1022e27528bd05e9943c342d864de88e)] - Rewrite errors in utils/service/configs(babygoat)
+- [[56a8890](https://github.com/twreporter/go-api/commit/56a88906c88ff143df31d58a29a03e07ccf93351)] - Rewrite controller layer error(babygoat)
+- [[dc1d814](https://github.com/twreporter/go-api/commit/dc1d814f259ece66224c1b2ac8d1e76a82b1c8cb)] - Add utility for transfer error to http response(babygoat)
+- [[8e15949](https://github.com/twreporter/go-api/commit/8e1594941edb44e73948bec496fe6e16e2d28aa2)] - Add storage errors utilities(babygoat)
+- [[2c9aaf3](https://github.com/twreporter/go-api/commit/2c9aaf3d5ccfacf7f9fb9e1db6c91cff3fbc625e)] - Wrap storage error with pkg/errors(Ching-Yang, Tseng)
+- [[66b08d0](https://github.com/twreporter/go-api/commit/66b08d077adcda53a84c412389417ae087115314)] - Remove deprecated routes(Ching-Yang, Tseng)
+
+### 5.1.3, 2020-02-06
+
+#### Notable Changes
+- api/news:
   - return empty records if there is no query result
   - handle edge case: `?where={categories:{"in": null}}` query string 
 
@@ -15,7 +39,7 @@
 
 ### 5.1.2, 2020-02-04
 #### Notable Changes
-- donation:
+- api/donation:
   - Config frontend host of linepay in runtime
 
 #### Commits
@@ -24,14 +48,13 @@
 
 ### 5.1.1, 2019-11-26
 #### Notable Changes
-- donation:
+- api/donation:
   - add `line_pay_product_image_url` linepay icon
-- db_schema:
   - increase size of `bank_result_msg` column
-- build:
+- chore:
   - Include the kubernetes config during deployment
   - update circleci config for new cluster
-- oauth:
+- api/auth:
   - remove v1 oauth endpoints
   - upgrade Facebook Graph API: v2.8 -> v3.2
 
@@ -55,12 +78,11 @@ g for next branch(babygoat)
 
 ### 5.1.0, 2019-10-15
 #### Notable Changes
-- feature:
+- api/donation:
   - add `/v1/tappay_query` endpoint for querying TapPay Record API 
-- bug:
-  - fix `/v1/index_page` endpoint returning old photography posts
-- db-schema:
   - add `refunded` value into `status` field of donation related tables
+- api/news:
+  - fix `/v1/index_page` endpoint returning old photography posts
   
 #### Commits
 - [[d0712d4](https://github.com/twreporter/go-api/commit/d0712d4fde8e3a4b1c55012b6be875421cb4cd4d)] - bug fix: /v1/index_page endpoint returns old photography post(nickhsine)

@@ -5,7 +5,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -261,7 +262,7 @@ func LoadDefaultConf() (ConfYaml, error) {
 
 	// load default config
 	if err := viper.ReadConfig(bytes.NewBuffer(defaultConf)); err != nil {
-		return conf, err
+		return conf, errors.WithStack(err)
 	}
 
 	conf = buildConf()
@@ -283,11 +284,11 @@ func LoadConf(confPath string) (ConfYaml, error) {
 		content, err := ioutil.ReadFile(confPath)
 
 		if err != nil {
-			return conf, err
+			return conf, errors.WithStack(err)
 		}
 
 		if err := viper.ReadConfig(bytes.NewBuffer(content)); err != nil {
-			return conf, err
+			return conf, errors.WithStack(err)
 		}
 	} else {
 		viper.AddConfigPath("$GOPATH/src/twreporter.org/go-api/configs/")
@@ -296,7 +297,7 @@ func LoadConf(confPath string) (ConfYaml, error) {
 
 		// If a config file is found, read it in.
 		if err := viper.ReadInConfig(); err == nil {
-			log.Infof("Using config file: %s", viper.ConfigFileUsed())
+			log.Debugf("Using config file: %s", viper.ConfigFileUsed())
 		} else {
 			// load default config
 			return LoadDefaultConf()

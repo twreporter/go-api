@@ -6,11 +6,12 @@ import (
 	"path/filepath"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/matryer/try.v1"
 	"gopkg.in/mgo.v2"
 
@@ -27,19 +28,18 @@ func InitDB(attempts, retryMaxDelay int) (*gorm.DB, error) {
 
 		// connect to MySQL database
 		var endpoint = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4,utf8&parseTime=true", config.User, config.Password, config.Address, config.Port, config.Name)
-		log.Info("connect to mysql ", endpoint)
+		log.Debug("connect to mysql ", endpoint)
 		db, err = gorm.Open("mysql", endpoint)
 
 		if err != nil {
 			time.Sleep(time.Duration(retryMaxDelay) * time.Second)
 		}
 
-		return attempt < attempts, err
+		return attempt < attempts, errors.WithStack(err)
 	})
 
 	if err != nil {
-		log.Error("Please check the MySQL database connection: ", err.Error())
-		return nil, err
+		return nil, errors.Wrap(err, "Please check the MySQL database connection: ")
 	}
 
 	db.SetJoinTableHandler(&models.User{}, globals.TableBookmarks, &models.UsersBookmarks{})
@@ -54,11 +54,10 @@ func InitMongoDB() (*mgo.Session, error) {
 	var timeout = globals.Conf.DB.Mongo.Timeout
 	// Set connection timeout
 	session, err := mgo.DialWithTimeout(globals.Conf.DB.Mongo.URL, time.Duration(timeout)*time.Second)
-	log.Info("connect to mongodb ", globals.Conf.DB.Mongo.URL)
+	log.Debug("connect to mongodb ", globals.Conf.DB.Mongo.URL)
 
 	if err != nil {
-		log.Error("Establishing a new session to the mongo occurs error: ", err.Error())
-		return nil, err
+		return nil, errors.Wrap(err, "Establishing a new session to the mongo occurs error: ")
 	}
 
 	// Set operation timeout
@@ -85,5 +84,7 @@ func GetMigrateInstance(dbInstance *sql.DB) (*migrate.Migrate, error) {
 	driver, _ := mysql.WithInstance(dbInstance, &mysql.Config{})
 
 	sourceUrl := fmt.Sprintf("%s://%s", migrateSourceDriver, migrateSourceDir)
-	return migrate.NewWithDatabaseInstance(sourceUrl, migrateMysqlDriver, driver)
+	m, err := migrate.NewWithDatabaseInstance(sourceUrl, migrateMysqlDriver, driver)
+
+	return m, errors.WithStack(err)
 }
