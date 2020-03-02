@@ -1133,13 +1133,10 @@ func getProxyHttpClient() *http.Client {
 
 	client := &http.Client{Timeout: defaultRequestTimeout}
 
-	switch globals.Conf.Environment {
-	// Always make tappay request through proxy in staging/production.
-	case "staging", "production":
+	// Prior to route through proxy for http request if a proxy server is configured
+	if len(globals.Conf.Donation.ProxyServer) > 0 {
 		proxyUrl, _ := url.Parse(globals.Conf.Donation.ProxyServer)
 		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	default:
-		// Omit intentionally
 	}
 
 	return client

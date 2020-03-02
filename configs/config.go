@@ -62,7 +62,6 @@ donation:
     card_secret_key: test_card_secret_key
     tappay_url: 'https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime'
     tappay_partner_key: 'partner_6ID1DoDlaPrfHw6HBZsULfTYtDmWs0q0ZZGKMBpp4YICWBxgK97eK3RM'
-    proxy_sever: 'http://forward-proxy/'
     tappay_record_url: 'https://sandbox.tappaysdk.com/tpc/transaction/query'
     line_pay_product_image_url: 'https://www.twreporter.org/images/linepay-logo-84x84.png'
     frontend_host: 'test.twreporter.org'
