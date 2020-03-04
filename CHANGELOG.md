@@ -1,5 +1,7 @@
 ## Unreleased
-### 6.0.1
+
+## Released
+### 6.0.1 (Current), 2020-03-04
 
 #### Notable Changes
 
@@ -9,8 +11,7 @@
 #### Commits
 - [[33573be](https://github.com/twreporter/go-api/commit/33573be1e1bbb9a2fdb7d55eae9693a9e991a91a)] - Dynamically configure donation proxy(babygoat)
 
-## Released
-### 6.0.0 (Current), 2020-02-21
+### 6.0.0, 2020-02-21
 
 #### Notable Changes
 
