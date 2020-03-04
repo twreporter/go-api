@@ -1,4 +1,10 @@
 ## Unreleased
+### 6.0.2
+
+#### Notable Changes
+
+- api/donation:
+  - Fix incorrect linepay notification format
 
 ## Released
 ### 6.0.1 (Current), 2020-03-04
