@@ -1,13 +1,17 @@
 ## Unreleased
-### 6.0.2
+
+## Released
+### 6.0.2 (Current), 2020-03-05
 
 #### Notable Changes
 
 - api/donation:
   - Fix incorrect linepay notification format
 
-## Released
-### 6.0.1 (Current), 2020-03-04
+#### Commits
+- [[8c5d196](https://github.com/twreporter/go-api/commit/8c5d196945e75035a12a47f14c828e1932146870)] - Fix incorrect linepay notification format(babygoat)
+
+### 6.0.1, 2020-03-04
 
 #### Notable Changes
 
