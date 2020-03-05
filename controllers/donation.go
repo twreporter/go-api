@@ -172,7 +172,7 @@ type (
 
 	tapPayTransactionResp struct {
 		models.TappayResp
-		models.PayInfo
+		models.PayInfo        `json:"pay_info"`
 		BankTransactionTime   bankTransactionTime `json:"bank_transaction_time"`
 		CardInfo              models.CardInfo     `json:"card_info"`
 		CardSecret            cardSecret          `json:"card_secret"`

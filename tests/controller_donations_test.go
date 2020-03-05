@@ -71,7 +71,7 @@ type (
 	}
 
 	tapPayRequestBody struct {
-		models.PayInfo
+		models.PayInfo    `json:"pay_info"`
 		RecTradeID        string `json:"rec_trade_id"`
 		BankTransactionID string `json:"bank_transaction_id"`
 		OrderNumber       string `json:"order_number"`
