@@ -13,175 +13,329 @@ import (
 	"twreporter.org/go-api/models"
 )
 
-type bookmarkJSON struct {
-	ID         int    `json:"ID"`
-	CreatedAt  string `json:"created_at"`
-	UpdatedAt  string `json:"updated_at"`
-	DeletedAt  string `json:"deleted_at"`
-	Slug       string `json:"slug"`
-	Title      string `json:"title"`
-	Host       string `json:"host"`
-	IsExternal bool   `json:"is_external"`
-	Desc       string `json:"desc"`
-	Thumbnail  string `json:"thumbnail"`
-	Category   string `json:"category"`
-	Authors    string `json:"authors"`
-	PubDate    string `json:"published_date"`
-}
-
 type meta struct {
 	Offset int `json:"offset"`
 	Limit  int `json:"limit"`
 	Total  int `json:"total"`
 }
 
-type Response struct {
-	Meta      meta           `json:"meta"`
-	Status    string         `json:"status"`
-	Bookmarks []bookmarkJSON `json:"records"`
-	Bookmark  bookmarkJSON   `json:"record"`
+type response struct {
+	Meta      meta              `json:"meta"`
+	Status    string            `json:"status"`
+	Bookmarks []models.Bookmark `json:"records"`
+	Bookmark  models.Bookmark   `json:"record"`
 }
 
-var bookmarkJSONStr = `{"slug":"mock-article-1","title":"mock title 1","host":"www.twreporter.org","is_external":false,"desc": "mock desc 1","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
-var bookmarkJSONStr2 = `{"slug":"mock-article-2","title":"mock title 2","host":"www.twreporter.org","is_external":false,"desc": "mock desc 2","thumbnail":"www.twreporter.org/images/mock-image.jpg"}`
-
 func TestBookmarkAuthorization(t *testing.T) {
-	var resp *httptest.ResponseRecorder
-	var user models.User
-	var path string
+	user := getUser(Globs.Defaults.Account)
+	path := fmt.Sprintf("/v1/users/%v/bookmarks", user.ID)
 
-	user = getUser(Globs.Defaults.Account)
-	path = fmt.Sprintf("/v1/users/%v/bookmarks", user.ID)
+	for _, tc := range []struct {
+		name       string
+		credential string
+		resultCode int
+	}{
+		{
+			name:       "StatusCode=StatusUnauthorized,Malicious JWT value",
+			credential: "MaliciousJWT",
+			resultCode: http.StatusUnauthorized,
+		},
+		{
+			name:       "StatusCode=StatusOK,Valid authentication",
+			credential: "Bearer " + generateIDToken(user),
+			resultCode: http.StatusOK,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			resp := serveHTTP("GET", path, "", "", tc.credential)
+			assert.Equal(t, tc.resultCode, resp.Code)
+		})
+	}
 
-	/** START - Fail to pass Authorization **/
-	// without Authorization header
-	resp = serveHTTP("GET", path, "", "", "")
-	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-
-	// wrong jwt in Authorization header
-	resp = serveHTTP("GET", path, "", "", "")
-	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	/** END - Fail to pass Authorization **/
-
-	// Pass Authroization
-	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", generateIDToken(user)))
-	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
 func TestCreateABookmarkOfAUser(t *testing.T) {
-	var resp *httptest.ResponseRecorder
-	var badBookmarkJSON = `{"slug":"bad-mock-article","title":"mock title","host":"www.twreporter.org","is_external":false,"desc": "mock desc","thumbnail":"www.twreporter.org/images/}`
-	var user models.User
-	var path string
+	const (
+		fakeID = 100
+	)
 
-	user = getUser(Globs.Defaults.Account)
-	path = fmt.Sprintf("/v1/users/%v/bookmarks", user.ID)
+	user := getUser(Globs.Defaults.Account)
+	bookmarkJSON, _ := json.Marshal(models.Bookmark{Slug: "mock-slug-1", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"})
 
-	var jwt = generateIDToken(user)
+	for _, tc := range []struct {
+		name        string
+		credential  string
+		path        string
+		payload     string
+		cleanupStmt string
+		resultCode  int
+	}{
+		{
+			name:       "StatusCode=StatusBadRequest,Malformed request body",
+			credential: "Bearer " + generateIDToken(user),
+			path:       fmt.Sprintf("/v1/users/%v/bookmarks", user.ID),
+			payload:    `{"InvalidJSONPayload"`,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name:       "StatusCode=StatusUnauthorized,Invalid user id",
+			credential: "InvalidJWT",
+			path:       fmt.Sprintf("/v1/users/%v/bookmarks", fakeID),
+			payload:    string(bookmarkJSON),
+			resultCode: http.StatusUnauthorized,
+		},
+		{
+			name:        "StatusCode=StatusCreated,Boookmark created",
+			credential:  "Bearer " + generateIDToken(user),
+			path:        fmt.Sprintf("/v1/users/%v/bookmarks", user.ID),
+			payload:     string(bookmarkJSON),
+			cleanupStmt: "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE bookmarks; TRUNCATE TABLE users_bookmarks; SET FOREIGN_KEY_CHECKS=1",
+			resultCode:  http.StatusCreated,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.cleanupStmt != "" {
+				defer func() {
+					Globs.GormDB.Exec(tc.cleanupStmt)
+				}()
+			}
 
-	/** START - Add bookmark successfully **/
-	resp = serveHTTP("POST", path, bookmarkJSONStr, "application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusCreated, resp.Code)
-
-	// add another bookmark
-	resp = serveHTTP("POST", path, bookmarkJSONStr2, "application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusCreated, resp.Code)
-	/** END - Add bookmark successfully **/
-
-	/** START - Fail to add bookmark **/
-	// malformed JSON
-	resp = serveHTTP("POST", path, badBookmarkJSON, "application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusBadRequest, resp.Code)
-
-	// user is not existed
-	var fakeID uint = 100
-	jwt = "INVALIDJWT"
-	resp = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), bookmarkJSONStr,
-		"application/json", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	/** END - Fail to add bookmark **/
+			resp := serveHTTP("POST", tc.path, tc.payload, "application/json", tc.credential)
+			assert.Equal(t, tc.resultCode, resp.Code)
+		})
+	}
 }
 
 func TestGetBookmarksOfAUser(t *testing.T) {
-	var resp *httptest.ResponseRecorder
-	var user models.User
-	var path string
-	var jwt string
+	const (
+		fakeID        = 100
+		defaultLimit  = 10
+		defaultOffset = 0
+	)
 
-	user = getUser(Globs.Defaults.Account)
-	path = fmt.Sprintf("/v1/users/%v/bookmarks?offset=0", user.ID)
-	jwt = generateIDToken(user)
+	user := getUser(Globs.Defaults.Account)
 
-	/** START - List bookmarks successfully **/
-	// List empty array of bookmarks of the user
-	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusOK, resp.Code)
+	bookmarks := []models.Bookmark{
+		models.Bookmark{Slug: "mock-slug-1", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+		models.Bookmark{Slug: "mock-slug-2", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+	}
 
-	// List non-empty array of bookmarks of the user
-	// add a bookmark into the user
-	_ = serveHTTP("POST", path, bookmarkJSONStr, "application/json", fmt.Sprintf("Bearer %v", jwt))
-	// get bookmarks of the user
-	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusOK, resp.Code)
+	for _, tc := range []struct {
+		name        string
+		path        string
+		credential  string
+		bookmarks   []models.Bookmark
+		cleanupStmt string
+		resultCode  int
+		resultMeta  *meta
+	}{
+		{
+			name:       "StatusCode=StatusUnauthorized,List with invalid jwt",
+			path:       fmt.Sprintf("/v1/users/%v/bookmarks", fakeID),
+			credential: "INVALIDJWT",
+			resultCode: http.StatusUnauthorized,
+		},
+		{
+			name:        "StatusCode=StatusOK,List bookmarks of a user",
+			path:        fmt.Sprintf("/v1/users/%v/bookmarks", user.ID),
+			credential:  "Bearer " + generateIDToken(user),
+			bookmarks:   bookmarks,
+			cleanupStmt: "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE bookmarks; TRUNCATE TABLE users_bookmarks; SET FOREIGN_KEY_CHECKS=1",
+			resultCode:  http.StatusOK,
+			resultMeta: &meta{
+				Limit:  defaultLimit,
+				Offset: defaultOffset,
+				Total:  len(bookmarks),
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.cleanupStmt != "" {
+				defer func() {
+					Globs.GormDB.Exec(tc.cleanupStmt)
+				}()
+			}
 
-	body, _ := ioutil.ReadAll(resp.Result().Body)
+			if len(tc.bookmarks) > 0 {
+				for _, v := range tc.bookmarks {
+					s, _ := json.Marshal(v)
+					serveHTTP("POST", tc.path, string(s), "application/json", tc.credential)
+				}
+			}
 
-	res := Response{}
-	json.Unmarshal(body, &res)
+			resp := serveHTTP("GET", tc.path, "", "", tc.credential)
+			assert.Equal(t, tc.resultCode, resp.Code)
 
-	const defaultLimit = 10
-	const defaultOffset = 0
-	assert.Equal(t, defaultLimit, res.Meta.Limit)
-	assert.Equal(t, defaultOffset, res.Meta.Offset)
-	assert.NotZero(t, res.Meta.Total)
-	/** END - List bookmarks successfully **/
+			if tc.resultMeta != nil {
+				body, _ := ioutil.ReadAll(resp.Result().Body)
 
-	/** START - Fail to list bookmark **/
-	// user is not existed (i.e. invalid jwt)
-	var fakeID uint = 100
-	jwt = "INVALID JWT"
+				res := response{}
+				json.Unmarshal(body, &res)
 
-	resp = serveHTTP("GET", fmt.Sprintf("/v1/users/%v/bookmarks", fakeID), "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	/** END - Fail to list bookmark **/
+				assert.Equal(t, tc.resultMeta.Limit, res.Meta.Limit)
+				assert.Equal(t, tc.resultMeta.Offset, res.Meta.Offset)
+				assert.Equal(t, tc.resultMeta.Total, res.Meta.Total)
+			}
+		})
+
+	}
 }
 
 func TestGetABookmarkOfAUser(t *testing.T) {
-	var user models.User
-	var path string
-	var jwt string
+	type (
+		// abstraction of the bookmarks state in database
+		userBookmarks struct {
+			UserEmail string
+			Bookmarks []models.Bookmark
+		}
+	)
 
-	user = getUser(Globs.Defaults.Account)
-	jwt = generateIDToken(user)
-	path = fmt.Sprintf("/v1/users/%v/bookmarks/mock-article-2", user.ID)
+	for _, tc := range []struct {
+		name                string
+		testUserEmails      []string
+		userBookmarks       []userBookmarks
+		testTargetUserEmail string
+		testTargetSlug      string
+		testTargetHost      string
+		cleanupStmt         string
+		resultCode          int
+		resultBody          *response
+	}{
+		{
+			name: "StatusCode=StatusNotFound,A user does not have any bookmark",
+			testUserEmails: []string{
+				"testUserA@twreporter.org",
+				"testUserB@twreporter.org",
+			},
+			userBookmarks: []userBookmarks{
+				userBookmarks{UserEmail: "testUserA@twreporter.org"},
+				userBookmarks{
+					UserEmail: "testUserB@twreporter.org",
+					Bookmarks: []models.Bookmark{
+						models.Bookmark{Slug: "mock-slug-1", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+						models.Bookmark{Slug: "mock-slug-2", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+					},
+				},
+			},
+			testTargetUserEmail: "testUserA@twreporter.org",
+			testTargetSlug:      "mock-slug-1",
+			cleanupStmt:         "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE bookmarks; TRUNCATE TABLE users_bookmarks; SET FOREIGN_KEY_CHECKS=1",
+			resultCode:          http.StatusNotFound,
+		},
+		{
+			name: "StatusCode=StatusNotFound,A user does not own the bookmark",
+			testUserEmails: []string{
+				"testUserA@twreporter.org",
+				"testUserB@twreporter.org",
+			},
+			userBookmarks: []userBookmarks{
+				userBookmarks{
+					UserEmail: "testUserA@twreporter.org",
+					Bookmarks: []models.Bookmark{
+						models.Bookmark{Slug: "mock-slug-2", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+					},
+				},
+				userBookmarks{
+					UserEmail: "testUserB@twreporter.org",
+					Bookmarks: []models.Bookmark{
+						models.Bookmark{Slug: "mock-slug-1", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+						models.Bookmark{Slug: "mock-slug-2", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+					},
+				},
+			},
+			testTargetUserEmail: "testUserA@twreporter.org",
+			testTargetSlug:      "mock-slug-1",
+			testTargetHost:      "mockhost",
+			cleanupStmt:         "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE bookmarks; TRUNCATE TABLE users_bookmarks; SET FOREIGN_KEY_CHECKS=1",
+			resultCode:          http.StatusNotFound,
+		},
+		{
+			name: "StatusCode=StatusNotFound,Query does not provide a valid host parameter",
+			testUserEmails: []string{
+				"testUserA@twreporter.org",
+				"testUserB@twreporter.org",
+			},
+			userBookmarks: []userBookmarks{
+				userBookmarks{
+					UserEmail: "testUserA@twreporter.org",
+					Bookmarks: []models.Bookmark{
+						models.Bookmark{Slug: "mock-slug-1", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+					},
+				},
+				userBookmarks{
+					UserEmail: "testUserB@twreporter.org",
+					Bookmarks: []models.Bookmark{
+						models.Bookmark{Slug: "mock-slug-1", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+						models.Bookmark{Slug: "mock-slug-2", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+					},
+				},
+			},
+			testTargetUserEmail: "testUserA@twreporter.org",
+			testTargetSlug:      "mock-slug-1",
+			cleanupStmt:         "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE bookmarks; TRUNCATE TABLE users_bookmarks; SET FOREIGN_KEY_CHECKS=1",
+			resultCode:          http.StatusNotFound,
+		},
+		{
+			name: "StatusCode=StatusOK,Successful get a bookmark of a user",
+			testUserEmails: []string{
+				"testUserA@twreporter.org",
+				"testUserB@twreporter.org",
+			},
+			userBookmarks: []userBookmarks{
+				userBookmarks{
+					UserEmail: "testUserA@twreporter.org",
+					Bookmarks: []models.Bookmark{
+						models.Bookmark{Slug: "mock-slug-1", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+					},
+				},
+				userBookmarks{
+					UserEmail: "testUserB@twreporter.org",
+					Bookmarks: []models.Bookmark{
+						models.Bookmark{Slug: "mock-slug-1", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+						models.Bookmark{Slug: "mock-slug-2", Host: "mockhost", Title: "mocktitle", Thumbnail: "mockthumb"},
+					},
+				},
+			},
+			testTargetUserEmail: "testUserA@twreporter.org",
+			testTargetSlug:      "mock-slug-1",
+			testTargetHost:      "mockhost",
+			cleanupStmt:         "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE bookmarks; TRUNCATE TABLE users_bookmarks; SET FOREIGN_KEY_CHECKS=1",
+			resultCode:          http.StatusOK,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create test users
+			for _, v := range tc.testUserEmails {
+				user := createUser(v)
+				defer func() { deleteUser(user) }()
+			}
 
-	/** START - Fail to get a bookmark of a user **/
-	resp := serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusNotFound, resp.Code)
+			// Defer cleanup statment for cleaning up bookmark tables
+			if tc.cleanupStmt != "" {
+				defer func() { Globs.GormDB.Exec(tc.cleanupStmt) }()
+			}
 
-	// add a bookmark onto a user
-	_ = serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", user.ID), bookmarkJSONStr2, "application/json", fmt.Sprintf("Bearer %v", jwt))
+			// Insert bookmarks to corresponding users according the state
+			for _, u := range tc.userBookmarks {
+				user := getUser(u.UserEmail)
+				credential := "Bearer " + generateIDToken(user)
+				for _, b := range u.Bookmarks {
+					s, _ := json.Marshal(b)
+					serveHTTP("POST", fmt.Sprintf("/v1/users/%v/bookmarks", user.ID), string(s), "application/json", credential)
+				}
+			}
 
-	// still fail to get the bookmark of the user because of host is not provided
-	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusNotFound, resp.Code)
-
-	/** END - Fail to get a bookmark of a user **/
-
-	/** START - get a bookmark of a user **/
-	// add host param
-	path = path + "?host=www.twreporter.org"
-	// get the bookmark of the user
-	resp = serveHTTP("GET", path, "", "", fmt.Sprintf("Bearer %v", jwt))
-	assert.Equal(t, http.StatusOK, resp.Code)
-
-	body, _ := ioutil.ReadAll(resp.Result().Body)
-
-	res := Response{}
-	json.Unmarshal(body, &res)
-
-	assert.Equal(t, "mock-article-2", res.Bookmark.Slug)
-	/** END - get a bookmark of user **/
+			targetUser := getUser(tc.testTargetUserEmail)
+			resp := serveHTTP("GET", fmt.Sprintf("/v1/users/%v/bookmarks/%s?host=%s", targetUser.ID, tc.testTargetSlug, tc.testTargetHost), "", "", "Bearer "+generateIDToken(targetUser))
+			assert.Equal(t, tc.resultCode, resp.Code)
+			if tc.resultBody != nil {
+				body, _ := ioutil.ReadAll(resp.Result().Body)
+				res := response{}
+				json.Unmarshal(body, &res)
+				assert.Equal(t, tc.testTargetSlug, res.Bookmark.Slug)
+			}
+		})
+	}
 }
 
 func TestDeleteBookmark(t *testing.T) {
