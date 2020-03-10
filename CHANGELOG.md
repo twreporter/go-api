@@ -1,4 +1,10 @@
 ## Unreleased
+### 6.0.3
+
+#### Notable Changes
+
+- api/user
+  - Prevent user from retrieving the bookmarks of others
 
 ## Released
 ### 6.0.2 (Current), 2020-03-05

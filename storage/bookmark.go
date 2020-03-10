@@ -38,8 +38,7 @@ func (g *GormStorage) GetABookmarkByID(id string) (models.Bookmark, error) {
 // GetABookmarkOfAUser get a bookmark of a user
 func (g *GormStorage) GetABookmarkOfAUser(userID string, slug string, host string) (models.Bookmark, error) {
 	var bookmark models.Bookmark
-
-	err := g.db.Preload("Users", "id = ?", userID).Where("slug = ? and host = ?", slug, host).First(&bookmark).Error
+	err := g.db.Where("id in (?)", g.db.Table("users_bookmarks").Select("bookmark_id").Where("user_id = ?", userID).QueryExpr()).Where("slug = ? and host = ?", slug, host).First(&bookmark).Error
 
 	if err != nil {
 		return bookmark, errors.Wrap(err, fmt.Sprintf("get bookmark(slug: '%s', host: '%s') from user(id: '%s') occurs error", slug, host, userID))
