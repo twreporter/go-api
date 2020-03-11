@@ -1,7 +1,18 @@
 ## Unreleased
 
 ## Released
-### 6.0.2 (Current), 2020-03-05
+### 6.0.3 (Current), 2020-03-11
+
+#### Notable Changes
+
+- api/user
+  - Prevent user from retrieving the bookmarks of others
+
+#### Commits
+- [[a01296b](https://github.com/twreporter/go-api/commit/a01296b9c9f433daa5aadbe1a2e70d896ac60a92)] - Prevent a user from retrieving bookmark of others(babygoat)
+- [[67fd87f](https://github.com/twreporter/go-api/commit/67fd87f2e2d7971e219e2cf983bda12a2e1c8b0f)] - Refactor tests of bookmark(babygoat
+
+### 6.0.2, 2020-03-05
 
 #### Notable Changes
 
