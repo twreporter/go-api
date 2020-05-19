@@ -1,4 +1,20 @@
 ## Unreleased
+### 6.0.4
+
+#### Notable Changes
+
+- api/donation
+  - Append utm tag to donation link
+
+- api/mail
+  - Update footer of the email template
+  - generate client id for tracking
+
+- api/news
+  - expand throughput by new connections
+
+- core
+  - change mongo query mode
 
 ## Released
 ### 6.0.3 (Current), 2020-03-11
