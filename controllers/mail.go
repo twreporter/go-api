@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
@@ -123,9 +124,11 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	var templateData = struct {
 		donationSuccessReqBody
 		DonationDatetime string
+		ClientID         string
 	}{
 		reqBody,
 		donationDatetime.In(location).Format("2006-01-02 15:04:05 UTC+8"),
+		uuid.New().String(),
 	}
 
 	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "success-donation.tmpl", templateData); err != nil {
