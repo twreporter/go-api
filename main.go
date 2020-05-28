@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -55,6 +56,14 @@ func main() {
 		return
 	}
 
+	log.Info("Connection to MongoDB with mongo-go-driver")
+	client, err := utils.InitMongoDBV2()
+	if err != nil {
+		return
+	}
+	defer func() {
+		client.Disconnect(context.Background())
+	}()
 	// mailSender := services.NewSMTPMailService() // use office365 to send mails
 	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails
 
