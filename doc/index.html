@@ -63,6 +63,9 @@ It reprensents one periodic donation record identified by the order number(:orde
 <p>cardholder.zip_code</p>
 </li>
 <li>
+<p>cardholder.receipt_header</p>
+</li>
+<li>
 <p>currency</p>
 </li>
 <li>
@@ -111,7 +114,8 @@ It reprensents one periodic donation record identified by the order number(:orde
       "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
       "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
+      "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
     </span>}
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
@@ -173,6 +177,9 @@ It reprensents one periodic donation record identified by the order number(:orde
             </span>}</span>,
             "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}
           </span>}</span>,
           "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -223,7 +230,8 @@ It reprensents one periodic donation record identified by the order number(:orde
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
     "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
     "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-    "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span>
+    "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
   </span>}</span>,
   "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐款報導者喔"</span></span>,
   "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"yearly"</span></span>,
@@ -250,6 +258,9 @@ It reprensents one periodic donation record identified by the order number(:orde
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}
@@ -282,7 +293,8 @@ It reprensents one periodic donation record identified by the order number(:orde
       "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"name(string) is optional"</span></span>,
       "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"zip_code(string) is optional"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"phone_number(string) is optional"</span></span>,
-      "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"national_id(string) is optional"</span>
+      "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"national_id(string) is optional"</span></span>,
+      "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"receipt_header(string) is optional"</span>
     </span>}</span>,
     "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"notes(string) is optional"</span></span>,
     "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'"</span></span>,
@@ -381,7 +393,8 @@ It reprensents one periodic donation record identified by the order number(:orde
       "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
       "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
+      "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
     </span>}
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
@@ -442,6 +455,9 @@ It reprensents one periodic donation record identified by the order number(:orde
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
             "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}
           </span>}</span>,
@@ -559,6 +575,9 @@ It reprensents one prime donation record identified by the order number (order).
 <p>cardholder.zip_code</p>
 </li>
 <li>
+<p>cardholder.receipt_header</p>
+</li>
+<li>
 <p>currency</p>
 </li>
 <li>
@@ -601,7 +620,8 @@ It reprensents one prime donation record identified by the order number (order).
     "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
     "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
     "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-    "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+    "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
+    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -652,6 +672,9 @@ It reprensents one prime donation record identified by the order number (order).
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
@@ -740,7 +763,8 @@ It reprensents one prime donation record identified by the order number (order).
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
     "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
     "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-    "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span>
+    "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
   </span>}</span>,
   "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐款報導者喔"</span></span>,
   "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"no"</span></span>,
@@ -766,6 +790,9 @@ It reprensents one prime donation record identified by the order number (order).
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}
@@ -795,7 +822,8 @@ It reprensents one prime donation record identified by the order number (order).
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"name(string) is optional"</span></span>,
             "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"zip_code(string) is optional"</span></span>,
             "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"phone_number(string) is optional"</span></span>,
-            "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"national_id(string) is optional"</span>
+            "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"national_id(string) is optional"</span></span>,
+            "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"receipt_header(string) is optional"</span>
         </span>}</span>,
         "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"notes(string) is optional"</span></span>,
         "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'"</span></span>,
@@ -974,7 +1002,8 @@ Only the linepay is required to do this verfication</p>
       "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
       "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
+      "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
     </span>}
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
@@ -1032,6 +1061,9 @@ Only the linepay is required to do this verfication</p>
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
             "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}
           </span>}</span>,
@@ -1238,7 +1270,8 @@ Only the linepay is required to do this verfication</p>
       "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
       "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
+      "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
     </span>}</span>,
     "<span class="hljs-attribute">payment_url</span>": <span class="hljs-value"><span class="hljs-string">"https://sandbox-redirect.tappaysdk.com/redirect/906ec8348e5e893e098e56f1c061ae178fc80d193649305e83ca8788054e839d"</span>
   </span>}
@@ -1297,6 +1330,9 @@ Only the linepay is required to do this verfication</p>
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
             "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}
           </span>}</span>,
@@ -1994,7 +2030,7 @@ The email contains the following attributes</p>
 <div id="oauth-service-google-oauth-request-get" class="action get"><h4 class="action-heading"><div class="name">Redirect google request</div><a href="#oauth-service-google-oauth-request-get" class="method get">GET</a><code class="uri">/v2/auth/google{?destination}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/auth/google?<span class="hljs-attribute">destination=</span><span class="hljs-literal">https:/www.twreporter.org</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>destination</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>https://www.twreporter.org</span></span></dd></dl></div><div class="title"><strong>Response&nbsp;&nbsp;<code>302</code></strong></div></div></div><div id="oauth-service-google-oauth-response" class="resource"><h3 class="resource-heading">Google oauth response <a href="#oauth-service-google-oauth-response" class="permalink">&nbsp;&para;</a></h3><p>Process user information from google and grants identity token</p>
 <div id="oauth-service-google-oauth-response-get" class="action get"><h4 class="action-heading"><div class="name">Response google callback</div><a href="#oauth-service-google-oauth-response-get" class="method get">GET</a><code class="uri">/v2/auth/google/callback{?state,code}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/auth/google/callback?<span class="hljs-attribute">state=</span><span class="hljs-literal">grqsh0n3OgO-0RCavx7NOASlCNyfoNU8k_Ty6_ZcrCM%3D</span>&<span class="hljs-attribute">code=</span><span class="hljs-literal">4/1ADU33t4EZbMkrnH7GNCbIF9eQtRgoGNmM3Wy6Ika8SQXtroi8nSHpqsDjvwda87xvQQ-0fbxFI5hl0-V_f37Kg</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>state</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>grqsh0n3OgO-0RCavx7NOASlCNyfoNU8k_Ty6_ZcrCM%3D</span></span></dd><dt>code</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>4/1ADU33t4EZbMkrnH7GNCbIF9eQtRgoGNmM3Wy6Ika8SQXtroi8nSHpqsDjvwda87xvQQ-0fbxFI5hl0-V_f37Kg</span></span></dd></dl></div><div class="title"><strong>Response&nbsp;&nbsp;<code>302</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Set-Cookie</span>: <span class="hljs-string">id_token=&lt;cookie value&gt;; Domain=twreporter.org; Max-Age=15552000; HttpOnly; Secure</span></code></pre><div style="height: 1px;"></div></div></div></div></div><div id="oauth-service-facebook-oauth-request" class="resource"><h3 class="resource-heading">Facebook oauth request <a href="#oauth-service-facebook-oauth-request" class="permalink">&nbsp;&para;</a></h3><p>Redirect a user request to facebook oauth server</p>
 <div id="oauth-service-facebook-oauth-request-get" class="action get"><h4 class="action-heading"><div class="name">Redirect facebook request</div><a href="#oauth-service-facebook-oauth-request-get" class="method get">GET</a><code class="uri">/v2/auth/facebook{?destination}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/auth/facebook?<span class="hljs-attribute">destination=</span><span class="hljs-literal">https:/www.twreporter.org</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>destination</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>https://www.twreporter.org</span></span></dd></dl></div><div class="title"><strong>Response&nbsp;&nbsp;<code>302</code></strong></div></div></div><div id="oauth-service-facebook-oauth-response" class="resource"><h3 class="resource-heading">Facebook oauth response <a href="#oauth-service-facebook-oauth-response" class="permalink">&nbsp;&para;</a></h3><p>Process user information from facebook and grants identity token</p>
-<div id="oauth-service-facebook-oauth-response-get" class="action get"><h4 class="action-heading"><div class="name">Response facebook callback</div><a href="#oauth-service-facebook-oauth-response-get" class="method get">GET</a><code class="uri">/v2/auth/facebook/callback{?state,code}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/auth/facebook/callback?<span class="hljs-attribute">state=</span><span class="hljs-literal">grqsh0n3OgO-0RCavx7NOASlCNyfoNU8k_Ty6_ZcrCM%3D</span>&<span class="hljs-attribute">code=</span><span class="hljs-literal">4/1ADU33t4EZbMkrnH7GNCbIF9eQtRgoGNmM3Wy6Ika8SQXtroi8nSHpqsDjvwda87xvQQ-0fbxFI5hl0-V_f37Kg</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>state</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>grqsh0n3OgO-0RCavx7NOASlCNyfoNU8k_Ty6_ZcrCM%3D</span></span></dd><dt>code</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>4/1ADU33t4EZbMkrnH7GNCbIF9eQtRgoGNmM3Wy6Ika8SQXtroi8nSHpqsDjvwda87xvQQ-0fbxFI5hl0-V_f37Kg</span></span></dd></dl></div><div class="title"><strong>Response&nbsp;&nbsp;<code>302</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Set-Cookie</span>: <span class="hljs-string">id_token=&lt;cookie value&gt;; Domain=twreporter.org; Max-Age=15552000; HttpOnly; Secure</span></code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 26 Sep 2019</p><script>/* eslint-env browser */
+<div id="oauth-service-facebook-oauth-response-get" class="action get"><h4 class="action-heading"><div class="name">Response facebook callback</div><a href="#oauth-service-facebook-oauth-response-get" class="method get">GET</a><code class="uri">/v2/auth/facebook/callback{?state,code}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/auth/facebook/callback?<span class="hljs-attribute">state=</span><span class="hljs-literal">grqsh0n3OgO-0RCavx7NOASlCNyfoNU8k_Ty6_ZcrCM%3D</span>&<span class="hljs-attribute">code=</span><span class="hljs-literal">4/1ADU33t4EZbMkrnH7GNCbIF9eQtRgoGNmM3Wy6Ika8SQXtroi8nSHpqsDjvwda87xvQQ-0fbxFI5hl0-V_f37Kg</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>state</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>grqsh0n3OgO-0RCavx7NOASlCNyfoNU8k_Ty6_ZcrCM%3D</span></span></dd><dt>code</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>4/1ADU33t4EZbMkrnH7GNCbIF9eQtRgoGNmM3Wy6Ika8SQXtroi8nSHpqsDjvwda87xvQQ-0fbxFI5hl0-V_f37Kg</span></span></dd></dl></div><div class="title"><strong>Response&nbsp;&nbsp;<code>302</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Set-Cookie</span>: <span class="hljs-string">id_token=&lt;cookie value&gt;; Domain=twreporter.org; Max-Age=15552000; HttpOnly; Secure</span></code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 01 Jun 2020</p><script>/* eslint-env browser */
 /* eslint quotes: [2, "single"] */
 'use strict';
 

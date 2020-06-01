@@ -26,6 +26,7 @@ The Periodic Donation resource has the following attributes;
 - cardholder.national_id
 - cardholder.phone_number
 - cardholder.zip_code
+- cardholder.receipt_header
 - currency
 - details
 - frequency
@@ -117,6 +118,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             + name: 王小明
             + phone_number: +886912345678
             + national_id: A12345678
+            + receipt_header: 王小明
         + notes: 第一次捐款報導者喔
         + send_receipt: yearly
         + to_feedback: false
@@ -138,7 +140,8 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                         "name": "name(string) is optional",
                         "zip_code": "zip_code(string) is optional",
                         "phone_number": "phone_number(string) is optional",
-                        "national_id": "national_id(string) is optional"
+                        "national_id": "national_id(string) is optional",
+                        "receipt_header": "receipt_header(string) is optional"
                     },
                     "notes": "notes(string) is optional",
                     "send_receipt": "send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'",
@@ -280,6 +283,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
     + phone_number: +886912345678 (optional)
     + `national_id`: A12345678 (optional)
     + `zip_code`: 104 (optional)
+    + `receipt_header`: 王小明 (optional)
 
 ### PeriodicDonationResponse
 + status: success (required)
