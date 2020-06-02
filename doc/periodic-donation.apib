@@ -26,7 +26,6 @@ The Periodic Donation resource has the following attributes;
 - cardholder.national_id
 - cardholder.phone_number
 - cardholder.zip_code
-- cardholder.receipt_header
 - currency
 - details
 - frequency
@@ -36,6 +35,7 @@ The Periodic Donation resource has the following attributes;
 - to_feedback
 - max_paid_times
 - is_anonymous
+- receipt_header
 
 The states *id* and *order_number* are assigned by the TWReporter Go API at the moment of creation.
 
@@ -118,12 +118,12 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             + name: 王小明
             + phone_number: +886912345678
             + national_id: A12345678
-            + receipt_header: 王小明
         + notes: 第一次捐款報導者喔
         + send_receipt: yearly
         + to_feedback: false
         + user_id: 1 (required)
         + is_anonymous: true
+        + receipt_header: 王小明
 
 + Response 204
 
@@ -141,13 +141,13 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                         "zip_code": "zip_code(string) is optional",
                         "phone_number": "phone_number(string) is optional",
                         "national_id": "national_id(string) is optional",
-                        "receipt_header": "receipt_header(string) is optional"
                     },
                     "notes": "notes(string) is optional",
                     "send_receipt": "send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'",
                     "to_feedback": "to_feedback(bool) is optional.",
                     "is_anonymous": "is_anonymous(bool) is optional.",
-                    "user_id": "user_id(number) is required"
+                    "user_id": "user_id(number) is required",
+                    "receipt_header": "receipt_header(string) is optional"
                 }
             }
 
@@ -276,6 +276,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 + `send_receipt`: monthly (required)
 + `to_feedback`: true (required, boolean)
 + `is_anonymous`: false (required, boolean)
++ `receipt_header`: 王小明 (optional)
 + `cardholder` (required)
     + email: developer@twreporter.org (required)
     + name: 王小明 (optional)
@@ -283,7 +284,6 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
     + phone_number: +886912345678 (optional)
     + `national_id`: A12345678 (optional)
     + `zip_code`: 104 (optional)
-    + `receipt_header`: 王小明 (optional)
 
 ### PeriodicDonationResponse
 + status: success (required)
