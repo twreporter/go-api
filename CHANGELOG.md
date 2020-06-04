@@ -5,6 +5,7 @@
 
 - api/donation
   - Append utm tag to donation link
+  - Add `receipt_header` column
 
 - api/mail
   - Update footer of the email template
