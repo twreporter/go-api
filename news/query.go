@@ -3,6 +3,8 @@ package news
 import (
 	"net/url"
 	"strconv"
+
+	"gopkg.in/guregu/null.v4"
 )
 
 type (
@@ -16,10 +18,18 @@ type (
 		State string
 	}
 
+	Sort struct {
+		PublishedDate SortOrder
+	}
+
+	SortOrder struct {
+		IsAsc null.Bool
+	}
+
 	Query struct {
 		Pagination
 		Filter Filter
-		Sort   string
+		Sort   Sort
 		Full   bool
 	}
 
@@ -53,7 +63,7 @@ func FromUrlQueryMap(u url.Values) Options {
 func NewQuery(options ...Options) *Query {
 	q := &Query{
 		Pagination: Pagination{Offset: 0, Limit: 10},
-		Sort:       "-publishedDate",
+		Sort:       Sort{PublishedDate: SortOrder{IsAsc: null.BoolFrom(false)}},
 	}
 
 	for _, o := range options {
@@ -67,6 +77,6 @@ func (q *Query) SetPagination(offset, limit int) {
 	q.Limit = limit
 }
 
-func (q *Query) SetSort(sort string) {
+func (q *Query) SetSort(sort Sort) {
 	q.Sort = sort
 }
