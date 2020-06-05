@@ -5,10 +5,12 @@
 
 - api/donation
   - Append utm tag to donation link
+  - Add `receipt_header` column
 
 - api/mail
   - Update footer of the email template
   - generate client id for tracking
+  - update success donation email template
 
 - api/news
   - expand throughput by new connections

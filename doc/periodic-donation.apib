@@ -35,6 +35,7 @@ The Periodic Donation resource has the following attributes;
 - to_feedback
 - max_paid_times
 - is_anonymous
+- receipt_header
 
 The states *id* and *order_number* are assigned by the TWReporter Go API at the moment of creation.
 
@@ -122,6 +123,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
         + to_feedback: false
         + user_id: 1 (required)
         + is_anonymous: true
+        + receipt_header: 王小明
 
 + Response 204
 
@@ -144,7 +146,8 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                     "send_receipt": "send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'",
                     "to_feedback": "to_feedback(bool) is optional.",
                     "is_anonymous": "is_anonymous(bool) is optional.",
-                    "user_id": "user_id(number) is required"
+                    "user_id": "user_id(number) is required",
+                    "receipt_header": "receipt_header(string) is optional"
                 }
             }
 
@@ -273,6 +276,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
 + `send_receipt`: monthly (required)
 + `to_feedback`: true (required, boolean)
 + `is_anonymous`: false (required, boolean)
++ `receipt_header`: 王小明 (optional)
 + `cardholder` (required)
     + email: developer@twreporter.org (required)
     + name: 王小明 (optional)
