@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"gopkg.in/guregu/null.v4"
+	"gopkg.in/guregu/null.v3"
 )
 
 type (
@@ -45,16 +45,16 @@ func FromSlug(slug string) Options {
 func FromUrlQueryMap(u url.Values) Options {
 	return func(q *Query) {
 		offset, err := strconv.Atoi(u.Get("offset"))
-		if err != nil {
+		if err == nil {
 			q.Offset = offset
 		}
 		limit, err := strconv.Atoi(u.Get("limitt"))
-		if err != nil {
+		if err == nil {
 			q.Limit = limit
 		}
 
 		full, err := strconv.ParseBool(u.Get("full"))
-		if err != nil {
+		if err == nil {
 			q.Full = full
 		}
 	}

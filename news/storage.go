@@ -11,11 +11,15 @@ import (
 )
 
 var (
-	fullPostLookupFields         = []string{"hero_image", "leading_image_portrait", "leading_video", "categories", "tags", "topic_full", "og_image", "writters", "photographers", "designers", "engineers", "relateds", "theme"}
-	metaOfPostLookupFields       = []string{"hero_image", "leading_image_portrait", "categories", "tags", "topic", "og_image", "theme"}
+	fullPostLookupFields         = []string{"heroImage", "leading_image_portrait", "leading_video", "categories", "tags", "topic_full", "og_image", "writters", "photographers", "designers", "engineers", "relateds", "theme"}
+	metaOfPostLookupFields       = []string{"heroImage", "leading_image_portrait", "categories", "tags", "topics", "og_image", "theme"}
 	fullTopicLookupFields        = []string{"topic_relateds", "leading_image", "leading_image_portrait", "leading_video", "og_image"}
 	metaOfTopicLookupFields      = []string{"leading_image", "leading_image_portrait", "og_image"}
-	topicRelatedPostLookupFields = []string{"hero_image", "categories", "tags", "og_image"}
+	topicRelatedPostLookupFields = []string{"heroImage", "categories", "tags", "og_image"}
+
+	metaOfPostExcludedFields       = []string{"leading_video", "writters", "photographers", "designers", "engineers", "relateds", "content"}
+	metaOfTopicExcludedFields      = []string{"relateds", "leading_video", "og_image"}
+	topicRelatedPostExcludedFields = []string{"leading_image_portrait", "leading_video", "topics", "writters", "photographers", "designers", "engineers", "relateds", "theme", "content"}
 )
 
 type mongoStorage struct {
@@ -27,7 +31,7 @@ func NewMongoStorage(client *mongo.Client) *mongoStorage {
 }
 
 func (m *mongoStorage) GetPosts(ctx context.Context, q *Query) ([]Post, error) {
-	posts := make([]Post, q.Limit)
+	var posts []Post
 	// build aggregate stage from query
 	stages := buildFilterStage(q.Filter)
 
@@ -36,23 +40,28 @@ func (m *mongoStorage) GetPosts(ctx context.Context, q *Query) ([]Post, error) {
 	stages = append(stages, buildPaginationStage(q.Pagination)...)
 
 	// build expansion stages according to full/meta expansion
-	var fields []string
 	if q.Full {
-		fields = fullPostLookupFields
+		stages = append(stages, buildLookupStages(fullPostLookupFields)...)
 	} else {
-		fields = metaOfPostLookupFields
+		stages = append(stages, buildExcludedStage(metaOfPostExcludedFields))
+		stages = append(stages, buildLookupStages(metaOfPostLookupFields)...)
 	}
 
-	stages = append(stages, buildLookupStages(fields)...)
 	cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection("posts").Aggregate(ctx, stages)
 	if err != nil {
 		return []Post{}, errors.WithStack(err)
 	}
 	defer cursor.Close(ctx)
 
-	if err := cursor.All(ctx, &posts); err != nil {
-		return []Post{}, errors.WithStack(err)
+	for cursor.Next(ctx) {
+		var post Post
+		err := cursor.Decode(&post)
+		if err != nil {
+			return []Post{}, errors.WithStack(err)
+		}
+		posts = append(posts, post)
 	}
+
 	// Perform the query
 	// error handling
 	return posts, nil
@@ -62,11 +71,11 @@ func (m *mongoStorage) GetTopics(ctx context.Context, q *Query) ([]Topic, error)
 	return nil, nil
 }
 
-func (m *mongoStorage) GetPostCount(ctx context.Context, q *Query) (int, error) {
+func (m *mongoStorage) GetPostCount(ctx context.Context, f *Filter) (int, error) {
 	return 0, nil
 }
 
-func (m *mongoStorage) GetTopicCount(ctx context.Context, q *Query) (int, error) {
+func (m *mongoStorage) GetTopicCount(ctx context.Context, f *Filter) (int, error) {
 	return 0, nil
 }
 
@@ -82,92 +91,54 @@ func buildFilterStage(f Filter) []bson.D {
 
 	return []bson.D{{{Key: "$match", Value: match}}}
 }
+func buildExcludedStage(excludeds []string) bson.D {
+	var fields []bson.E
+	for _, e := range excludeds {
+		fields = append(fields, bson.E{Key: e, Value: 0})
+	}
+
+	return bson.D{{Key: "$project", Value: fields}}
+}
 
 func buildLookupStages(fields []string) []bson.D {
 	var stages []bson.D
 	for _, v := range fields {
 		switch v {
 		case "writters", "photographers", "designers", "engineers":
-			stages = append(stages, buildLookupByIDStage(v, "contacts", false)...)
-		case "hero_image", "leading_image", "leading_image_portrait", "og_image":
-			stages = append(stages, buildLookupByIDStage(v, "images", true)...)
+			stages = append(stages, buildLookupByIDStage(v, "contacts"))
+		case "heroImage", "leading_image", "leading_image_portrait", "og_image":
+			stages = append(stages, buildLookupByIDStage(v, "images"))
+			stages = append(stages, buildUnwindStage(v))
 		case "leading_video":
-			stages = append(stages, buildLookupByIDStage(v, "videos", true)...)
+			stages = append(stages, buildLookupByIDStage(v, "videos"))
+			stages = append(stages, buildUnwindStage(v))
 		case "theme":
-			stages = append(stages, buildLookupByIDStage(v, "themes", true)...)
+			stages = append(stages, buildLookupByIDStage(v, "themes"))
+			stages = append(stages, buildUnwindStage(v))
 		case "categories":
-			stages = append(stages, buildLookupByIDStage(v, "postcategories", true)...)
+			stages = append(stages, buildLookupByIDStage(v, "postcategories"))
 		case "tags":
-			stages = append(stages, buildLookupByIDStage(v, "tags", false)...)
-
+			stages = append(stages, buildLookupByIDStage(v, "tags"))
 		case "relateds":
-			nestedPipeline := []bson.D{
-				// match stage
-				// {$match: {$expr: {$in: ["$_id", "$$relateds"]}}}
-				{{Key: "$match", Value: bson.D{{Key: "$expr", Value: bson.D{{Key: "$in", Value: bson.A{"$_id", "$$" + v}}}}}}},
-			}
-			nestedPipeline = append(nestedPipeline, buildLookupStages(metaOfPostLookupFields)...)
-			stages = append(stages, bson.D{
-				{Key: "$lookup", Value: bson.D{
-					{Key: "from", Value: "posts"},
-					{Key: "let", Value: bson.D{{Key: v, Value: "$" + v}}},
-					{Key: "pipeline", Value: nestedPipeline},
-					{Key: "as", Value: v},
-				},
-				},
-			})
+			stages = append(stages, buildLookupNestedStage(v, "posts", metaOfPostExcludedFields, metaOfPostLookupFields, true))
 		case "topic_relateds":
-			nestedPipeline := []bson.D{
-				{{Key: "$match", Value: bson.D{{Key: "$expr", Value: bson.D{{Key: "$in", Value: bson.A{"$_id", "$$relateds"}}}}}}},
-			}
-			nestedPipeline = append(nestedPipeline, buildLookupStages(topicRelatedPostLookupFields)...)
-			stages = append(stages, bson.D{
-				{Key: "$lookup", Value: bson.D{
-					{Key: "from", Value: "posts"},
-					{Key: "let", Value: bson.D{{Key: "relateds", Value: "$relateds"}}},
-					{Key: "pipeline", Value: nestedPipeline},
-					{Key: "as", Value: "relateds"},
-				},
-				},
-			})
-		case "topic":
-			nestedPipeline := []bson.D{
-				{{Key: "$match", Value: bson.D{{Key: "$expr", Value: bson.D{{Key: "$in", Value: bson.A{"$_id", "$$" + v}}}}}}},
-			}
-			nestedPipeline = append(nestedPipeline, buildLookupStages(metaOfTopicLookupFields)...)
-			stages = append(stages, bson.D{
-				{Key: "$lookup", Value: bson.D{
-					{Key: "from", Value: "topics"},
-					{Key: "let", Value: bson.D{{Key: v, Value: "$" + v}}},
-					{Key: "pipeline", Value: nestedPipeline},
-					{Key: "as", Value: v},
-				},
-				},
-			})
+			stages = append(stages, buildLookupNestedStage("relateds", "posts", topicRelatedPostExcludedFields, topicRelatedPostLookupFields, true))
+		case "topics":
+			stages = append(stages, buildLookupNestedStage(v, "topics", metaOfTopicExcludedFields, metaOfTopicLookupFields, false))
+			stages = append(stages, buildUnwindStage(v))
 
 		case "topic_full":
-			nestedPipeline := []bson.D{
-				{{Key: "$match", Value: bson.D{{Key: "$expr", Value: bson.D{{Key: "$in", Value: bson.A{"$_id", "$$topic"}}}}}}},
-			}
-			nestedPipeline = append(nestedPipeline, buildLookupStages(metaOfTopicLookupFields)...)
-			stages = append(stages, bson.D{
-				{Key: "$lookup", Value: bson.D{
-					{Key: "from", Value: "topics"},
-					{Key: "let", Value: bson.D{{Key: "topic", Value: "$topic"}}},
-					{Key: "pipeline", Value: nestedPipeline},
-					{Key: "as", Value: "topic"},
-				},
-				},
-			})
+			stages = append(stages, buildLookupNestedStage("topics", "topics", nil, fullTopicLookupFields, false))
+
+			stages = append(stages, buildUnwindStage("topics"))
 		}
+
 	}
 	return stages
 }
 
-func buildLookupByIDStage(field, from string, expand bool) []bson.D {
-	var stages []bson.D
-
-	stages = append(stages, bson.D{
+func buildLookupByIDStage(field, from string) bson.D {
+	return bson.D{
 		{Key: "$lookup", Value: bson.D{
 			{Key: "from", Value: from},
 			{Key: "localField", Value: field},
@@ -175,12 +146,30 @@ func buildLookupByIDStage(field, from string, expand bool) []bson.D {
 			{Key: "as", Value: field},
 		},
 		},
-	})
-	if expand {
-		stages = append(stages, bson.D{{Key: "$unwind", Value: "$" + field}})
-
 	}
-	return stages
+}
+
+func buildLookupNestedStage(field, from string, excluded, nestedLookup []string, isArrayField bool) bson.D {
+	var nestedPipeline []bson.D
+	if isArrayField {
+		nestedPipeline = append(nestedPipeline, bson.D{{Key: "$match", Value: bson.D{{Key: "$expr", Value: bson.D{{Key: "$in", Value: bson.A{"$_id", "$$" + field}}}}}}})
+	} else {
+		nestedPipeline = append(nestedPipeline, bson.D{{Key: "$match", Value: bson.D{{Key: "$expr", Value: bson.D{{Key: "$eq", Value: bson.A{"$_id", "$$" + field}}}}}}})
+	}
+	if len(excluded) > 0 {
+		nestedPipeline = append(nestedPipeline, buildExcludedStage(excluded))
+	}
+	nestedPipeline = append(nestedPipeline, buildLookupStages(nestedLookup)...)
+
+	return bson.D{
+		{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: from},
+			{Key: "let", Value: bson.D{{Key: field, Value: "$" + field}}},
+			{Key: "pipeline", Value: nestedPipeline},
+			{Key: "as", Value: field},
+		},
+		},
+	}
 }
 
 func buildSortStage(sort Sort) []bson.D {
@@ -206,4 +195,11 @@ func buildPaginationStage(p Pagination) []bson.D {
 	}
 
 	return stages
+}
+
+func buildUnwindStage(field string) bson.D {
+	return bson.D{{Key: "$unwind", Value: bson.D{
+		{Key: "path", Value: "$" + field},
+		{Key: "preserveNullAndEmptyArrays", Value: true},
+	}}}
 }

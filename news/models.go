@@ -55,7 +55,7 @@ type Post struct {
 	Tags                   []Tag              `bson:"tags" json:"tags,omitempty"`
 	OgTitle                string             `bson:"og_title" json:"og_title"`
 	OgDescription          string             `bson:"og_description" json:"og_description"`
-	OgImage                *Image             `bson:"og_Image" json:"og_image,omitempty"`
+	OgImage                *Image             `bson:"og_image" json:"og_image,omitempty"`
 	IsFeatured             bool               `bson:"isFeatured" json:"is_featured"`
 	Topic                  *Topic             `bson:"topics" json:"topics,omitempty"`
 	Writters               []Author           `bson:"writters" json:"writters,omitempty"`
@@ -85,7 +85,7 @@ type Category struct {
 }
 
 // Theme ...
-type Image struct {
+/*type Image struct {
 	ID             primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	Description    string             `json:"description,omitempty"`
 	Copyright      string             `json:"copyright,omitempty"`
@@ -93,7 +93,21 @@ type Image struct {
 	Filetype       string             `json:"filetype,omitempty"`
 	Width          uint               `json:"width,omitempty"`
 	URL            string             `json:"url,omitempty"`
-	ResizedTargets ResizedTargets     `json:"resized_targets,omitempty"`
+	ResizedTargets ResizedTargets     `json:"resized_targets,omitempty" bson:"resizedTargets"`
+}*/
+type Image struct {
+	ImageMeta   `bson:"image"`
+	ID          primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Description string             `json:"description,omitempty"`
+	Copyright   string             `json:"copyright,omitempty"`
+}
+
+type ImageMeta struct {
+	Height         uint           `bson:"height" json:"height"`
+	Filetype       string         `bson:"filetype" json:"filetype"`
+	Width          uint           `bson:"width" json:"width"`
+	URL            string         `bson:"url" json:"url"`
+	ResizedTargets ResizedTargets `bson:"resizedTargets" json:"resized_targets"`
 }
 
 type ImageAsset struct {
