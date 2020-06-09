@@ -18,7 +18,7 @@ var (
 	topicRelatedPostLookupFields = []string{"heroImage", "categories", "tags", "og_image"}
 
 	metaOfPostExcludedFields       = []string{"leading_video", "writters", "photographers", "designers", "engineers", "relateds", "content"}
-	metaOfTopicExcludedFields      = []string{"relateds", "leading_video", "og_image"}
+	metaOfTopicExcludedFields      = []string{"relateds", "leading_video"}
 	topicRelatedPostExcludedFields = []string{"leading_image_portrait", "leading_video", "topics", "writters", "photographers", "designers", "engineers", "relateds", "theme", "content"}
 )
 
@@ -68,7 +68,40 @@ func (m *mongoStorage) GetPosts(ctx context.Context, q *Query) ([]Post, error) {
 }
 
 func (m *mongoStorage) GetTopics(ctx context.Context, q *Query) ([]Topic, error) {
-	return nil, nil
+	var topics []Topic
+	// build aggregate stage from query
+	stages := buildFilterStage(q.Filter)
+
+	stages = append(stages, buildSortStage(q.Sort)...)
+
+	stages = append(stages, buildPaginationStage(q.Pagination)...)
+
+	// build expansion stages according to full/meta expansion
+	if q.Full {
+		stages = append(stages, buildLookupStages(fullTopicLookupFields)...)
+	} else {
+		stages = append(stages, buildExcludedStage(metaOfTopicExcludedFields))
+		stages = append(stages, buildLookupStages(metaOfTopicLookupFields)...)
+	}
+
+	cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection("topics").Aggregate(ctx, stages)
+	if err != nil {
+		return []Topic{}, errors.WithStack(err)
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var topic Topic
+		err := cursor.Decode(&topic)
+		if err != nil {
+			return []Topic{}, errors.WithStack(err)
+		}
+		topics = append(topics, topic)
+	}
+
+	// Perform the query
+	// error handling
+	return topics, nil
 }
 
 func (m *mongoStorage) GetPostCount(ctx context.Context, f *Filter) (int, error) {

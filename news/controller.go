@@ -91,7 +91,7 @@ func (nc *newsController) GetTopics(c *gin.Context) {
 }
 
 func (nc *newsController) GetATopic(c *gin.Context) {
-	q := NewQuery(FromSlug(c.Param("slug")))
+	q := NewQuery(FromSlug(c.Param("slug")), FromUrlQueryMap(c.Request.URL.Query()))
 	q.Limit = 1
 
 	topics, err := nc.Storage.GetTopics(c, q)
