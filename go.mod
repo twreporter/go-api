@@ -39,6 +39,7 @@ require (
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.4.0
+	github.com/twreporter/go-api v4.0.0+incompatible
 	github.com/twreporter/logformatter v0.0.0-20200211094126-60fe42618206
 	go.mongodb.org/mongo-driver v1.1.0
 	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678

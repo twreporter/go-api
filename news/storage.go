@@ -2,6 +2,7 @@ package news
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -69,6 +70,7 @@ func (m *mongoStorage) GetPosts(ctx context.Context, q *Query) ([]Post, error) {
 
 func (m *mongoStorage) GetTopics(ctx context.Context, q *Query) ([]Topic, error) {
 	var topics []Topic
+
 	// build aggregate stage from query
 	stages := buildFilterStage(q.Filter)
 
@@ -98,7 +100,6 @@ func (m *mongoStorage) GetTopics(ctx context.Context, q *Query) ([]Topic, error)
 		}
 		topics = append(topics, topic)
 	}
-
 	// Perform the query
 	// error handling
 	return topics, nil
@@ -120,6 +121,51 @@ func buildFilterStage(f Filter) []bson.D {
 
 	if f.State != "" {
 		match = append(match, bson.E{Key: "state", Value: f.State})
+	}
+
+	if f.Style != "" {
+		match = append(match, bson.E{Key: "style", Value: f.Style})
+	}
+
+	if len(f.Categories) > 0 {
+		var ids bson.A
+		for _, v := range f.Categories {
+			ids = append(ids, v)
+		}
+		match = append(match, bson.E{Key: "categories",
+			Value: bson.D{{Key: "$in", Value: ids}}})
+	}
+
+	if !f.IsFeatured.IsZero() {
+		if f.IsFeatured.Bool {
+			match = append(match, bson.E{Key: "isFeatured",
+				Value: f.IsFeatured.Bool})
+		}
+	}
+
+	if !f.PublishedDate.IsEmpty() {
+		var query bson.E
+		if !f.PublishedDate.Exact.IsZero() {
+			if !f.PublishedDate.Exact.IsZero() {
+				t := time.Unix(f.PublishedDate.Start.Int64, 0)
+				pt := primitive.NewDateTimeFromTime(t)
+				query = bson.E{Key: "publishedDate", Value: pt}
+			}
+		} else {
+			timeRange := []bson.E{}
+			if !f.PublishedDate.Start.IsZero() {
+				t := time.Unix(f.PublishedDate.Start.Int64, 0)
+				pt := primitive.NewDateTimeFromTime(t)
+				timeRange = append(timeRange, bson.E{Key: "$gte", Value: pt})
+			}
+			if !f.PublishedDate.End.IsZero() {
+				t := time.Unix(f.PublishedDate.End.Int64, 0)
+				pt := primitive.NewDateTimeFromTime(t)
+				timeRange = append(timeRange, bson.E{Key: "$lte", Value: pt})
+			}
+			query = bson.E{Key: "publishedDate", Value: timeRange}
+		}
+		match = append(match, query)
 	}
 
 	return []bson.D{{{Key: "$match", Value: match}}}
@@ -205,6 +251,8 @@ func buildLookupNestedStage(field, from string, excluded, nestedLookup []string,
 	}
 }
 
+// Build sort stage with respect to the specified field
+// Currently, only single sorting criteria is allowed.
 func buildSortStage(sort Sort) []bson.D {
 	var sortBy bson.D
 	if !sort.PublishedDate.IsAsc.IsZero() {
@@ -212,6 +260,14 @@ func buildSortStage(sort Sort) []bson.D {
 			sortBy = bson.D{{Key: "publishedDate", Value: 1}}
 		} else {
 			sortBy = bson.D{{Key: "publishedDate", Value: -1}}
+		}
+	}
+
+	if !sort.UpdatedAt.IsAsc.IsZero() {
+		if sort.UpdatedAt.IsAsc.Bool {
+			sortBy = bson.D{{Key: "UpdatedAt", Value: 1}}
+		} else {
+			sortBy = bson.D{{Key: "UpdatedAt", Value: -1}}
 		}
 	}
 

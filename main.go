@@ -81,7 +81,7 @@ func main() {
 	// endpoints for topics
 	v2Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), (newsV2controller.GetTopics))
 	v2Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), (newsV2controller.GetATopic))
-	//v2Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), newsV2controller.GetIndexPageContents)
+	v2Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), newsV2controller.GetIndexPage)
 	//v2Group.GET("/index_page_categories", middlewares.SetCacheControl("public,max-age=1800"), newsV2controller.GetCategoriesPosts)
 
 	readTimeout := 5 * time.Second

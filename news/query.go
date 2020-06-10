@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/guregu/null.v3"
 )
 
@@ -14,12 +15,17 @@ type (
 	}
 
 	Filter struct {
-		Slug  string
-		State string
+		Slug          string
+		State         string
+		Style         string
+		IsFeatured    null.Bool
+		Categories    []primitive.ObjectID
+		PublishedDate TimeRange
 	}
 
 	Sort struct {
 		PublishedDate SortOrder
+		UpdatedAt     SortOrder
 	}
 
 	SortOrder struct {
@@ -33,8 +39,18 @@ type (
 		Full   bool
 	}
 
+	TimeRange struct {
+		Start null.Int
+		End   null.Int
+		Exact null.Int
+	}
+
 	Options func(*Query)
 )
+
+func (t TimeRange) IsEmpty() bool {
+	return t == TimeRange{}
+}
 
 func FromSlug(slug string) Options {
 	return func(q *Query) {

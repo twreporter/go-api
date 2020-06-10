@@ -39,7 +39,7 @@ const (
 	Activate = "activate"
 
 	// index page sections //
-	LastestSection     = "latest_section"
+	LatestSection      = "latest_section"
 	EditorPicksSection = "editor_picks_section"
 	LatestTopicSection = "latest_topic_section"
 	ReviewsSection     = "reviews_section"
