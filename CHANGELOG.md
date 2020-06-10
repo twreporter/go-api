@@ -1,5 +1,7 @@
 ## Unreleased
-### 6.0.4
+
+## Released
+### 6.0.4 (Current), 2020-06-10
 
 #### Notable Changes
 
@@ -18,8 +20,28 @@
 - core
   - change mongo query mode
 
-## Released
-### 6.0.3 (Current), 2020-03-11
+#### Commits
+* [[`a25b664fe8`](https://github.com/twreporter/go-api/commit/a25b664fe8)] - Merge pull request #380 from taylrj/update-schema (Tai-Jiun Fang)
+* [[`95830c578d`](https://github.com/twreporter/go-api/commit/95830c578d)] - **doc**: update CHANGELOG.md (Taylor Fang)
+* [[`73dad89691`](https://github.com/twreporter/go-api/commit/73dad89691)] - **chore**: donations table schema change (Taylor Fang)
+* [[`6405beec18`](https://github.com/twreporter/go-api/commit/6405beec18)] - Merge pull request #378 from taylrj/add-receipt-title (Tai-Jiun Fang)
+* [[`90541811e7`](https://github.com/twreporter/go-api/commit/90541811e7)] - **doc**: fix json format (Taylor Fang)
+* [[`9098549594`](https://github.com/twreporter/go-api/commit/9098549594)] - **doc**: update docs according to review comment (Taylor Fang)
+* [[`03da19a4ce`](https://github.com/twreporter/go-api/commit/03da19a4ce)] - **doc**: update docs to add `receipt\_header` field (Taylor Fang)
+* [[`815b123a33`](https://github.com/twreporter/go-api/commit/815b123a33)] - Merge pull request #377 from nickhsine/donation-email-temp (nick)
+* [[`83b7f799c8`](https://github.com/twreporter/go-api/commit/83b7f799c8)] - **doc**: update CHANGELOG.md (nickhsine)
+* [[`1be3f110dd`](https://github.com/twreporter/go-api/commit/1be3f110dd)] - api/mail: update success donation email template (nickhsine)
+* [[`88d0999641`](https://github.com/twreporter/go-api/commit/88d0999641)] - Merge pull request #375 from babygoat/bump-6.0.4 (babygoat)
+* [[`95c0fba4d2`](https://github.com/twreporter/go-api/commit/95c0fba4d2)] - **doc**: Update Changelog (Ching-Yang, Tseng)
+* [[`e08fa70398`](https://github.com/twreporter/go-api/commit/e08fa70398)] - Merge pull request #374 from babygoat/mongo-read-skew (babygoat)
+* [[`219646de12`](https://github.com/twreporter/go-api/commit/219646de12)] - api/news: expand throught by new connections (Ching-Yang, Tseng)
+* [[`47685da57c`](https://github.com/twreporter/go-api/commit/47685da57c)] - **core**: change mongo query mode (Ching-Yang, Tseng)
+* [[`879e07821a`](https://github.com/twreporter/go-api/commit/879e07821a)] - Merge pull request #373 from babygoat/success-donation-email-template-update (babygoat)
+* [[`68a2811f95`](https://github.com/twreporter/go-api/commit/68a2811f95)] - api/mail: update footer of the email template (Ching-Yang, Tseng)
+* [[`ebd52aedb9`](https://github.com/twreporter/go-api/commit/ebd52aedb9)] - api/mail: generate client id for tracking (Ching-Yang, Tseng)
+* [[`845d3d696a`](https://github.com/twreporter/go-api/commit/845d3d696a)] - api/donation: append utm tag to donation link (Ching-Yang, Tseng)
+
+### 6.0.3
 
 #### Notable Changes
 
@@ -28,7 +50,7 @@
 
 #### Commits
 - [[a01296b](https://github.com/twreporter/go-api/commit/a01296b9c9f433daa5aadbe1a2e70d896ac60a92)] - Prevent a user from retrieving bookmark of others(babygoat)
-- [[67fd87f](https://github.com/twreporter/go-api/commit/67fd87f2e2d7971e219e2cf983bda12a2e1c8b0f)] - Refactor tests of bookmark(babygoat
+- [[67fd87f](https://github.com/twreporter/go-api/commit/67fd87f2e2d7971e219e2cf983bda12a2e1c8b0f)] - Refactor tests of bookmark(babygoat)
 
 ### 6.0.2, 2020-03-05
 
