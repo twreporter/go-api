@@ -15,12 +15,11 @@ type (
 	}
 
 	Filter struct {
-		Slug          string
-		State         string
-		Style         string
-		IsFeatured    null.Bool
-		Categories    []primitive.ObjectID
-		PublishedDate TimeRange
+		Slug       string
+		State      string
+		Style      string
+		IsFeatured null.Bool
+		Categories []primitive.ObjectID
 	}
 
 	Sort struct {
@@ -39,18 +38,8 @@ type (
 		Full   bool
 	}
 
-	TimeRange struct {
-		Start null.Int
-		End   null.Int
-		Exact null.Int
-	}
-
 	Options func(*Query)
 )
-
-func (t TimeRange) IsEmpty() bool {
-	return t == TimeRange{}
-}
 
 func FromSlug(slug string) Options {
 	return func(q *Query) {

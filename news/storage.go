@@ -2,7 +2,6 @@ package news
 
 import (
 	"context"
-	"time"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -159,30 +158,6 @@ func buildFilterDocuments(f Filter) []bson.E {
 		}
 	}
 
-	if !f.PublishedDate.IsEmpty() {
-		var query bson.E
-		if !f.PublishedDate.Exact.IsZero() {
-			if !f.PublishedDate.Exact.IsZero() {
-				t := time.Unix(f.PublishedDate.Start.Int64, 0)
-				pt := primitive.NewDateTimeFromTime(t)
-				query = bson.E{Key: "publishedDate", Value: pt}
-			}
-		} else {
-			timeRange := []bson.E{}
-			if !f.PublishedDate.Start.IsZero() {
-				t := time.Unix(f.PublishedDate.Start.Int64, 0)
-				pt := primitive.NewDateTimeFromTime(t)
-				timeRange = append(timeRange, bson.E{Key: "$gte", Value: pt})
-			}
-			if !f.PublishedDate.End.IsZero() {
-				t := time.Unix(f.PublishedDate.End.Int64, 0)
-				pt := primitive.NewDateTimeFromTime(t)
-				timeRange = append(timeRange, bson.E{Key: "$lte", Value: pt})
-			}
-			query = bson.E{Key: "publishedDate", Value: timeRange}
-		}
-		match = append(match, query)
-	}
 	return match
 }
 func buildFilterStage(f Filter) []bson.D {

@@ -48,8 +48,8 @@ db:
         address: 127.0.0.1
         port: '3306'
     mongo:
-        url: localhost
-        dbname: gorm
+        url: 'mongodb://localhost:27020/plate'
+        dbname: plate
         timeout: 5
 oauth:
     facebook:

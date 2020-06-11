@@ -144,11 +144,6 @@ func (nc *newsController) GetIndexPage(c *gin.Context) {
 			Query: Query{
 				Filter: Filter{
 					State: "published",
-					// Limit the document publishedDate time range within a week
-					// so that the sorting only perform on these documents to reduce effort
-					PublishedDate: TimeRange{
-						Start: null.IntFrom(time.Now().AddDate(0, 0, -7).Unix()),
-					},
 				},
 				Pagination: Pagination{
 					Limit: 6,
