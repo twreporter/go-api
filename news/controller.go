@@ -40,12 +40,14 @@ func (nc *newsController) GetPosts(c *gin.Context) {
 	if err != nil {
 		log.Errorf("%+v", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
 
 	total, err := nc.Storage.GetPostCount(c, &q.Filter)
 	if err != nil {
 		log.Errorf("%+v", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "records": posts, "meta": gin.H{

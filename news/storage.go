@@ -106,14 +106,30 @@ func (m *mongoStorage) GetTopics(ctx context.Context, q *Query) ([]Topic, error)
 }
 
 func (m *mongoStorage) GetPostCount(ctx context.Context, f *Filter) (int, error) {
-	return 0, nil
+	query := bson.D{}
+	if d := buildFilterDocuments(*f); d != nil {
+		query = bson.D(d)
+	}
+	count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection("posts").CountDocuments(ctx, query)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return int(count), nil
 }
 
 func (m *mongoStorage) GetTopicCount(ctx context.Context, f *Filter) (int, error) {
-	return 0, nil
+	query := bson.D{}
+	if d := buildFilterDocuments(*f); d != nil {
+		query = bson.D(d)
+	}
+	count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection("topics").CountDocuments(ctx, query)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return int(count), nil
 }
 
-func buildFilterStage(f Filter) []bson.D {
+func buildFilterDocuments(f Filter) []bson.E {
 	var match []primitive.E
 	if f.Slug != "" {
 		match = append(match, bson.E{Key: "slug", Value: f.Slug})
@@ -167,8 +183,14 @@ func buildFilterStage(f Filter) []bson.D {
 		}
 		match = append(match, query)
 	}
-
-	return []bson.D{{{Key: "$match", Value: match}}}
+	return match
+}
+func buildFilterStage(f Filter) []bson.D {
+	var match []bson.D
+	if documents := buildFilterDocuments(f); len(documents) > 0 {
+		match = append(match, bson.D{{Key: "$match", Value: documents}})
+	}
+	return match
 }
 func buildExcludedStage(excludeds []string) bson.D {
 	var fields []bson.E
