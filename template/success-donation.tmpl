@@ -14,7 +14,7 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>感謝您成為報導者的贊助夥伴</title>
+	<title>{{.Subject}}</title>
 
 	<style type="text/css">
 		p {
@@ -255,15 +255,15 @@
 
 		#templateHeader {
 			/*@editable*/
-			background-color: #f1f1f1;
+			background-color: transparent;
 			/*@editable*/
-			background-image: url("https://gallery.mailchimp.com/4da5a7d3b98dbc9fdad009e7e/images/1568d4d1-9c0a-4aff-9161-5347e60f41c1.jpg");
+			background-image: url("{{if .IsAutoPay}}https://public.twreporter.org/email/donation/banners/token-donation-desktop-v2.1.png{{else}}https://public.twreporter.org/email/donation/banners/prime-donation-desktop-v2.1.png{{end}}");
 			/*@editable*/
 			background-repeat: no-repeat;
 			/*@editable*/
 			background-position: center;
 			/*@editable*/
-			background-size: cover;
+			background-size: contain;
 			/*@editable*/
 			border-top: 0;
 			/*@editable*/
@@ -515,8 +515,7 @@
 
 		@media only screen and (max-width:480px) {
 			#templateHeader {
-				background-image: url("https://gallery.mailchimp.com/4da5a7d3b98dbc9fdad009e7e/images/45db9cc9-7050-469d-abe9-9c81246d364c.png");
-				background-position: left;
+				background-image: url("{{if .IsAutoPay}}https://public.twreporter.org/email/donation/banners/token-donation-mobile-v2.1.png{{else}}https://public.twreporter.org/email/donation/banners/prime-donation-mobile-v2.1.png{{end}}");
 			}
 		}
 
@@ -1301,7 +1300,7 @@
 
 
 																																						<td align="left" valign="middle" class="mcnFollowTextContent" style="padding-left:5px;">
-																																							<a href="http://line.me/ti/p/%40nbs5015j" target="" style="font-family: &quot;Source Sans Pro&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size: 14px;text-decoration: none;color: #9C9C9C;font-weight: bold;">Line</a>
+																																							<a href="https://t.me/tw_reporter_org" target="" style="font-family: &quot;Source Sans Pro&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size: 14px;text-decoration: none;color: #9C9C9C;font-weight: bold;">Telegram</a>
 																																						</td>
 
 																																					</tr>
@@ -1415,7 +1414,7 @@
 
 
 																																						<td align="left" valign="middle" class="mcnFollowTextContent" style="padding-left:5px;">
-																																							<a href="http://www.yourfeedurl.com" target="" style="font-family: &quot;Source Sans Pro&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size: 14px;text-decoration: none;color: #9C9C9C;font-weight: bold;">RSS</a>
+																																							<a href="https://public.twreporter.org/rss/twreporter-rss.xml" target="" style="font-family: &quot;Source Sans Pro&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size: 14px;text-decoration: none;color: #9C9C9C;font-weight: bold;">RSS</a>
 																																						</td>
 
 																																					</tr>
@@ -1473,7 +1472,7 @@
 
 																		<td valign="top" class="mcnTextContent" style="padding: 0px 18px 9px;color: #9C9C9C;">
 
-																			<p style="color: #9C9C9C;"><span style="font-size:12px"><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif">Copyright © 2018 The Reporter.</span></span>
+																			<p style="color: #9C9C9C;"><span style="font-size:12px"><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif">Copyright © 2020 The Reporter.</span></span>
 																			</p>
 
 																		</td>
@@ -1503,6 +1502,7 @@
 							</td>
 						</tr>
 					</table>
+					<img src="http://www.google-analytics.com/collect?v=1&tid=UA-69336956-1&cid={{.ClientID}}&t=event&ec=email&ea=open&cs=support&cm=email&cn=supportsuccess"/>
 					<!-- // END TEMPLATE -->
 				</td>
 			</tr>

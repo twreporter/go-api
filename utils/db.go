@@ -66,11 +66,10 @@ func InitMongoDB() (*mgo.Session, error) {
 	// Set socket timeout to 3 mins
 	session.SetSocketTimeout(3 * time.Minute)
 
-	// Since we don't have writes here and don't care about the consistency between Mongo Master and Slave,
-	// we choose Eventual mode here.
-	// The Eventual mode is the fastest and most resource-friendly,
-	// but is also the one offering the least guarantees about ordering of the data read and written.
-	session.SetMode(mgo.Eventual, true)
+	// As our mongo cluster comprises cost-effective solution(Replica set arbiter),
+	// use Nearest read concern(https://docs.mongodb.com/manual/core/read-preference/#nearest)
+	// to distribute the read load acorss primary and secondary node evenly.
+	session.SetMode(mgo.Nearest, true)
 
 	return session, nil
 }

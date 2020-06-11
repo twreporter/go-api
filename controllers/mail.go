@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
@@ -37,6 +38,7 @@ type donationSuccessReqBody struct {
 	NationalID        string   `json:"national_id"`
 	OrderNumber       string   `json:"order_number" binding:"required"`
 	PhoneNumber       string   `json:"phone_number"`
+	IsAutoPay         bool     `json:"is_auto_pay"`
 }
 
 // NewMailController is used to new *MailController
@@ -91,7 +93,6 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 }
 
 func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.H, error) {
-	const subject = "感謝您成為報導者的贊助夥伴"
 	const taipeiLocationName = "Asia/Taipei"
 	var donationDatetime time.Time
 	var err error
@@ -100,11 +101,16 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	var mailBody string
 	var out bytes.Buffer
 	var reqBody donationSuccessReqBody
+	var subject = "感謝您成為報導者的贊助夥伴"
 	var valid bool
 
 	// parse requst JSON into struct
 	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
+	}
+
+	if reqBody.IsAutoPay {
+		subject = "扣款成功，感謝您支持報導者持續追蹤重要議題"
 	}
 
 	if reqBody.Currency == "" {
@@ -123,9 +129,13 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	var templateData = struct {
 		donationSuccessReqBody
 		DonationDatetime string
+		ClientID         string
+		Subject          string
 	}{
 		reqBody,
 		donationDatetime.In(location).Format("2006-01-02 15:04:05 UTC+8"),
+		uuid.New().String(),
+		subject,
 	}
 
 	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "success-donation.tmpl", templateData); err != nil {

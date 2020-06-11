@@ -26,6 +26,7 @@ require (
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/pprof v0.0.0-20200210173600-2827a3cc57bf // indirect
+	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.2 // indirect
 	github.com/gorilla/sessions v1.1.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -52,6 +53,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/twreporter/logformatter v0.0.0-20200211094126-60fe42618206
+	go.mongodb.org/mongo-driver v1.1.0
 	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678
 	golang.org/x/exp v0.0.0-20200207192155-f17229e696bd // indirect
 	golang.org/x/image v0.0.0-20200119044424-58c23975cae1 // indirect
