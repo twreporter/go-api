@@ -20,6 +20,8 @@ type (
 		Style      string
 		IsFeatured null.Bool
 		Categories []primitive.ObjectID
+		Tags       []primitive.ObjectID
+		IDs        []primitive.ObjectID
 	}
 
 	Sort struct {
@@ -62,7 +64,30 @@ func FromUrlQueryMap(u url.Values) Options {
 		if err == nil {
 			q.Full = full
 		}
+		if ids := parseObjectIDFromQuery(u["category"]); len(ids) > 0 {
+			q.Filter.Categories = ids
+		}
+		if ids := parseObjectIDFromQuery(u["tag"]); len(ids) > 0 {
+			q.Filter.Tags = ids
+		}
+		if ids := parseObjectIDFromQuery(u["id"]); len(ids) > 0 {
+			q.Filter.IDs = ids
+		}
 	}
+}
+
+func parseObjectIDFromQuery(qs []string) []primitive.ObjectID {
+	var ids []primitive.ObjectID
+
+	for _, v := range qs {
+		id, err := primitive.ObjectIDFromHex(v)
+		if err != nil {
+			// ignore invalid objectID
+			continue
+		}
+		ids = append(ids, id)
+	}
+	return ids
 }
 
 func NewQuery(options ...Options) *Query {

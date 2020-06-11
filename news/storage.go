@@ -150,6 +150,22 @@ func buildFilterDocuments(f Filter) []bson.E {
 		match = append(match, bson.E{Key: "categories",
 			Value: bson.D{{Key: "$in", Value: ids}}})
 	}
+	if len(f.Tags) > 0 {
+		var ids bson.A
+		for _, v := range f.Tags {
+			ids = append(ids, v)
+		}
+		match = append(match, bson.E{Key: "tags",
+			Value: bson.D{{Key: "$in", Value: ids}}})
+	}
+	if len(f.IDs) > 0 {
+		var ids bson.A
+		for _, v := range f.IDs {
+			ids = append(ids, v)
+		}
+		match = append(match, bson.E{Key: "_id",
+			Value: bson.D{{Key: "$in", Value: ids}}})
+	}
 
 	if !f.IsFeatured.IsZero() {
 		if f.IsFeatured.Bool {
