@@ -1,5 +1,46 @@
 # Group Posts
 
+## Post List [/v2/posts{?category_id,tag_id,id,sort,offset,limit}]
+A list contains meta(brief) information of the selected posts.
+
+## Get a list of posts [GET]
+
++ Parameters
+    + `category_id`: `5edf118c3e631f0600198935` (optional) - Search for posts of the categories referenced by the category_id
+    + `tag_id`: `5edf118c3e631f0600198935` (optional) - Search for posts with the tags referenced by the tag ids
+    + id: `5edf118c3e631f0600198935` (optional) - Search for posts with the referenced ids
+    + sort: `-published_date` (optional) - which field to sort by
+        + Default: `-published_date`
+        + Members
+            + `published_date` - sort by published_date ascending
+            + `-published_date` - sort by published_date descending
+            + `updated_date` - sort by updated_date ascending
+            + `-updated_date` - sort by updated_date descending
+    + offset: `0` (integer, optional) - The number of posts to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of posts to return
+        + Default: `10`
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data (array[MetaOfPost], required)
+
++ Response 204
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+
 ## Post [/v2/posts/{slug}{?full}]
 A post contains meta(brief) or full information of a post with the slug specified.
 
