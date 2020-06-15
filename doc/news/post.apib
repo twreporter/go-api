@@ -50,7 +50,7 @@ A post contains meta(brief) or full information of a post with the slug specifie
         + Default: `false`
 
 ## Get a single post [GET]
-Get a singe post with the given slug
+Get a single post with the given slug
 
 + Response 200 (application/json)
 
@@ -100,7 +100,7 @@ Get a singe post with the given slug
 + topics
     + name: topic name (required)
     + slug: `the-slug-of-the-topic` (required)
-    + relateds (array, required)
+    + relateds (array[string], required)
 + updated_at: 2020-06-8T16:00:00Z
 + writters (array[author], fixed-type)
 
@@ -116,40 +116,3 @@ Get a singe post with the given slug
 + subtitle: post subtitle (required)
 + categories (array[category], fixed-type)
 + published_date: 2020-06-8T16:00:00Z
-
-## author
-+ id: 5edf118c3e631f0600198935 (required)
-+ job_title: 特約記者 (required)
-+ name: 王大明 (required)
-
-## category
-
-+ id: 5edf118c3e631f0600198935 (required)
-+ sort_order: 0 (number, required)
-+ name: 文章類別 (required)
-
-## image
-+ id: 5edf118c3e631f0600198935 (required)
-+ description: image description (required)
-+ filetype: image/jpeg (required)
-+ resized_targets (required)
-    + mobile (resizeImage, required)
-    + tiny (resizeImage, required)
-    + desktop (resizeImage, required)
-    + tablet (resizeImage, required)
-    + w400 (resizeImage, required)
-
-## paragraph
-+ alignment: center (required)
-+ content: context (array[string], required)
-+ id: 1234 (required)
-+ styles (object, required)
-+ type: unstyled (required)
-
-## paragraphs
-+ api_data (array[paragraph], fixed-type)
-
-## resizeImage
-+ height: 600 (number, required)
-+ width: 800 (number, required)
-+ url: http://image.link (required)
