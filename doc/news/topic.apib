@@ -1,5 +1,41 @@
 # Group Topics
 
+## Topic List [/topics{?sort,offset,limit}]
+A list contains meta(brief) information of the selected topics.
+
+## Get a list of topics [GET]
+
++ Parameters
+    + sort: `-published_date` (optional) - which field to sort by
+        + Default: `-published_date`
+        + Members
+            + `published_date` - sort by published_date ascending
+            + `-published_date` - sort by published_date descending
+    + offset: `0` (integer, optional) - The number of posts to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of posts to return
+        + Default: `10`
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data (array[MetaOfTopic], required)
+
++ Response 204
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+
 ## Topic [/v2/topics/{slug}{?full}]
 Contain meta(brief) or full information of a topic with the slug specified.
 
