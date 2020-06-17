@@ -92,17 +92,19 @@ Get a single post with the given slug
 + designers (array[author], fixed-type)
 + engineers (array[author], fixed-type)
 + extend_byline: extended lines (required)
-+ is_external: false (boolean, required)
 + leading_image_description: description (required)
 + og_title: og title (required)
 + photographers (array[author], fixed-type)
 + relateds (array[string], required)
 + topics
-    + name: topic name (required)
+    + title: topic title (required)
+    + `short_title`: topic short title (required)
     + slug: `the-slug-of-the-topic` (required)
     + relateds (array[string], required)
-+ updated_at: 2020-06-8T16:00:00Z
++ updated_at: `2020-06-8T16:00:00Z`
 + writters (array[author], fixed-type)
++ hero_image_size: normal (required)
++ full: true (required)
 
 ## MetaOfPost
 + id: 5edf118c3e631f0600198935 (required)
@@ -111,8 +113,11 @@ Get a single post with the given slug
 + leading_image_portrait (image, required)
 + hero_image  (image, required)
 + og_image (image, required)
-+ og_description: post description ( required)
++ og_description: post description (required)
 + title: post title (required)
 + subtitle: post subtitle (required)
 + categories (array[category], fixed-type)
-+ published_date: 2020-06-8T16:00:00Z
++ published_date: `2020-06-8T16:00:00Z`
++ is_external: false (boolean, required)
++ tags (array[tag], fixed-type)
+
