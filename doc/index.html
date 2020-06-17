@@ -3736,7 +3736,7 @@ The email contains the following attributes</p>
       "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"5edf118c3e631f0600198935"</span></span>,
       "<span class="hljs-attribute">slug</span>": <span class="hljs-value"><span class="hljs-string">"a-slug-of-the-topic"</span></span>,
       "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"topic title"</span></span>,
-      "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"topic name"</span></span>,
+      "<span class="hljs-attribute">short_title</span>": <span class="hljs-value"><span class="hljs-string">"short title"</span></span>,
       "<span class="hljs-attribute">published_date</span>": <span class="hljs-value"><span class="hljs-string">"2020"</span></span>,
       "<span class="hljs-attribute">og_description</span>": <span class="hljs-value"><span class="hljs-string">"topic description"</span></span>,
       "<span class="hljs-attribute">og_image</span>": <span class="hljs-value">{
@@ -3834,7 +3834,10 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">url</span>": <span class="hljs-value"><span class="hljs-string">"http://image.link"</span>
           </span>}
         </span>}
-      </span>}
+      </span>}</span>,
+      "<span class="hljs-attribute">relateds</span>": <span class="hljs-value">[
+        <span class="hljs-string">"Hello, world!"</span>
+      ]
     </span>}
   ]
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
@@ -3898,7 +3901,7 @@ The email contains the following attributes</p>
     "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"5edf118c3e631f0600198935"</span></span>,
     "<span class="hljs-attribute">slug</span>": <span class="hljs-value"><span class="hljs-string">"a-slug-of-the-topic"</span></span>,
     "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"topic title"</span></span>,
-    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"topic name"</span></span>,
+    "<span class="hljs-attribute">short_title</span>": <span class="hljs-value"><span class="hljs-string">"short title"</span></span>,
     "<span class="hljs-attribute">published_date</span>": <span class="hljs-value"><span class="hljs-string">"2020"</span></span>,
     "<span class="hljs-attribute">og_description</span>": <span class="hljs-value"><span class="hljs-string">"topic description"</span></span>,
     "<span class="hljs-attribute">og_image</span>": <span class="hljs-value">{
@@ -3996,7 +3999,10 @@ The email contains the following attributes</p>
           "<span class="hljs-attribute">url</span>": <span class="hljs-value"><span class="hljs-string">"http://image.link"</span>
         </span>}
       </span>}
-    </span>}
+    </span>}</span>,
+    "<span class="hljs-attribute">relateds</span>": <span class="hljs-value">[
+      <span class="hljs-string">"Hello, world!"</span>
+    ]
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -4017,7 +4023,7 @@ The email contains the following attributes</p>
         "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">short_title</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">published_date</span>": <span class="hljs-value">{
@@ -4407,17 +4413,21 @@ The email contains the following attributes</p>
             <span class="hljs-string">"filetype"</span>,
             <span class="hljs-string">"resized_targets"</span>
           ]
+        </span>}</span>,
+        "<span class="hljs-attribute">relateds</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
         </span>}
       </span>}</span>,
       "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
         <span class="hljs-string">"id"</span>,
         <span class="hljs-string">"slug"</span>,
         <span class="hljs-string">"title"</span>,
-        <span class="hljs-string">"name"</span>,
+        <span class="hljs-string">"short_title"</span>,
         <span class="hljs-string">"og_description"</span>,
         <span class="hljs-string">"og_image"</span>,
         <span class="hljs-string">"leading_image"</span>,
-        <span class="hljs-string">"leading_image_portrait"</span>
+        <span class="hljs-string">"leading_image_portrait"</span>,
+        <span class="hljs-string">"relateds"</span>
       ]
     </span>}
   </span>}</span>,
@@ -4467,7 +4477,7 @@ The email contains the following attributes</p>
     "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"5edf118c3e631f0600198935"</span></span>,
     "<span class="hljs-attribute">slug</span>": <span class="hljs-value"><span class="hljs-string">"a-slug-of-the-topic"</span></span>,
     "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"topic title"</span></span>,
-    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"topic name"</span></span>,
+    "<span class="hljs-attribute">short_title</span>": <span class="hljs-value"><span class="hljs-string">"short title"</span></span>,
     "<span class="hljs-attribute">published_date</span>": <span class="hljs-value"><span class="hljs-string">"2020"</span></span>,
     "<span class="hljs-attribute">og_description</span>": <span class="hljs-value"><span class="hljs-string">"topic description"</span></span>,
     "<span class="hljs-attribute">og_image</span>": <span class="hljs-value">{
@@ -4579,7 +4589,19 @@ The email contains the following attributes</p>
     </span>}</span>,
     "<span class="hljs-attribute">headline</span>": <span class="hljs-value"><span class="hljs-string">"topic headline"</span></span>,
     "<span class="hljs-attribute">subtitle</span>": <span class="hljs-value"><span class="hljs-string">"topic subtitle"</span></span>,
-    "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"topic description"</span></span>,
+    "<span class="hljs-attribute">description</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">api_data</span>": <span class="hljs-value">[
+        {
+          "<span class="hljs-attribute">alignment</span>": <span class="hljs-value"><span class="hljs-string">"center"</span></span>,
+          "<span class="hljs-attribute">content</span>": <span class="hljs-value">[
+            <span class="hljs-string">"context"</span>
+          ]</span>,
+          "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"1234"</span></span>,
+          "<span class="hljs-attribute">styles</span>": <span class="hljs-value">{}</span>,
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"unstyled"</span>
+        </span>}
+      ]
+    </span>}</span>,
     "<span class="hljs-attribute">team_description</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">api_data</span>": <span class="hljs-value">[
         {
@@ -4614,7 +4636,7 @@ The email contains the following attributes</p>
         "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">short_title</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">published_date</span>": <span class="hljs-value">{
@@ -5052,7 +5074,40 @@ The email contains the following attributes</p>
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">description</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+          "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">api_data</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+              "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">alignment</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                  </span>}</span>,
+                  "<span class="hljs-attribute">content</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
+                  </span>}</span>,
+                  "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                  </span>}</span>,
+                  "<span class="hljs-attribute">styles</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{}
+                  </span>}</span>,
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                  </span>}
+                </span>}</span>,
+                "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                  <span class="hljs-string">"alignment"</span>,
+                  <span class="hljs-string">"content"</span>,
+                  <span class="hljs-string">"id"</span>,
+                  <span class="hljs-string">"styles"</span>,
+                  <span class="hljs-string">"type"</span>
+                ]
+              </span>}
+            </span>}
+          </span>}
         </span>}</span>,
         "<span class="hljs-attribute">team_description</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -5098,7 +5153,7 @@ The email contains the following attributes</p>
         <span class="hljs-string">"id"</span>,
         <span class="hljs-string">"slug"</span>,
         <span class="hljs-string">"title"</span>,
-        <span class="hljs-string">"name"</span>,
+        <span class="hljs-string">"short_title"</span>,
         <span class="hljs-string">"og_description"</span>,
         <span class="hljs-string">"og_image"</span>,
         <span class="hljs-string">"leading_image"</span>,
@@ -5409,7 +5464,7 @@ The email contains the following attributes</p>
         "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"5edf118c3e631f0600198935"</span></span>,
         "<span class="hljs-attribute">slug</span>": <span class="hljs-value"><span class="hljs-string">"a-slug-of-the-topic"</span></span>,
         "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"topic title"</span></span>,
-        "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"topic name"</span></span>,
+        "<span class="hljs-attribute">short_title</span>": <span class="hljs-value"><span class="hljs-string">"short title"</span></span>,
         "<span class="hljs-attribute">published_date</span>": <span class="hljs-value"><span class="hljs-string">"2020"</span></span>,
         "<span class="hljs-attribute">og_description</span>": <span class="hljs-value"><span class="hljs-string">"topic description"</span></span>,
         "<span class="hljs-attribute">og_image</span>": <span class="hljs-value">{
@@ -5507,7 +5562,10 @@ The email contains the following attributes</p>
               "<span class="hljs-attribute">url</span>": <span class="hljs-value"><span class="hljs-string">"http://image.link"</span>
             </span>}
           </span>}
-        </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">relateds</span>": <span class="hljs-value">[
+          <span class="hljs-string">"Hello, world!"</span>
+        ]
       </span>}
     ]</span>,
     "<span class="hljs-attribute">reviews_section</span>": <span class="hljs-value">[
@@ -5636,7 +5694,7 @@ The email contains the following attributes</p>
         "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"5edf118c3e631f0600198935"</span></span>,
         "<span class="hljs-attribute">slug</span>": <span class="hljs-value"><span class="hljs-string">"a-slug-of-the-topic"</span></span>,
         "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"topic title"</span></span>,
-        "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"topic name"</span></span>,
+        "<span class="hljs-attribute">short_title</span>": <span class="hljs-value"><span class="hljs-string">"short title"</span></span>,
         "<span class="hljs-attribute">published_date</span>": <span class="hljs-value"><span class="hljs-string">"2020"</span></span>,
         "<span class="hljs-attribute">og_description</span>": <span class="hljs-value"><span class="hljs-string">"topic description"</span></span>,
         "<span class="hljs-attribute">og_image</span>": <span class="hljs-value">{
@@ -5734,7 +5792,10 @@ The email contains the following attributes</p>
               "<span class="hljs-attribute">url</span>": <span class="hljs-value"><span class="hljs-string">"http://image.link"</span>
             </span>}
           </span>}
-        </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">relateds</span>": <span class="hljs-value">[
+          <span class="hljs-string">"Hello, world!"</span>
+        ]
       </span>}
     ]</span>,
     "<span class="hljs-attribute">photos_section</span>": <span class="hljs-value">[
@@ -7662,7 +7723,7 @@ The email contains the following attributes</p>
               "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}</span>,
-              "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">short_title</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}</span>,
               "<span class="hljs-attribute">published_date</span>": <span class="hljs-value">{
@@ -8052,17 +8113,21 @@ The email contains the following attributes</p>
                   <span class="hljs-string">"filetype"</span>,
                   <span class="hljs-string">"resized_targets"</span>
                 ]
+              </span>}</span>,
+              "<span class="hljs-attribute">relateds</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
               <span class="hljs-string">"id"</span>,
               <span class="hljs-string">"slug"</span>,
               <span class="hljs-string">"title"</span>,
-              <span class="hljs-string">"name"</span>,
+              <span class="hljs-string">"short_title"</span>,
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"og_image"</span>,
               <span class="hljs-string">"leading_image"</span>,
-              <span class="hljs-string">"leading_image_portrait"</span>
+              <span class="hljs-string">"leading_image_portrait"</span>,
+              <span class="hljs-string">"relateds"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"latest_topic_section must contain exactly latest 1 topic sorted by published_date"</span>
@@ -8547,7 +8612,7 @@ The email contains the following attributes</p>
               "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}</span>,
-              "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">short_title</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}</span>,
               "<span class="hljs-attribute">published_date</span>": <span class="hljs-value">{
@@ -8937,17 +9002,21 @@ The email contains the following attributes</p>
                   <span class="hljs-string">"filetype"</span>,
                   <span class="hljs-string">"resized_targets"</span>
                 ]
+              </span>}</span>,
+              "<span class="hljs-attribute">relateds</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
               <span class="hljs-string">"id"</span>,
               <span class="hljs-string">"slug"</span>,
               <span class="hljs-string">"title"</span>,
-              <span class="hljs-string">"name"</span>,
+              <span class="hljs-string">"short_title"</span>,
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"og_image"</span>,
               <span class="hljs-string">"leading_image"</span>,
-              <span class="hljs-string">"leading_image_portrait"</span>
+              <span class="hljs-string">"leading_image_portrait"</span>,
+              <span class="hljs-string">"relateds"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"topics_section must contain exactly latest 4 topics (excluded latest one) sorted by published_date"</span>

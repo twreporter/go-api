@@ -81,14 +81,13 @@ Get a single topic with the given slug
 
 ## FullTopic
 + include MetaOfTopic
-+ relateds (array[string], required)
 + relateds_background: in-row
 + relateds_format: `#5E5E41`
 + title_position: center
 + lead_video (video, required)
 + headline: topic headline (required)
 + subtitle: topic subtitle (required)
-+ description: topic description (required)
++ description (paragraphs, required)
 + team_description (paragraphs, required)
 + og_title: topic og title (required)
 
@@ -96,9 +95,10 @@ Get a single topic with the given slug
 + id: 5edf118c3e631f0600198935 (required)
 + slug: `a-slug-of-the-topic` (required)
 + title: topic title (required)
-+ name: topic name (required)
++ `short_title`: short title (required)
 + published_date: 2020-06-8T16:00:00Z (required)
 + og_description: topic description (required)
 + og_image (image, required)
 + leading_image (image, required)
 + leading_image_portrait (image, required)
++ relateds (array[string], required)
