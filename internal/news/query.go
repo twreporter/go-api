@@ -45,17 +45,17 @@ const (
 	queryLimit      = "limit"
 )
 
+var defaultQuery = Query{
+	Pagination: query.Pagination{Offset: 0, Limit: 10},
+	Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
+}
+
 func ParseSinglePostQuery(c *gin.Context) *Query {
 	return parseSingleQuery(c)
 }
 
 func ParsePostListQuery(c *gin.Context) *Query {
 	var q Query
-
-	defaultQuery := Query{
-		Pagination: query.Pagination{Offset: 0, Limit: 10},
-		Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
-	}
 
 	q = defaultQuery
 	// Parse filter
@@ -95,6 +95,31 @@ func ParsePostListQuery(c *gin.Context) *Query {
 
 func ParseSingleTopicQuery(c *gin.Context) *Query {
 	return parseSingleQuery(c)
+}
+
+func ParseTopicListQuery(c *gin.Context) *Query {
+	var q Query
+
+	q = defaultQuery
+
+	// Parse pagination
+	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
+		q.Offset = offset
+	}
+	if limit, err := strconv.Atoi(c.Query(queryLimit)); err == nil {
+		q.Limit = limit
+	}
+
+	// Parse sorting
+	if sort := c.Query(querySort); sort != "" {
+		switch sort {
+		case sortByPublishedDate:
+			q.Sort = SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(true)}}
+		case sortByDescending + sortByPublishedDate:
+			q.Sort = SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}}
+		}
+	}
+	return &q
 }
 
 func parseSingleQuery(c *gin.Context) *Query {

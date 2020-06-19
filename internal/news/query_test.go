@@ -181,6 +181,57 @@ func TestParseSingleTopicQuery(t *testing.T) {
 	}
 }
 
+func TestParseTopicListQuery(t *testing.T) {
+	cases := []struct {
+		name string
+		url  string
+		want *Query
+	}{
+		{
+			name: "Given default parameter",
+			url:  "http://example.com/topics",
+			want: &Query{
+				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
+			},
+		},
+		{
+			name: "Given the sort by published_date parameter",
+			url:  "http://example.com/topics?sort=published_date",
+			want: &Query{
+				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(true)}},
+			},
+		},
+		{
+			name: "Given the pagination parameters",
+			url:  "http://example.com/topics?offset=5&limit=6",
+			want: &Query{
+				Pagination: query.Pagination{Offset: 5, Limit: 6},
+				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
+			},
+		},
+		{
+			name: "Given query parameters, ignore unsupported one",
+			url:  "http://example.com/topics?unsupported=value",
+			want: &Query{
+				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := helperCreateContext(t, tc.url, "/topics")
+			got := ParseTopicListQuery(c)
+			if !reflect.DeepEqual(*got, *tc.want) {
+				t.Errorf("expected query %v, got %v", tc.want, got)
+			}
+		})
+	}
+}
+
 func helperCreateContext(t *testing.T, url, route string) *gin.Context {
 	t.Helper()
 	c, router := gin.CreateTestContext(httptest.NewRecorder())
