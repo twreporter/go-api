@@ -139,6 +139,48 @@ func TestParsePostListQuery(t *testing.T) {
 	}
 }
 
+func TestParseSingleTopicQuery(t *testing.T) {
+	cases := []struct {
+		name string
+		url  string
+		want *Query
+	}{
+		{
+			name: "Given default parameter",
+			url:  "http://example.com/topics/slug",
+			want: &Query{
+				Filter: Filter{Slug: "slug"},
+			},
+		},
+		{
+			name: "Given the full parameter",
+			url:  "http://example.com/topics/slug?full=true",
+			want: &Query{
+				Filter: Filter{Slug: "slug"},
+				Full:   true,
+			},
+		},
+		{
+			name: "Given query parameters, ignore unsupported",
+			url:  "http://example.com/topics/slug?full=true&unsupported=value",
+			want: &Query{
+				Filter: Filter{Slug: "slug"},
+				Full:   true,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := helperCreateContext(t, tc.url, "/topics/:slug")
+			got := ParseSingleTopicQuery(c)
+			if !reflect.DeepEqual(*got, *tc.want) {
+				t.Errorf("expected query %v, got %v", tc.want, got)
+			}
+		})
+	}
+}
+
 func helperCreateContext(t *testing.T, url, route string) *gin.Context {
 	t.Helper()
 	c, router := gin.CreateTestContext(httptest.NewRecorder())

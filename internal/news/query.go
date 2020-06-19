@@ -46,16 +46,7 @@ const (
 )
 
 func ParseSinglePostQuery(c *gin.Context) *Query {
-	var q Query
-
-	if slug := c.Param(querySlug); slug != "" {
-		q.Filter.Slug = slug
-	}
-
-	if full, err := strconv.ParseBool(c.Query(queryFull)); err == nil {
-		q.Full = full
-	}
-	return &q
+	return parseSingleQuery(c)
 }
 
 func ParsePostListQuery(c *gin.Context) *Query {
@@ -98,6 +89,23 @@ func ParsePostListQuery(c *gin.Context) *Query {
 		case sortByDescending + sortByUpdatedAt:
 			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}}
 		}
+	}
+	return &q
+}
+
+func ParseSingleTopicQuery(c *gin.Context) *Query {
+	return parseSingleQuery(c)
+}
+
+func parseSingleQuery(c *gin.Context) *Query {
+	var q Query
+
+	if slug := c.Param(querySlug); slug != "" {
+		q.Filter.Slug = slug
+	}
+
+	if full, err := strconv.ParseBool(c.Query(queryFull)); err == nil {
+		q.Full = full
 	}
 	return &q
 }
