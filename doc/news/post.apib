@@ -25,7 +25,7 @@ A list contains meta(brief) information of the selected posts.
 
     + Attributes
         + status: success (required)
-        + data (array[MetaOfPost], required)
+        + data (array[MetaOfPost], fixed-type, required)
 
 + Response 204
 
@@ -96,12 +96,12 @@ Get a single post with the given slug
 + brief (paragraphs, required)
 + content (paragraphs, required)
 + copyright: copyrighted (required)
-+ designers (array[author], fixed-type)
-+ engineers (array[author], fixed-type)
++ designers (array[author], fixed-type, required)
++ engineers (array[author], fixed-type, required)
 + extend_byline: extended lines (required)
 + leading_image_description: description (required)
 + og_title: og title (required)
-+ photographers (array[author], fixed-type)
++ photographers (array[author], fixed-type, required)
 + relateds (array, fixed-type, required)
     + 5edf118c3e631f0600198935
 + topics
@@ -111,7 +111,7 @@ Get a single post with the given slug
     + relateds (array, fixed-type, required)
         + 5edf118c3e631f0600198935
 + updated_at: `2020-06-8T16:00:00Z`
-+ writters (array[author], fixed-type)
++ writters (array[author], fixed-type, required)
 + hero_image_size: normal (required)
 + full: true (required)
 
@@ -125,8 +125,8 @@ Get a single post with the given slug
 + og_description: post description (required)
 + title: post title (required)
 + subtitle: post subtitle (required)
-+ categories (array[category], fixed-type)
++ categories (array[category], fixed-type, required)
 + published_date: `2020-06-8T16:00:00Z`
 + is_external: false (boolean, required)
-+ tags (array[tag], fixed-type)
++ tags (array[tag], fixed-type, required)
 

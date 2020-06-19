@@ -2168,7 +2168,471 @@ The email contains the following attributes</p>
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
     "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+      "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+        "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">style</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">slug</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">leading_image_portrait</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">description</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">filetype</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">resized_targets</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">mobile</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tiny</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">desktop</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tablet</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">w400</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}
+                </span>}</span>,
+                "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                  <span class="hljs-string">"mobile"</span>,
+                  <span class="hljs-string">"tiny"</span>,
+                  <span class="hljs-string">"desktop"</span>,
+                  <span class="hljs-string">"tablet"</span>,
+                  <span class="hljs-string">"w400"</span>
+                ]
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"id"</span>,
+              <span class="hljs-string">"description"</span>,
+              <span class="hljs-string">"filetype"</span>,
+              <span class="hljs-string">"resized_targets"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">hero_image</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">description</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">filetype</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">resized_targets</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">mobile</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tiny</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">desktop</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tablet</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">w400</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}
+                </span>}</span>,
+                "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                  <span class="hljs-string">"mobile"</span>,
+                  <span class="hljs-string">"tiny"</span>,
+                  <span class="hljs-string">"desktop"</span>,
+                  <span class="hljs-string">"tablet"</span>,
+                  <span class="hljs-string">"w400"</span>
+                ]
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"id"</span>,
+              <span class="hljs-string">"description"</span>,
+              <span class="hljs-string">"filetype"</span>,
+              <span class="hljs-string">"resized_targets"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">og_image</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">description</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">filetype</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">resized_targets</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">mobile</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tiny</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">desktop</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tablet</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">w400</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}
+                </span>}</span>,
+                "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                  <span class="hljs-string">"mobile"</span>,
+                  <span class="hljs-string">"tiny"</span>,
+                  <span class="hljs-string">"desktop"</span>,
+                  <span class="hljs-string">"tablet"</span>,
+                  <span class="hljs-string">"w400"</span>
+                ]
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"id"</span>,
+              <span class="hljs-string">"description"</span>,
+              <span class="hljs-string">"filetype"</span>,
+              <span class="hljs-string">"resized_targets"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">og_description</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">subtitle</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">categories</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+            "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+              "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                </span>}</span>,
+                "<span class="hljs-attribute">sort_order</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                </span>}</span>,
+                "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                </span>}
+              </span>}</span>,
+              "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                <span class="hljs-string">"id"</span>,
+                <span class="hljs-string">"sort_order"</span>,
+                <span class="hljs-string">"name"</span>
+              ]
+            </span>}
+          </span>}</span>,
+          "<span class="hljs-attribute">published_date</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">is_external</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">tags</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+            "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+              "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                </span>}</span>,
+                "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                </span>}
+              </span>}</span>,
+              "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                <span class="hljs-string">"id"</span>,
+                <span class="hljs-string">"name"</span>
+              ]
+            </span>}
+          </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+          <span class="hljs-string">"id"</span>,
+          <span class="hljs-string">"style"</span>,
+          <span class="hljs-string">"slug"</span>,
+          <span class="hljs-string">"leading_image_portrait"</span>,
+          <span class="hljs-string">"hero_image"</span>,
+          <span class="hljs-string">"og_image"</span>,
+          <span class="hljs-string">"og_description"</span>,
+          <span class="hljs-string">"title"</span>,
+          <span class="hljs-string">"subtitle"</span>,
+          <span class="hljs-string">"categories"</span>,
+          <span class="hljs-string">"is_external"</span>,
+          <span class="hljs-string">"tags"</span>
+        ]
+      </span>}
     </span>}
   </span>}</span>,
   "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -2802,7 +3266,9 @@ The email contains the following attributes</p>
         <span class="hljs-string">"og_description"</span>,
         <span class="hljs-string">"title"</span>,
         <span class="hljs-string">"subtitle"</span>,
-        <span class="hljs-string">"is_external"</span>
+        <span class="hljs-string">"categories"</span>,
+        <span class="hljs-string">"is_external"</span>,
+        <span class="hljs-string">"tags"</span>
       ]
     </span>}
   </span>}</span>,
@@ -3746,14 +4212,20 @@ The email contains the following attributes</p>
         <span class="hljs-string">"og_description"</span>,
         <span class="hljs-string">"title"</span>,
         <span class="hljs-string">"subtitle"</span>,
+        <span class="hljs-string">"categories"</span>,
         <span class="hljs-string">"is_external"</span>,
+        <span class="hljs-string">"tags"</span>,
         <span class="hljs-string">"brief"</span>,
         <span class="hljs-string">"content"</span>,
         <span class="hljs-string">"copyright"</span>,
+        <span class="hljs-string">"designers"</span>,
+        <span class="hljs-string">"engineers"</span>,
         <span class="hljs-string">"extend_byline"</span>,
         <span class="hljs-string">"leading_image_description"</span>,
         <span class="hljs-string">"og_title"</span>,
+        <span class="hljs-string">"photographers"</span>,
         <span class="hljs-string">"relateds"</span>,
+        <span class="hljs-string">"writters"</span>,
         <span class="hljs-string">"hero_image_size"</span>,
         <span class="hljs-string">"full"</span>
       ]
@@ -3886,7 +4358,429 @@ The email contains the following attributes</p>
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
     "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+      "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+        "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">slug</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">short_title</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">published_date</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+            "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"06-8T16:00:00Z (required)"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">og_description</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+          </span>}</span>,
+          "<span class="hljs-attribute">og_image</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">description</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">filetype</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">resized_targets</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">mobile</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tiny</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">desktop</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tablet</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">w400</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}
+                </span>}</span>,
+                "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                  <span class="hljs-string">"mobile"</span>,
+                  <span class="hljs-string">"tiny"</span>,
+                  <span class="hljs-string">"desktop"</span>,
+                  <span class="hljs-string">"tablet"</span>,
+                  <span class="hljs-string">"w400"</span>
+                ]
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"id"</span>,
+              <span class="hljs-string">"description"</span>,
+              <span class="hljs-string">"filetype"</span>,
+              <span class="hljs-string">"resized_targets"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">leading_image</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">description</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">filetype</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">resized_targets</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">mobile</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tiny</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">desktop</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tablet</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">w400</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}
+                </span>}</span>,
+                "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                  <span class="hljs-string">"mobile"</span>,
+                  <span class="hljs-string">"tiny"</span>,
+                  <span class="hljs-string">"desktop"</span>,
+                  <span class="hljs-string">"tablet"</span>,
+                  <span class="hljs-string">"w400"</span>
+                ]
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"id"</span>,
+              <span class="hljs-string">"description"</span>,
+              <span class="hljs-string">"filetype"</span>,
+              <span class="hljs-string">"resized_targets"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">leading_image_portrait</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">description</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">filetype</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">resized_targets</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">mobile</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tiny</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">desktop</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">tablet</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}</span>,
+                  "<span class="hljs-attribute">w400</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                    "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">height</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">width</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span>
+                      </span>}</span>,
+                      "<span class="hljs-attribute">url</span>": <span class="hljs-value">{
+                        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+                      </span>}
+                    </span>}</span>,
+                    "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                      <span class="hljs-string">"height"</span>,
+                      <span class="hljs-string">"width"</span>,
+                      <span class="hljs-string">"url"</span>
+                    ]
+                  </span>}
+                </span>}</span>,
+                "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                  <span class="hljs-string">"mobile"</span>,
+                  <span class="hljs-string">"tiny"</span>,
+                  <span class="hljs-string">"desktop"</span>,
+                  <span class="hljs-string">"tablet"</span>,
+                  <span class="hljs-string">"w400"</span>
+                ]
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"id"</span>,
+              <span class="hljs-string">"description"</span>,
+              <span class="hljs-string">"filetype"</span>,
+              <span class="hljs-string">"resized_targets"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">relateds</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+            "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}
+          </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+          <span class="hljs-string">"id"</span>,
+          <span class="hljs-string">"slug"</span>,
+          <span class="hljs-string">"title"</span>,
+          <span class="hljs-string">"short_title"</span>,
+          <span class="hljs-string">"og_description"</span>,
+          <span class="hljs-string">"og_image"</span>,
+          <span class="hljs-string">"leading_image"</span>,
+          <span class="hljs-string">"leading_image_portrait"</span>,
+          <span class="hljs-string">"relateds"</span>
+        ]
+      </span>}
     </span>}
   </span>}</span>,
   "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -7312,7 +8206,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"latest_section must contain exactly the latest 6 posts sorted by published_date"</span>
@@ -7778,7 +8674,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"editor_picks_section must contain exactly latest 6 posts sorted by updated_at"</span>
@@ -8670,7 +9568,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"reviews_section must contain exactly 4 posts sorted by published_date"</span>
@@ -9562,7 +10462,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"photos_section must contain exactly 4 photo posts sorted by published_date"</span>
@@ -10028,7 +10930,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"infographics_section must contain exactly 6 infographic posts sorted by published_date"</span>
@@ -10494,7 +11398,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"human_rights_and_society must contain the latest post in human rights and society category sorted by published_date"</span>
@@ -10960,7 +11866,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"environment_and_education must contain the latest post in environment and education category sorted by published_date"</span>
@@ -11426,7 +12334,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"politics_and_economy must contain the latest post in politics and economy category sorted by published_date"</span>
@@ -11892,7 +12802,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"culture_and_art must contain the latest post in culture and art category sorted by published_date"</span>
@@ -12358,7 +13270,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"international must contain the latest post in international category sorted by published_date"</span>
@@ -12824,7 +13738,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"og_description"</span>,
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"tags"</span>
             ]
           </span>}</span>,
           "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"living_and_medical_care must contain the latest post in living and medical care categroy sorted by published_date"</span>
