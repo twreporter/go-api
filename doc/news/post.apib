@@ -14,8 +14,8 @@ A list contains meta(brief) information of the selected posts.
         + Members
             + `published_date` - sort by published_date ascending
             + `-published_date` - sort by published_date descending
-            + `updated_date` - sort by updated_date ascending
-            + `-updated_date` - sort by updated_date descending
+            + `updated_at` - sort by updated_at ascending
+            + `-updated_at` - sort by updated_at descending
     + offset: `0` (integer, optional) - The number of posts to skip
         + Default: `0`
     + limit: `10` (integer, optional) - The maximum number of posts to return
@@ -110,7 +110,7 @@ Get a single post with the given slug
     + slug: `the-slug-of-the-topic` (required)
     + relateds (array, fixed-type, required)
         + 5edf118c3e631f0600198935
-+ updated_at: `2020-06-8T16:00:00Z`
++ updated_at: `2020-06-8T16:00:00Z` (required)
 + writters (array[author], fixed-type, required)
 + hero_image_size: normal (required)
 + full: true (required)
@@ -126,7 +126,7 @@ Get a single post with the given slug
 + title: post title (required)
 + subtitle: post subtitle (required)
 + categories (array[category], fixed-type, required)
-+ published_date: `2020-06-8T16:00:00Z`
++ published_date: `2020-06-8T16:00:00Z` (required)
 + is_external: false (boolean, required)
 + tags (array[tag], fixed-type, required)
 

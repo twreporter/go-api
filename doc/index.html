@@ -2035,7 +2035,7 @@ The email contains the following attributes</p>
 </dd><dt>tag_id</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5edf118c3e631f0600198935</span></span><p>Search for posts with the tags referenced by the tag ids</p>
 </dd><dt>id</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5edf118c3e631f0600198935</span></span><p>Search for posts with the referenced ids</p>
 </dd><dt>sort</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-info default"><strong>Default:&nbsp;</strong><span>-published_date</span></span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>-published_date</span></span><p>which field to sort by</p>
-<p class="choices"><strong>Choices:&nbsp;</strong><code>published_date</code> <code>-published_date</code> <code>updated_date</code> <code>-updated_date</code> </p></dd><dt>offset</dt><dd><code>integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-info default"><strong>Default:&nbsp;</strong><span>0</span></span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>0</span></span><p>The number of posts to skip</p>
+<p class="choices"><strong>Choices:&nbsp;</strong><code>published_date</code> <code>-published_date</code> <code>updated_at</code> <code>-updated_at</code> </p></dd><dt>offset</dt><dd><code>integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-info default"><strong>Default:&nbsp;</strong><span>0</span></span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>0</span></span><p>The number of posts to skip</p>
 </dd><dt>limit</dt><dd><code>integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-info default"><strong>Default:&nbsp;</strong><span>10</span></span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>10</span></span><p>The maximum number of posts to return</p>
 </dd></dl></div><div class="title"><strong>Response&nbsp;&nbsp;<code>200</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
@@ -2629,6 +2629,7 @@ The email contains the following attributes</p>
           <span class="hljs-string">"title"</span>,
           <span class="hljs-string">"subtitle"</span>,
           <span class="hljs-string">"categories"</span>,
+          <span class="hljs-string">"published_date"</span>,
           <span class="hljs-string">"is_external"</span>,
           <span class="hljs-string">"tags"</span>
         ]
@@ -3267,6 +3268,7 @@ The email contains the following attributes</p>
         <span class="hljs-string">"title"</span>,
         <span class="hljs-string">"subtitle"</span>,
         <span class="hljs-string">"categories"</span>,
+        <span class="hljs-string">"published_date"</span>,
         <span class="hljs-string">"is_external"</span>,
         <span class="hljs-string">"tags"</span>
       ]
@@ -4213,6 +4215,7 @@ The email contains the following attributes</p>
         <span class="hljs-string">"title"</span>,
         <span class="hljs-string">"subtitle"</span>,
         <span class="hljs-string">"categories"</span>,
+        <span class="hljs-string">"published_date"</span>,
         <span class="hljs-string">"is_external"</span>,
         <span class="hljs-string">"tags"</span>,
         <span class="hljs-string">"brief"</span>,
@@ -4226,6 +4229,7 @@ The email contains the following attributes</p>
         <span class="hljs-string">"photographers"</span>,
         <span class="hljs-string">"relateds"</span>,
         <span class="hljs-string">"topic"</span>,
+        <span class="hljs-string">"updated_at"</span>,
         <span class="hljs-string">"writters"</span>,
         <span class="hljs-string">"hero_image_size"</span>,
         <span class="hljs-string">"full"</span>
@@ -8208,6 +8212,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -8676,6 +8681,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -9570,6 +9576,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -10464,6 +10471,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -10932,6 +10940,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -11400,6 +11409,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -11868,6 +11878,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -12336,6 +12347,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -12804,6 +12816,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -13272,6 +13285,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
@@ -13740,6 +13754,7 @@ The email contains the following attributes</p>
               <span class="hljs-string">"title"</span>,
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"categories"</span>,
+              <span class="hljs-string">"published_date"</span>,
               <span class="hljs-string">"is_external"</span>,
               <span class="hljs-string">"tags"</span>
             ]
