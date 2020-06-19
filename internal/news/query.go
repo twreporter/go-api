@@ -33,17 +33,26 @@ type SortBy struct {
 const (
 	sortByPublishedDate = "published_date"
 	sortByUpdatedAt     = "updated_at"
-	descending          = "-"
+	sortByDescending    = "-"
+
+	queryFull       = "full"
+	querySlug       = "slug"
+	queryCategoryID = "category_id"
+	queryTagID      = "tag_id"
+	queryPostID     = "id"
+	querySort       = "sort"
+	queryOffset     = "offset"
+	queryLimit      = "limit"
 )
 
 func ParseSinglePostQuery(c *gin.Context) *Query {
 	var q Query
 
-	if slug := c.Param("slug"); slug != "" {
+	if slug := c.Param(querySlug); slug != "" {
 		q.Filter.Slug = slug
 	}
 
-	if full, err := strconv.ParseBool(c.Query("full")); err == nil {
+	if full, err := strconv.ParseBool(c.Query(queryFull)); err == nil {
 		q.Full = full
 	}
 	return &q
@@ -59,34 +68,34 @@ func ParsePostListQuery(c *gin.Context) *Query {
 
 	q = defaultQuery
 	// Parse filter
-	if len(c.QueryArray("category_id")) > 0 {
-		q.Filter.Categories = c.QueryArray("category_id")
+	if len(c.QueryArray(queryCategoryID)) > 0 {
+		q.Filter.Categories = c.QueryArray(queryCategoryID)
 	}
-	if len(c.QueryArray("tag_id")) > 0 {
-		q.Filter.Tags = c.QueryArray("tag_id")
+	if len(c.QueryArray(queryTagID)) > 0 {
+		q.Filter.Tags = c.QueryArray(queryTagID)
 	}
-	if len(c.QueryArray("id")) > 0 {
-		q.Filter.Tags = c.QueryArray("id")
+	if len(c.QueryArray(queryPostID)) > 0 {
+		q.Filter.Tags = c.QueryArray(queryPostID)
 	}
 
 	// Parse pagination
-	if offset, err := strconv.Atoi(c.Query("offset")); err == nil {
+	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
 		q.Offset = offset
 	}
-	if limit, err := strconv.Atoi(c.Query("limit")); err == nil {
+	if limit, err := strconv.Atoi(c.Query(queryLimit)); err == nil {
 		q.Limit = limit
 	}
 
 	// Parse sorting
-	if sort := c.Query("sort"); sort != "" {
+	if sort := c.Query(querySort); sort != "" {
 		switch sort {
 		case sortByPublishedDate:
 			q.Sort = SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(true)}}
-		case descending + sortByPublishedDate:
+		case sortByDescending + sortByPublishedDate:
 			q.Sort = SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}}
 		case sortByUpdatedAt:
 			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(true)}}
-		case descending + sortByUpdatedAt:
+		case sortByDescending + sortByUpdatedAt:
 			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}}
 		}
 	}
