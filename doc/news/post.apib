@@ -58,6 +58,13 @@ Get a single post with the given slug
         + status: success (required)
         + data (MetaOfPost, required)
 
++ Response 404 (application/json)
+    
+    + Attributes
+        + status: fail (required)
+        + data (required)
+            + slug: Cannot find the post from the slug (required)
+
 + Response 500 (application/json)
 
     + Attributes
