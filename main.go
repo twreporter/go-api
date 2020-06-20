@@ -10,12 +10,13 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	f "github.com/twreporter/logformatter"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"twreporter.org/go-api/configs"
 	"twreporter.org/go-api/controllers"
 	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/middlewares"
-	"twreporter.org/go-api/news"
+	"twreporter.org/go-api/internal/mongo"
 	"twreporter.org/go-api/routers"
 	"twreporter.org/go-api/services"
 	"twreporter.org/go-api/utils"
@@ -59,30 +60,23 @@ func main() {
 	}
 
 	log.Info("Connection to MongoDB with mongo-go-driver")
-	client, err := utils.InitMongoDBV2()
+	ctx := context.Background()
+	opts := options.Client()
+	client, err := mongo.NewClient(ctx, opts.ApplyURI(globals.Conf.DB.Mongo.URL).SetReadPreference(readpref.Nearest()))
+
 	if err != nil {
 		return
 	}
 	defer func() {
-		client.Disconnect(context.Background())
+		client.Disconnect(ctx)
 	}()
 	// mailSender := services.NewSMTPMailService() // use office365 to send mails
 	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails
 
-	cf = controllers.NewControllerFactory(db, session, mailSvc)
+	cf = controllers.NewControllerFactory(db, session, mailSvc, client)
 
 	// set up the router
 	router := routers.SetupRouter(cf)
-
-	newsV2controller := news.NewController(news.NewMongoStorage(client))
-	v2Group := router.Group("/v2")
-	v2Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), (newsV2controller.GetPosts))
-	v2Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), (newsV2controller.GetAPost))
-	// endpoints for topics
-	v2Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), (newsV2controller.GetTopics))
-	v2Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), (newsV2controller.GetATopic))
-	v2Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), newsV2controller.GetIndexPage)
-	//v2Group.GET("/index_page_categories", middlewares.SetCacheControl("public,max-age=1800"), newsV2controller.GetCategoriesPosts)
 
 	readTimeout := 5 * time.Second
 

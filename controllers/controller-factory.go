@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/jinzhu/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2"
 	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/services"
@@ -18,6 +19,7 @@ type ControllerFactory struct {
 	gormDB      *gorm.DB
 	mgoSession  *mgo.Session
 	mailService services.MailService
+	mongoClient *mongo.Client
 }
 
 // GetOAuthController returns OAuth struct
@@ -43,6 +45,10 @@ func (cf *ControllerFactory) GetMembershipController() *MembershipController {
 func (cf *ControllerFactory) GetNewsController() *NewsController {
 	ms := storage.NewMongoStorage(cf.mgoSession)
 	return NewNewsController(ms)
+}
+
+func (cf *ControllerFactory) GetNewsV2Controller() *newsV2Controller {
+	return NewNewsV2Controller(storage.NewMongoV2Storage(cf.mongoClient))
 }
 
 // GetMailController returns *MailController struct
@@ -78,10 +84,11 @@ func (cf *ControllerFactory) GetGormDB() *gorm.DB {
 }
 
 // NewControllerFactory generate *ControllerFactory struct
-func NewControllerFactory(gormDB *gorm.DB, mgoSession *mgo.Session, mailSvc services.MailService) *ControllerFactory {
+func NewControllerFactory(gormDB *gorm.DB, mgoSession *mgo.Session, mailSvc services.MailService, client *mongo.Client) *ControllerFactory {
 	return &ControllerFactory{
 		gormDB:      gormDB,
 		mgoSession:  mgoSession,
 		mailService: mailSvc,
+		mongoClient: client,
 	}
 }
