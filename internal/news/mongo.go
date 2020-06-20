@@ -179,3 +179,82 @@ func fromSort(s SortBy) mongoSort {
 		UpdatedAt:     s.UpdatedAt,
 	}
 }
+
+const (
+	ColContacts       = "contacts"
+	ColImages         = "images"
+	ColVideos         = "videos"
+	ColThemes         = "themes"
+	ColPostCategories = "postcategories"
+	ColTags           = "tags"
+	ColPosts          = "posts"
+	ColTopics         = "topics"
+
+	// TODO: rename fields to writer
+	fieldWriters              = "writters"
+	fieldPhotographers        = "photographers"
+	fieldDesigners            = "designers"
+	fieldEngineers            = "engineers"
+	fieldHeroImage            = "heroImage"
+	fieldLeadingImage         = "leading_image"
+	fieldLeadingImagePortrait = "leading_image_portrait"
+	fieldOgImage              = "og_image"
+	fieldLeadingVideo         = "leading_video"
+	fieldTheme                = "theme"
+	fieldCategories           = "categories"
+	fieldTags                 = "tags"
+	// TODO: rename the field to topic
+	fieldTopics = "topics"
+)
+
+type lookupInfo struct {
+	Collection string
+	ToUnwind   bool
+}
+
+var (
+	LookupFullPost = map[string]lookupInfo{
+		fieldCategories:           {Collection: ColPostCategories},
+		fieldDesigners:            {Collection: ColContacts},
+		fieldEngineers:            {Collection: ColContacts},
+		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
+		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
+		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
+		fieldPhotographers:        {Collection: ColContacts},
+		fieldTags:                 {Collection: ColTags},
+		fieldTopics:               {Collection: ColTopics, ToUnwind: true},
+		fieldWriters:              {Collection: ColContacts},
+	}
+
+	LookupMetaOfPost = map[string]lookupInfo{
+		fieldCategories:           {Collection: ColPostCategories},
+		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
+		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
+		fieldTags:                 {Collection: ColTags},
+		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
+	}
+
+	LookupFullTopic = map[string]lookupInfo{
+		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
+		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
+		fieldLeadingVideo:         {Collection: ColVideos, ToUnwind: true},
+		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
+	}
+
+	LookupMetaOfTopic = map[string]lookupInfo{
+		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
+		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
+		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
+	}
+)
+
+func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
+	var stages []bson.D
+	for field, info := range m {
+		stages = append(stages, mongo.BuildLookupByIDStage(field, info.Collection))
+		if info.ToUnwind {
+			stages = append(stages, mongo.BuildUnwindStage(field))
+		}
+	}
+	return stages
+}
