@@ -9,11 +9,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func NewClient(ctx context.Context, opts *options.ClientOptions) (*mongo.Client, error) {
+func NewClient(ctx context.Context, opts ...*options.ClientOptions) (*mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, opts)
+	client, err := mongo.Connect(ctx, opts...)
 	if err != nil {
 		return nil, errors.Wrap(err, "Establishing a new connection to cluster occurs error:")
 	}
