@@ -106,6 +106,50 @@ func (nc *newsV2Controller) GetTopics(c *gin.Context) {
 }
 
 func (nc *newsV2Controller) GetATopic(c *gin.Context) {
+	var topic interface{}
+	var err error
+
+	defer func() {
+		if err != nil {
+			switch {
+			case errors.Is(err, context.DeadlineExceeded):
+				c.JSON(http.StatusGatewayTimeout, gin.H{"status": "error", "message": "Query upstream server timeout."})
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Unexpected error."})
+			}
+			log.Errorf("%+v", err)
+		}
+	}()
+
+	q := news.ParseSingleTopicQuery(c)
+
+	if q.Full {
+		var topics []news.Topic
+		// TODO(babygoat): config context with proper timeout
+		topics, err = nc.Storage.GetFullTopics(c, q)
+		if len(topics) > 0 {
+			topic = topics[0]
+		}
+	} else {
+		var topics []news.MetaOfTopic
+		// TODO(babygoat): config context with proper timeout
+		topics, err = nc.Storage.GetMetaOfTopics(c, q)
+		if len(topics) > 0 {
+			topic = topics[0]
+		}
+	}
+
+	// server side error
+	if err != nil {
+		return
+	}
+
+	if topic == nil {
+		c.JSON(http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{"slug": "Cannot find the topic from the slug"}})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": topic})
 }
 
 func (nc *newsV2Controller) GetIndexPage(c *gin.Context) {

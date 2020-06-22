@@ -239,14 +239,14 @@ var (
 	}
 
 	LookupFullTopic = map[string]lookupInfo{
-		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
+		fieldLeadingImage:         {Collection: ColImages, ToUnwind: true},
 		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
 		fieldLeadingVideo:         {Collection: ColVideos, ToUnwind: true},
 		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
 	}
 
 	LookupMetaOfTopic = map[string]lookupInfo{
-		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
+		fieldLeadingImage:         {Collection: ColImages, ToUnwind: true},
 		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
 		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
 	}

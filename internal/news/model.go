@@ -22,7 +22,9 @@ type MetaOfTopic struct {
 }
 
 type Topic struct {
-	MetaOfTopic
+	// Use inline tag for unflattened the response document to unmarshal into embedded struct
+	// https://godoc.org/go.mongodb.org/mongo-driver/bson#hdr-Structs
+	MetaOfTopic        `bson:",inline"`
 	RelatedsBackground string       `bson:"relateds_background" json:"relateds_background"`
 	RelatedsFormat     string       `bson:"relateds_format" json:"relateds_format"`
 	TitlePosition      string       `bson:"title_position" json:"title_position"`
