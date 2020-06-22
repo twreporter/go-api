@@ -17,7 +17,7 @@ type newsV2Storage interface {
 	GetMetaOfTopics(context.Context, *news.Query) ([]news.MetaOfTopic, error)
 
 	GetPostCount(context.Context, *news.Query) (int, error)
-	GetTopicCount(context.Context, *news.Filter) (int, error)
+	GetTopicCount(context.Context, *news.Query) (int, error)
 }
 
 func NewNewsV2Controller(s newsV2Storage) *newsV2Controller {
@@ -100,6 +100,34 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 }
 
 func (nc *newsV2Controller) GetTopics(c *gin.Context) {
+	var err error
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.ParseTopicListQuery(c)
+
+	// TODO(babygoat): config context with proper timeout
+	topics, err := nc.Storage.GetMetaOfTopics(c, q)
+
+	if err != nil {
+		return
+	}
+
+	// TODO(babygoat): config context with proper timeout
+	total, err := nc.Storage.GetTopicCount(c, q)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": topics, "meta": gin.H{
+		"total":  total,
+		"offset": q.Offset,
+		"limit":  q.Limit,
+	}}})
 }
 
 func (nc *newsV2Controller) GetATopic(c *gin.Context) {

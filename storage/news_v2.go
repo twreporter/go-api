@@ -236,4 +236,20 @@ func (m *mongoStorage) GetPostCount(ctx context.Context, q *news.Query) (int, er
 	}
 	return int(count), nil
 }
-func (m *mongoStorage) GetTopicCount(context.Context, *news.Filter) (int, error) { return 0, nil }
+
+func (m *mongoStorage) GetTopicCount(ctx context.Context, q *news.Query) (int, error) {
+	// During mongo count document operation, empty array should be specified instead of nil(NULL).
+	// Thus, rather than declare stage through var (i.e. zero value = nil)
+	// use bson.D{} instead to start with empty stage([])
+	stage := bson.D{}
+	mq := news.NewMongoQuery(q)
+
+	if stages := mq.GetFilter().BuildStage(); len(stages) > 0 {
+		stage = stages[0]
+	}
+	count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColTopics).CountDocuments(ctx, stage)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return int(count), nil
+}
