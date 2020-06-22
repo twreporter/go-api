@@ -56,7 +56,9 @@ type MetaOfPost struct {
 }
 
 type Post struct {
-	MetaOfPost
+	// Use inline tag for unflattened the response document to unmarshal into embedded struct
+	// https://godoc.org/go.mongodb.org/mongo-driver/bson#hdr-Structs
+	MetaOfPost             `bson:",inline"`
 	Brief                  *ContentBody         `bson:"brief,omitempty" json:"brief,omitempty"`
 	Content                *ContentBody         `bson:"content,omitempty" json:"content,omitempty"`
 	Copyright              string               `bson:"copyright" json:"copyright"`
