@@ -20,6 +20,10 @@ type mongoQuery struct {
 	mongoSort
 }
 
+func (mq *mongoQuery) GetFilter() mongoFilter {
+	return mq.mongoFilter
+}
+
 // BuildQueryStatments build query statements from pagination/filter/sort objects
 // TODO(babygoat): this can be further refactor to accept generic storage query interface
 func BuildQueryStatements(mq *mongoQuery) []bson.D {

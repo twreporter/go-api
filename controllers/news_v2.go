@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"twreporter.org/go-api/internal/news"
 )
 
@@ -15,7 +16,7 @@ type newsV2Storage interface {
 	GetFullTopics(context.Context, *news.Query) ([]news.Topic, error)
 	GetMetaOfTopics(context.Context, *news.Query) ([]news.MetaOfTopic, error)
 
-	GetPostCount(context.Context, *news.Filter) (int, error)
+	GetPostCount(context.Context, *news.Query) (int, error)
 	GetTopicCount(context.Context, *news.Filter) (int, error)
 }
 
@@ -28,6 +29,40 @@ type newsV2Controller struct {
 }
 
 func (nc *newsV2Controller) GetPosts(c *gin.Context) {
+	var err error
+
+	defer func() {
+		if err != nil {
+			switch {
+			case errors.Is(err, context.DeadlineExceeded):
+				c.JSON(http.StatusGatewayTimeout, gin.H{"status": "error", "message": "Query upstream server timeout."})
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Unexpected error."})
+			}
+			log.Errorf("%+v", err)
+		}
+	}()
+
+	q := news.ParsePostListQuery(c)
+
+	// TODO(babygoat): config context with proper timeout
+	posts, err := nc.Storage.GetMetaOfPosts(c, q)
+
+	if err != nil {
+		return
+	}
+
+	// TODO(babygoat): config context with proper timeout
+	total, err := nc.Storage.GetPostCount(c, q)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": posts, "meta": gin.H{
+		"total":  total,
+		"offset": q.Offset,
+		"limit":  q.Limit,
+	}}})
 }
 
 func (nc *newsV2Controller) GetAPost(c *gin.Context) {
