@@ -33,13 +33,7 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 
 	defer func() {
 		if err != nil {
-			switch {
-			case errors.Is(err, context.DeadlineExceeded):
-				c.JSON(http.StatusGatewayTimeout, gin.H{"status": "error", "message": "Query upstream server timeout."})
-			default:
-				c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Unexpected error."})
-			}
-			log.Errorf("%+v", err)
+			nc.helperCleanup(c, err)
 		}
 	}()
 
@@ -69,6 +63,12 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 	var post interface{}
 	var err error
 
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
 	q := news.ParseSinglePostQuery(c)
 
 	if q.Full {
@@ -87,14 +87,11 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 		}
 	}
 
-	switch {
-	case errors.Is(err, context.DeadlineExceeded):
-		c.JSON(http.StatusGatewayTimeout, gin.H{"status": "error", "message": "Query upstream server timeout."})
+	if err != nil {
 		return
-	case err != nil:
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Unexpected error."})
-		return
-	case post == nil:
+	}
+
+	if post == nil {
 		c.JSON(http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{"slug": "Cannot find the post from the slug"}})
 		return
 	}
@@ -111,13 +108,7 @@ func (nc *newsV2Controller) GetATopic(c *gin.Context) {
 
 	defer func() {
 		if err != nil {
-			switch {
-			case errors.Is(err, context.DeadlineExceeded):
-				c.JSON(http.StatusGatewayTimeout, gin.H{"status": "error", "message": "Query upstream server timeout."})
-			default:
-				c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Unexpected error."})
-			}
-			log.Errorf("%+v", err)
+			nc.helperCleanup(c, err)
 		}
 	}()
 
@@ -153,4 +144,16 @@ func (nc *newsV2Controller) GetATopic(c *gin.Context) {
 }
 
 func (nc *newsV2Controller) GetIndexPage(c *gin.Context) {
+}
+
+func (nc *newsV2Controller) helperCleanup(c *gin.Context, err error) {
+	if err != nil {
+		switch {
+		case errors.Is(err, context.DeadlineExceeded):
+			c.JSON(http.StatusGatewayTimeout, gin.H{"status": "error", "message": "Query upstream server timeout."})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Unexpected error."})
+		}
+		log.Errorf("%+v", err)
+	}
 }
