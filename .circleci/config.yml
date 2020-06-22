@@ -4,7 +4,7 @@ version: 2
 jobs:
   prepare:
     docker:
-      - image: circleci/golang:1.12.6
+      - image: circleci/golang:1.14.4
         environment:
           GO111MODULE: "on"
 
@@ -44,7 +44,7 @@ jobs:
 
   test:
     docker:
-      - image: circleci/golang:1.12.6
+      - image: circleci/golang:1.14.4
         environment:
           GO111MODULE: "on"
       - image: circleci/mongo:3.2
