@@ -47,6 +47,7 @@ const (
 
 var defaultQuery = Query{
 	Pagination: query.Pagination{Offset: 0, Limit: 10},
+	Filter:     Filter{State: "published"},
 	Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 }
 

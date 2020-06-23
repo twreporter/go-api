@@ -234,48 +234,43 @@ func (nc *newsV2Controller) GetIndexPage(c *gin.Context) {
 }
 
 func (nc *newsV2Controller) getIndexPageJobs() []job {
-	const statePublished = "published"
-
 	// v1 index page section jobs
 	jobs := []job{
 		{
 			Name:  news.LatestSection,
 			Type:  typePost,
-			Query: news.NewQuery(news.FilterState(statePublished), news.Limit(6)),
+			Query: news.NewQuery(news.Limit(6)),
 		}, {
 			Name: news.EditorPicksSection,
 			Type: typePost,
 			Query: news.NewQuery(
-				news.FilterState(statePublished),
 				news.FilterIsFeatured(true),
 				news.Limit(6),
 				news.SortUpdatedAt(false)),
 		}, {
 			Name:  news.LatestTopicSection,
 			Type:  typeTopic,
-			Query: news.NewQuery(news.FilterState(statePublished), news.Limit(1)),
+			Query: news.NewQuery(news.Limit(1)),
 		}, {
 			Name: news.ReviewsSection,
 			Type: typePost,
 			Query: news.NewQuery(
-				news.FilterState(statePublished),
 				news.FilterCategoryIDs(news.Review.ID),
 				news.Limit(4)),
 		}, {
 			Name: news.PhotoSection,
 			Type: typePost,
 			Query: news.NewQuery(
-				news.FilterState(statePublished),
 				news.FilterCategoryIDs(news.Photography.ID),
 				news.Limit(6)),
 		}, {
 			Name:  news.InfographicSection,
 			Type:  typePost,
-			Query: news.NewQuery(news.FilterState(statePublished), news.FilterStyle("interactive"), news.Limit(6)),
+			Query: news.NewQuery(news.FilterStyle("interactive"), news.Limit(6)),
 		}, {
 			Name:  news.TopicsSection,
 			Type:  typeTopic,
-			Query: news.NewQuery(news.FilterState(statePublished), news.Offset(1), news.Limit(4)),
+			Query: news.NewQuery(news.Offset(1), news.Limit(4)),
 		},
 	}
 
@@ -286,7 +281,7 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 			jobs = append(jobs, job{
 				v.Name,
 				typePost,
-				news.NewQuery(news.FilterState(statePublished), news.Limit(1)),
+				news.NewQuery(news.FilterCategoryIDs(v.ID), news.Limit(1)),
 			})
 		}
 		return jobs
