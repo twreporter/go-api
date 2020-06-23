@@ -50,7 +50,7 @@ type MetaOfPost struct {
 	OgDescription        string             `bson:"og_description" json:"og_description"`
 	Title                string             `bson:"title" json:"title"`
 	Subtitle             string             `bson:"subtitle" json:"subtitle"`
-	Categories           []Category         `bson:"categories" json:"categories,omitempty"`
+	Categories           []category         `bson:"categories" json:"categories,omitempty"`
 	PublishedDate        time.Time          `bson:"publishedDate" json:"published_date"`
 	IsExternal           bool               `bson:"is_external" json:"is_external"`
 	Tags                 []Tag              `bson:"tags" json:"tags,omitempty"`
@@ -93,7 +93,7 @@ type Author struct {
 	Name     string             `bson:"name" json:"name"`
 }
 
-type Category struct {
+type category struct {
 	ID        primitive.ObjectID `bson:"_id" json:"id"`
 	SortOrder uint               `bson:"sort_order" json:"sort_order"`
 	Name      string             `bson:"name" json:"name"`
