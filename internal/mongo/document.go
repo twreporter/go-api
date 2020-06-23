@@ -32,7 +32,7 @@ func BuildArray(items interface{}) (arr bson.A, exist bool) {
 	}
 
 	for i := 0; i < arrLength; i++ {
-		arr = append(arr, val.Index(i))
+		arr = append(arr, val.Index(i).Interface())
 	}
 	return
 }

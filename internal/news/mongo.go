@@ -30,8 +30,8 @@ func BuildQueryStatements(mq *mongoQuery) []bson.D {
 	var stages []bson.D
 
 	stages = append(stages, mq.mongoFilter.BuildStage()...)
-	stages = append(stages, mq.mongoPagination.BuildStage()...)
 	stages = append(stages, mq.mongoSort.BuildStage()...)
+	stages = append(stages, mq.mongoPagination.BuildStage()...)
 
 	return stages
 }
@@ -165,10 +165,12 @@ func (ms mongoSort) BuildStage() []bson.D {
 		switch fieldV.Interface().(type) {
 		case query.Order:
 			v := fieldV.Interface().(query.Order)
-			if v.IsAsc.Bool {
-				sortBy = append(sortBy, mongo.BuildElement(tag, mongo.OrderAsc))
-			} else {
-				sortBy = append(sortBy, mongo.BuildElement(tag, mongo.OrderDesc))
+			if !v.IsAsc.IsZero() {
+				if v.IsAsc.Bool {
+					sortBy = append(sortBy, mongo.BuildElement(tag, mongo.OrderAsc))
+				} else {
+					sortBy = append(sortBy, mongo.BuildElement(tag, mongo.OrderDesc))
+				}
 			}
 		default:
 		}
