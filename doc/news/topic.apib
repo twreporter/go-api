@@ -20,9 +20,9 @@ A list contains meta(brief) information of the selected topics.
 
     + Attributes
         + status: success (required)
-        + data (array[MetaOfTopic], fixed-type, required)
-
-+ Response 204
+        + data
+            + meta (meta, fixed-type, required)
+            + records (array[MetaOfTopic], fixed-type, required)
 
 + Response 500 (application/json)
 
