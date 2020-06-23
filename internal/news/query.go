@@ -50,6 +50,65 @@ var defaultQuery = Query{
 	Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 }
 
+// NewQuery returns a default query along with the options(pagination/sort/filter).
+// Note that if the same options are specified multiple times, the last one will be applied.
+func NewQuery(options ...func(*Query)) *Query {
+	q := defaultQuery
+	for _, o := range options {
+		o(&q)
+	}
+	return &q
+}
+
+func Offset(offset int) func(*Query) {
+	return func(q *Query) {
+		q.Offset = offset
+	}
+}
+
+func Limit(limit int) func(*Query) {
+	return func(q *Query) {
+		q.Limit = limit
+	}
+}
+
+// FilterCategoryIDs adds category ids into filter on the query
+func FilterCategoryIDs(ids ...string) func(*Query) {
+	return func(q *Query) {
+		if len(ids) > 0 {
+			q.Filter.Categories = ids
+		}
+	}
+}
+
+// FilterState adds the post publish state filter on the query
+func FilterState(state string) func(*Query) {
+	return func(q *Query) {
+		q.Filter.State = state
+	}
+}
+
+// FilterStyle adds the post style filter on the query
+func FilterStyle(style string) func(*Query) {
+	return func(q *Query) {
+		q.Filter.Style = style
+	}
+}
+
+// FilterIsFeatured adds the isFeatured filter on the query
+func FilterIsFeatured(isFeatured bool) func(*Query) {
+	return func(q *Query) {
+		q.Filter.IsFeatured = null.BoolFrom(isFeatured)
+	}
+}
+
+// SortUpdatedAt updates the query to sort by updatedAt field
+func SortUpdatedAt(isAsc bool) func(*Query) {
+	return func(q *Query) {
+		q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(isAsc)}}
+	}
+}
+
 func ParseSinglePostQuery(c *gin.Context) *Query {
 	return parseSingleQuery(c)
 }
