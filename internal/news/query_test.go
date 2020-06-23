@@ -64,6 +64,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -72,7 +73,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts?category_id=cid1&category_id=cid2",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
-				Filter:     Filter{Categories: []string{"cid1", "cid2"}},
+				Filter:     Filter{Categories: []string{"cid1", "cid2"}, State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -81,7 +82,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts?tag_id=tid1&tag_id=tid2",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
-				Filter:     Filter{Tags: []string{"tid1", "tid2"}},
+				Filter:     Filter{Tags: []string{"tid1", "tid2"}, State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -90,7 +91,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts?id=id1&id=id2",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
-				Filter:     Filter{Tags: []string{"id1", "id2"}},
+				Filter:     Filter{Tags: []string{"id1", "id2"}, State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -99,6 +100,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts?sort=published_date",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(true)}},
 			},
 		},
@@ -107,6 +109,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts?sort=-updated_at",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -115,6 +118,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts?offset=5&limit=6",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 5, Limit: 6},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -123,6 +127,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts?unsupported=value",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -192,6 +197,7 @@ func TestParseTopicListQuery(t *testing.T) {
 			url:  "http://example.com/topics",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -200,6 +206,7 @@ func TestParseTopicListQuery(t *testing.T) {
 			url:  "http://example.com/topics?sort=published_date",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(true)}},
 			},
 		},
@@ -208,6 +215,7 @@ func TestParseTopicListQuery(t *testing.T) {
 			url:  "http://example.com/topics?offset=5&limit=6",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 5, Limit: 6},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
@@ -216,6 +224,7 @@ func TestParseTopicListQuery(t *testing.T) {
 			url:  "http://example.com/topics?unsupported=value",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
+				Filter:     Filter{State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},
