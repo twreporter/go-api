@@ -37,8 +37,11 @@ func (m *mongoStorage) GetFullPosts(ctx context.Context, q *news.Query) ([]news.
 	case <-ctx.Done():
 		return nil, errors.WithStack(ctx.Err())
 	case result, ok := <-m.getFullPosts(ctx, stages):
-		if !ok {
+		switch {
+		case !ok:
 			return nil, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, result.Error
 		}
 		posts = result.Content.([]news.Post)
 	}
@@ -53,6 +56,7 @@ func (m *mongoStorage) getFullPosts(ctx context.Context, stages []bson.D) <-chan
 		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColPosts).Aggregate(ctx, stages)
 		if err != nil {
 			result <- fetchResult{Error: errors.WithStack(err)}
+			return
 		}
 		defer cursor.Close(ctx)
 
@@ -62,8 +66,13 @@ func (m *mongoStorage) getFullPosts(ctx context.Context, stages []bson.D) <-chan
 			err := cursor.Decode(&post)
 			if err != nil {
 				result <- fetchResult{Error: errors.WithStack(err)}
+				return
 			}
 			posts = append(posts, post)
+		}
+		if err := cursor.Err(); err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
 		}
 		result <- fetchResult{Content: posts}
 	}(ctx, stages)
@@ -84,8 +93,11 @@ func (m *mongoStorage) GetMetaOfPosts(ctx context.Context, q *news.Query) ([]new
 	case <-ctx.Done():
 		return nil, errors.WithStack(ctx.Err())
 	case result, ok := <-m.getMetaOfPosts(ctx, stages):
-		if !ok {
+		switch {
+		case !ok:
 			return nil, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, result.Error
 		}
 		posts = result.Content.([]news.MetaOfPost)
 	}
@@ -100,6 +112,7 @@ func (m *mongoStorage) getMetaOfPosts(ctx context.Context, stages []bson.D) <-ch
 		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColPosts).Aggregate(ctx, stages)
 		if err != nil {
 			result <- fetchResult{Error: errors.WithStack(err)}
+			return
 		}
 		defer cursor.Close(ctx)
 
@@ -109,8 +122,13 @@ func (m *mongoStorage) getMetaOfPosts(ctx context.Context, stages []bson.D) <-ch
 			err := cursor.Decode(&post)
 			if err != nil {
 				result <- fetchResult{Error: errors.WithStack(err)}
+				return
 			}
 			posts = append(posts, post)
+		}
+		if err := cursor.Err(); err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
 		}
 		result <- fetchResult{Content: posts}
 	}(ctx, stages)
@@ -135,7 +153,7 @@ func (m *mongoStorage) GetFullTopics(ctx context.Context, q *news.Query) ([]news
 		case !ok:
 			return nil, errors.WithStack(ctx.Err())
 		case result.Error != nil:
-			return nil, errors.WithStack(result.Error)
+			return nil, result.Error
 		}
 		topics = result.Content.([]news.Topic)
 		for i := 0; i < len(topics); i++ {
@@ -153,6 +171,7 @@ func (m *mongoStorage) getFullTopics(ctx context.Context, stages []bson.D) <-cha
 		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColTopics).Aggregate(ctx, stages)
 		if err != nil {
 			result <- fetchResult{Error: errors.WithStack(err)}
+			return
 		}
 		defer cursor.Close(ctx)
 
@@ -162,8 +181,13 @@ func (m *mongoStorage) getFullTopics(ctx context.Context, stages []bson.D) <-cha
 			err := cursor.Decode(&topic)
 			if err != nil {
 				result <- fetchResult{Error: errors.WithStack(err)}
+				return
 			}
 			topics = append(topics, topic)
+		}
+		if err := cursor.Err(); err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
 		}
 		result <- fetchResult{Content: topics}
 	}(ctx, stages)
@@ -188,7 +212,7 @@ func (m *mongoStorage) GetMetaOfTopics(ctx context.Context, q *news.Query) ([]ne
 		case !ok:
 			return nil, errors.WithStack(ctx.Err())
 		case result.Error != nil:
-			return nil, errors.WithStack(result.Error)
+			return nil, result.Error
 		}
 		topics = result.Content.([]news.MetaOfTopic)
 	}
@@ -203,6 +227,7 @@ func (m *mongoStorage) getMetaOfTopics(ctx context.Context, stages []bson.D) <-c
 		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColTopics).Aggregate(ctx, stages)
 		if err != nil {
 			result <- fetchResult{Error: errors.WithStack(err)}
+			return
 		}
 		defer cursor.Close(ctx)
 
@@ -212,8 +237,13 @@ func (m *mongoStorage) getMetaOfTopics(ctx context.Context, stages []bson.D) <-c
 			err := cursor.Decode(&topic)
 			if err != nil {
 				result <- fetchResult{Error: errors.WithStack(err)}
+				return
 			}
 			topics = append(topics, topic)
+		}
+		if err := cursor.Err(); err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
 		}
 		result <- fetchResult{Content: topics}
 	}(ctx, stages)
