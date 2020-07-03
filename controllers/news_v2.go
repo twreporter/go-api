@@ -239,38 +239,38 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 		{
 			Name:  news.LatestSection,
 			Type:  typePost,
-			Query: news.NewQuery(news.Limit(6)),
+			Query: news.NewQuery(news.WithLimit(6)),
 		}, {
 			Name: news.EditorPicksSection,
 			Type: typePost,
 			Query: news.NewQuery(
-				news.FilterIsFeatured(true),
-				news.Limit(6),
-				news.SortUpdatedAt(false)),
+				news.WithFilterIsFeatured(true),
+				news.WithLimit(6),
+				news.WithSortUpdatedAt(false)),
 		}, {
 			Name:  news.LatestTopicSection,
 			Type:  typeTopic,
-			Query: news.NewQuery(news.Limit(1)),
+			Query: news.NewQuery(news.WithLimit(1)),
 		}, {
 			Name: news.ReviewsSection,
 			Type: typePost,
 			Query: news.NewQuery(
-				news.FilterCategoryIDs(news.Review.ID),
-				news.Limit(4)),
+				news.WithFilterCategoryIDs(news.Review.ID),
+				news.WithLimit(4)),
 		}, {
 			Name: news.PhotoSection,
 			Type: typePost,
 			Query: news.NewQuery(
-				news.FilterCategoryIDs(news.Photography.ID),
-				news.Limit(6)),
+				news.WithFilterCategoryIDs(news.Photography.ID),
+				news.WithLimit(6)),
 		}, {
 			Name:  news.InfographicSection,
 			Type:  typePost,
-			Query: news.NewQuery(news.FilterStyle("interactive"), news.Limit(6)),
+			Query: news.NewQuery(news.WithFilterStyle("interactive"), news.WithLimit(6)),
 		}, {
 			Name:  news.TopicsSection,
 			Type:  typeTopic,
-			Query: news.NewQuery(news.Offset(1), news.Limit(4)),
+			Query: news.NewQuery(news.WithOffset(1), news.WithLimit(4)),
 		},
 	}
 
@@ -281,7 +281,7 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 			jobs = append(jobs, job{
 				v.Name,
 				typePost,
-				news.NewQuery(news.FilterCategoryIDs(v.ID), news.Limit(1)),
+				news.NewQuery(news.WithFilterCategoryIDs(v.ID), news.WithLimit(1)),
 			})
 		}
 		return jobs

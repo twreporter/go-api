@@ -45,6 +45,8 @@ const (
 	queryLimit      = "limit"
 )
 
+type Option func(*Query)
+
 var defaultQuery = Query{
 	Pagination: query.Pagination{Offset: 0, Limit: 10},
 	Filter:     Filter{State: "published"},
@@ -53,7 +55,7 @@ var defaultQuery = Query{
 
 // NewQuery returns a default query along with the options(pagination/sort/filter).
 // Note that if the same options are specified multiple times, the last one will be applied.
-func NewQuery(options ...func(*Query)) *Query {
+func NewQuery(options ...Option) *Query {
 	q := defaultQuery
 	for _, o := range options {
 		o(&q)
@@ -61,20 +63,20 @@ func NewQuery(options ...func(*Query)) *Query {
 	return &q
 }
 
-func Offset(offset int) func(*Query) {
+func WithOffset(offset int) Option {
 	return func(q *Query) {
 		q.Offset = offset
 	}
 }
 
-func Limit(limit int) func(*Query) {
+func WithLimit(limit int) Option {
 	return func(q *Query) {
 		q.Limit = limit
 	}
 }
 
 // FilterCategoryIDs adds category ids into filter on the query
-func FilterCategoryIDs(ids ...string) func(*Query) {
+func WithFilterCategoryIDs(ids ...string) Option {
 	return func(q *Query) {
 		if len(ids) > 0 {
 			q.Filter.Categories = ids
@@ -83,28 +85,28 @@ func FilterCategoryIDs(ids ...string) func(*Query) {
 }
 
 // FilterState adds the post publish state filter on the query
-func FilterState(state string) func(*Query) {
+func WithFilterState(state string) Option {
 	return func(q *Query) {
 		q.Filter.State = state
 	}
 }
 
 // FilterStyle adds the post style filter on the query
-func FilterStyle(style string) func(*Query) {
+func WithFilterStyle(style string) Option {
 	return func(q *Query) {
 		q.Filter.Style = style
 	}
 }
 
 // FilterIsFeatured adds the isFeatured filter on the query
-func FilterIsFeatured(isFeatured bool) func(*Query) {
+func WithFilterIsFeatured(isFeatured bool) Option {
 	return func(q *Query) {
 		q.Filter.IsFeatured = null.BoolFrom(isFeatured)
 	}
 }
 
 // SortUpdatedAt updates the query to sort by updatedAt field
-func SortUpdatedAt(isAsc bool) func(*Query) {
+func WithSortUpdatedAt(isAsc bool) Option {
 	return func(q *Query) {
 		q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(isAsc)}}
 	}
