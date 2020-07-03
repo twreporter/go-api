@@ -44,6 +44,10 @@ func (m *mongoStorage) GetFullPosts(ctx context.Context, q *news.Query) ([]news.
 			return nil, result.Error
 		}
 		posts = result.Content.([]news.Post)
+		for i := 0; i < len(posts); i++ {
+			posts[i].Full = true
+		}
+
 	}
 
 	return posts, nil
