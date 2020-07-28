@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"net/http"
-	"runtime"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -195,12 +194,6 @@ func (nc *newsV2Controller) GetIndexPage(c *gin.Context) {
 	ctx := c
 
 	jobs := nc.getIndexPageJobs()
-	jobStream := nc.preparejobs(ctx, jobs)
-
-	workers := make([]<-chan result, runtime.NumCPU())
-	for i, _ := range workers {
-		workers[i] = nc.fetchjobs(ctx, jobStream)
-	}
 
 	var err error
 	results := make(map[string]interface{})
@@ -210,7 +203,8 @@ func (nc *newsV2Controller) GetIndexPage(c *gin.Context) {
 			nc.helperCleanup(c, err)
 		}
 	}()
-	for result := range nc.merge(ctx, workers...) {
+
+	for result := range nc.fetchjobs(ctx, jobs) {
 		select {
 		case <-ctx.Done():
 			err = errors.WithStack(ctx.Err())
@@ -293,82 +287,41 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 	return jobs
 }
 
-func (nc *newsV2Controller) preparejobs(ctx context.Context, jobs []job) <-chan job {
-	jobStream := make(chan job, len(jobs))
-
-	go func() {
-		defer close(jobStream)
-		for _, job := range jobs {
-			select {
-			case <-ctx.Done():
-				return
-			case jobStream <- job:
-			}
-		}
-	}()
-	return jobStream
-}
-
-func (nc *newsV2Controller) fetchjobs(ctx context.Context, jobStream <-chan job) <-chan result {
+func (nc *newsV2Controller) fetchjobs(ctx context.Context, jobs []job) <-chan result {
 	resultStream := make(chan result)
+
+	var wg sync.WaitGroup
+
+	wg.Add(len(jobs))
+	for _, j := range jobs {
+		go func(job job) {
+			defer wg.Done()
+			switch job.Type {
+			case typePost:
+				posts, err := nc.Storage.GetMetaOfPosts(ctx, job.Query)
+				result := result{
+					Name:    job.Name,
+					Content: posts,
+					Error:   err,
+				}
+				resultStream <- result
+			case typeTopic:
+				topics, err := nc.Storage.GetMetaOfTopics(ctx, job.Query)
+				result := result{
+					Name:    job.Name,
+					Content: topics,
+					Error:   err,
+				}
+				resultStream <- result
+			}
+		}(j)
+	}
 
 	go func() {
 		defer close(resultStream)
-		for job := range jobStream {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				switch job.Type {
-				case typePost:
-					posts, err := nc.Storage.GetMetaOfPosts(ctx, job.Query)
-					result := result{
-						Name:    job.Name,
-						Content: posts,
-						Error:   err,
-					}
-					resultStream <- result
-				case typeTopic:
-					topics, err := nc.Storage.GetMetaOfTopics(ctx, job.Query)
-					result := result{
-						Name:    job.Name,
-						Content: topics,
-						Error:   err,
-					}
-					resultStream <- result
-				}
-			}
-		}
-	}()
-	return resultStream
-}
-
-func (nc *newsV2Controller) merge(ctx context.Context, resultStream ...<-chan result) <-chan result {
-	var wg sync.WaitGroup
-
-	wg.Add(len(resultStream))
-	fanIn := make(chan result)
-
-	multiplex := func(result <-chan result) {
-		defer wg.Done()
-		for r := range result {
-			select {
-			case <-ctx.Done():
-				return
-			case fanIn <- r:
-			}
-		}
-	}
-
-	for _, r := range resultStream {
-		go multiplex(r)
-	}
-
-	go func() {
-		defer close(fanIn)
 		wg.Wait()
 	}()
-	return fanIn
+	return resultStream
 }
 
 func (nc *newsV2Controller) helperCleanup(c *gin.Context, err error) {

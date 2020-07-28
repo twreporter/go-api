@@ -48,7 +48,7 @@ db:
         address: 127.0.0.1
         port: '3306'
     mongo:
-        url: 'mongodb://localhost:27020/plate'
+        url: 'mongodb://localhost:27017/plate'
         dbname: plate
         timeout: 5
 oauth:
