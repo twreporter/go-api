@@ -275,24 +275,20 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 	}
 
 	// v1 categories in index page
-	jobs = append(jobs, func(categories ...news.Category) []job {
-		var jobs []job
-		for _, v := range categories {
-			jobs = append(jobs, job{
-				v.Name,
-				typePost,
-				news.NewQuery(news.WithFilterCategoryIDs(v.ID), news.WithLimit(1)),
-			})
-		}
-		return jobs
-	}(
+	for _, v := range []news.Category{
 		news.HumanRightsAndSociety,
 		news.EnvironmentAndEducation,
 		news.PoliticsAndEconomy,
 		news.CultureAndArt,
 		news.International,
 		news.LivingAndMedicalCare,
-	)...)
+	} {
+		jobs = append(jobs, job{
+			v.Name,
+			typePost,
+			news.NewQuery(news.WithFilterCategoryIDs(v.ID), news.WithLimit(1)),
+		})
+	}
 
 	return jobs
 }
