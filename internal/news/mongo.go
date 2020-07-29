@@ -176,6 +176,10 @@ func (ms mongoSort) BuildStage() []bson.D {
 		}
 	}
 
+	if len(sortBy) == 0 {
+		return nil
+	}
+
 	return []bson.D{mongo.BuildDocument(mongo.StageSort, sortBy)}
 }
 
