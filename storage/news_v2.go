@@ -255,33 +255,26 @@ func (m *mongoStorage) getMetaOfTopics(ctx context.Context, stages []bson.D) <-c
 }
 
 func (m *mongoStorage) GetPostCount(ctx context.Context, q *news.Query) (int, error) {
-	// During mongo count document operation, empty array should be specified instead of nil(NULL).
-	// Thus, rather than declare stage through var (i.e. zero value = nil)
-	// use bson.D{} instead to start with empty stage([])
-	stage := bson.D{}
-	mq := news.NewMongoQuery(q)
-
-	if stages := mq.GetFilter().BuildStage(); len(stages) > 0 {
-		stage = stages[0]
-	}
-	count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColPosts).CountDocuments(ctx, stage)
-	if err != nil {
-		return 0, errors.WithStack(err)
-	}
-	return int(count), nil
+	return m.getCount(ctx, q, news.ColPosts)
 }
 
 func (m *mongoStorage) GetTopicCount(ctx context.Context, q *news.Query) (int, error) {
+	return m.getCount(ctx, q, news.ColTopics)
+}
+
+func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection string) (int, error) {
 	// During mongo count document operation, empty array should be specified instead of nil(NULL).
 	// Thus, rather than declare stage through var (i.e. zero value = nil)
 	// use bson.D{} instead to start with empty stage([])
-	stage := bson.D{}
+	document := bson.D{}
 	mq := news.NewMongoQuery(q)
 
-	if stages := mq.GetFilter().BuildStage(); len(stages) > 0 {
-		stage = stages[0]
+	// CountDocument will prepend $match key on the filter.
+	// Thus, only build elements array here rather than full match stage.
+	if elements := mq.GetFilter().BuildElements(); len(elements) > 0 {
+		document = bson.D(elements)
 	}
-	count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColTopics).CountDocuments(ctx, stage)
+	count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(collection).CountDocuments(ctx, document)
 	if err != nil {
 		return 0, errors.WithStack(err)
 	}

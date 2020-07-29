@@ -80,13 +80,13 @@ type mongoFilter struct {
 
 func (mf mongoFilter) BuildStage() []bson.D {
 	var match []bson.D
-	if elements := mf.buildElements(); len(elements) > 0 {
+	if elements := mf.BuildElements(); len(elements) > 0 {
 		match = append(match, mongo.BuildDocument(mongo.StageMatch, elements))
 	}
 	return match
 }
 
-func (mf mongoFilter) buildElements() []bson.E {
+func (mf mongoFilter) BuildElements() []bson.E {
 	typ := reflect.TypeOf(mf)
 	val := reflect.ValueOf(mf)
 
