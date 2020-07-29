@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -70,6 +71,10 @@ algolia:
     api_key: "" # provide your own api key
 encrypt:
     salt: '@#$%'
+news:
+    post_page_timeout: 5s
+    topic_page_timeout: 5s
+    index_page_timeout: 5s
 `)
 
 type ConfYaml struct {
@@ -82,6 +87,7 @@ type ConfYaml struct {
 	Donation    DonationConfig `yaml:"donation"`
 	Algolia     AlgoliaConfig  `ymal:"algolia"`
 	Encrypt     EncryptConfig  `yaml:"encrypt"`
+	News        NewsConfig     `yaml:"news"`
 }
 
 type CorsConfig struct {
@@ -175,6 +181,13 @@ type EncryptConfig struct {
 	Salt string `yaml:"salt"`
 }
 
+// TODO(babygoat): move the group config to internal package
+type NewsConfig struct {
+	PostPageTimeout  time.Duration `yaml:"post_page_timeout"`
+	TopicPageTimeout time.Duration `yaml:"topic_page_timeout"`
+	IndexPageTimeout time.Duration `yaml:"index_page_timeout"`
+}
+
 func init() {
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()        // read in environment variables that match
@@ -252,6 +265,9 @@ func buildConf() ConfYaml {
 	// Encrypt
 	conf.Encrypt.Salt = viper.GetString("encrypt.salt")
 
+	conf.News.PostPageTimeout = viper.GetDuration("news.post_page_timeout")
+	conf.News.TopicPageTimeout = viper.GetDuration("news.topic_page_timeout")
+	conf.News.IndexPageTimeout = viper.GetDuration("news.index_page_timeout")
 	return conf
 }
 

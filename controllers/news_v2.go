@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"twreporter.org/go-api/globals"
 	"twreporter.org/go-api/internal/news"
 )
 
@@ -32,6 +33,9 @@ type newsV2Controller struct {
 func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 	var err error
 
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.PostPageTimeout)
+	defer cancel()
+
 	defer func() {
 		if err != nil {
 			nc.helperCleanup(c, err)
@@ -40,15 +44,13 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 
 	q := news.ParsePostListQuery(c)
 
-	// TODO(babygoat): config context with proper timeout
-	posts, err := nc.Storage.GetMetaOfPosts(c, q)
+	posts, err := nc.Storage.GetMetaOfPosts(ctx, q)
 
 	if err != nil {
 		return
 	}
 
-	// TODO(babygoat): config context with proper timeout
-	total, err := nc.Storage.GetPostCount(c, q)
+	total, err := nc.Storage.GetPostCount(ctx, q)
 	if err != nil {
 		return
 	}
@@ -64,6 +66,9 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 	var post interface{}
 	var err error
 
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.PostPageTimeout)
+	defer cancel()
+
 	defer func() {
 		if err != nil {
 			nc.helperCleanup(c, err)
@@ -74,15 +79,13 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 
 	if q.Full {
 		var posts []news.Post
-		// TODO(babygoat): config context with proper timeout
-		posts, err = nc.Storage.GetFullPosts(c, q)
+		posts, err = nc.Storage.GetFullPosts(ctx, q)
 		if len(posts) > 0 {
 			post = posts[0]
 		}
 	} else {
 		var posts []news.MetaOfPost
-		// TODO(babygoat): config context with proper timeout
-		posts, err = nc.Storage.GetMetaOfPosts(c, q)
+		posts, err = nc.Storage.GetMetaOfPosts(ctx, q)
 		if len(posts) > 0 {
 			post = posts[0]
 		}
@@ -103,6 +106,9 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 func (nc *newsV2Controller) GetTopics(c *gin.Context) {
 	var err error
 
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.TopicPageTimeout)
+	defer cancel()
+
 	defer func() {
 		if err != nil {
 			nc.helperCleanup(c, err)
@@ -111,15 +117,13 @@ func (nc *newsV2Controller) GetTopics(c *gin.Context) {
 
 	q := news.ParseTopicListQuery(c)
 
-	// TODO(babygoat): config context with proper timeout
-	topics, err := nc.Storage.GetMetaOfTopics(c, q)
+	topics, err := nc.Storage.GetMetaOfTopics(ctx, q)
 
 	if err != nil {
 		return
 	}
 
-	// TODO(babygoat): config context with proper timeout
-	total, err := nc.Storage.GetTopicCount(c, q)
+	total, err := nc.Storage.GetTopicCount(ctx, q)
 	if err != nil {
 		return
 	}
@@ -135,6 +139,9 @@ func (nc *newsV2Controller) GetATopic(c *gin.Context) {
 	var topic interface{}
 	var err error
 
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.TopicPageTimeout)
+	defer cancel()
+
 	defer func() {
 		if err != nil {
 			nc.helperCleanup(c, err)
@@ -145,15 +152,13 @@ func (nc *newsV2Controller) GetATopic(c *gin.Context) {
 
 	if q.Full {
 		var topics []news.Topic
-		// TODO(babygoat): config context with proper timeout
-		topics, err = nc.Storage.GetFullTopics(c, q)
+		topics, err = nc.Storage.GetFullTopics(ctx, q)
 		if len(topics) > 0 {
 			topic = topics[0]
 		}
 	} else {
 		var topics []news.MetaOfTopic
-		// TODO(babygoat): config context with proper timeout
-		topics, err = nc.Storage.GetMetaOfTopics(c, q)
+		topics, err = nc.Storage.GetMetaOfTopics(ctx, q)
 		if len(topics) > 0 {
 			topic = topics[0]
 		}
@@ -190,8 +195,8 @@ const (
 )
 
 func (nc *newsV2Controller) GetIndexPage(c *gin.Context) {
-	// TODO(babygoat): config context with proper timeout
-	ctx := c
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.IndexPageTimeout)
+	defer cancel()
 
 	jobs := nc.getIndexPageJobs()
 
