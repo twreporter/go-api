@@ -228,7 +228,7 @@ func (nc *newsV2Controller) GetIndexPage(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": results}})
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": results})
 
 }
 
