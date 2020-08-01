@@ -91,7 +91,7 @@ func TestParsePostListQuery(t *testing.T) {
 			url:  "http://example.com/posts?id=id1&id=id2",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
-				Filter:     Filter{Tags: []string{"id1", "id2"}, State: "published"},
+				Filter:     Filter{IDs: []string{"id1", "id2"}, State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},

@@ -128,7 +128,7 @@ func ParsePostListQuery(c *gin.Context) *Query {
 		q.Filter.Tags = c.QueryArray(queryTagID)
 	}
 	if len(c.QueryArray(queryPostID)) > 0 {
-		q.Filter.Tags = c.QueryArray(queryPostID)
+		q.Filter.IDs = c.QueryArray(queryPostID)
 	}
 
 	// Parse pagination
