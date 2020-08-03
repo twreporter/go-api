@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"path/filepath"
@@ -12,6 +13,9 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"gopkg.in/matryer/try.v1"
 	"gopkg.in/mgo.v2"
 
@@ -72,6 +76,24 @@ func InitMongoDB() (*mgo.Session, error) {
 	session.SetMode(mgo.Nearest, true)
 
 	return session, nil
+}
+
+func InitMongoDBV2() (*mongo.Client, error) {
+	clientOpts := options.Client().ApplyURI(globals.Conf.DB.Mongo.URL)
+	clientOpts = clientOpts.SetReadPreference(readpref.Nearest())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, clientOpts)
+	if err != nil {
+		return nil, errors.Wrap(err, "Establishing a new connection to cluster occurs error:")
+	}
+
+	if err = client.Ping(ctx, nil); err != nil {
+		return nil, errors.Wrap(err, "Connection to cluster does not response:")
+	}
+	return client, nil
 }
 
 // Get the migrate instance for operating migration

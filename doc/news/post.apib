@@ -1,0 +1,133 @@
+# Group Posts
+
+## Post List [/v2/posts{?category_id,tag_id,id,sort,offset,limit}]
+A list contains meta(brief) information of the selected posts.
+
+## Get a list of posts [GET]
+
++ Parameters
+    + `category_id`: `5edf118c3e631f0600198935` (optional) - Search for posts of the categories referenced by the category_id
+    + `tag_id`: `5edf118c3e631f0600198935` (optional) - Search for posts with the tags referenced by the tag ids
+    + id: `5edf118c3e631f0600198935` (optional) - Search for posts with the referenced ids
+    + sort: `-published_date` (optional) - which field to sort by
+        + Default: `-published_date`
+        + Members
+            + `published_date` - sort by published_date ascending
+            + `-published_date` - sort by published_date descending
+            + `updated_at` - sort by updated_at ascending
+            + `-updated_at` - sort by updated_at descending
+    + offset: `0` (integer, optional) - The number of posts to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of posts to return
+        + Default: `10`
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data
+            + meta (meta, fixed-type, required)
+            + records (array[MetaOfPost], fixed-type, required)
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+
+## Post [/v2/posts/{slug}{?full}]
+A post contains meta(brief) or full information of a post with the slug specified.
+
++ Parameters
+    + slug: `a-slug-of-a-post` (required) - Post slug
+    + full: `true` (optional) - Whether to retrieve a post with full information
+        + Default: `false`
+
+## Get a single post [GET]
+Get a single post with the given slug
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data (MetaOfPost, required)
+
++ Response 404 (application/json)
+    
+    + Attributes
+        + status: fail (required)
+        + data (required)
+            + slug: Cannot find the post from the slug (required)
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+
++ Request with full=true
+    + Parameters
+        + full: true (boolean, optional)
+
++ Response 200 (application/json)
+
+    + Body
+
+    + Attributes
+        + status: success (required)
+        + data (FullPost, required)
+
+# Data Structures
+
+## FullPost
++ include MetaOfPost
++ brief (paragraphs, required)
++ content (paragraphs, required)
++ copyright: copyrighted (required)
++ designers (array[author], fixed-type, required)
++ engineers (array[author], fixed-type, required)
++ extend_byline: extended lines (required)
++ leading_image_description: description (required)
++ og_title: og title (required)
++ photographers (array[author], fixed-type, required)
++ relateds (array, fixed-type, required)
+    + 5edf118c3e631f0600198935
++ topic (required)
+    + title: topic title (required)
+    + `short_title`: topic short title (required)
+    + slug: `the-slug-of-the-topic` (required)
+    + relateds (array, fixed-type, required)
+        + 5edf118c3e631f0600198935
++ updated_at: `2020-06-8T16:00:00Z` (required)
++ writers (array[author], fixed-type, required)
++ hero_image_size: normal (required)
++ full: true (boolean, required)
+
+## MetaOfPost
++ id: 5edf118c3e631f0600198935 (required)
++ style: article:v2:default (required)
++ slug: `a-slug-of-the-post` (required)
++ leading_image_portrait (image, required)
++ hero_image  (image, required)
++ og_image (image, required)
++ og_description: post description (required)
++ title: post title (required)
++ subtitle: post subtitle (required)
++ categories (array[category], fixed-type, required)
++ published_date: `2020-06-8T16:00:00Z` (required)
++ is_external: false (boolean, required)
++ tags (array[tag], fixed-type, required)
++ full: false (boolean, required)
+

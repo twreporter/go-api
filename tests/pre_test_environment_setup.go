@@ -1,15 +1,18 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/jinzhu/gorm"
+	mongodriver "go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"twreporter.org/go-api/globals"
+	"twreporter.org/go-api/internal/mongo"
 	"twreporter.org/go-api/models"
 	"twreporter.org/go-api/storage"
 	"twreporter.org/go-api/utils"
@@ -134,23 +137,28 @@ func openGormConnection() (db *gorm.DB, err error) {
 	return
 }
 
-func openMgoConnection() (session *mgo.Session, err error) {
+func openMongoConnection() (session *mgo.Session, client *mongodriver.Client, err error) {
 	dbhost := os.Getenv("MGO_DBADDRESS")
 	if dbhost == "" {
 		dbhost = "localhost"
 	}
 	session, err = mgo.Dial(dbhost)
+	if err != nil {
+		return
+	}
 
 	// set settings
 	globals.Conf.DB.Mongo.DBname = mgoDBName
 
+	client, err = mongo.NewClient(context.Background())
 	return
 }
 
-func setUpDBEnvironment() (*gorm.DB, *mgo.Session) {
+func setUpDBEnvironment() (*gorm.DB, *mgo.Session, *mongodriver.Client) {
 	var err error
 	var gormDB *gorm.DB
 	var mgoDB *mgo.Session
+	var client *mongodriver.Client
 
 	// Create DB connections
 	if gormDB, err = openGormConnection(); err != nil {
@@ -160,7 +168,7 @@ func setUpDBEnvironment() (*gorm.DB, *mgo.Session) {
 	gormDB.SetJoinTableHandler(&models.User{}, globals.TableBookmarks, &models.UsersBookmarks{})
 
 	// Create Mongo DB connections
-	if mgoDB, err = openMgoConnection(); err != nil {
+	if mgoDB, client, err = openMongoConnection(); err != nil {
 		panic(fmt.Sprintf("No error should happen when connecting to mongo database, but got err=%+v", err))
 	}
 
@@ -176,5 +184,5 @@ func setUpDBEnvironment() (*gorm.DB, *mgo.Session) {
 	// set up default collections in mongoDB
 	setMgoDefaultRecords(mgoDB)
 
-	return gormDB, mgoDB
+	return gormDB, mgoDB, client
 }
