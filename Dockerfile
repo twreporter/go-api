@@ -3,7 +3,7 @@ ARG server_user=goapi
 
 # Start from a Alpine Linux image with the latest version of Go installed
 # and a workspace (GOPATH) configured at /go.
-FROM golang:1.12.6-alpine3.10 As build
+FROM golang:1.14.4-alpine3.12 As build
 
 RUN apk add --update --no-cache \
 	tzdata \
@@ -47,7 +47,7 @@ RUN adduser -D -g '' ${server_user}
 RUN go install
 
 # Minimize image size by only using the required binary
-FROM alpine:3.9
+FROM alpine:3.12
 
 COPY --from=build /go/bin /usr/local/bin /usr/local/bin/
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

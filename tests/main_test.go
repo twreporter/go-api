@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
+	mongodriver "go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"twreporter.org/go-api/configs"
@@ -275,9 +276,9 @@ func (s mockMailStrategy) Send(to, subject, body string) error {
 	return nil
 }
 
-func setupGinServer(gormDB *gorm.DB, mgoDB *mgo.Session) *gin.Engine {
+func setupGinServer(gormDB *gorm.DB, mgoDB *mgo.Session, client *mongodriver.Client) *gin.Engine {
 	mailSvc := mockMailStrategy{}
-	cf := controllers.NewControllerFactory(gormDB, mgoDB, mailSvc)
+	cf := controllers.NewControllerFactory(gormDB, mgoDB, mailSvc, client)
 	engine := routers.SetupRouter(cf)
 	return engine
 }
@@ -299,13 +300,13 @@ func TestMain(m *testing.M) {
 	}
 
 	// set up DB environment
-	gormDB, mgoDB := setUpDBEnvironment()
+	gormDB, mgoDB, client := setUpDBEnvironment()
 
 	Globs.GormDB = gormDB
 	Globs.MgoDB = mgoDB
 
 	// set up gin server
-	engine := setupGinServer(gormDB, mgoDB)
+	engine := setupGinServer(gormDB, mgoDB, client)
 
 	Globs.GinEngine = engine
 

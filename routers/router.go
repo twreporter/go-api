@@ -155,10 +155,17 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendActivation))
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendSuccessDonationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendDonationSuccessMail))
 
+	v2Group := engine.Group("/v2")
+	ncV2 := cf.GetNewsV2Controller()
+	v2Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetPosts)
+	v2Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetAPost)
+	// endpoints for topics
+	v2Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetTopics)
+	v2Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetATopic)
+	v2Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), ncV2.GetIndexPage)
 	// =============================
 	// v2 oauth endpoints
 	// =============================
-	v2Group := engine.Group("/v2")
 	v2AuthGroup := v2Group.Group("/auth")
 
 	session := cf.GetMgoSession()

@@ -86,7 +86,7 @@ func (nc *NewsController) GetIndexPageContents(c *gin.Context) {
 	var rtn map[string]interface{}
 	var ch = make(chan map[string]interface{})
 	var parts = map[string]IndexPageQueryStruct{
-		globals.LastestSection: {
+		globals.LatestSection: {
 			MongoQuery: models.MongoQuery{
 				State: "published",
 			},

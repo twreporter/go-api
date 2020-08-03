@@ -1,5 +1,14 @@
 ## Unreleased
 
+### 6.1.0
+
+#### Notable Changes
+
+- api/news:
+   - add /v2/posts, /v2/posts/SLUG endpoints
+   - add /v2/topics, /v2/topics/SLUG endpoints
+   - add /v2/index_page endpoint (combine the records of /v1/index_page and /v1/index_page_categories)
+
 ## Released
 ### 6.0.4 (Current), 2020-06-10
 

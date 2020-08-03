@@ -38,8 +38,9 @@ const (
 
 	Activate = "activate"
 
+	// Deprecated once v1 news endpoints are removed
 	// index page sections //
-	LastestSection     = "latest_section"
+	LatestSection      = "latest_section"
 	EditorPicksSection = "editor_picks_section"
 	LatestTopicSection = "latest_topic_section"
 	ReviewsSection     = "reviews_section"
@@ -48,6 +49,7 @@ const (
 	PhotoSection       = "photos_section"
 	InfographicSection = "infographics_section"
 
+	// Deprecated once v1 news endpoints are removed
 	// index page categories
 	HumanRightsAndSociety   = "human_rights_and_society"
 	EnvironmentAndEducation = "environment_and_education"
