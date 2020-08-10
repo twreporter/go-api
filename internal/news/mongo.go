@@ -276,30 +276,30 @@ func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 func BuildFilterRelatedPost() []bson.D {
 	var stages []bson.D
 
-	// replace relateds field with joined posts documents with published state only
+	// First, retrieve full post data by joining the documents.
+	stages = append(stages, mongo.BuildLookupByIDStage(fieldRelatedDocuments, ColPosts))
+	// Then, match the posts with published state
 	stages = append(stages, bson.D{
-		{Key: mongo.StageLookup, Value: bson.D{
-			{Key: mongo.MetaFrom, Value: ColPosts},
-			// Define the variable for inner pipeline reference
-			{Key: mongo.MetaLet, Value: mongo.BuildDocument(fieldRelatedDocuments, "$"+fieldRelatedDocuments)},
-			{Key: mongo.MetaPipeline, Value: bson.A{
-				bson.D{{Key: mongo.StageMatch, Value: bson.D{
-					{Key: mongo.OpExpr, Value: bson.D{
-						{Key: mongo.OpAnd, Value: bson.A{
-							bson.D{{Key: mongo.OpIn, Value: bson.A{"$" + fieldID, "$$" + fieldRelatedDocuments}}},
-							bson.D{{Key: mongo.OpEq, Value: bson.A{"$" + fieldState, "published"}}},
+		{Key: mongo.StageAddFields, Value: bson.D{
+			{Key: fieldRelatedDocuments, Value: bson.D{
+				{Key: mongo.StageFilter, Value: bson.D{
+					{Key: mongo.MetaInput, Value: "$" + fieldRelatedDocuments},
+					{Key: mongo.MetaAs, Value: fieldRelatedDocuments},
+					{Key: mongo.MetaCond, Value: bson.D{
+						{Key: mongo.OpEq, Value: bson.A{
+							"$$" + fieldRelatedDocuments + "." + fieldState,
+							"published",
 						}},
 					}},
-				}}},
-				bson.D{{Key: mongo.StageProject, Value: bson.E{Key: fieldID, Value: 1}}},
-			}},
-			{Key: mongo.MetaAs, Value: fieldRelatedDocuments},
-		},
-		},
+				}},
+			},
+			},
+		}},
 	})
-	// promote the _id field for array of ObjectID
+	// Finally, promote the _id field to array of ObjectIDs
 	stages = append(stages, bson.D{
-		{Key: mongo.StageAddFields, Value: mongo.BuildDocument(fieldRelatedDocuments, "$"+fieldRelatedDocuments+"._id")},
+		{Key: mongo.StageAddFields, Value: mongo.BuildDocument(fieldRelatedDocuments, "$"+fieldRelatedDocuments+"."+fieldID)},
 	})
+
 	return stages
 }

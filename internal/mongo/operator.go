@@ -12,6 +12,7 @@ const (
 
 	// Define mongo pipeline stage
 	StageAddFields = "$addFields"
+	StageFilter    = "$filter"
 	StageLimit     = "$limit"
 	StageLookup    = "$lookup"
 	StageMatch     = "$match"
@@ -22,8 +23,10 @@ const (
 
 	// Define Meta fields for nested stages (e.g., lookup)
 	MetaAs           = "as"
+	MetaCond         = "cond"
 	MetaForeignField = "foreignField"
 	MetaFrom         = "from"
+	MetaInput        = "input"
 	MetaLocalField   = "localField"
 	MetaLet          = "let"
 	MetaPipeline     = "pipeline"
