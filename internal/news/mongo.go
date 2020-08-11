@@ -214,7 +214,10 @@ const (
 	fieldCategories           = "categories"
 	fieldTags                 = "tags"
 	// TODO: rename the field to topic
-	fieldTopics = "topics"
+	fieldTopics           = "topics"
+	fieldRelatedDocuments = "relateds"
+	fieldID               = "_id"
+	fieldState            = "state"
 )
 
 type lookupInfo struct {
@@ -266,5 +269,37 @@ func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 			stages = append(stages, mongo.BuildUnwindStage(field))
 		}
 	}
+	return stages
+}
+
+// Filter related posts that is published already
+func BuildFilterRelatedPost() []bson.D {
+	var stages []bson.D
+
+	// First, retrieve full post data by joining the documents.
+	stages = append(stages, mongo.BuildLookupByIDStage(fieldRelatedDocuments, ColPosts))
+	// Then, match the posts with published state
+	stages = append(stages, bson.D{
+		{Key: mongo.StageAddFields, Value: bson.D{
+			{Key: fieldRelatedDocuments, Value: bson.D{
+				{Key: mongo.StageFilter, Value: bson.D{
+					{Key: mongo.MetaInput, Value: "$" + fieldRelatedDocuments},
+					{Key: mongo.MetaAs, Value: fieldRelatedDocuments},
+					{Key: mongo.MetaCond, Value: bson.D{
+						{Key: mongo.OpEq, Value: bson.A{
+							"$$" + fieldRelatedDocuments + "." + fieldState,
+							"published",
+						}},
+					}},
+				}},
+			},
+			},
+		}},
+	})
+	// Finally, promote the _id field to array of ObjectIDs
+	stages = append(stages, bson.D{
+		{Key: mongo.StageAddFields, Value: mongo.BuildDocument(fieldRelatedDocuments, "$"+fieldRelatedDocuments+"."+fieldID)},
+	})
+
 	return stages
 }

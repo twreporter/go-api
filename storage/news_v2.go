@@ -32,7 +32,8 @@ func (m *mongoStorage) GetFullPosts(ctx context.Context, q *news.Query) ([]news.
 	stages := news.BuildQueryStatements(mq)
 	// build lookup(join) stages according to required fields
 	stages = append(stages, news.BuildLookupStatements(news.LookupFullPost)...)
-
+	// build filter stages for related documents
+	stages = append(stages, news.BuildFilterRelatedPost()...)
 	select {
 	case <-ctx.Done():
 		return nil, errors.WithStack(ctx.Err())
@@ -148,6 +149,8 @@ func (m *mongoStorage) GetFullTopics(ctx context.Context, q *news.Query) ([]news
 	stages := news.BuildQueryStatements(mq)
 	// build lookup(join) stages according to required fields
 	stages = append(stages, news.BuildLookupStatements(news.LookupFullTopic)...)
+	// build filter stages for related documents
+	stages = append(stages, news.BuildFilterRelatedPost()...)
 
 	select {
 	case <-ctx.Done():
@@ -207,6 +210,8 @@ func (m *mongoStorage) GetMetaOfTopics(ctx context.Context, q *news.Query) ([]ne
 	stages := news.BuildQueryStatements(mq)
 	// build lookup(join) stages according to required fields
 	stages = append(stages, news.BuildLookupStatements(news.LookupMetaOfTopic)...)
+	// build filter stages for related documents
+	stages = append(stages, news.BuildFilterRelatedPost()...)
 
 	select {
 	case <-ctx.Done():
