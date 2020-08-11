@@ -40,10 +40,10 @@ func BuildArray(items interface{}) (arr bson.A, exist bool) {
 func BuildLookupByIDStage(field, fromCol string) bson.D {
 	return bson.D{
 		{Key: StageLookup, Value: bson.D{
-			{Key: metaFrom, Value: fromCol},
-			{Key: metaLocalField, Value: field},
-			{Key: metaForeignField, Value: "_id"},
-			{Key: metaAs, Value: field},
+			{Key: MetaFrom, Value: fromCol},
+			{Key: MetaLocalField, Value: field},
+			{Key: MetaForeignField, Value: "_id"},
+			{Key: MetaAs, Value: field},
 		},
 		},
 	}
@@ -51,7 +51,7 @@ func BuildLookupByIDStage(field, fromCol string) bson.D {
 
 func BuildUnwindStage(field string) bson.D {
 	return bson.D{{Key: StageUnwind, Value: bson.D{
-		{Key: metaPath, Value: "$" + field},
-		{Key: metaPreserveNullAndEmptyArrays, Value: true},
+		{Key: MetaPath, Value: "$" + field},
+		{Key: MetaPreserveNullAndEmptyArrays, Value: true},
 	}}}
 }
