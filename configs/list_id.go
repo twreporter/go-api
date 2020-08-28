@@ -1,5 +1,6 @@
 package configs
 
+// Deprecated once v1 news endpoints are removed
 const (
 	HumanRightsAndSocietyListID   = "5951db87507c6a0d00ab063c"
 	EnvironmentAndEducationListID = "5951db9b507c6a0d00ab063d"

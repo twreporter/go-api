@@ -1,7 +1,86 @@
 ## Unreleased
 
 ## Released
-### 6.0.4 (Current), 2020-06-10
+### 6.1.0 (Current), 2020-08-28
+
+#### Notable Changes
+
+- api/news:
+   - add /v2/posts, /v2/posts/SLUG endpoints
+   - add /v2/topics, /v2/topics/SLUG endpoints
+   - add /v2/index_page endpoint (combine the records of /v1/index_page and /v1/index_page_categories)
+
+#### Commits
+- [[7aaee3b](https://github.com/twreporter/go-api/commit/7aaee3bbb97b0d0ded47926ad88a142b5d05e4ec)] - api/news: improve filter performance(Ching-Yang, Tseng)
+- [[189d4bb](https://github.com/twreporter/go-api/commit/189d4bbaf6a7c582e6d67eea1c29dc77860db6a6)] - api/news: filter draft related documents(Ching-Yang, Tseng)
+- [[fe693fe](https://github.com/twreporter/go-api/commit/fe693fefbd51bad4046f05ed7bd6c192f8ea670f)] - doc: Update CHANGELOG(Ching-Yang, Tseng)
+- [[af42cae](https://github.com/twreporter/go-api/commit/af42caeb6227e89c6ff3ccb192a6175c790ad62b)] - api/news: fix index page response format(Ching-Yang, Tseng)
+- [[a4a3a1b](https://github.com/twreporter/go-api/commit/a4a3a1bf2a7d81d3e8ecc0d0cc8533485af20eb5)] - api/news: fix post list query parameter parser(Ching-Yang, Tseng)
+- [[6d01667](https://github.com/twreporter/go-api/commit/6d016671a54f861780e72a9724cad475c04e1f7d)] - api/news: parameterize the timeout value(Ching-Yang, Tseng)
+- [[57df91e](https://github.com/twreporter/go-api/commit/57df91ea2e22e9aaad41a4c9ec56aa88a8c5e3e1)] - api/news: fix post/topic query count command(Ching-Yang, Tseng)
+- [[15e78d2](https://github.com/twreporter/go-api/commit/15e78d2a64d7451e666a699c9702a28c56671cf7)] - api/news: do not build sort stage for single query(Ching-Yang, Tseng)
+- [[838a908](https://github.com/twreporter/go-api/commit/838a9087a25640c74a3b949ed7d0d690bc3d8d5c)] - api/news: simplify index page jobs pipeline(Ching-Yang, Tseng)
+- [[9c32bde](https://github.com/twreporter/go-api/commit/9c32bde06ed08ebae75dae894802920f3e7e35e3)] - api/news: rewrite index jobs preparation(Ching-Yang, Tseng)
+- [[cf0e390](https://github.com/twreporter/go-api/commit/cf0e39070918214e22bd4a3ea1914c3500f20f32)] - api/news: append full flag on FullPosts(Ching-Yang, Tseng)
+- [[3852f86](https://github.com/twreporter/go-api/commit/3852f86ab32763821fc60cc41ba725b727a513ff)] - api/news: group Option functions(Ching-Yang, Tseng)
+- [[5ede79c](https://github.com/twreporter/go-api/commit/5ede79c86c94917e06b734d32837c8fda0c5292b)] - api/news: bail out error and handle cursor error(Ching-Yang, Tseng)
+- [[1cea5b4](https://github.com/twreporter/go-api/commit/1cea5b4a047b9b46b050ae9886d7f413396ee5e0)] - api/news: fix test fail from default query changed(Ching-Yang, Tseng)
+- [[e3f7467](https://github.com/twreporter/go-api/commit/e3f74673eb18d4d8b21a5e8dc303bc877857ddfb)] - chore: update mongo image for testing to 3.6.18(Ching-Yang, Tseng)
+- [[ce374ab](https://github.com/twreporter/go-api/commit/ce374abbd9585db5c70a96363d76326c517329a3)] - api/news: remove draft implementation(Ching-Yang, Tseng)
+- [[3cc2212](https://github.com/twreporter/go-api/commit/3cc221298e5bbf71d13d2a7c40107d20f4dd101f)] - api/news: only listing published post(Ching-Yang, Tseng)
+- [[df6fd57](https://github.com/twreporter/go-api/commit/df6fd57d9e0b684c7c4c817235b0db05cb73898e)] - api/news: fix index page sorting issue(Ching-Yang, Tseng)
+- [[2d31c5a](https://github.com/twreporter/go-api/commit/2d31c5a938aba324ab91ea901a0850fdd04fc1d1)] - api/news: move index page endpoint into controller(Ching-Yang, Tseng)
+- [[a6a4434](https://github.com/twreporter/go-api/commit/a6a4434f6be616265bb6ebb92576f384211861b3)] - api/news: move post section and category into internal/news(Ching-Yang, Tseng)
+- [[10ae823](https://github.com/twreporter/go-api/commit/10ae823db5d8ebdf99888ef8284d25c8febe002b)] - api/news: add news query builder with default(Ching-Yang, Tseng)
+- [[4676928](https://github.com/twreporter/go-api/commit/4676928391de22017453ca7bc16deba4cc772442)] - api/news: move GetTopics endpoint to controller(Ching-Yang, Tseng)
+- [[a30e27b](https://github.com/twreporter/go-api/commit/a30e27b42a9d857a7f6e9624bbea3df06cd0c39e)] - api/news: refactor server side error handler(Ching-Yang, Tseng)
+- [[e0a075c](https://github.com/twreporter/go-api/commit/e0a075c6e4e16587e81a8d3204148c5d2a1f9968)] - api/news: move GetATopic endpoint to controller(Ching-Yang, Tseng)
+- [[004ff52](https://github.com/twreporter/go-api/commit/004ff52f93e2dbe63672cdeb2ee6a7a98bddc712)] - api/news: moves GetPosts endpoint to controller(Ching-Yang, Tseng)
+- [[5288844](https://github.com/twreporter/go-api/commit/5288844afc74163f673193c0b9b624d9a7883ec9)] - core: fix test fail from function signature change(Ching-Yang, Tseng)
+- [[fa1c2a4](https://github.com/twreporter/go-api/commit/fa1c2a4aba34967c9af3f46b816a48dc1b697928)] - core: upgrade golang to the 1.14.4(Ching-Yang, Tseng)
+- [[f7255f2](https://github.com/twreporter/go-api/commit/f7255f21f89d24ffa29c7a12a7ba8736fb9f4d3c)] - api/news: moves GetAPost endpoint into controller(Ching-Yang, Tseng)
+- [[f7fb0b3](https://github.com/twreporter/go-api/commit/f7fb0b36fe5e7e74700cc9008cd76aac564f5d9b)] - api/news: adapt to current directory layout(Ching-Yang, Tseng)
+- [[6e715db](https://github.com/twreporter/go-api/commit/6e715db91d7f7d643caac8ddac128576b7cc3ab7)] - api/news: move model into internal/models(Ching-Yang, Tseng)
+- [[63993c4](https://github.com/twreporter/go-api/commit/63993c4c6724ef3217fc72b0a5bd4f193b57a3c7)] - api/news: refactor lookup stages(Ching-Yang, Tseng)
+- [[83298ea](https://github.com/twreporter/go-api/commit/83298ea7d162fb8a5bd2f8e7f18d09288521c610)] - api/news: convert mongoQuery to query documents(Ching-Yang, Tseng)
+- [[1b9a1f5](https://github.com/twreporter/go-api/commit/1b9a1f53fa72ccf23f7cd1cb0a521813d3042fe8)] - api/news: convert Query to mongoQuery object(Ching-Yang, Tseng)
+- [[7396dcf](https://github.com/twreporter/go-api/commit/7396dcf37253873a2bf4a02694fc006545da4f3d)] - api/news: refactor topic list query parser(Ching-Yang, Tseng)
+- [[79fe61a](https://github.com/twreporter/go-api/commit/79fe61a2aafc87c12a7c6a0d8dd499a137d07289)] - api/news: refactor single topic query parser(Ching-Yang, Tseng)
+- [[7714683](https://github.com/twreporter/go-api/commit/7714683c92f723ba2ee763af3c8abb6cf7677c16)] - api/news: define constant string variables(Ching-Yang, Tseng)
+- [[8287863](https://github.com/twreporter/go-api/commit/82878636d76d4e3ac6cb43d6277b2327798e7b65)] - api/news: refactor post list query(Ching-Yang, Tseng)
+- [[1851f35](https://github.com/twreporter/go-api/commit/1851f357875a7f31a516fb3f8ebbf55902556ffa)] - api/news: refactor query for single post retrieval(Ching-Yang, Tseng)
+- [[8d37028](https://github.com/twreporter/go-api/commit/8d37028158aaa4a85ed3a065c5dece8680263900)] - api/news: implement posts query filter(Ching-Yang, Tseng)
+- [[9163756](https://github.com/twreporter/go-api/commit/916375667356a03eb41837f6072e087a227656dc)] - api/news: remove filter during index page fetch(Ching-Yang, Tseng)
+- [[14d04df](https://github.com/twreporter/go-api/commit/14d04df242f4904ae0bfb5eaa3f80a7d5c91ea8c)] - api/news: implement posts/topics list(Ching-Yang, Tseng)
+- [[dc4a5b6](https://github.com/twreporter/go-api/commit/dc4a5b6abab18c3573f186af864c34c296b8ec87)] - api/news: implement index page fetch(Ching-Yang, Tseng)
+- [[d5bd96d](https://github.com/twreporter/go-api/commit/d5bd96d47729bb03232b399a774f49b00ba14a6a)] - api/news: implement GetTopics in storage layer(Ching-Yang, Tseng)
+- [[40421bb](https://github.com/twreporter/go-api/commit/40421bbf1cc397f4ec0a1552d67b37524847f681)] - api/news: implement GetPosts in storage layer(Ching-Yang, Tseng)
+- [[dbd641b](https://github.com/twreporter/go-api/commit/dbd641bcf3fe68a17c0f0113bbc9d2361eeaee51)] - api/news: add storage layer function signature(Ching-Yang, Tseng)
+- [[19fa0d8](https://github.com/twreporter/go-api/commit/19fa0d8539c1e6b9a30f6603ea990223b796ca31)] - api/news: adjust storage interface w.r.t query(Ching-Yang, Tseng)
+- [[b91b5c6](https://github.com/twreporter/go-api/commit/b91b5c627ea54ef5d93bb40daadecdf99855d077)] - api/news: prototype the post/topic query model(Ching-Yang, Tseng)
+- [[c864622](https://github.com/twreporter/go-api/commit/c86462242cf5b61f44b62e56cd5806d79ee66b2d)] - api/news: prototype v2 controller(Ching-Yang, Tseng)
+- [[3f6b2f1](https://github.com/twreporter/go-api/commit/3f6b2f11f1af8a1d121ec6cf6ada09cc0ae735fa)] - core: add mongo db connection with new driver(Ching-Yang, Tseng)
+- [[fea7d18](https://github.com/twreporter/go-api/commit/fea7d18078ba95b8a895e3ee13cb7cfddde2bcd0)] - api/news: add new model for posts(babygoat)
+- [[c14a339](https://github.com/twreporter/go-api/commit/c14a33993395ac316eeb6f485f5b0e3b670d6d9d)] - doc: fix `full` field type in Topic(Ching-Yang, Tseng)
+- [[6533e85](https://github.com/twreporter/go-api/commit/6533e85511d6f7efca67b59a22841e13b1bff332)] - doc: fix `full` field type in Post group(Ching-Yang, Tseng)
+- [[f19d8a5](https://github.com/twreporter/go-api/commit/f19d8a5ea6cc0fb71366f2731fb0c6e5ba1f49a4)] - api/news: replace field writters with writers(Ching-Yang, Tseng)
+- [[2637e1b](https://github.com/twreporter/go-api/commit/2637e1b114012f3c89d492da0d15402f6130d563)] - doc: return meta instead of empty content during post/topic list(Ching-Yang, Tseng)
+- [[aeb4a20](https://github.com/twreporter/go-api/commit/aeb4a20d8c6d7132b47a1dd9df2f5b5883743507)] - doc: add missing required fields(Ching-Yang, Tseng)
+- [[8d2ba67](https://github.com/twreporter/go-api/commit/8d2ba673bfd88997a04d19168d2121e300382892)] - doc: singularize topics field(Ching-Yang, Tseng)
+- [[7f177d2](https://github.com/twreporter/go-api/commit/7f177d2606ec80c2aec7d19e973ddce84d9be589)] - doc: fix nested array field schema type missing(Ching-Yang, Tseng)
+- [[e9f7f76](https://github.com/twreporter/go-api/commit/e9f7f769345a0d89d457d07dfc9e4bb3ba8ed63c)] - doc: give relateds sample value instead of default(Ching-Yang, Tseng)
+- [[7c74107](https://github.com/twreporter/go-api/commit/7c7410760cc63ca96bc2871b51d1a6188b74fd4e)] - doc: add client side error for invalid slug(Ching-Yang, Tseng)
+- [[93af752](https://github.com/twreporter/go-api/commit/93af75242aed38975050cd1fa928cbaf00d589e0)] - doc: describe different response w.r.t parameter(Ching-Yang, Tseng)
+- [[1590853](https://github.com/twreporter/go-api/commit/1590853f052c397777ca3057c9dd602047b27951)] - doc: adjust /v2/topics endpoints(Ching-Yang, Tseng)
+- [[dcd8975](https://github.com/twreporter/go-api/commit/dcd8975adba21eaad4dba69093f9395d595cb79f)] - doc: adjust /v2/posts endpoints(Ching-Yang, Tseng)
+- [[f6aba81](https://github.com/twreporter/go-api/commit/f6aba810246cee78d04f9e06b7feb91e098c54f5)] - doc: add /v2/index_page endpoint(Ching-Yang, Tseng)
+- [[9ffbfa3](https://github.com/twreporter/go-api/commit/9ffbfa32bcef9895f2cc667ada8a2638d15e5150)] - doc: generate result document(Ching-Yang, Tseng)
+- [[c74559f](https://github.com/twreporter/go-api/commit/c74559fa7463cac0a2a48123bdd7a447f86aa1a4)] - doc: add the v2 endpoint of listing topic(Ching-Yang, Tseng)
+- [[5f876e9](https://github.com/twreporter/go-api/commit/5f876e9fa075447fc628e52a7e24ffb729db93a3)] - doc: add the v2 endpoint to get a single topic(Ching-Yang, Tseng)
+- [[0bb1f95](https://github.com/twreporter/go-api/commit/0bb1f95d8d9420240a21a81ee7eeb403e2b6fad8)] - doc: add v2 endpoint for listing posts(Ching-Yang, Tseng)
+- [[c5729ab](https://github.com/twreporter/go-api/commit/c5729ab46903dffb14d4e2f189465438971dbde4)] - doc: adds v2 endpoint of getting a post(Ching-Yang, Tseng)
+
+### 6.0.4, 2020-06-10
 
 #### Notable Changes
 
@@ -21,22 +100,16 @@
   - change mongo query mode
 
 #### Commits
-* [[`a25b664fe8`](https://github.com/twreporter/go-api/commit/a25b664fe8)] - Merge pull request #380 from taylrj/update-schema (Tai-Jiun Fang)
 * [[`95830c578d`](https://github.com/twreporter/go-api/commit/95830c578d)] - **doc**: update CHANGELOG.md (Taylor Fang)
 * [[`73dad89691`](https://github.com/twreporter/go-api/commit/73dad89691)] - **chore**: donations table schema change (Taylor Fang)
-* [[`6405beec18`](https://github.com/twreporter/go-api/commit/6405beec18)] - Merge pull request #378 from taylrj/add-receipt-title (Tai-Jiun Fang)
 * [[`90541811e7`](https://github.com/twreporter/go-api/commit/90541811e7)] - **doc**: fix json format (Taylor Fang)
 * [[`9098549594`](https://github.com/twreporter/go-api/commit/9098549594)] - **doc**: update docs according to review comment (Taylor Fang)
 * [[`03da19a4ce`](https://github.com/twreporter/go-api/commit/03da19a4ce)] - **doc**: update docs to add `receipt\_header` field (Taylor Fang)
-* [[`815b123a33`](https://github.com/twreporter/go-api/commit/815b123a33)] - Merge pull request #377 from nickhsine/donation-email-temp (nick)
 * [[`83b7f799c8`](https://github.com/twreporter/go-api/commit/83b7f799c8)] - **doc**: update CHANGELOG.md (nickhsine)
 * [[`1be3f110dd`](https://github.com/twreporter/go-api/commit/1be3f110dd)] - api/mail: update success donation email template (nickhsine)
-* [[`88d0999641`](https://github.com/twreporter/go-api/commit/88d0999641)] - Merge pull request #375 from babygoat/bump-6.0.4 (babygoat)
 * [[`95c0fba4d2`](https://github.com/twreporter/go-api/commit/95c0fba4d2)] - **doc**: Update Changelog (Ching-Yang, Tseng)
-* [[`e08fa70398`](https://github.com/twreporter/go-api/commit/e08fa70398)] - Merge pull request #374 from babygoat/mongo-read-skew (babygoat)
 * [[`219646de12`](https://github.com/twreporter/go-api/commit/219646de12)] - api/news: expand throught by new connections (Ching-Yang, Tseng)
 * [[`47685da57c`](https://github.com/twreporter/go-api/commit/47685da57c)] - **core**: change mongo query mode (Ching-Yang, Tseng)
-* [[`879e07821a`](https://github.com/twreporter/go-api/commit/879e07821a)] - Merge pull request #373 from babygoat/success-donation-email-template-update (babygoat)
 * [[`68a2811f95`](https://github.com/twreporter/go-api/commit/68a2811f95)] - api/mail: update footer of the email template (Ching-Yang, Tseng)
 * [[`ebd52aedb9`](https://github.com/twreporter/go-api/commit/ebd52aedb9)] - api/mail: generate client id for tracking (Ching-Yang, Tseng)
 * [[`845d3d696a`](https://github.com/twreporter/go-api/commit/845d3d696a)] - api/donation: append utm tag to donation link (Ching-Yang, Tseng)

@@ -19,7 +19,7 @@ type indexPageResponse struct {
 func TestIndexPage(t *testing.T) {
 	var resp *httptest.ResponseRecorder
 
-	const defaultLastestNum = 2
+	const defaultLatestNum = 2
 	const defaultPickNum = 1
 	const defaultTopicNum = 1
 	const defaultReviewNum = 1
@@ -32,9 +32,9 @@ func TestIndexPage(t *testing.T) {
 	res := indexPageResponse{}
 	json.Unmarshal(body, &res)
 
-	latest, ok1 := res.Records[globals.LastestSection]
+	latest, ok1 := res.Records[globals.LatestSection]
 	assert.True(t, ok1)
-	assert.Equal(t, defaultLastestNum, len(latest))
+	assert.Equal(t, defaultLatestNum, len(latest))
 
 	picks, ok2 := res.Records[globals.EditorPicksSection]
 	assert.True(t, ok2)
