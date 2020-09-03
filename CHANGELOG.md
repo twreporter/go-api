@@ -1,6 +1,17 @@
 ## Unreleased
 
 ## Released
+### 6.1.1 (Current), 2020-09-03
+
+#### Notable Changes
+
+- api/news:
+   - fix `leading_video` field decoder
+
+#### Commits
+- [[e837034](https://github.com/twreporter/go-api/commit/e83703416b9af31d40cbca3a8d987b9f6e8f4595)] - doc: update the CHANGELOG(Ching-Yang, Tseng)
+- [[8c3a164](https://github.com/twreporter/go-api/commit/8c3a164785e9d920992e6525cd2fd47bf172489c)] - api/news: fix video bson document decoder(Ching-Yang, Tseng)
+
 ### 6.1.0 (Current), 2020-08-28
 
 #### Notable Changes
