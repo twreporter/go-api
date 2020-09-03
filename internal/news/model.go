@@ -129,10 +129,14 @@ type Tag struct {
 	Name string             `bson:"name" json:"name"`
 }
 
+type VideoMeta struct {
+	Filetype string `bson:"filetype" json:"filetype"`
+	Size     uint   `bson:"size" json:"size"`
+	URL      string `bson:"url" json:"url"`
+}
+
 type Video struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id"`
-	Title    string             `json:"title"`
-	Filetype string             `json:"filetype"`
-	Size     uint               `json:"size"`
-	URL      string             `json:"url"`
+	VideoMeta `bson:"video"`
+	ID        primitive.ObjectID `json:"id" bson:"_id"`
+	Title     string             `json:"title"`
 }

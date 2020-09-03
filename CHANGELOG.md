@@ -1,4 +1,10 @@
 ## Unreleased
+### 6.1.1
+
+#### Notable Changes
+
+- api/news:
+   - fix `leading_video` field decoder
 
 ## Released
 ### 6.1.0 (Current), 2020-08-28
