@@ -1,4 +1,10 @@
 ## Unreleased
+### 6.1.2
+
+#### Notable Changes
+
+- api/news:
+   - fix out of order related documents
 
 ## Released
 ### 6.1.1 (Current), 2020-09-03
