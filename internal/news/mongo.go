@@ -276,8 +276,17 @@ func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 func BuildFilterRelatedPost() []bson.D {
 	var stages []bson.D
 
-	// First, retrieve full post data by joining the documents.
+	// TODO(babygoat): add test item ensure the order of related document
+	// First, retrieve full post data by joing the documents.
+	// Per this mongodb issue (https://jira.mongodb.org/browse/SERVER-32947),
+	// the order of the output documents after $lookup operation is in natural order (i.e. internal disk order)
+	// and thus the order does not persist.
+	// As the order of related documents is crucial, we need to keep a copy of the array for order reference.
+	stages = append(stages, bson.D{
+		{Key: mongo.StageAddFields, Value: bson.D{{Key: "relatedsCopy", Value: "$" + fieldRelatedDocuments}}},
+	})
 	stages = append(stages, mongo.BuildLookupByIDStage(fieldRelatedDocuments, ColPosts))
+
 	// Then, match the posts with published state
 	stages = append(stages, bson.D{
 		{Key: mongo.StageAddFields, Value: bson.D{
@@ -296,10 +305,31 @@ func BuildFilterRelatedPost() []bson.D {
 			},
 		}},
 	})
-	// Finally, promote the _id field to array of ObjectIDs
+
+	// Next, promote the _id field to array of ObjectIDs
 	stages = append(stages, bson.D{
 		{Key: mongo.StageAddFields, Value: mongo.BuildDocument(fieldRelatedDocuments, "$"+fieldRelatedDocuments+"."+fieldID)},
 	})
 
+	// Finally, constructing the ordered relateds field by
+	// filtering the copied array with the output array of the previous stage
+	// as filter operator returns elements in original order.
+	stages = append(stages, bson.D{
+		{Key: mongo.StageAddFields, Value: bson.D{
+			{Key: fieldRelatedDocuments, Value: bson.D{
+				{Key: mongo.StageFilter, Value: bson.D{
+					{Key: mongo.MetaInput, Value: "$relatedsCopy"},
+					{Key: mongo.MetaAs, Value: "relatedsCopy"},
+					{Key: mongo.MetaCond, Value: bson.D{
+						{Key: mongo.OpIn, Value: bson.A{
+							"$$relatedsCopy",
+							"$" + fieldRelatedDocuments,
+						}},
+					}},
+				}},
+			},
+			},
+		}},
+	})
 	return stages
 }
