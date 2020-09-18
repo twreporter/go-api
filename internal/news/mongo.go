@@ -264,7 +264,11 @@ var (
 func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 	var stages []bson.D
 	for field, info := range m {
-		stages = append(stages, mongo.BuildLookupByIDStage(field, info.Collection))
+		if shouldPreserveOrder(field) {
+			stages = append(stages, buildPreserveLookupOrderStatement(field, info)...)
+		} else {
+			stages = append(stages, mongo.BuildLookupByIDStage(field, info.Collection))
+		}
 		if info.ToUnwind {
 			stages = append(stages, mongo.BuildUnwindStage(field))
 		}
@@ -276,8 +280,17 @@ func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 func BuildFilterRelatedPost() []bson.D {
 	var stages []bson.D
 
-	// First, retrieve full post data by joining the documents.
+	// TODO(babygoat): add test item ensure the order of related document
+	// First, retrieve full post data by joing the documents.
+	// Per this mongodb issue (https://jira.mongodb.org/browse/SERVER-32947),
+	// the order of the output documents after $lookup operation is in natural order (i.e. internal disk order)
+	// and thus the order does not persist.
+	// As the order of related documents is crucial, we need to keep a copy of the array for order reference.
+	stages = append(stages, bson.D{
+		{Key: mongo.StageAddFields, Value: bson.D{{Key: "relatedsCopy", Value: "$" + fieldRelatedDocuments}}},
+	})
 	stages = append(stages, mongo.BuildLookupByIDStage(fieldRelatedDocuments, ColPosts))
+
 	// Then, match the posts with published state
 	stages = append(stages, bson.D{
 		{Key: mongo.StageAddFields, Value: bson.D{
@@ -296,10 +309,132 @@ func BuildFilterRelatedPost() []bson.D {
 			},
 		}},
 	})
-	// Finally, promote the _id field to array of ObjectIDs
+
+	// Next, promote the _id field to array of ObjectIDs
 	stages = append(stages, bson.D{
 		{Key: mongo.StageAddFields, Value: mongo.BuildDocument(fieldRelatedDocuments, "$"+fieldRelatedDocuments+"."+fieldID)},
 	})
 
+	// Finally, constructing the ordered relateds field by
+	// filtering the copied array with the output array of the previous stage
+	// as filter operator returns elements in original order.
+	stages = append(stages, bson.D{
+		{Key: mongo.StageAddFields, Value: bson.D{
+			{Key: fieldRelatedDocuments, Value: bson.D{
+				{Key: mongo.StageFilter, Value: bson.D{
+					{Key: mongo.MetaInput, Value: "$relatedsCopy"},
+					{Key: mongo.MetaAs, Value: "relatedsCopy"},
+					{Key: mongo.MetaCond, Value: bson.D{
+						{Key: mongo.OpIn, Value: bson.A{
+							"$$relatedsCopy",
+							"$" + fieldRelatedDocuments,
+						}},
+					}},
+				}},
+			},
+			},
+		}},
+	})
 	return stages
+}
+
+func buildPreserveLookupOrderStatement(orderedField string, info lookupInfo) []bson.D {
+	var stages []bson.D
+
+	// Copy the original orderedField for order reference
+	copyField := orderedField + "Copy"
+	stages = append(stages, bson.D{
+		{Key: mongo.StageAddFields, Value: bson.D{{Key: copyField, Value: "$" + orderedField}}},
+	})
+
+	// Perform lookup for joined documents
+	stages = append(stages, mongo.BuildLookupByIDStage(orderedField, info.Collection))
+
+	// Construct the ordered documents from reference of the original copy
+	// An example is given below for illustration of the query performed
+	// Field writers
+	// {
+	//   $addFields: {
+	//     writers: {
+	// Use the reduce operator so we can push(concat) the element in correct order(i.e. input array)
+	// from left to right
+	// https://docs.mongodb.com/manual/reference/operator/aggregation/reduce/
+	//       $reduce: {
+	//         input: "writersCopy",
+	//         initialValue: [],
+	// Declare the expression used to apply on the input array element from left to right
+	// Two pre-defined variables are available.
+	// $$this variable refers to the element in input array field.
+	// $$value variable refers to the cumulative value of the expression starting from initialValue
+	//         in: {
+	// Declare accessible varialbes in below "in" expression
+	//           $let: {
+	//             vars: {writersCopy: "$$this"},
+	//             in: {
+	//               $concatArrays:[
+	//                 "$$value",
+	// Filter the element from the (joined) ordered field
+	//                 {
+	//                   $filter: {
+	//                     input: "$writers",
+	//                     as: "writers",
+	//                     cond:{ $eq:["$$writersCopy", "$$writers._id"] }
+	//                   }
+	//                 }
+	//               ]
+	//             }
+	//           }
+	//         }
+	//       }
+	//     }
+	//   }
+	// }
+	stages = append(stages, bson.D{
+		{Key: mongo.StageAddFields, Value: bson.D{
+			{Key: orderedField, Value: bson.D{
+				{Key: mongo.OpReduce, Value: bson.D{
+					{Key: mongo.MetaInput, Value: "$" + copyField},
+					{Key: mongo.MetaInitialValue, Value: bson.A{}},
+					{Key: mongo.MetaIn, Value: bson.D{
+						{Key: mongo.OpLet, Value: bson.D{
+							{Key: mongo.MetaVars, Value: bson.D{{Key: copyField, Value: "$$this"}}},
+							{Key: mongo.MetaIn, Value: bson.D{
+								{Key: mongo.OpConcatArrays, Value: bson.A{
+									"$$value",
+									bson.D{
+										{Key: mongo.StageFilter, Value: bson.D{
+											{Key: mongo.MetaInput, Value: "$" + orderedField},
+											{Key: mongo.MetaAs, Value: orderedField},
+											{Key: mongo.MetaCond, Value: bson.D{
+												{Key: mongo.OpEq, Value: bson.A{
+													"$$" + copyField,
+													"$$" + orderedField + "." + fieldID,
+												}},
+											}},
+										}},
+									},
+								}},
+							}},
+						}},
+					}},
+				}},
+			}},
+		}},
+	})
+
+	return stages
+}
+
+var (
+	// Fields that should be preserved order after lookup stage according to the requirements
+	orderedFields = []string{fieldDesigners, fieldEngineers, fieldPhotographers, fieldWriters}
+)
+
+func shouldPreserveOrder(field string) bool {
+	for _, v := range orderedFields {
+		if field == v {
+			return true
+		}
+	}
+	return false
 }

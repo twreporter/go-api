@@ -2,10 +2,13 @@ package mongo
 
 const (
 	// Define mongo query operator
-	OpAnd  = "$and"
-	OpEq   = "$eq"
-	OpExpr = "$expr"
-	OpIn   = "$in"
+	OpAnd          = "$and"
+	OpConcatArrays = "$concatArrays"
+	OpEq           = "$eq"
+	OpExpr         = "$expr"
+	OpIn           = "$in"
+	OpLet          = "$let"
+	OpReduce       = "$reduce"
 
 	OrderAsc  = 1
 	OrderDesc = -1
@@ -26,10 +29,13 @@ const (
 	MetaCond         = "cond"
 	MetaForeignField = "foreignField"
 	MetaFrom         = "from"
+	MetaIn           = "in"
+	MetaInitialValue = "initialValue"
 	MetaInput        = "input"
 	MetaLocalField   = "localField"
 	MetaLet          = "let"
 	MetaPipeline     = "pipeline"
+	MetaVars         = "vars"
 
 	MetaPath                       = "path"
 	MetaPreserveNullAndEmptyArrays = "preserveNullAndEmptyArrays"
