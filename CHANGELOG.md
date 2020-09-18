@@ -5,6 +5,7 @@
 
 - api/news:
    - fix out of order related documents
+   - fix out of order designers/engineers/photographers/writers
 
 ## Released
 ### 6.1.1 (Current), 2020-09-03
