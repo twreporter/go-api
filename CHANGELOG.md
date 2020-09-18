@@ -1,5 +1,7 @@
 ## Unreleased
-### 6.1.2
+
+## Released
+### 6.1.2 (Current), 2020-09-18
 
 #### Notable Changes
 
@@ -7,8 +9,13 @@
    - fix out of order related documents
    - fix out of order designers/engineers/photographers/writers
 
-## Released
-### 6.1.1 (Current), 2020-09-03
+#### Commits
+- [[4b17fd5](https://github.com/twreporter/go-api/commit/4b17fd534cef4ed8c4515b32e6abd8619ebfb62e)] - doc: Update CHANGELOG(Ching-Yang, Tseng)
+- [[17c59c5](https://github.com/twreporter/go-api/commit/17c59c59af0ffd7c674ded59037c9cc3837c1f76)] - api/news: fix out-of-order authors(Ching-Yang, Tseng)
+- [[72d5300](https://github.com/twreporter/go-api/commit/72d5300e82462da2d26d459e5e51ab7462373131)] - doc: Update CHANGELOG(Ching-Yang, Tseng)
+- [[4ce93c8](https://github.com/twreporter/go-api/commit/4ce93c82fe5119493eff41fbccaa4bd826082715)] - api/news: fix out of order related document(Ching-Yang, Tseng)
+
+### 6.1.1, 2020-09-03
 
 #### Notable Changes
 
