@@ -1,4 +1,10 @@
 ## Unreleased
+### 6.1.3
+
+#### Notable Changes
+
+- api/donation:
+   - add receipt_header to pay_by_prime_donation, pay_by_other_method_donation, periodic_donation tables
 
 ## Released
 ### 6.1.2 (Current), 2020-09-18
