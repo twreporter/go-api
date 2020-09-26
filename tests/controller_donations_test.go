@@ -700,10 +700,11 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 					"address": "test-addres",
 					"name":    "test-name",
 				},
-				"send_receipt": "no",
-				"to_feedback":  !testFeedback,
-				"is_anonymous": null.BoolFrom(testIsAnonymous),
-				"user_id":      user.ID,
+				"send_receipt":   "no",
+				"to_feedback":    !testFeedback,
+				"is_anonymous":   null.BoolFrom(testIsAnonymous),
+				"user_id":        user.ID,
+				"receipt_header": "mock header",
 			}
 			reqBodyInBytes, _ = json.Marshal(reqBody)
 			resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
@@ -715,6 +716,7 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 			assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
 			assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
 			assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
+			assert.Equal(t, reqBody["receipt_header"], dataAfterPatch.ReceiptHeader)
 		})
 	}
 }
@@ -752,9 +754,10 @@ func TestPatchAPrimeDonation(t *testing.T) {
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt": "no",
-				"is_anonymous": null.BoolFrom(testIsAnonymous),
-				"user_id":      user.ID,
+				"send_receipt":   "no",
+				"is_anonymous":   null.BoolFrom(testIsAnonymous),
+				"user_id":        user.ID,
+				"receipt_header": "mock header",
 			}
 			reqBodyInBytes, _ = json.Marshal(reqBody)
 			resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
@@ -765,6 +768,7 @@ func TestPatchAPrimeDonation(t *testing.T) {
 			assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
 			assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
 			assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
+			assert.Equal(t, reqBody["receipt_header"], dataAfterPatch.ReceiptHeader)
 		})
 	}
 }

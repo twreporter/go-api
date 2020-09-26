@@ -207,12 +207,13 @@ type (
 	payType int
 
 	patchBody struct {
-		Donor       models.Cardholder `json:"donor"`
-		Notes       string            `json:"notes"`
-		SendReceipt string            `json:"send_receipt"`
-		ToFeedback  bool              `json:"to_feedback"`
-		UserID      uint              `json:"user_id" binding:"required"`
-		IsAnonymous bool              `json:"is_anonymous"`
+		Donor         models.Cardholder `json:"donor"`
+		Notes         string            `json:"notes"`
+		SendReceipt   string            `json:"send_receipt"`
+		ToFeedback    bool              `json:"to_feedback"`
+		UserID        uint              `json:"user_id" binding:"required"`
+		IsAnonymous   bool              `json:"is_anonymous"`
+		ReceiptHeader string            `json:"receipt_header"`
 	}
 
 	queryFilter struct {
@@ -233,6 +234,7 @@ func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m.ToFeedback = null.BoolFrom(p.ToFeedback)
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
+	m.ReceiptHeader = p.ReceiptHeader
 	return *m
 }
 
@@ -243,6 +245,7 @@ func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	m.SendReceipt = p.SendReceipt
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
+	m.ReceiptHeader = p.ReceiptHeader
 	return *m
 }
 
