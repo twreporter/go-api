@@ -125,20 +125,21 @@ type (
 	}
 
 	clientResp struct {
-		Amount      uint              `json:"amount"`
-		CardInfo    models.CardInfo   `json:"card_info"`
-		Cardholder  models.Cardholder `json:"cardholder"`
-		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		Frequency   string            `json:"frequency"`
-		ID          uint              `json:"id"`
-		Notes       string            `json:"notes"`
-		OrderNumber string            `json:"order_number"`
-		PayMethod   string            `json:"pay_method"`
-		SendReceipt string            `json:"send_receipt"`
-		ToFeedback  bool              `json:"to_feedback"`
-		IsAnonymous bool              `json:"is_anonymous"`
-		PaymentUrl  string            `json:"payment_url"`
+		Amount        uint              `json:"amount"`
+		CardInfo      models.CardInfo   `json:"card_info"`
+		Cardholder    models.Cardholder `json:"cardholder"`
+		Currency      string            `json:"currency"`
+		Details       string            `json:"details"`
+		Frequency     string            `json:"frequency"`
+		ID            uint              `json:"id"`
+		Notes         string            `json:"notes"`
+		OrderNumber   string            `json:"order_number"`
+		PayMethod     string            `json:"pay_method"`
+		SendReceipt   string            `json:"send_receipt"`
+		ToFeedback    bool              `json:"to_feedback"`
+		IsAnonymous   bool              `json:"is_anonymous"`
+		PaymentUrl    string            `json:"payment_url"`
+		ReceiptHeader string            `json:"receipt_header"`
 	}
 
 	bankTransactionTime struct {
@@ -407,6 +408,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.ToFeedback = d.ToFeedback.ValueOrZero()
 	cr.PayMethod = payMethodCreditCard
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
+	cr.ReceiptHeader = d.ReceiptHeader
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
@@ -423,6 +425,7 @@ func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.ToFeedback = false
 	cr.Frequency = oneTimeFrequency
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
+	cr.ReceiptHeader = d.ReceiptHeader
 }
 
 func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {

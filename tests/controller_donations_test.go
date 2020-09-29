@@ -22,19 +22,20 @@ type (
 		BackendRedirectURL  string `json:"backend_redirect_url"`
 	}
 	donationRecord struct {
-		Amount      uint              `json:"amount"`
-		Cardholder  models.Cardholder `json:"cardholder"`
-		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		Frequency   string            `json:"frequency"`
-		ID          uint              `json:"id"`
-		Notes       string            `json:"notes"`
-		OrderNumber string            `json:"order_number"`
-		PayMethod   string            `json:"pay_method"`
-		SendReceipt string            `json:"send_receipt"`
-		ToFeedback  bool              `json:"to_feedback"`
-		IsAnonymous bool              `json:"is_anonymous"`
-		PaymentUrl  string            `json:"payment_url"`
+		Amount        uint              `json:"amount"`
+		Cardholder    models.Cardholder `json:"cardholder"`
+		Currency      string            `json:"currency"`
+		Details       string            `json:"details"`
+		Frequency     string            `json:"frequency"`
+		ID            uint              `json:"id"`
+		Notes         string            `json:"notes"`
+		OrderNumber   string            `json:"order_number"`
+		PayMethod     string            `json:"pay_method"`
+		SendReceipt   string            `json:"send_receipt"`
+		ToFeedback    bool              `json:"to_feedback"`
+		IsAnonymous   bool              `json:"is_anonymous"`
+		PaymentUrl    string            `json:"payment_url"`
+		ReceiptHeader null.String       `json:"receipt_header"`
 	}
 	responseBody struct {
 		Status string         `json:"status"`
@@ -868,6 +869,9 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 			assert.Equal(t, "no", resBody.Data.SendReceipt)
 			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
+			if assert.False(t, resBody.Data.ReceiptHeader.IsZero()) {
+				assert.Empty(t, resBody.Data.ReceiptHeader.String)
+			}
 		})
 	}
 }
@@ -916,6 +920,9 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 			assert.Equal(t, f, resBody.Data.Frequency)
 			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
+			if assert.False(t, resBody.Data.ReceiptHeader.IsZero()) {
+				assert.Empty(t, resBody.Data.ReceiptHeader.String)
+			}
 		})
 	}
 }
