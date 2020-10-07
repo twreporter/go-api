@@ -965,7 +965,7 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 			assert.Equal(t, "no", resBody.Data.SendReceipt)
 			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
-			if assert.False(t, resBody.Data.ReceiptHeader.IsZero()) {
+			if !resBody.Data.ReceiptHeader.IsZero() {
 				assert.Empty(t, resBody.Data.ReceiptHeader.String)
 			}
 		})
@@ -1016,7 +1016,7 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 			assert.Equal(t, f, resBody.Data.Frequency)
 			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
-			if assert.False(t, resBody.Data.ReceiptHeader.IsZero()) {
+			if !resBody.Data.ReceiptHeader.IsZero() {
 				assert.Empty(t, resBody.Data.ReceiptHeader.String)
 			}
 		})
