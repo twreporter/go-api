@@ -139,7 +139,7 @@ type (
 		ToFeedback    bool              `json:"to_feedback"`
 		IsAnonymous   bool              `json:"is_anonymous"`
 		PaymentUrl    string            `json:"payment_url"`
-		ReceiptHeader string            `json:"receipt_header"`
+		ReceiptHeader null.String       `json:"receipt_header"`
 	}
 
 	bankTransactionTime struct {
@@ -214,7 +214,7 @@ type (
 		ToFeedback    bool              `json:"to_feedback"`
 		UserID        uint              `json:"user_id" binding:"required"`
 		IsAnonymous   bool              `json:"is_anonymous"`
-		ReceiptHeader string            `json:"receipt_header"`
+		ReceiptHeader null.String       `json:"receipt_header"`
 	}
 
 	queryFilter struct {
