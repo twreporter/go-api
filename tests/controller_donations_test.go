@@ -698,7 +698,7 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 				Currency:    "TWD",
 				Details:     "test donation",
 				OrderNumber: "twrepoter-test-order-number",
-				Status:      "paid",
+				Status:      statusPaid,
 				UserID:      user.ID,
 				Cardholder: models.Cardholder{
 					Email: user.Email.String,
@@ -714,6 +714,32 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 				"to_feedback":    false,
 				"user_id":        user.ID,
 				"receipt_header": "mock header",
+			},
+		},
+		{
+			name: "StatusCode=StatusNoContent,Patch fields with deletion(receipt_header)",
+			existRecord: models.PeriodicDonation{
+				Amount:      500,
+				Currency:    "TWD",
+				Details:     "test donation",
+				OrderNumber: "twrepoter-test-order-number",
+				Status:      statusPaid,
+				UserID:      user.ID,
+				Cardholder: models.Cardholder{
+					Email: user.Email.String,
+				},
+				ReceiptHeader: null.StringFrom("existing header"),
+			},
+			reqBody: map[string]interface{}{
+				"donor": map[string]string{
+					"name":    "test-name",
+					"address": "test-addres",
+				},
+				"send_receipt":   "no",
+				"is_anonymous":   null.BoolFrom(true),
+				"to_feedback":    false,
+				"user_id":        user.ID,
+				"receipt_header": "",
 			},
 		},
 	} {
@@ -738,7 +764,8 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 			assert.Equal(t, tc.reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
 			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
 			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
-			assert.Equal(t, tc.reqBody["receipt_header"], dataAfterPatch.ReceiptHeader)
+
+			assert.Equal(t, tc.reqBody["receipt_header"], dataAfterPatch.ReceiptHeader.String)
 		})
 	}
 }
@@ -757,7 +784,7 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 				Details:     "test donation",
 				MerchantID:  "test merchant",
 				OrderNumber: "twrepoter-test-order-number",
-				Status:      "paid",
+				Status:      statusPaid,
 				UserID:      user.ID,
 				Cardholder: models.Cardholder{
 					Email: user.Email.String,
@@ -772,6 +799,31 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 				"is_anonymous":   null.BoolFrom(true),
 				"user_id":        user.ID,
 				"receipt_header": "mock header",
+			},
+		},
+		{
+			name: "StatusCode=StatusNoContent,Patch fields with deletion(receipt_header)",
+			existRecord: models.PayByPrimeDonation{
+				Amount:      500,
+				Currency:    "TWD",
+				Details:     "test donation",
+				OrderNumber: "twrepoter-test-order-number",
+				Status:      statusPaid,
+				UserID:      user.ID,
+				Cardholder: models.Cardholder{
+					Email: user.Email.String,
+				},
+				ReceiptHeader: null.StringFrom("existing header"),
+			},
+			reqBody: map[string]interface{}{
+				"donor": map[string]string{
+					"name":    "test-name",
+					"address": "test-addres",
+				},
+				"send_receipt":   "no",
+				"is_anonymous":   null.BoolFrom(true),
+				"user_id":        user.ID,
+				"receipt_header": "",
 			},
 		},
 	} {
@@ -795,7 +847,7 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 			assert.Equal(t, tc.reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
 			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
 			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
-			assert.Equal(t, tc.reqBody["receipt_header"], dataAfterPatch.ReceiptHeader)
+			assert.Equal(t, tc.reqBody["receipt_header"], dataAfterPatch.ReceiptHeader.String)
 		})
 	}
 }
