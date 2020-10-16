@@ -226,7 +226,7 @@ CREATE TABLE `pay_by_prime_donations` (
   `transaction_time` timestamp NULL DEFAULT NULL,
   `bank_transaction_start_time` timestamp NULL DEFAULT NULL,
   `bank_transaction_end_time` timestamp NULL DEFAULT NULL,
-  `bank_result_code` varchar(50) NULL DEFAULT NULL,
+  `bank_result_code` varchar(128) NULL DEFAULT NULL,
   `bank_result_msg` varchar(50) NULL DEFAULT NULL,
   `cardholder_email` varchar(100) NOT NULL,
   `cardholder_phone_number` varchar(20) DEFAULT NULL,
@@ -247,7 +247,8 @@ CREATE TABLE `pay_by_prime_donations` (
   `notes` varchar(100) DEFAULT NULL,
   `is_anonymous` tinyint(1) DEFAULT 0,
   `linepay_method` enum('CREDIT_CARD', 'BALANCE', 'POINT') DEFAULT NULL,
-  `linepay_point` int DEFAULT NULL, 
+  `linepay_point` int DEFAULT NULL,
+  `receipt_header` varchar(128) DEFAULT NULL,
 
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_prime_donations_status` (`status`),
@@ -283,6 +284,8 @@ CREATE TABLE `pay_by_other_method_donations` (
   `address` varchar(100) DEFAULT NULL,
   `national_id` varchar(20) DEFAULT NULL,
   `user_id` int(10) unsigned NOT NULL,
+  `receipt_header` varchar(128) DEFAULT NULL,
+
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_other_method_donations_pay_method` (`pay_method`),
   KEY `idx_pay_by_other_method_donations_amount` (`amount`),
@@ -333,6 +336,7 @@ CREATE TABLE `periodic_donations` (
   `notes` varchar(100) DEFAULT NULL,
   `max_paid_times` int NOT NULL DEFAULT 2147483647,
   `is_anonymous` tinyint(1) DEFAULT 0,
+   `receipt_header` varchar(128) DEFAULT NULL,
 
   PRIMARY KEY (`id`),
   KEY `idx_periodic_donations_status` (`status`),
@@ -373,8 +377,10 @@ CREATE TABLE `pay_by_card_token_donations` (
   `transaction_time` timestamp NULL DEFAULT NULL,
   `bank_transaction_start_time` timestamp NULL DEFAULT NULL,
   `bank_transaction_end_time` timestamp NULL DEFAULT NULL,
-  `bank_result_code` varchar(50) NULL DEFAULT NULL,
+  `bank_result_code` varchar(128) NULL DEFAULT NULL,
   `bank_result_msg` varchar(50) NULL DEFAULT NULL,
+  `receipt_header` varchar(128) DEFAULT NULL,
+
   PRIMARY KEY (`id`),
   KEY `idx_pay_by_card_token_donations_status` (`status`),
   KEY `idx_pay_by_card_token_donations_amount` (`amount`),
