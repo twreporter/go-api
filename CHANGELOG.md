@@ -6,6 +6,9 @@
 - api/donation:
    - add receipt_header to pay_by_prime_donation, pay_by_other_method_donation, periodic_donation tables ([#406](https://github.com/twreporter/go-api/pull/406))
 
+- api/mail:
+  - update personal info reveal in donation success email ([#409](https://github.com/twreporter/go-api/pull/409))
+
 ## Released
 ### 6.1.2 (Current), 2020-09-18
 
