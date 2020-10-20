@@ -24,21 +24,16 @@ type activationReqBody struct {
 }
 
 type donationSuccessReqBody struct {
-	Address           string   `json:"address"`
 	Amount            uint     `json:"amount" binding:"required"`
-	CardInfoLastFour  string   `json:"card_info_last_four"`
-	CardInfoType      string   `json:"card_info_type"`
 	Currency          string   `json:"currency"`
 	DonationTimestamp null.Int `json:"donation_timestamp"`
 	DonationLink      string   `json:"donation_link" binding:"required"`
 	DonationMethod    string   `json:"donation_method" binding:"required"`
 	DonationType      string   `json:"donation_type" binding:"required"`
 	Email             string   `json:"email" binding:"required"`
-	Name              string   `json:"name"`
-	NationalID        string   `json:"national_id"`
-	OrderNumber       string   `json:"order_number" binding:"required"`
-	PhoneNumber       string   `json:"phone_number"`
 	IsAutoPay         bool     `json:"is_auto_pay"`
+	Name              string   `json:"name"`
+	OrderNumber       string   `json:"order_number" binding:"required"`
 }
 
 // NewMailController is used to new *MailController
@@ -94,6 +89,7 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 
 func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.H, error) {
 	const taipeiLocationName = "Asia/Taipei"
+	const subject = "扣款成功，感謝您支持報導者持續追蹤重要議題"
 	var donationDatetime time.Time
 	var err error
 	var failData gin.H
@@ -101,16 +97,11 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	var mailBody string
 	var out bytes.Buffer
 	var reqBody donationSuccessReqBody
-	var subject = "感謝您成為報導者的贊助夥伴"
 	var valid bool
 
 	// parse requst JSON into struct
 	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
-	}
-
-	if reqBody.IsAutoPay {
-		subject = "扣款成功，感謝您支持報導者持續追蹤重要議題"
 	}
 
 	if reqBody.Currency == "" {

@@ -502,19 +502,14 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 	}
 
 	reqBody := donationSuccessReqBody{
-		Address:          body.Cardholder.Address.ValueOrZero(),
-		Amount:           body.Amount,
-		CardInfoLastFour: body.CardInfo.LastFour.ValueOrZero(),
-		CardInfoType:     cardInfoTypes[body.CardInfo.Type.ValueOrZero()],
-		Currency:         body.Currency,
-		DonationMethod:   payMethodMap[body.PayMethod],
-		DonationType:     donationType,
-		DonationLink:     donationLink,
-		Email:            body.Cardholder.Email,
-		Name:             body.Cardholder.Name.ValueOrZero(),
-		OrderNumber:      body.OrderNumber,
-		NationalID:       body.Cardholder.NationalID.ValueOrZero(),
-		PhoneNumber:      body.Cardholder.PhoneNumber.ValueOrZero(),
+		Amount:         body.Amount,
+		Currency:       body.Currency,
+		DonationMethod: payMethodMap[body.PayMethod],
+		DonationType:   donationType,
+		DonationLink:   donationLink,
+		Email:          body.Cardholder.Email,
+		Name:           body.Cardholder.Name.ValueOrZero(),
+		OrderNumber:    body.OrderNumber,
 	}
 
 	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {
