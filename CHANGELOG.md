@@ -1,4 +1,6 @@
 ## Unreleased
+
+## Released
 ### 6.1.3
 
 #### Notable Changes
@@ -9,7 +11,20 @@
 - api/mail:
   - update personal info reveal in donation success email ([#409](https://github.com/twreporter/go-api/pull/409))
 
-## Released
+#### Commits
+- [[e2a186d](https://github.com/twreporter/go-api/commit/e2a186dd6286c5e04dd43870ac2b23084f513e9e)] - doc: update CHANGELOG(Ching-Yang, Tseng)
+- [[640b3eb](https://github.com/twreporter/go-api/commit/640b3ebb290b66c771f2596b4ba35f56d766d28d)] - api/mail: update donation success email(Ching-Yang, Tseng)
+- [[9f60841](https://github.com/twreporter/go-api/commit/9f60841732a443bd965c4308e8a69e27c6a871e5)] - fix: update membershio_user.sql to catch up the latest migrations(nickhsine)
+- [[61e0359](https://github.com/twreporter/go-api/commit/61e03593389677ed09360764b6d5f4a2495f091b)] - api/donations: validate receipt_header if not zero value(Ching-Yang, Tseng)
+- [[1b2fb74](https://github.com/twreporter/go-api/commit/1b2fb7405b93528204ee53182ad39d47f3876591)] - doc: include PR in notable changes section(Ching-Yang, Tseng)
+- [[3d3c492](https://github.com/twreporter/go-api/commit/3d3c49279dc380583794e58454ac6da71056d06a)] - api/donations: implement receipt_header deletion(Ching-Yang, Tseng)
+- [[03232fc](https://github.com/twreporter/go-api/commit/03232fc757e392df6355f5bc4104bdb2f3ac0d24)] - api/donations: add tests for patch empty fields(Ching-Yang, Tseng)
+- [[7a23f93](https://github.com/twreporter/go-api/commit/7a23f93749d416b9dfc0338cfe48c54449e2b833)] - api/donation: refactor patch prime/periodic donations(Ching-Yang, Tseng)
+- [[899cff7](https://github.com/twreporter/go-api/commit/899cff70e320d6bb86483d735a0c7f561c0e8404)] - api/donation: support GET `receipt_header` field(Ching-Yang, Tseng)
+- [[81c1fa9](https://github.com/twreporter/go-api/commit/81c1fa91dcc75e18516d041908e947b8301c0a9b)] - api/donation: support patch receipt_header field(Ching-Yang, Tseng)
+- [[fb204bb](https://github.com/twreporter/go-api/commit/fb204bbcfd8bd1c994313aeb35dfa256b9f1d40b)] - doc: update CHANGELOG(Ching-Yang, Tseng)
+- [[e76f5fb](https://github.com/twreporter/go-api/commit/e76f5fb137ee2e58aa81e68a642d90f2fc3bd71f)] - api/donation: add receipt_header field(Ching-Yang, Tseng)
+
 ### 6.1.2 (Current), 2020-09-18
 
 #### Notable Changes
