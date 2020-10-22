@@ -964,32 +964,21 @@
 
 																		<td valign="top" class="mcnTextContent" style="padding: 0px 18px 9px;color: #9C9C9C;font-size: 12px;line-height: 200%;text-align: left;">
 
-																			<div dir="ltr"><span style="font-size:14px"><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><strong>方案</strong></span></span>
-																			</div>
-																			<span style="color:#222222"><strong><span style="font-size:20px;line-height:2;">{{.DonationType}}</span></strong>
-																			</span><br><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><strong><span style="color:#222222"><span style="font-size:20px">{{.Currency}} ${{.Amount}}</span></span><br>
-																			<br>
-																			<span style="font-size:14px">付款方式</span></strong>
-																			</span><br>
-																			<strong><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><font color="#222222"><span style="font-size:20px;line-height:2;">{{.DonationMethod}}</span></font></span></strong><br>
-																			<br> {{if and .CardInfoType .CardInfoLastFour}}
-																			<span style="font-size:14px"><strong>卡號</strong></span>
-																			<div style="text-align: justify;"><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><strong><span style="color:#222222"><span style="font-size:20px;line-height:2;">{{.CardInfoType}} **** **** **** {{.CardInfoLastFour}}</span></span>
-																				</strong>
-																				</span><br>
-																				<br> {{end}} {{if .Name}}
+																			{{if .Name}}
 																				<span style="font-size:14px"><strong>姓名</strong></span><br>
 																				<span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><strong><span style="color:#222222"><span style="font-size:20px;line-height:2;">{{.Name}}</span></span>
 																				</strong>
 																				</span><br>
-																				<br> {{end}} {{if .PhoneNumber}}
-																				<span style="font-size:14px"><strong>電話號碼</strong></span><br>
-																				<strong><font color="#222222" face="source sans pro, helvetica neue, helvetica, arial, sans-serif"><span style="font-size:20px;line-height:2;">{{.PhoneNumber}}</span></font></strong><br>
-																				<br> {{end}} {{if .Address}}
-																				<span style="font-size:14px"><strong>住址</strong></span><br>
-                                        <strong><font color="#222222" face="source sans pro, helvetica neue, helvetica, arial, sans-serif"><span style="font-size:20px;line-height:2;">{{.Address}}</span></font></strong></div>
+																				<br>
 																			{{end}}
-																		</td>
+																			<div dir="ltr"><span style="font-size:14px"><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><strong>方案</strong></span></span></div>
+																			<span style="color:#222222"><strong><span style="font-size:20px;line-height:2;">{{.DonationType}}</span></strong></span>
+																			<br>
+																			<span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><strong><span style="color:#222222"><span style="font-size:20px">{{.Currency}} ${{.Amount}}</span></span><br>
+																			<br>
+																			<div dir="ltr"><span style="font-size:14px"><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><strong>付款方式</strong></span></span></div>
+																			<strong><span style="font-family:source sans pro,helvetica neue,helvetica,arial,sans-serif"><font color="#222222"><span style="font-size:20px;line-height:2;">{{.DonationMethod}}</span></font></span></strong><br>
+																			</td>
 																	</tr>
 																</tbody>
 															</table>

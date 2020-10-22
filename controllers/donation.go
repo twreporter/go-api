@@ -125,20 +125,21 @@ type (
 	}
 
 	clientResp struct {
-		Amount      uint              `json:"amount"`
-		CardInfo    models.CardInfo   `json:"card_info"`
-		Cardholder  models.Cardholder `json:"cardholder"`
-		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		Frequency   string            `json:"frequency"`
-		ID          uint              `json:"id"`
-		Notes       string            `json:"notes"`
-		OrderNumber string            `json:"order_number"`
-		PayMethod   string            `json:"pay_method"`
-		SendReceipt string            `json:"send_receipt"`
-		ToFeedback  bool              `json:"to_feedback"`
-		IsAnonymous bool              `json:"is_anonymous"`
-		PaymentUrl  string            `json:"payment_url"`
+		Amount        uint              `json:"amount"`
+		CardInfo      models.CardInfo   `json:"card_info"`
+		Cardholder    models.Cardholder `json:"cardholder"`
+		Currency      string            `json:"currency"`
+		Details       string            `json:"details"`
+		Frequency     string            `json:"frequency"`
+		ID            uint              `json:"id"`
+		Notes         string            `json:"notes"`
+		OrderNumber   string            `json:"order_number"`
+		PayMethod     string            `json:"pay_method"`
+		SendReceipt   string            `json:"send_receipt"`
+		ToFeedback    bool              `json:"to_feedback"`
+		IsAnonymous   bool              `json:"is_anonymous"`
+		PaymentUrl    string            `json:"payment_url"`
+		ReceiptHeader null.String       `json:"receipt_header"`
 	}
 
 	bankTransactionTime struct {
@@ -207,12 +208,13 @@ type (
 	payType int
 
 	patchBody struct {
-		Donor       models.Cardholder `json:"donor"`
-		Notes       string            `json:"notes"`
-		SendReceipt string            `json:"send_receipt"`
-		ToFeedback  bool              `json:"to_feedback"`
-		UserID      uint              `json:"user_id" binding:"required"`
-		IsAnonymous bool              `json:"is_anonymous"`
+		Donor         models.Cardholder `json:"donor"`
+		Notes         string            `json:"notes"`
+		SendReceipt   string            `json:"send_receipt"`
+		ToFeedback    bool              `json:"to_feedback"`
+		UserID        uint              `json:"user_id" binding:"required"`
+		IsAnonymous   bool              `json:"is_anonymous"`
+		ReceiptHeader null.String       `json:"receipt_header"`
 	}
 
 	queryFilter struct {
@@ -233,6 +235,7 @@ func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m.ToFeedback = null.BoolFrom(p.ToFeedback)
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
+	m.ReceiptHeader = p.ReceiptHeader
 	return *m
 }
 
@@ -243,6 +246,7 @@ func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	m.SendReceipt = p.SendReceipt
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
+	m.ReceiptHeader = p.ReceiptHeader
 	return *m
 }
 
@@ -404,6 +408,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.ToFeedback = d.ToFeedback.ValueOrZero()
 	cr.PayMethod = payMethodCreditCard
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
+	cr.ReceiptHeader = d.ReceiptHeader
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
@@ -420,6 +425,7 @@ func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.ToFeedback = false
 	cr.Frequency = oneTimeFrequency
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
+	cr.ReceiptHeader = d.ReceiptHeader
 }
 
 func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {
@@ -496,19 +502,14 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 	}
 
 	reqBody := donationSuccessReqBody{
-		Address:          body.Cardholder.Address.ValueOrZero(),
-		Amount:           body.Amount,
-		CardInfoLastFour: body.CardInfo.LastFour.ValueOrZero(),
-		CardInfoType:     cardInfoTypes[body.CardInfo.Type.ValueOrZero()],
-		Currency:         body.Currency,
-		DonationMethod:   payMethodMap[body.PayMethod],
-		DonationType:     donationType,
-		DonationLink:     donationLink,
-		Email:            body.Cardholder.Email,
-		Name:             body.Cardholder.Name.ValueOrZero(),
-		OrderNumber:      body.OrderNumber,
-		NationalID:       body.Cardholder.NationalID.ValueOrZero(),
-		PhoneNumber:      body.Cardholder.PhoneNumber.ValueOrZero(),
+		Amount:         body.Amount,
+		Currency:       body.Currency,
+		DonationMethod: payMethodMap[body.PayMethod],
+		DonationType:   donationType,
+		DonationLink:   donationLink,
+		Email:          body.Cardholder.Email,
+		Name:           body.Cardholder.Name.ValueOrZero(),
+		OrderNumber:    body.OrderNumber,
 	}
 
 	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendSuccessDonationRoutePath)); err != nil {

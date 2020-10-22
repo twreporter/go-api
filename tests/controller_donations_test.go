@@ -22,19 +22,20 @@ type (
 		BackendRedirectURL  string `json:"backend_redirect_url"`
 	}
 	donationRecord struct {
-		Amount      uint              `json:"amount"`
-		Cardholder  models.Cardholder `json:"cardholder"`
-		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		Frequency   string            `json:"frequency"`
-		ID          uint              `json:"id"`
-		Notes       string            `json:"notes"`
-		OrderNumber string            `json:"order_number"`
-		PayMethod   string            `json:"pay_method"`
-		SendReceipt string            `json:"send_receipt"`
-		ToFeedback  bool              `json:"to_feedback"`
-		IsAnonymous bool              `json:"is_anonymous"`
-		PaymentUrl  string            `json:"payment_url"`
+		Amount        uint              `json:"amount"`
+		Cardholder    models.Cardholder `json:"cardholder"`
+		Currency      string            `json:"currency"`
+		Details       string            `json:"details"`
+		Frequency     string            `json:"frequency"`
+		ID            uint              `json:"id"`
+		Notes         string            `json:"notes"`
+		OrderNumber   string            `json:"order_number"`
+		PayMethod     string            `json:"pay_method"`
+		SendReceipt   string            `json:"send_receipt"`
+		ToFeedback    bool              `json:"to_feedback"`
+		IsAnonymous   bool              `json:"is_anonymous"`
+		PaymentUrl    string            `json:"payment_url"`
+		ReceiptHeader null.String       `json:"receipt_header"`
 	}
 	responseBody struct {
 		Status string         `json:"status"`
@@ -580,11 +581,12 @@ func createDefaultPrimeDonationRecord(user models.User, payMethod string) respon
 	return createDefaultDonationRecord(reqBody, path, user)
 }
 
-func testDonationPatchClientError(t *testing.T, userID uint, pathPrefix, orderNumber, authorization string, cookie http.Cookie) {
+func testDonationPatchClientError(t *testing.T, userID uint, pathPrefix, authorization string, cookie http.Cookie) {
 	var reqBodyInBytes []byte
 	var resp *httptest.ResponseRecorder
 	const invalidUserID = 1000
 
+	const orderNumber = "ValidOrderNumber"
 	header := reqHeader{
 		Cookie:        &cookie,
 		Authorization: authorization,
@@ -667,12 +669,6 @@ func testDonationPatchClientError(t *testing.T, userID uint, pathPrefix, orderNu
 }
 
 func TestPatchAPeriodicDonation(t *testing.T) {
-	var defaultRecordRes responseBody
-	var path string
-	var reqBody map[string]interface{}
-	var reqBodyInBytes []byte
-	var resp *httptest.ResponseRecorder
-
 	// setup before test
 	// create a new user
 	user := createUser("periodic-donor@twreporter.org")
@@ -685,47 +681,178 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	}
 
 	for _, f := range frequency {
-		// get record to patch
-
-		defaultRecordRes = createDefaultPeriodicDonationRecord(user, f)
-
-		testDonationPatchClientError(t, user.ID, periodicOrderPathPrefix, defaultRecordRes.Data.OrderNumber, authorization, cookie)
-		path = periodicOrderPathPrefix + defaultRecordRes.Data.OrderNumber
-
-		t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-			var dataAfterPatch models.PeriodicDonation
-			const testIsAnonymous = true
-			reqBody = map[string]interface{}{
-				"donor": map[string]string{
-					"address": "test-addres",
-					"name":    "test-name",
+		testDonationPatchClientError(t, user.ID, periodicOrderPathPrefix, authorization, cookie)
+		testPeriodicDonationPatchSuccess(t, f, user, authorization, cookie)
+	}
+}
+func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user models.User, authorization string, cookie http.Cookie) {
+	for _, tc := range []struct {
+		name        string
+		existRecord models.PeriodicDonation
+		reqBody     map[string]interface{}
+	}{
+		{
+			name: "StatusCode=StatusNoContent,Patch fields with changes",
+			existRecord: models.PeriodicDonation{
+				Amount:      500,
+				Currency:    "TWD",
+				Details:     "test donation",
+				OrderNumber: "twrepoter-test-order-number",
+				Status:      statusPaid,
+				UserID:      user.ID,
+				Cardholder: models.Cardholder{
+					Email: user.Email.String,
 				},
-				"send_receipt": "no",
-				"to_feedback":  !testFeedback,
-				"is_anonymous": null.BoolFrom(testIsAnonymous),
-				"user_id":      user.ID,
-			}
-			reqBodyInBytes, _ = json.Marshal(reqBody)
-			resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+			},
+			reqBody: map[string]interface{}{
+				"donor": map[string]string{
+					"name":    "test-name",
+					"address": "test-addres",
+				},
+				"send_receipt":   "no",
+				"is_anonymous":   null.BoolFrom(true),
+				"to_feedback":    false,
+				"user_id":        user.ID,
+				"receipt_header": "mock header",
+			},
+		},
+		{
+			name: "StatusCode=StatusNoContent,Patch fields with deletion(receipt_header)",
+			existRecord: models.PeriodicDonation{
+				Amount:      500,
+				Currency:    "TWD",
+				Details:     "test donation",
+				OrderNumber: "twrepoter-test-order-number",
+				Status:      statusPaid,
+				UserID:      user.ID,
+				Cardholder: models.Cardholder{
+					Email: user.Email.String,
+				},
+				ReceiptHeader: null.StringFrom("existing header"),
+			},
+			reqBody: map[string]interface{}{
+				"donor": map[string]string{
+					"name":    "test-name",
+					"address": "test-addres",
+				},
+				"send_receipt":   "no",
+				"is_anonymous":   null.BoolFrom(true),
+				"to_feedback":    false,
+				"user_id":        user.ID,
+				"receipt_header": "",
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create existing Records
+			tc.existRecord.Frequency = frequency
+			Globs.GormDB.Create(&tc.existRecord)
+			defer func() {
+				Globs.GormDB.Unscoped().Delete(&tc.existRecord)
+			}()
+
+			reqBodyInBytes, _ := json.Marshal(tc.reqBody)
+
+			path := periodicOrderPathPrefix + tc.existRecord.OrderNumber
+			resp := serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 			assert.Equal(t, http.StatusNoContent, resp.Code)
 
-			Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
-			assert.Equal(t, reqBody["to_feedback"], dataAfterPatch.ToFeedback.ValueOrZero())
-			assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
-			assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
-			assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
-			assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
+			var dataAfterPatch models.PeriodicDonation
+			Globs.GormDB.Where("id = ?", tc.existRecord.ID).Find(&dataAfterPatch)
+			assert.Equal(t, tc.reqBody["send_receipt"], dataAfterPatch.SendReceipt)
+			assert.Equal(t, tc.reqBody["to_feedback"], dataAfterPatch.ToFeedback.ValueOrZero())
+			assert.Equal(t, tc.reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
+			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
+			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
+
+			assert.Equal(t, tc.reqBody["receipt_header"], dataAfterPatch.ReceiptHeader.String)
+		})
+	}
+}
+func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.User, authorization string, cookie http.Cookie) {
+
+	for _, tc := range []struct {
+		name        string
+		existRecord models.PayByPrimeDonation
+		reqBody     map[string]interface{}
+	}{
+		{
+			name: "StatusCode=StatusNoContent,Patch fields with changes",
+			existRecord: models.PayByPrimeDonation{
+				Amount:      500,
+				Currency:    "TWD",
+				Details:     "test donation",
+				MerchantID:  "test merchant",
+				OrderNumber: "twrepoter-test-order-number",
+				Status:      statusPaid,
+				UserID:      user.ID,
+				Cardholder: models.Cardholder{
+					Email: user.Email.String,
+				},
+			},
+			reqBody: map[string]interface{}{
+				"donor": map[string]string{
+					"name":    "test-name",
+					"address": "test-addres",
+				},
+				"send_receipt":   "no",
+				"is_anonymous":   null.BoolFrom(true),
+				"user_id":        user.ID,
+				"receipt_header": "mock header",
+			},
+		},
+		{
+			name: "StatusCode=StatusNoContent,Patch fields with deletion(receipt_header)",
+			existRecord: models.PayByPrimeDonation{
+				Amount:      500,
+				Currency:    "TWD",
+				Details:     "test donation",
+				OrderNumber: "twrepoter-test-order-number",
+				Status:      statusPaid,
+				UserID:      user.ID,
+				Cardholder: models.Cardholder{
+					Email: user.Email.String,
+				},
+				ReceiptHeader: null.StringFrom("existing header"),
+			},
+			reqBody: map[string]interface{}{
+				"donor": map[string]string{
+					"name":    "test-name",
+					"address": "test-addres",
+				},
+				"send_receipt":   "no",
+				"is_anonymous":   null.BoolFrom(true),
+				"user_id":        user.ID,
+				"receipt_header": "",
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create existing Records
+			tc.existRecord.PayMethod = payMethod
+			Globs.GormDB.Create(&tc.existRecord)
+			defer func() {
+				Globs.GormDB.Unscoped().Delete(&tc.existRecord)
+			}()
+
+			reqBodyInBytes, _ := json.Marshal(tc.reqBody)
+
+			path := oneTimeOrderPathPrefix + tc.existRecord.OrderNumber
+			resp := serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+			assert.Equal(t, http.StatusNoContent, resp.Code)
+
+			var dataAfterPatch models.PayByPrimeDonation
+			Globs.GormDB.Where("id = ?", tc.existRecord.ID).Find(&dataAfterPatch)
+			assert.Equal(t, tc.reqBody["send_receipt"], dataAfterPatch.SendReceipt)
+			assert.Equal(t, tc.reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
+			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
+			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
+			assert.Equal(t, tc.reqBody["receipt_header"], dataAfterPatch.ReceiptHeader.String)
 		})
 	}
 }
 
 func TestPatchAPrimeDonation(t *testing.T) {
-	var defaultRecordRes responseBody
-	var path string
-	var reqBody map[string]interface{}
-	var reqBodyInBytes []byte
-	var resp *httptest.ResponseRecorder
-
 	// setup before test
 	// create a new user
 	user := createUser("prim-donor@twreporter.org")
@@ -738,34 +865,8 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	}
 
 	for _, p := range payMethods {
-		// get record to patch
-		defaultRecordRes = createDefaultPrimeDonationRecord(user, p)
-
-		testDonationPatchClientError(t, user.ID, oneTimeOrderPathPrefix, defaultRecordRes.Data.OrderNumber, authorization, cookie)
-
-		path = oneTimeOrderPathPrefix + defaultRecordRes.Data.OrderNumber
-		t.Run("StatusCode=StatusNoContent", func(t *testing.T) {
-			var dataAfterPatch models.PayByPrimeDonation
-			const testIsAnonymous = true
-			reqBody = map[string]interface{}{
-				"donor": map[string]string{
-					"name":    "test-name",
-					"address": "test-addres",
-				},
-				"send_receipt": "no",
-				"is_anonymous": null.BoolFrom(testIsAnonymous),
-				"user_id":      user.ID,
-			}
-			reqBodyInBytes, _ = json.Marshal(reqBody)
-			resp = serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
-			assert.Equal(t, http.StatusNoContent, resp.Code)
-
-			Globs.GormDB.Where("id = ?", defaultRecordRes.Data.ID).Find(&dataAfterPatch)
-			assert.Equal(t, reqBody["send_receipt"], dataAfterPatch.SendReceipt)
-			assert.Equal(t, reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
-			assert.Equal(t, reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
-			assert.Equal(t, reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
-		})
+		testDonationPatchClientError(t, user.ID, oneTimeOrderPathPrefix, authorization, cookie)
+		testPrimeDonationPatchSuccess(t, p, user, authorization, cookie)
 	}
 }
 
@@ -864,6 +965,9 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 			assert.Equal(t, "no", resBody.Data.SendReceipt)
 			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
+			if !resBody.Data.ReceiptHeader.IsZero() {
+				assert.Empty(t, resBody.Data.ReceiptHeader.String)
+			}
 		})
 	}
 }
@@ -912,6 +1016,9 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 			assert.Equal(t, f, resBody.Data.Frequency)
 			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
+			if !resBody.Data.ReceiptHeader.IsZero() {
+				assert.Empty(t, resBody.Data.ReceiptHeader.String)
+			}
 		})
 	}
 }
