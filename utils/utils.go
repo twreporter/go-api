@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/scrypt"
 
-	"twreporter.org/go-api/globals"
+	"github.com/twreporter/go-api/globals"
 )
 
 // GenerateRandomBytes returns securely generated random bytes.
@@ -51,7 +51,7 @@ func GetProjectRoot() string {
 
 	// use the reflect package to retrieve current package path
 	// [go module name]/[package name]
-	// i.e. twreporter.org/go-api/utils
+	// i.e. github.com/twreporter/go-api/utils
 	pkg := reflect.TypeOf(emptyStruct{}).PkgPath()
 	pkgWithoutModPrefix := string([]byte(pkg)[strings.LastIndex(pkg, "/")+1:])
 

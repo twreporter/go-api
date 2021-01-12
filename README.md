@@ -28,7 +28,7 @@ Please make sure that you install [Glide
   package manager](https://github.com/Masterminds/glide) in the environment. (Switch to [go module](https://github.com/golang/go/wiki/Modules) after v5.0.0)
 
 ```
-cd $GOPATH/src/twreporter.org/go-api
+cd $GOPATH/src/github.com/twreporter/go-api
 glide install                           # Install packages and dependencies
 
 // use Makefile

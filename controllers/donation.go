@@ -25,9 +25,9 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/storage"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/storage"
 )
 
 const (

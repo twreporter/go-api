@@ -1,7 +1,7 @@
 package globals
 
 import (
-	"twreporter.org/go-api/configs"
+	"github.com/twreporter/go-api/configs"
 )
 
 var (

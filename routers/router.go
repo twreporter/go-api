@@ -10,9 +10,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	f "github.com/twreporter/logformatter"
 
-	"twreporter.org/go-api/controllers"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/middlewares"
+	"github.com/twreporter/go-api/controllers"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/middlewares"
 )
 
 const (

@@ -4,8 +4,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/storage"
+	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/storage"
 )
 
 // NewsController has methods to handle requests which wants posts, topics ... etc news resource.

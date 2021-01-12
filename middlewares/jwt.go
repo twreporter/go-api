@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/utils"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/utils"
 
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"

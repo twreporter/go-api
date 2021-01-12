@@ -7,8 +7,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
 )
 
 // NewsStorage defines the methods we need to implement,

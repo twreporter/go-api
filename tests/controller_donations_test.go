@@ -12,8 +12,8 @@ import (
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/stretchr/testify/assert"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
 )
 
 type (

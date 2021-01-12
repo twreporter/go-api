@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/guregu/null.v3"
-	"twreporter.org/go-api/internal/query"
+	"github.com/twreporter/go-api/internal/query"
 )
 
 func TestParseSinglePostQuery(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 // IsWebPushSubscribed - which handles the HTTP Get request,

@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/internal/news"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/internal/news"
 )
 
 type newsV2Storage interface {

@@ -7,10 +7,10 @@ import (
 	"github.com/jinzhu/gorm"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/services"
-	"twreporter.org/go-api/storage"
-	"twreporter.org/go-api/utils"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/services"
+	"github.com/twreporter/go-api/storage"
+	"github.com/twreporter/go-api/utils"
 )
 
 // ControllerFactory generates controlloers by given persistent storage connection
