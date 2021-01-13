@@ -14,8 +14,8 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"twreporter.org/go-api/configs"
-	"twreporter.org/go-api/globals"
+	"github.com/twreporter/go-api/configs"
+	"github.com/twreporter/go-api/globals"
 )
 
 // MailService defines an interface to be implemented

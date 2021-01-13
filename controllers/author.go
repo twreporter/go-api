@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 // GetAuthors receive HTTP GET method request, and return the authors.

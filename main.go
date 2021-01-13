@@ -13,13 +13,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
-	"twreporter.org/go-api/configs"
-	"twreporter.org/go-api/controllers"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/internal/mongo"
-	"twreporter.org/go-api/routers"
-	"twreporter.org/go-api/services"
-	"twreporter.org/go-api/utils"
+	"github.com/twreporter/go-api/configs"
+	"github.com/twreporter/go-api/controllers"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/internal/mongo"
+	"github.com/twreporter/go-api/routers"
+	"github.com/twreporter/go-api/services"
+	"github.com/twreporter/go-api/utils"
 )
 
 func main() {

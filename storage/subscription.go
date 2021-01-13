@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 // CreateAWebPushSubscription - create a record in the persistent database,

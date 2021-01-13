@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/guregu/null.v3"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 type meta struct {

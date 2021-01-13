@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 // GetBookmarksOfAUser given userID this func will list all the bookmarks belongs to the user

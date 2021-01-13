@@ -11,11 +11,11 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/internal/mongo"
-	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/storage"
-	"twreporter.org/go-api/utils"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/internal/mongo"
+	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/storage"
+	"github.com/twreporter/go-api/utils"
 )
 
 const (

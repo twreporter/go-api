@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	p, _ := build.Default.Import("twreporter.org/go-api", "", build.FindOnly)
+	p, _ := build.Default.Import("github.com/twreporter/go-api", "", build.FindOnly)
 
 	fname := filepath.Join(p.Dir, "CHANGELOG.md")
 	file, err := os.Open(fname)

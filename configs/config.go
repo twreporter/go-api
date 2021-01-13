@@ -306,7 +306,7 @@ func LoadConf(confPath string) (ConfYaml, error) {
 			return conf, errors.WithStack(err)
 		}
 	} else {
-		viper.AddConfigPath("$GOPATH/src/twreporter.org/go-api/configs/")
+		viper.AddConfigPath("$GOPATH/src/github.com/twreporter/go-api/configs/")
 		viper.AddConfigPath("./configs/")
 		viper.SetConfigName("config")
 

@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
 )
 
 // _GetPosts finds the posts according to query string and also get the embedded assets

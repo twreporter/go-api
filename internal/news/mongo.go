@@ -7,8 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/guregu/null.v3"
-	"twreporter.org/go-api/internal/mongo"
-	"twreporter.org/go-api/internal/query"
+	"github.com/twreporter/go-api/internal/mongo"
+	"github.com/twreporter/go-api/internal/query"
 )
 
 // tagMongo is used to map the query field to the corresponded field in real mongo document

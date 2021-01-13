@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/internal/news"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/internal/news"
 )
 
 type fetchResult struct {

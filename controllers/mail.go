@@ -14,8 +14,8 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
-	"twreporter.org/go-api/services"
-	"twreporter.org/go-api/utils"
+	"github.com/twreporter/go-api/services"
+	"github.com/twreporter/go-api/utils"
 )
 
 type activationReqBody struct {

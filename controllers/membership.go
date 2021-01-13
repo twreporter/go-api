@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"twreporter.org/go-api/storage"
+	"github.com/twreporter/go-api/storage"
 )
 
 // NewMembershipController ...

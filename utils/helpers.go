@@ -3,7 +3,7 @@ package utils
 import (
 	"gopkg.in/guregu/null.v3"
 
-	"twreporter.org/go-api/configs/constants"
+	"github.com/twreporter/go-api/configs/constants"
 )
 
 // GetGender format the gender string

@@ -5,7 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 type defaultVariables struct {
