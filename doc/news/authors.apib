@@ -37,6 +37,39 @@ A list contains information of the selected authors
     + Attributes
         + status: error (required)
         + message: Query upstream server timeout. (required)
+    
+## Author [/v2/authors/{author_id}]
+Information of the author referenced by `author_id`
+
+## Get author by id [GET]
+
++ Parameters
+    + `author_id`: 5edf118c3e631f0600198935
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data (Author, required)
+
++ Response 404 (application/json)
+
+    + Attributes
+        + status: fail (required)
+        + data (required)
+            + `author_id`: Cannot find the author from the author_id (required)
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
 
 # Data Structures
 
