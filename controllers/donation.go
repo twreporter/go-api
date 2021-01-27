@@ -723,7 +723,10 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		"user_id":      reqBody.UserID,
 		"order_number": orderNumber,
 	}, d); err != nil {
-		return 0, gin.H{}, err
+		return http.StatusInternalServerError, gin.H{
+			"status":  "error",
+			"message": "unable to patch the record",
+		}, err
 	}
 
 	if rowsAffected == 0 {
