@@ -71,6 +71,32 @@ Information of the author referenced by `author_id`
         + status: error (required)
         + message: Query upstream server timeout. (required)
 
+## Posts of an Author [/v2/authors/{author_id}/posts]
+Posts of designed/engineered/photographed/written by an author ordered by last updated time.
+
+### Get posts of an author [GET]
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data
+            + meta (meta, fixed-type, required)
+            + records (array[MetaOfPost], fixed-type, required)
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+
+
 # Data Structures
 
 ## Author
