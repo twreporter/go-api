@@ -1,0 +1,50 @@
+# Group Authors
+
+## Author List [/v2/authors{?keywords,sort,offset,limit}]
+A list contains information of the selected authors
+
+### Get a list of authors [GET]
+
++ Parameters
+    + keywords: `小明` (optional) - Keywords of the names of authors for searching
+    + sort: `-updated_at` (optional) - Field to sort by
+        + Default: `-updated_at`
+        + Members
+          + `updated_at` - Sort by updated_at ascending
+          + `-updated_at` - Sort by updated_at descending
+    + offset: `0` (integer, optional) - The number of authors to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of authors to return at a time
+        + Default: `10`
+
++ Response 200 (application/json)
+    + Attributes
+        + status: success (required)
+        + data (required)
+            + meta(meta, fixed-type, required)
+            + records (array[Author], fixed-type, required)
+
++ Response 204
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+
+# Data Structures
+
+## Author
++ id: 5edf118c3e631f0600198935 (required)
++ email: `contact@twreporter.org` (required)
++ `job_title`: `特約記者` (required)
++ bio: `大家好，我是王小明` (required)
++ name: `王小明` (required)
++ thumbnail (image, required)
++ updated_at: `2021-01-27T12:00:00Z` (required)
