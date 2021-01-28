@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -683,6 +684,60 @@ func TestPatchAPeriodicDonation(t *testing.T) {
 	for _, f := range frequency {
 		testDonationPatchClientError(t, user.ID, periodicOrderPathPrefix, authorization, cookie)
 		testPeriodicDonationPatchSuccess(t, f, user, authorization, cookie)
+		testDonationPatchServerError(t, user.ID, periodicOrderPathPrefix+"twreporter-test-order-number", func(t *testing.T) error {
+			return Globs.GormDB.Exec(
+				fmt.Sprintf(`INSERT INTO periodic_donations 
+					(amount, details, order_number, status, user_id, cardholder_email, frequency)
+					Values
+					(500, "test details", "twreporter-test-order-number", 'paid', %d, '%s', '%s')
+			`, user.ID, user.Email.String, f)).Error
+		}, authorization, cookie)
+	}
+}
+
+func testDonationPatchServerError(t *testing.T, userID uint, path string, setup func(t *testing.T) error, authorization string, cookie http.Cookie) {
+	cases := []struct {
+		name       string
+		reqBody    map[string]interface{}
+		wantStatus int
+	}{
+		{
+			name: `Status=InternalServerError, Patch exceeded quota string to note field`,
+			reqBody: map[string]interface{}{
+				"notes": func() string {
+					const notesLen = 100
+					var b strings.Builder
+					for i := 0; i <= 100; i++ {
+						fmt.Fprint(&b, "a")
+					}
+					return b.String()
+				}(),
+				"user_id": userID,
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := setup(t); err != nil {
+				t.Errorf("Setup records fail, err: %v", err)
+				t.Fail()
+			}
+			defer func() {
+				Globs.GormDB.Exec(`
+				SET FOREIGN_KEY_CHECKS = 0;
+				TRUNCATE pay_by_prime_donations;
+				TRUNCATE periodic_donations;
+				SET FOREIGN_KEY_CHECKS = 1;
+				`)
+			}()
+
+			reqBodyInBytes, _ := json.Marshal(tt.reqBody)
+
+			resp := serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
+			assert.Equal(t, tt.wantStatus, resp.Code)
+		})
 	}
 }
 func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user models.User, authorization string, cookie http.Cookie) {
@@ -867,6 +922,14 @@ func TestPatchAPrimeDonation(t *testing.T) {
 	for _, p := range payMethods {
 		testDonationPatchClientError(t, user.ID, oneTimeOrderPathPrefix, authorization, cookie)
 		testPrimeDonationPatchSuccess(t, p, user, authorization, cookie)
+		testDonationPatchServerError(t, user.ID, oneTimeOrderPathPrefix+"twreporter-test-order-number", func(t *testing.T) error {
+			return Globs.GormDB.Exec(
+				fmt.Sprintf(`INSERT INTO pay_by_prime_donations 
+					(amount, merchant_id, details, order_number, status, user_id, cardholder_email)
+					Values
+					(500, "test merchant", "test details", "twreporter-test-order-number", 'paid', %d, '%s')
+			`, user.ID, user.Email.String)).Error
+		}, authorization, cookie)
 	}
 }
 
