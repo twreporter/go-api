@@ -383,3 +383,25 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 		"limit":  q.Limit,
 	}}})
 }
+func (nc *newsV2Controller) GetAuthorByID(c *gin.Context) {
+	var err error
+
+	// TODO(babygoat): define proper timeout
+	ctx := context.Background()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.ParseSingleAuthorQuery(c)
+
+	authors, err := nc.Storage.GetAuthors(ctx, q)
+
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": authors[0]})
+}

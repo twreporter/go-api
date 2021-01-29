@@ -45,6 +45,7 @@ const (
 	queryOffset     = "offset"
 	queryLimit      = "limit"
 	queryKeywords   = "keywords"
+	queryAuthorID   = "author_id"
 )
 
 type Option func(*Query)
@@ -198,6 +199,10 @@ func parseSingleQuery(c *gin.Context) *Query {
 		q.Filter.Slug = slug
 	}
 
+	if authorID := c.Param(queryAuthorID); authorID != "" {
+		q.Filter.IDs = []string{authorID}
+	}
+
 	if full, err := strconv.ParseBool(c.Query(queryFull)); err == nil {
 		q.Full = full
 	}
@@ -229,4 +234,8 @@ func ParseAuthorListQuery(c *gin.Context) *Query {
 		}
 	}
 	return &q
+}
+
+func ParseSingleAuthorQuery(c *gin.Context) *Query {
+	return parseSingleQuery(c)
 }
