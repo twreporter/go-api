@@ -17,9 +17,11 @@ type newsV2Storage interface {
 	GetMetaOfPosts(context.Context, *news.Query) ([]news.MetaOfPost, error)
 	GetFullTopics(context.Context, *news.Query) ([]news.Topic, error)
 	GetMetaOfTopics(context.Context, *news.Query) ([]news.MetaOfTopic, error)
+	GetAuthors(context.Context, *news.Query) ([]news.Author, error)
 
 	GetPostCount(context.Context, *news.Query) (int, error)
 	GetTopicCount(context.Context, *news.Query) (int, error)
+	GetAuthorCount(context.Context, *news.Query) (int, error)
 }
 
 func NewNewsV2Controller(s newsV2Storage) *newsV2Controller {
@@ -339,4 +341,40 @@ func (nc *newsV2Controller) helperCleanup(c *gin.Context, err error) {
 		}
 		log.Errorf("%+v", err)
 	}
+}
+
+func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
+	var err error
+
+	//TODO(babygoat): define timeout
+	ctx := context.Background()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.ParseAuthorListQuery(c)
+
+	//TODO(babygoat): fetch from algolia first
+
+	// fallback if fetch from algolia cannot succeed
+
+	authors, err := nc.Storage.GetAuthors(ctx, q)
+
+	if err != nil {
+		return
+	}
+
+	total, err := nc.Storage.GetAuthorCount(ctx, q)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": authors, "meta": gin.H{
+		"total":  total,
+		"offset": q.Offset,
+		"limit":  q.Limit,
+	}}})
 }

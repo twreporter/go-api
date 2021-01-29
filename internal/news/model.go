@@ -64,12 +64,12 @@ type Post struct {
 	Brief                  *ContentBody         `bson:"brief,omitempty" json:"brief,omitempty"`
 	Content                *ContentBody         `bson:"content,omitempty" json:"content,omitempty"`
 	Copyright              string               `bson:"copyright" json:"copyright"`
-	Designers              []Author             `bson:"designers" json:"designers,omitempty"`
-	Engineers              []Author             `bson:"engineers" json:"engineers,omitempty"`
+	Designers              []MetaOfAuthor       `bson:"designers" json:"designers,omitempty"`
+	Engineers              []MetaOfAuthor       `bson:"engineers" json:"engineers,omitempty"`
 	ExtendByline           string               `bson:"extend_byline" json:"extend_byline"`
 	LeadingImageDecription string               `bson:"leading_image_description" json:"leading_image_description"`
 	OgTitle                string               `bson:"og_title" json:"og_title"`
-	Photographers          []Author             `bson:"photographers" json:"photographers,omitempty"`
+	Photographers          []MetaOfAuthor       `bson:"photographers" json:"photographers,omitempty"`
 	Relateds               []primitive.ObjectID `bson:"relateds" json:"relateds,omitempty"`
 	// TODO: rename the bson field to `topic`
 	// Define inline struct here so that the nested projection
@@ -83,14 +83,22 @@ type Post struct {
 	} `bson:"topics" json:"topic,omitempty"`
 	UpdatedAt time.Time `bson:"updatedAt" json:"updated_at"`
 	// TODO: rename the bson field to `writers`
-	Writers       []Author `bson:"writters" json:"writers,omitempty"`
-	HeroImageSize string   `bson:"heroImageSize" json:"hero_image_size"`
+	Writers       []MetaOfAuthor `bson:"writters" json:"writers,omitempty"`
+	HeroImageSize string         `bson:"heroImageSize" json:"hero_image_size"`
 }
 
-type Author struct {
+type MetaOfAuthor struct {
 	ID       primitive.ObjectID `bson:"_id" json:"id"`
 	JobTitle string             `bson:"job_title" json:"job_title"`
 	Name     string             `bson:"name" json:"name"`
+}
+
+type Author struct {
+	MetaOfAuthor `bson:",inline"`
+	Email        string    `bson:"email" json:"email"`
+	Bio          string    `bson:"bio" json:"bio"`
+	Thumbnail    *Image    `bson:"thumbnail" json:"thumbnail"`
+	UpdatedAt    time.Time `bson:"updated_at" json:"updated_at"`
 }
 
 type category struct {

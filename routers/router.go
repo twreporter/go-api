@@ -163,6 +163,8 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v2Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetTopics)
 	v2Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetATopic)
 	v2Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), ncV2.GetIndexPage)
+
+	v2Group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ncV2.GetAuthors)
 	// =============================
 	// v2 oauth endpoints
 	// =============================

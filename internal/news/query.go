@@ -4,8 +4,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/guregu/null.v3"
 	"github.com/twreporter/go-api/internal/query"
+	"gopkg.in/guregu/null.v3"
 )
 
 type Query struct {
@@ -23,6 +23,7 @@ type Filter struct {
 	Categories []string
 	Tags       []string
 	IDs        []string
+	Name       string
 }
 
 type SortBy struct {
@@ -43,6 +44,7 @@ const (
 	querySort       = "sort"
 	queryOffset     = "offset"
 	queryLimit      = "limit"
+	queryKeywords   = "keywords"
 )
 
 type Option func(*Query)
@@ -51,6 +53,11 @@ var defaultQuery = Query{
 	Pagination: query.Pagination{Offset: 0, Limit: 10},
 	Filter:     Filter{State: "published"},
 	Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
+}
+
+var defaultAuthorQuery = Query{
+	Pagination: query.Pagination{Offset: 0, Limit: 10},
+	Sort:       SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}},
 }
 
 // NewQuery returns a default query along with the options(pagination/sort/filter).
@@ -193,6 +200,33 @@ func parseSingleQuery(c *gin.Context) *Query {
 
 	if full, err := strconv.ParseBool(c.Query(queryFull)); err == nil {
 		q.Full = full
+	}
+	return &q
+}
+
+func ParseAuthorListQuery(c *gin.Context) *Query {
+	var q Query
+
+	q = defaultAuthorQuery
+	if keywords := c.Query(queryKeywords); keywords != "" {
+		q.Filter.Name = keywords
+	}
+	// Parse pagination
+	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
+		q.Offset = offset
+	}
+	if limit, err := strconv.Atoi(c.Query(queryLimit)); err == nil {
+		q.Limit = limit
+	}
+
+	// Parse sorting
+	if sort := c.Query(querySort); sort != "" {
+		switch sort {
+		case sortByUpdatedAt:
+			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(true)}}
+		case sortByDescending + sortByUpdatedAt:
+			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}}
+		}
 	}
 	return &q
 }

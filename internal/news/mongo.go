@@ -4,11 +4,11 @@ import (
 	"reflect"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/twreporter/go-api/internal/mongo"
+	"github.com/twreporter/go-api/internal/query"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/guregu/null.v3"
-	"github.com/twreporter/go-api/internal/mongo"
-	"github.com/twreporter/go-api/internal/query"
 )
 
 // tagMongo is used to map the query field to the corresponded field in real mongo document
@@ -76,6 +76,7 @@ type mongoFilter struct {
 	Categories []primitive.ObjectID `mongo:"categories"`
 	Tags       []primitive.ObjectID `mongo:"tags"`
 	IDs        []primitive.ObjectID `mongo:"_id"`
+	Name       primitive.Regex      `mongo:"name"`
 }
 
 func (mf mongoFilter) BuildStage() []bson.D {
@@ -113,6 +114,11 @@ func (mf mongoFilter) BuildElements() []bson.E {
 			if v, ok := mongo.BuildArray(fieldV.Interface().([]primitive.ObjectID)); ok {
 				elements = append(elements, mongo.BuildElement(tag, mongo.BuildDocument(mongo.OpIn, v)))
 			}
+		case primitive.Regex:
+			v := fieldV.Interface().(primitive.Regex)
+			if v.Pattern != "" {
+				elements = append(elements, mongo.BuildElement(tag, v))
+			}
 		default:
 			log.Errorf("Unimplemented type %+v", fieldT.Type)
 		}
@@ -129,6 +135,7 @@ func fromFilter(f Filter) mongoFilter {
 		Categories: hexToObjectIDs(f.Categories),
 		Tags:       hexToObjectIDs(f.Tags),
 		IDs:        hexToObjectIDs(f.IDs),
+		Name:       primitive.Regex{Pattern: f.Name},
 	}
 }
 
@@ -218,6 +225,8 @@ const (
 	fieldRelatedDocuments = "relateds"
 	fieldID               = "_id"
 	fieldState            = "state"
+	fieldThumbnail        = "thumbnail"
+	fieldBio              = "bio"
 )
 
 type lookupInfo struct {
@@ -258,6 +267,10 @@ var (
 		fieldLeadingImage:         {Collection: ColImages, ToUnwind: true},
 		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
 		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
+	}
+
+	LookupAuthor = map[string]lookupInfo{
+		fieldThumbnail: {Collection: ColImages, ToUnwind: true},
 	}
 )
 
@@ -437,4 +450,9 @@ func shouldPreserveOrder(field string) bool {
 		}
 	}
 	return false
+}
+
+// BuildBioMarkdownOnlyStatement returns statement for rewriting `bio` field with markdown format
+func BuildBioMarkdownOnlyStatement() bson.D {
+	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".md"}}}}
 }
