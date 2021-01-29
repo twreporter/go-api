@@ -372,6 +372,11 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 		return
 	}
 
+	if total == 0 {
+		c.Status(http.StatusNoContent)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": authors, "meta": gin.H{
 		"total":  total,
 		"offset": q.Offset,
