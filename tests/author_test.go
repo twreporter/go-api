@@ -25,11 +25,7 @@ type testAuthor struct {
 }
 
 func TestGetAuthors_ByKeywords(t *testing.T) {
-	defer func() {
-		testMongoClient.Database(testMongoDB).Collection(news.ColContacts).Drop(context.Background())
-		testMongoClient.Database(testMongoDB).Collection(news.ColImages).Drop(context.Background())
-	}()
-
+	defer cleanupAuthorRecords()
 	authors := map[string]testAuthor{
 		"王小明": {
 			id:        primitive.NewObjectID(),
@@ -52,10 +48,7 @@ func TestGetAuthors_ByKeywords(t *testing.T) {
 	}
 	// setup records
 	for _, v := range authors {
-		contact := createContactDocument(v.id, v.tid, v.name, v.createdAt)
-		image := createImageDocument(v.tid)
-		testMongoClient.Database(testMongoDB).Collection(news.ColContacts).InsertOne(context.Background(), contact)
-		testMongoClient.Database(testMongoDB).Collection(news.ColImages).InsertOne(context.Background(), image)
+		migrateAuthorRecord(v)
 	}
 	// TODO(babygoat): remove pre variable to overwrite Mongo.DBname after v1 endpoints & tests are removed
 	pre := globals.Conf.DB.Mongo.DBname
@@ -72,6 +65,41 @@ func TestGetAuthors_ByKeywords(t *testing.T) {
 func TestGetAuthors_NoContent(t *testing.T) {
 	response := serveHTTP(http.MethodGet, "/v2/authors", "", "", "")
 	assert.Equal(t, http.StatusNoContent, response.Code)
+}
+
+func TestGetAuthorByID_ByValidID(t *testing.T) {
+	defer cleanupAuthorRecords()
+
+	author := testAuthor{
+		id:        primitive.NewObjectID(),
+		tid:       primitive.NewObjectID(),
+		name:      "王小明",
+		createdAt: time.Unix(1611817200, 0),
+	}
+	// setup records
+	migrateAuthorRecord(author)
+	// TODO(babygoat): remove pre variable to overwrite Mongo.DBname after v1 endpoints & tests are removed
+	pre := globals.Conf.DB.Mongo.DBname
+	globals.Conf.DB.Mongo.DBname = testMongoDB
+
+	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v2/authors/%s", author.id.Hex()), "", "", "")
+	// TODO(babygoat): remove pre variable to overwrite Mongo.DBname after v1 endpoints & tests are removed
+	globals.Conf.DB.Mongo.DBname = pre
+
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.JSONEq(t, singleRecordResponse(authorResponse(author)), response.Body.String())
+}
+
+func cleanupAuthorRecords() {
+	testMongoClient.Database(testMongoDB).Collection(news.ColContacts).Drop(context.Background())
+	testMongoClient.Database(testMongoDB).Collection(news.ColImages).Drop(context.Background())
+}
+
+func migrateAuthorRecord(author testAuthor) {
+	contact := createContactDocument(author.id, author.tid, author.name, author.createdAt)
+	image := createImageDocument(author.tid)
+	testMongoClient.Database(testMongoDB).Collection(news.ColContacts).InsertOne(context.Background(), contact)
+	testMongoClient.Database(testMongoDB).Collection(news.ColImages).InsertOne(context.Background(), image)
 }
 
 func authorListResponse(authors ...string) string {
@@ -134,6 +162,13 @@ func listResponse(total int, records []string) string {
 		"records":[%s]
 	  }
 }`, total, strings.Join(records, ","))
+}
+
+func singleRecordResponse(record string) string {
+	return fmt.Sprintf(`{
+	"status": "success",
+	"data": %s
+}`, record)
 }
 
 func createContactDocument(id, thumbnailID primitive.ObjectID, name string, t time.Time) bson.M {
