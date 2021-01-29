@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -14,9 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
-	mongodriver "go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"github.com/twreporter/go-api/configs"
 	"github.com/twreporter/go-api/controllers"
 	"github.com/twreporter/go-api/globals"
@@ -24,9 +22,14 @@ import (
 	"github.com/twreporter/go-api/routers"
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/utils"
+	mongodriver "go.mongodb.org/mongo-driver/mongo"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var Globs globalVariables
+
+var testMongoClient *mongodriver.Client
 
 func init() {
 	var defaults = defaultVariables{
@@ -304,6 +307,7 @@ func TestMain(m *testing.M) {
 
 	Globs.GormDB = gormDB
 	Globs.MgoDB = mgoDB
+	testMongoClient = client
 
 	// set up gin server
 	engine := setupGinServer(gormDB, mgoDB, client)
@@ -312,6 +316,7 @@ func TestMain(m *testing.M) {
 
 	defer Globs.GormDB.Close()
 	defer Globs.MgoDB.Close()
+	defer func() { testMongoClient.Disconnect(context.Background()) }()
 
 	// start server for testing
 	// the reason why we start the server
