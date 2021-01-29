@@ -90,6 +90,11 @@ func TestGetAuthorByID_ByValidID(t *testing.T) {
 	assert.JSONEq(t, singleRecordResponse(authorResponse(author)), response.Body.String())
 }
 
+func TestGetAuthorByID_ByInvalidID(t *testing.T) {
+	response := serveHTTP(http.MethodGet, "/v2/authors/InvalidID", "", "", "")
+	assert.Equal(t, http.StatusNotFound, response.Code)
+}
+
 func cleanupAuthorRecords() {
 	testMongoClient.Database(testMongoDB).Collection(news.ColContacts).Drop(context.Background())
 	testMongoClient.Database(testMongoDB).Collection(news.ColImages).Drop(context.Background())
