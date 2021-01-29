@@ -69,6 +69,11 @@ func TestGetAuthors_ByKeywords(t *testing.T) {
 	assert.JSONEq(t, authorListResponse(authorResponse(authors["王小明"])), response.Body.String())
 }
 
+func TestGetAuthors_NoContent(t *testing.T) {
+	response := serveHTTP(http.MethodGet, "/v2/authors", "", "", "")
+	assert.Equal(t, http.StatusNoContent, response.Code)
+}
+
 func authorListResponse(authors ...string) string {
 	return listResponse(len(authors), authors)
 }
