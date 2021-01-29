@@ -403,5 +403,10 @@ func (nc *newsV2Controller) GetAuthorByID(c *gin.Context) {
 		return
 	}
 
+	if len(authors) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{"author_id": "Cannot find the author from the author_id"}})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": authors[0]})
 }
