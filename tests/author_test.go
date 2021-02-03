@@ -84,6 +84,18 @@ func TestGetAuthorByID_ByValidID(t *testing.T) {
 }
 
 func TestGetAuthorByID_ByInvalidID(t *testing.T) {
+	db, cleanup := setupMongoGoDriverTestDB()
+	defer cleanup()
+	defer cleanupAuthorRecords(db)
+
+	author := testAuthor{
+		id:        primitive.NewObjectID(),
+		tid:       primitive.NewObjectID(),
+		name:      "王小明",
+		createdAt: time.Unix(1611817200, 0),
+	}
+	// setup records
+	migrateAuthorRecord(db, author)
 	response := serveHTTP(http.MethodGet, "/v2/authors/InvalidID", "", "", "")
 	assert.Equal(t, http.StatusNotFound, response.Code)
 }
