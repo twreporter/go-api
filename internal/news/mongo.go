@@ -68,6 +68,10 @@ func (mp mongoPagination) BuildStage() []bson.D {
 	return stages
 }
 
+type authorFilter struct {
+	ID string
+}
+
 type mongoFilter struct {
 	Slug       string               `mongo:"slug"`
 	State      string               `mongo:"state"`
@@ -77,6 +81,7 @@ type mongoFilter struct {
 	Tags       []primitive.ObjectID `mongo:"tags"`
 	IDs        []primitive.ObjectID `mongo:"_id"`
 	Name       primitive.Regex      `mongo:"name"`
+	Author     authorFilter         `mongo:"author"`
 }
 
 func (mf mongoFilter) BuildStage() []bson.D {
@@ -119,6 +124,21 @@ func (mf mongoFilter) BuildElements() []bson.E {
 			if v.Pattern != "" {
 				elements = append(elements, mongo.BuildElement(tag, v))
 			}
+		case authorFilter:
+			v := fieldV.Interface().(authorFilter)
+			if v.ID != "" {
+				var id interface{} = v.ID
+				objectID, err := primitive.ObjectIDFromHex(v.ID)
+				if err == nil {
+					id = objectID
+				}
+				elements = append(elements, bson.E{Key: mongo.OpOr, Value: bson.A{
+					bson.D{{fieldDesigners, id}},
+					bson.D{{fieldEngineers, id}},
+					bson.D{{fieldPhotographers, id}},
+					bson.D{{fieldWriters, id}},
+				}})
+			}
 		default:
 			log.Errorf("Unimplemented type %+v", fieldT.Type)
 		}
@@ -136,6 +156,7 @@ func fromFilter(f Filter) mongoFilter {
 		Tags:       hexToObjectIDs(f.Tags),
 		IDs:        hexToObjectIDs(f.IDs),
 		Name:       primitive.Regex{Pattern: f.Name},
+		Author:     authorFilter{ID: f.Author},
 	}
 }
 

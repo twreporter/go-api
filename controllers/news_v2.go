@@ -410,3 +410,34 @@ func (nc *newsV2Controller) GetAuthorByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": authors[0]})
 }
+func (nc *newsV2Controller) GetPostsByAuthor(c *gin.Context) {
+	var err error
+
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.PostPageTimeout)
+	defer cancel()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.ParseAuthorPostListQuery(c)
+
+	posts, err := nc.Storage.GetMetaOfPosts(ctx, q)
+
+	if err != nil {
+		return
+	}
+
+	total, err := nc.Storage.GetPostCount(ctx, q)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": posts, "meta": gin.H{
+		"total":  total,
+		"offset": q.Offset,
+		"limit":  q.Limit,
+	}}})
+}

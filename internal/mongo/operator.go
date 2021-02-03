@@ -8,6 +8,7 @@ const (
 	OpExpr         = "$expr"
 	OpIn           = "$in"
 	OpLet          = "$let"
+	OpOr           = "$or"
 	OpReduce       = "$reduce"
 
 	OrderAsc  = 1

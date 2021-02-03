@@ -2,6 +2,7 @@ package routers
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -166,6 +167,13 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 
 	v2Group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ncV2.GetAuthors)
 	v2Group.GET("/authors/:author_id", middlewares.SetCacheControl("public,max-age=600"), ncV2.GetAuthorByID)
+	v2Group.GET("/authors/:author_id/:publication", middlewares.SetCacheControl("public,max-age=900"), func(c *gin.Context) {
+		if c.Param("publication") == "posts" {
+			ncV2.GetPostsByAuthor(c)
+			return
+		}
+		c.AbortWithStatus(http.StatusNotFound)
+	})
 	// =============================
 	// v2 oauth endpoints
 	// =============================

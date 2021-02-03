@@ -24,6 +24,7 @@ type Filter struct {
 	Tags       []string
 	IDs        []string
 	Name       string
+	Author     string
 }
 
 type SortBy struct {
@@ -238,4 +239,23 @@ func ParseAuthorListQuery(c *gin.Context) *Query {
 
 func ParseSingleAuthorQuery(c *gin.Context) *Query {
 	return parseSingleQuery(c)
+}
+
+func ParseAuthorPostListQuery(c *gin.Context) *Query {
+	var q Query
+
+	q = defaultQuery
+	// Parse author_id
+	if authorID := c.Param("author_id"); authorID != "" {
+		q.Filter.Author = authorID
+	}
+	// Parse pagination
+	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
+		q.Offset = offset
+	}
+	if limit, err := strconv.Atoi(c.Query(queryLimit)); err == nil {
+		q.Limit = limit
+	}
+
+	return &q
 }

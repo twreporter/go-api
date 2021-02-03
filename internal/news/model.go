@@ -103,7 +103,7 @@ type Author struct {
 
 type category struct {
 	ID        primitive.ObjectID `bson:"_id" json:"id"`
-	SortOrder uint               `bson:"sort_order" json:"sort_order"`
+	SortOrder uint               `bson:"sortOrder" json:"sort_order"`
 	Name      string             `bson:"name" json:"name"`
 }
 
