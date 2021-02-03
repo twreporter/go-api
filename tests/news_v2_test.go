@@ -100,6 +100,67 @@ func TestGetPostsByAuthors_AuthorIsAnEngineer(t *testing.T) {
 	assert.JSONEq(t, postListResponse(metaOfPostResponse(posts["王小明的文章"])), response.Body.String())
 }
 
+func TestGetPostsByAuthors_AuthorIsADesigner(t *testing.T) {
+	db, cleanup := setupMongoGoDriverTestDB()
+	defer cleanup()
+	defer func() { db.Drop(context.Background()) }()
+	// setup records
+	// authors
+	authors := map[string]testAuthor{
+		"王小明": {
+			id:        primitive.NewObjectID(),
+			tid:       primitive.NewObjectID(),
+			name:      "王小明",
+			createdAt: time.Unix(1611817200, 0),
+		},
+		"劉大華": {
+			id:        primitive.NewObjectID(),
+			tid:       primitive.NewObjectID(),
+			name:      "劉大華",
+			createdAt: time.Unix(1611817800, 0),
+		},
+	}
+	for _, author := range authors {
+		migrateAuthorRecord(db, author)
+	}
+	// posts
+	posts := map[string]testPost{
+		"王小明的文章": {
+			ID:     primitive.NewObjectID(),
+			Editor: primitive.NewObjectID(),
+			// Without loss of generosity,
+			// use dedicate timestamp to ensure the JSON equality
+			// with no decimal points precision
+			CreatedAt:  time.Unix(1612337400, 0),
+			Slug:       "test-slug-1",
+			State:      "published",
+			Image:      primitive.NewObjectID(),
+			Video:      primitive.NewObjectID(),
+			Designers:  []primitive.ObjectID{authors["王小明"].id},
+			Categories: []primitive.ObjectID{primitive.NewObjectID()},
+			Tags:       []primitive.ObjectID{primitive.NewObjectID()},
+		},
+		"劉大華的文章": {
+			ID:         primitive.NewObjectID(),
+			Editor:     primitive.NewObjectID(),
+			CreatedAt:  time.Unix(1612337400, 0),
+			Slug:       "test-slug-2",
+			State:      "published",
+			Image:      primitive.NewObjectID(),
+			Video:      primitive.NewObjectID(),
+			Designers:  []primitive.ObjectID{authors["劉大華"].id},
+			Categories: []primitive.ObjectID{primitive.NewObjectID()},
+			Tags:       []primitive.ObjectID{primitive.NewObjectID()},
+		},
+	}
+	for _, post := range posts {
+		migratePostRecord(db, post)
+	}
+	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v2/authors/%s/posts", authors["王小明"].id.Hex()), "", "", "")
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.JSONEq(t, postListResponse(metaOfPostResponse(posts["王小明的文章"])), response.Body.String())
+}
+
 // setupMongoGoDriverTestDB overwrites the global mongo DB temporarily
 // for testing news-v2 endpoints with mongo-go-driver
 // it can be removed once the news v1 endpoints deprecated.
