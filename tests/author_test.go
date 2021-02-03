@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/twreporter/go-api/globals"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/twreporter/go-api/internal/news"
 
@@ -25,7 +25,9 @@ type testAuthor struct {
 }
 
 func TestGetAuthors_ByKeywords(t *testing.T) {
-	defer cleanupAuthorRecords()
+	db, cleanup := setupMongoGoDriverTestDB()
+	defer cleanup()
+	defer cleanupAuthorRecords(db)
 	authors := map[string]testAuthor{
 		"王小明": {
 			id:        primitive.NewObjectID(),
@@ -48,16 +50,10 @@ func TestGetAuthors_ByKeywords(t *testing.T) {
 	}
 	// setup records
 	for _, v := range authors {
-		migrateAuthorRecord(v)
+		migrateAuthorRecord(db, v)
 	}
-	// TODO(babygoat): remove pre variable to overwrite Mongo.DBname after v1 endpoints & tests are removed
-	pre := globals.Conf.DB.Mongo.DBname
-	globals.Conf.DB.Mongo.DBname = testMongoDB
 
 	response := serveHTTP(http.MethodGet, "/v2/authors?keywords=小明", "", "", "")
-	// TODO(babygoat): remove pre variable to overwrite Mongo.DBname after v1 endpoints & tests are removed
-	globals.Conf.DB.Mongo.DBname = pre
-
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.JSONEq(t, authorListResponse(authorResponse(authors["王小明"])), response.Body.String())
 }
@@ -68,7 +64,9 @@ func TestGetAuthors_NoContent(t *testing.T) {
 }
 
 func TestGetAuthorByID_ByValidID(t *testing.T) {
-	defer cleanupAuthorRecords()
+	db, cleanup := setupMongoGoDriverTestDB()
+	defer cleanup()
+	defer cleanupAuthorRecords(db)
 
 	author := testAuthor{
 		id:        primitive.NewObjectID(),
@@ -77,14 +75,9 @@ func TestGetAuthorByID_ByValidID(t *testing.T) {
 		createdAt: time.Unix(1611817200, 0),
 	}
 	// setup records
-	migrateAuthorRecord(author)
-	// TODO(babygoat): remove pre variable to overwrite Mongo.DBname after v1 endpoints & tests are removed
-	pre := globals.Conf.DB.Mongo.DBname
-	globals.Conf.DB.Mongo.DBname = testMongoDB
+	migrateAuthorRecord(db, author)
 
 	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v2/authors/%s", author.id.Hex()), "", "", "")
-	// TODO(babygoat): remove pre variable to overwrite Mongo.DBname after v1 endpoints & tests are removed
-	globals.Conf.DB.Mongo.DBname = pre
 
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.JSONEq(t, singleRecordResponse(authorResponse(author)), response.Body.String())
@@ -95,16 +88,16 @@ func TestGetAuthorByID_ByInvalidID(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, response.Code)
 }
 
-func cleanupAuthorRecords() {
-	testMongoClient.Database(testMongoDB).Collection(news.ColContacts).Drop(context.Background())
-	testMongoClient.Database(testMongoDB).Collection(news.ColImages).Drop(context.Background())
+func cleanupAuthorRecords(db *mongo.Database) {
+	db.Collection(news.ColContacts).Drop(context.Background())
+	db.Collection(news.ColImages).Drop(context.Background())
 }
 
-func migrateAuthorRecord(author testAuthor) {
+func migrateAuthorRecord(db *mongo.Database, author testAuthor) {
 	contact := createContactDocument(author.id, author.tid, author.name, author.createdAt)
 	image := createImageDocument(author.tid)
-	testMongoClient.Database(testMongoDB).Collection(news.ColContacts).InsertOne(context.Background(), contact)
-	testMongoClient.Database(testMongoDB).Collection(news.ColImages).InsertOne(context.Background(), image)
+	db.Collection(news.ColContacts).InsertOne(context.Background(), contact)
+	db.Collection(news.ColImages).InsertOne(context.Background(), image)
 }
 
 func authorListResponse(authors ...string) string {
@@ -118,7 +111,14 @@ func authorResponse(author testAuthor) string { // use time as the id generation
 		"bio":        "test bio",
 		"name":       "%s",
 		"job_title":  "test job title",
-		"thumbnail":  {
+		"thumbnail":  %s,
+		"updated_at": "%s"
+	}`, author.id.Hex(), author.name, imageResponse(author.tid), author.createdAt.UTC().Format(time.RFC3339))
+
+}
+
+func imageResponse(id primitive.ObjectID) string {
+	return fmt.Sprintf(`{
 			"id":         "%s",
 			"description": "test description",
 			"filetype":  "image/jpeg",
@@ -149,10 +149,8 @@ func authorResponse(author testAuthor) string { // use time as the id generation
 					"url":    "https://www.twreporter.org/images/test-desktop.jpg"
 				}
 			}
-		},
-		"updated_at": "%s"
-	}`, author.id.Hex(), author.name, author.tid.Hex(), author.createdAt.UTC().Format(time.RFC3339))
-
+		}
+`, id.Hex())
 }
 
 func listResponse(total int, records []string) string {
