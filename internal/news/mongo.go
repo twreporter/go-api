@@ -69,7 +69,8 @@ func (mp mongoPagination) BuildStage() []bson.D {
 }
 
 type authorFilter struct {
-	ID string
+	ID           string
+	AuthorInPost bool
 }
 
 type mongoFilter struct {
@@ -132,12 +133,20 @@ func (mf mongoFilter) BuildElements() []bson.E {
 				if err == nil {
 					id = objectID
 				}
-				elements = append(elements, bson.E{Key: mongo.OpOr, Value: bson.A{
-					bson.D{{fieldDesigners, id}},
-					bson.D{{fieldEngineers, id}},
-					bson.D{{fieldPhotographers, id}},
-					bson.D{{fieldWriters, id}},
-				}})
+				// If search of author is performed on posts collection,
+				// `designers`, `engineers`, `photographers` and `writters` fields
+				// are the possible fields to lookup.
+				// Otherwise, only `_id` field will be queried.
+				if v.AuthorInPost {
+					elements = append(elements, bson.E{Key: mongo.OpOr, Value: bson.A{
+						bson.D{{fieldDesigners, id}},
+						bson.D{{fieldEngineers, id}},
+						bson.D{{fieldPhotographers, id}},
+						bson.D{{fieldWriters, id}},
+					}})
+				} else {
+					elements = append(elements, mongo.BuildElement(fieldID, id))
+				}
 			}
 		default:
 			log.Errorf("Unimplemented type %+v", fieldT.Type)
@@ -156,7 +165,7 @@ func fromFilter(f Filter) mongoFilter {
 		Tags:       hexToObjectIDs(f.Tags),
 		IDs:        hexToObjectIDs(f.IDs),
 		Name:       primitive.Regex{Pattern: f.Name},
-		Author:     authorFilter{ID: f.Author},
+		Author:     f.Author,
 	}
 }
 
