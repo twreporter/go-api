@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
@@ -279,9 +281,16 @@ func (s mockMailStrategy) Send(to, subject, body string) error {
 	return nil
 }
 
+type mockIndexSearcher struct{}
+
+func (mockIndexSearcher) Search(query string, opts ...interface{}) (res search.QueryRes, err error) {
+	return search.QueryRes{}, errors.New("no index search support during test")
+}
+
 func setupGinServer(gormDB *gorm.DB, mgoDB *mgo.Session, client *mongodriver.Client) *gin.Engine {
 	mailSvc := mockMailStrategy{}
-	cf := controllers.NewControllerFactory(gormDB, mgoDB, mailSvc, client)
+	searcher := mockIndexSearcher{}
+	cf := controllers.NewControllerFactory(gormDB, mgoDB, mailSvc, client, searcher)
 	engine := routers.SetupRouter(cf)
 	return engine
 }

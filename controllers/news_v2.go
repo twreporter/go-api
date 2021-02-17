@@ -24,12 +24,13 @@ type newsV2Storage interface {
 	GetAuthorCount(context.Context, *news.Query) (int, error)
 }
 
-func NewNewsV2Controller(s newsV2Storage) *newsV2Controller {
-	return &newsV2Controller{s}
+func NewNewsV2Controller(s newsV2Storage, client news.AlgoliaSearcher) *newsV2Controller {
+	return &newsV2Controller{s, client}
 }
 
 type newsV2Controller struct {
-	Storage newsV2Storage
+	Storage     newsV2Storage
+	indexClient news.AlgoliaSearcher
 }
 
 func (nc *newsV2Controller) GetPosts(c *gin.Context) {
@@ -358,18 +359,22 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 	q := news.ParseAuthorListQuery(c)
 
 	//TODO(babygoat): fetch from algolia first
+	var authors []news.Author
+	var total int
+	authors, total, err = news.GetAuthorWithIndex(nc.indexClient, q)
 
 	// fallback if fetch from algolia cannot succeed
-
-	authors, err := nc.Storage.GetAuthors(ctx, q)
-
 	if err != nil {
-		return
-	}
+		authors, err = nc.Storage.GetAuthors(ctx, q)
 
-	total, err := nc.Storage.GetAuthorCount(ctx, q)
-	if err != nil {
-		return
+		if err != nil {
+			return
+		}
+
+		total, err = nc.Storage.GetAuthorCount(ctx, q)
+		if err != nil {
+			return
+		}
 	}
 
 	if total == 0 {
@@ -383,6 +388,7 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 		"limit":  q.Limit,
 	}}})
 }
+
 func (nc *newsV2Controller) GetAuthorByID(c *gin.Context) {
 	var err error
 
