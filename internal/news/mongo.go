@@ -255,7 +255,7 @@ const (
 	fieldRelatedDocuments = "relateds"
 	fieldID               = "_id"
 	fieldState            = "state"
-	fieldThumbnail        = "thumbnail"
+	fieldThumbnail        = "image"
 	fieldBio              = "bio"
 )
 

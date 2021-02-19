@@ -97,8 +97,8 @@ type Author struct {
 	MetaOfAuthor `bson:",inline"`
 	Email        string    `bson:"email" json:"email"`
 	Bio          string    `bson:"bio" json:"bio"`
-	Thumbnail    *Image    `bson:"thumbnail" json:"thumbnail"`
-	UpdatedAt    time.Time `bson:"updated_at" json:"updated_at"`
+	Thumbnail    *Image    `bson:"image" json:"thumbnail"`
+	UpdatedAt    time.Time `bson:"updatedAt" json:"updated_at"`
 }
 
 type category struct {

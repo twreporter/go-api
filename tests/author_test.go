@@ -188,13 +188,13 @@ func singleRecordResponse(record string) string {
 
 func createContactDocument(id, thumbnailID primitive.ObjectID, name string, t time.Time) bson.M {
 	return bson.M{
-		"_id":        id,
-		"email":      "test@twreporter.org",
-		"bio":        bson.M{"html": "<p>test bio</p>", "md": "test bio"},
-		"name":       name,
-		"job_title":  "test job title",
-		"thumbnail":  thumbnailID,
-		"updated_at": t,
+		"_id":       id,
+		"email":     "test@twreporter.org",
+		"bio":       bson.M{"html": "<p>test bio</p>", "md": "test bio"},
+		"name":      name,
+		"job_title": "test job title",
+		"image":     thumbnailID,
+		"updatedAt": t,
 	}
 }
 
