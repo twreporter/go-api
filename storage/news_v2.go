@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type fetchResult struct {
@@ -259,12 +259,73 @@ func (m *mongoStorage) getMetaOfTopics(ctx context.Context, stages []bson.D) <-c
 	return result
 }
 
+func (m *mongoStorage) GetAuthors(ctx context.Context, q *news.Query) ([]news.Author, error) {
+	var authors []news.Author
+
+	mq := news.NewMongoQuery(q)
+
+	// build aggregate stages from query
+	stages := news.BuildQueryStatements(mq)
+	// build lookup(join) stages according to required fields
+	stages = append(stages, news.BuildLookupStatements(news.LookupAuthor)...)
+	// rewrite bio field with markdown format only
+	stages = append(stages, news.BuildBioMarkdownOnlyStatement())
+
+	select {
+	case <-ctx.Done():
+		return nil, errors.WithStack(ctx.Err())
+	case result, ok := <-m.getAuthors(ctx, stages):
+		switch {
+		case !ok:
+			return nil, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, result.Error
+		}
+		authors = result.Content.([]news.Author)
+	}
+
+	return authors, nil
+}
+
+func (m *mongoStorage) getAuthors(ctx context.Context, stages []bson.D) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, stages []bson.D) {
+		defer close(result)
+		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColContacts).Aggregate(ctx, stages)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		defer cursor.Close(ctx)
+
+		var authors []news.Author
+		for cursor.Next(ctx) {
+			var author news.Author
+			err := cursor.Decode(&author)
+			if err != nil {
+				result <- fetchResult{Error: errors.WithStack(err)}
+				return
+			}
+			authors = append(authors, author)
+		}
+		if err := cursor.Err(); err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		result <- fetchResult{Content: authors}
+	}(ctx, stages)
+	return result
+}
 func (m *mongoStorage) GetPostCount(ctx context.Context, q *news.Query) (int, error) {
 	return m.getCount(ctx, q, news.ColPosts)
 }
 
 func (m *mongoStorage) GetTopicCount(ctx context.Context, q *news.Query) (int, error) {
 	return m.getCount(ctx, q, news.ColTopics)
+}
+
+func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int, error) {
+	return m.getCount(ctx, q, news.ColContacts)
 }
 
 func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection string) (int, error) {

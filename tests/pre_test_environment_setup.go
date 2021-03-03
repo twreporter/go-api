@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/jinzhu/gorm"
 	mongodriver "go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2"
@@ -29,6 +31,8 @@ const (
 	mgoTagCol        = "tags"
 	mgoCategoriesCol = "postcategories"
 	mgoThemeCol      = "themes"
+
+	testMongoDB = "testdb"
 )
 
 func runMySQLMigration(gormDB *gorm.DB) {
@@ -150,7 +154,7 @@ func openMongoConnection() (session *mgo.Session, client *mongodriver.Client, er
 	// set settings
 	globals.Conf.DB.Mongo.DBname = mgoDBName
 
-	client, err = mongo.NewClient(context.Background())
+	client, err = mongo.NewClient(context.Background(), options.Client().ApplyURI(fmt.Sprintf("mongodb://localhost:27017/%s", testMongoDB)))
 	return
 }
 
@@ -180,6 +184,9 @@ func setUpDBEnvironment() (*gorm.DB, *mgo.Session, *mongodriver.Client) {
 
 	// set up collections in mongoDB
 	runMgoMigration(mgoDB)
+
+	// cleanup collections in mongo testdb (used by mongo-go-driver)
+	client.Database(testMongoDB).Drop(context.Background())
 
 	// set up default collections in mongoDB
 	setMgoDefaultRecords(mgoDB)

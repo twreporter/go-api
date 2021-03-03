@@ -4,11 +4,11 @@ import (
 	"reflect"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/twreporter/go-api/internal/mongo"
+	"github.com/twreporter/go-api/internal/query"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/guregu/null.v3"
-	"github.com/twreporter/go-api/internal/mongo"
-	"github.com/twreporter/go-api/internal/query"
 )
 
 // tagMongo is used to map the query field to the corresponded field in real mongo document
@@ -68,6 +68,11 @@ func (mp mongoPagination) BuildStage() []bson.D {
 	return stages
 }
 
+type authorFilter struct {
+	ID           string
+	AuthorInPost bool
+}
+
 type mongoFilter struct {
 	Slug       string               `mongo:"slug"`
 	State      string               `mongo:"state"`
@@ -76,6 +81,8 @@ type mongoFilter struct {
 	Categories []primitive.ObjectID `mongo:"categories"`
 	Tags       []primitive.ObjectID `mongo:"tags"`
 	IDs        []primitive.ObjectID `mongo:"_id"`
+	Name       primitive.Regex      `mongo:"name"`
+	Author     authorFilter         `mongo:"author"`
 }
 
 func (mf mongoFilter) BuildStage() []bson.D {
@@ -113,6 +120,34 @@ func (mf mongoFilter) BuildElements() []bson.E {
 			if v, ok := mongo.BuildArray(fieldV.Interface().([]primitive.ObjectID)); ok {
 				elements = append(elements, mongo.BuildElement(tag, mongo.BuildDocument(mongo.OpIn, v)))
 			}
+		case primitive.Regex:
+			v := fieldV.Interface().(primitive.Regex)
+			if v.Pattern != "" {
+				elements = append(elements, mongo.BuildElement(tag, v))
+			}
+		case authorFilter:
+			v := fieldV.Interface().(authorFilter)
+			if v.ID != "" {
+				var id interface{} = v.ID
+				objectID, err := primitive.ObjectIDFromHex(v.ID)
+				if err == nil {
+					id = objectID
+				}
+				// If search of author is performed on posts collection,
+				// `designers`, `engineers`, `photographers` and `writters` fields
+				// are the possible fields to lookup.
+				// Otherwise, only `_id` field will be queried.
+				if v.AuthorInPost {
+					elements = append(elements, bson.E{Key: mongo.OpOr, Value: bson.A{
+						bson.D{{fieldDesigners, id}},
+						bson.D{{fieldEngineers, id}},
+						bson.D{{fieldPhotographers, id}},
+						bson.D{{fieldWriters, id}},
+					}})
+				} else {
+					elements = append(elements, mongo.BuildElement(fieldID, id))
+				}
+			}
 		default:
 			log.Errorf("Unimplemented type %+v", fieldT.Type)
 		}
@@ -129,6 +164,8 @@ func fromFilter(f Filter) mongoFilter {
 		Categories: hexToObjectIDs(f.Categories),
 		Tags:       hexToObjectIDs(f.Tags),
 		IDs:        hexToObjectIDs(f.IDs),
+		Name:       primitive.Regex{Pattern: f.Name},
+		Author:     f.Author,
 	}
 }
 
@@ -218,6 +255,8 @@ const (
 	fieldRelatedDocuments = "relateds"
 	fieldID               = "_id"
 	fieldState            = "state"
+	fieldThumbnail        = "image"
+	fieldBio              = "bio"
 )
 
 type lookupInfo struct {
@@ -258,6 +297,10 @@ var (
 		fieldLeadingImage:         {Collection: ColImages, ToUnwind: true},
 		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
 		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
+	}
+
+	LookupAuthor = map[string]lookupInfo{
+		fieldThumbnail: {Collection: ColImages, ToUnwind: true},
 	}
 )
 
@@ -437,4 +480,9 @@ func shouldPreserveOrder(field string) bool {
 		}
 	}
 	return false
+}
+
+// BuildBioMarkdownOnlyStatement returns statement for rewriting `bio` field with markdown format
+func BuildBioMarkdownOnlyStatement() bson.D {
+	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".md"}}}}
 }
