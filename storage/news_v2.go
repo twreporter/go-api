@@ -316,33 +316,52 @@ func (m *mongoStorage) getAuthors(ctx context.Context, stages []bson.D) <-chan f
 	}(ctx, stages)
 	return result
 }
-func (m *mongoStorage) GetPostCount(ctx context.Context, q *news.Query) (int, error) {
+func (m *mongoStorage) GetPostCount(ctx context.Context, q *news.Query) (int64, error) {
 	return m.getCount(ctx, q, news.ColPosts)
 }
 
-func (m *mongoStorage) GetTopicCount(ctx context.Context, q *news.Query) (int, error) {
+func (m *mongoStorage) GetTopicCount(ctx context.Context, q *news.Query) (int64, error) {
 	return m.getCount(ctx, q, news.ColTopics)
 }
 
-func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int, error) {
+func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int64, error) {
 	return m.getCount(ctx, q, news.ColContacts)
 }
 
-func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection string) (int, error) {
-	// During mongo count document operation, empty array should be specified instead of nil(NULL).
-	// Thus, rather than declare stage through var (i.e. zero value = nil)
-	// use bson.D{} instead to start with empty stage([])
-	document := bson.D{}
-	mq := news.NewMongoQuery(q)
+func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection string) (int64, error) {
+	result := make(chan fetchResult)
+	go func(ctx context.Context) {
+		// During mongo count document operation, empty array should be specified instead of nil(NULL).
+		// Thus, rather than declare stage through var (i.e. zero value = nil)
+		// use bson.D{} instead to start with empty stage([])
+		document := bson.D{}
+		mq := news.NewMongoQuery(q)
 
-	// CountDocument will prepend $match key on the filter.
-	// Thus, only build elements array here rather than full match stage.
-	if elements := mq.GetFilter().BuildElements(); len(elements) > 0 {
-		document = bson.D(elements)
+		// CountDocument will prepend $match key on the filter.
+		// Thus, only build elements array here rather than full match stage.
+		if elements := mq.GetFilter().BuildElements(); len(elements) > 0 {
+			document = bson.D(elements)
+		}
+		count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(collection).CountDocuments(ctx, document)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		result <- fetchResult{Content: count}
+	}(ctx)
+	var count int64
+	select {
+	case <-ctx.Done():
+		return 0, errors.WithStack(ctx.Err())
+	case res, ok := <-result:
+		switch {
+		case !ok:
+			return 0, errors.WithStack(ctx.Err())
+		case res.Error != nil:
+			return 0, res.Error
+		}
+		count = res.Content.(int64)
 	}
-	count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(collection).CountDocuments(ctx, document)
-	if err != nil {
-		return 0, errors.WithStack(err)
-	}
-	return int(count), nil
+
+	return count, nil
 }

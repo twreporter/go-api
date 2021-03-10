@@ -19,9 +19,9 @@ type newsV2Storage interface {
 	GetMetaOfTopics(context.Context, *news.Query) ([]news.MetaOfTopic, error)
 	GetAuthors(context.Context, *news.Query) ([]news.Author, error)
 
-	GetPostCount(context.Context, *news.Query) (int, error)
-	GetTopicCount(context.Context, *news.Query) (int, error)
-	GetAuthorCount(context.Context, *news.Query) (int, error)
+	GetPostCount(context.Context, *news.Query) (int64, error)
+	GetTopicCount(context.Context, *news.Query) (int64, error)
+	GetAuthorCount(context.Context, *news.Query) (int64, error)
 }
 
 func NewNewsV2Controller(s newsV2Storage, client news.AlgoliaSearcher) *newsV2Controller {
@@ -347,8 +347,8 @@ func (nc *newsV2Controller) helperCleanup(c *gin.Context, err error) {
 func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 	var err error
 
-	//TODO(babygoat): define timeout
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), globals.Conf.News.AuthorPageTimeout)
+	defer cancel()
 
 	defer func() {
 		if err != nil {
@@ -358,9 +358,8 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 
 	q := news.ParseAuthorListQuery(c)
 
-	//TODO(babygoat): fetch from algolia first
 	var authors []news.Author
-	var total int
+	var total int64
 	authors, total, err = news.GetAuthorWithIndex(nc.indexClient, q)
 
 	// fallback if fetch from algolia cannot succeed
@@ -392,8 +391,8 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 func (nc *newsV2Controller) GetAuthorByID(c *gin.Context) {
 	var err error
 
-	// TODO(babygoat): define proper timeout
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), globals.Conf.News.AuthorPageTimeout)
+	defer cancel()
 
 	defer func() {
 		if err != nil {

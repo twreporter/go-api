@@ -75,6 +75,7 @@ news:
     post_page_timeout: 5s
     topic_page_timeout: 5s
     index_page_timeout: 5s
+    author_page_timeout: 5s
 `)
 
 type ConfYaml struct {
@@ -183,9 +184,10 @@ type EncryptConfig struct {
 
 // TODO(babygoat): move the group config to internal package
 type NewsConfig struct {
-	PostPageTimeout  time.Duration `yaml:"post_page_timeout"`
-	TopicPageTimeout time.Duration `yaml:"topic_page_timeout"`
-	IndexPageTimeout time.Duration `yaml:"index_page_timeout"`
+	PostPageTimeout   time.Duration `yaml:"post_page_timeout"`
+	TopicPageTimeout  time.Duration `yaml:"topic_page_timeout"`
+	IndexPageTimeout  time.Duration `yaml:"index_page_timeout"`
+	AuthorPageTimeout time.Duration `yaml:"author_page_timeout"`
 }
 
 func init() {
@@ -268,6 +270,7 @@ func buildConf() ConfYaml {
 	conf.News.PostPageTimeout = viper.GetDuration("news.post_page_timeout")
 	conf.News.TopicPageTimeout = viper.GetDuration("news.topic_page_timeout")
 	conf.News.IndexPageTimeout = viper.GetDuration("news.index_page_timeout")
+	conf.News.AuthorPageTimeout = viper.GetDuration("news.author_page_timeout")
 	return conf
 }
 

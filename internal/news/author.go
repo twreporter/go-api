@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func GetAuthorWithIndex(index AlgoliaSearcher, q *Query) ([]Author, int, error) {
+func GetAuthorWithIndex(index AlgoliaSearcher, q *Query) ([]Author, int64, error) {
 	var authors []Author
 	res, err := index.Search(q.Filter.Name, opt.Offset(q.Offset), opt.Length(q.Limit))
 	if err != nil {
@@ -24,5 +24,5 @@ func GetAuthorWithIndex(index AlgoliaSearcher, q *Query) ([]Author, int, error) 
 		// fallback
 		return nil, -1, errors.WithStack(err)
 	}
-	return authors, res.NbHits, nil
+	return authors, int64(res.NbHits), nil
 }
