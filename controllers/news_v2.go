@@ -377,7 +377,7 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 		}
 	}
 
-	if total == 0 {
+	if len(authors) == 0 {
 		c.Status(http.StatusNoContent)
 		return
 	}

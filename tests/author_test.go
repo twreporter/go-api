@@ -63,6 +63,27 @@ func TestGetAuthors_NoContent(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, response.Code)
 }
 
+func TestGetAuthors_NoFurtherContent(t *testing.T) {
+	db, cleanup := setupMongoGoDriverTestDB()
+	defer cleanup()
+	defer cleanupAuthorRecords(db)
+	authors := map[string]testAuthor{
+		"王小明": {
+			id:        primitive.NewObjectID(),
+			tid:       primitive.NewObjectID(),
+			name:      "王小明",
+			createdAt: time.Unix(1611817200, 0),
+		},
+	}
+	// setup records
+	for _, v := range authors {
+		migrateAuthorRecord(db, v)
+	}
+
+	response := serveHTTP(http.MethodGet, "/v2/authors?offset=1", "", "", "")
+	assert.Equal(t, http.StatusNoContent, response.Code)
+}
+
 func TestGetAuthorByID_ByValidID(t *testing.T) {
 	db, cleanup := setupMongoGoDriverTestDB()
 	defer cleanup()
