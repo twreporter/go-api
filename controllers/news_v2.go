@@ -360,18 +360,19 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 
 	var authors []news.Author
 	var total int64
-	authors, total, err = news.GetAuthorWithIndex(nc.indexClient, q)
-
-	// fallback if fetch from algolia cannot succeed
-	if err != nil {
-		authors, err = nc.Storage.GetAuthors(ctx, q)
-
-		if err != nil {
+	authors, total, err = news.GetAuthorWithIndex(ctx, nc.indexClient, q)
+	switch {
+	// Return early if timeout occurs
+	case errors.Is(err, context.DeadlineExceeded):
+		return
+	// Fallback to database query if algolia search unavailable(e.g. quota exceeds)
+	// Note that empty search result will not produce any error
+	case err != nil:
+		if authors, err = nc.Storage.GetAuthors(ctx, q); err != nil {
 			return
 		}
 
-		total, err = nc.Storage.GetAuthorCount(ctx, q)
-		if err != nil {
+		if total, err = nc.Storage.GetAuthorCount(ctx, q); err != nil {
 			return
 		}
 	}

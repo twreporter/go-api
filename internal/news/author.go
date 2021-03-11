@@ -1,15 +1,16 @@
 package news
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/opt"
 	"github.com/pkg/errors"
 )
 
-func GetAuthorWithIndex(index AlgoliaSearcher, q *Query) ([]Author, int64, error) {
+func GetAuthorWithIndex(ctx context.Context, index AlgoliaSearcher, q *Query) ([]Author, int64, error) {
 	var authors []Author
-	res, err := index.Search(q.Filter.Name, opt.Offset(q.Offset), opt.Length(q.Limit))
+	res, err := index.Search(q.Filter.Name, opt.Offset(q.Offset), opt.Length(q.Limit), ctx)
 	if err != nil {
 		// fallback
 		return nil, -1, errors.WithStack(err)
