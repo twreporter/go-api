@@ -114,6 +114,15 @@ func WithFilterIsFeatured(isFeatured bool) Option {
 	}
 }
 
+// WithFilterIDs adds the ids filter on the query
+func WithFilterIDs(ids ...string) Option {
+	return func(q *Query) {
+		if len(ids) > 0 {
+			q.Filter.IDs = ids
+		}
+	}
+}
+
 // SortUpdatedAt updates the query to sort by updatedAt field
 func WithSortUpdatedAt(isAsc bool) Option {
 	return func(q *Query) {
@@ -239,6 +248,7 @@ func ParseAuthorListQuery(c *gin.Context) *Query {
 
 func ParseSingleAuthorQuery(c *gin.Context) *Query {
 	return parseSingleQuery(c)
+
 }
 
 func ParseAuthorPostListQuery(c *gin.Context) *Query {

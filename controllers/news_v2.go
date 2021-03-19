@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"sort"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -360,7 +361,8 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 
 	var authors []news.Author
 	var total int64
-	authors, total, err = news.GetAuthorWithIndex(ctx, nc.indexClient, q)
+	var authorIDs []string
+	authorIDs, total, err = news.GetRankedAuthorIDs(ctx, nc.indexClient, q)
 	switch {
 	// Return early if timeout occurs
 	case errors.Is(err, context.DeadlineExceeded):
@@ -375,6 +377,25 @@ func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
 		if total, err = nc.Storage.GetAuthorCount(ctx, q); err != nil {
 			return
 		}
+	// Proceeds to database query with ranked author IDs to assemble the API response if result is available
+	case len(authorIDs) > 0:
+		queryForResponse := &news.Query{
+			Filter: news.Filter{
+				IDs: authorIDs,
+			},
+		}
+		if authors, err = nc.Storage.GetAuthors(ctx, queryForResponse); err != nil {
+			return
+		}
+		// Create lookup map for preserving the authors order as ranked result
+		lookupIds := make(map[string]int)
+		for index, id := range authorIDs {
+			lookupIds[id] = index
+		}
+		// Sort the data w.r.t the map
+		sort.SliceStable(authors, func(i, j int) bool {
+			return lookupIds[authors[i].ID.Hex()] < lookupIds[authors[j].ID.Hex()]
+		})
 	}
 
 	if len(authors) == 0 {
