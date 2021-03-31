@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	f "github.com/twreporter/logformatter"
@@ -73,7 +75,8 @@ func main() {
 	// mailSender := services.NewSMTPMailService() // use office365 to send mails
 	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails
 
-	cf = controllers.NewControllerFactory(db, session, mailSvc, client)
+	sClient := search.NewClient(globals.Conf.Algolia.ApplicationID, globals.Conf.Algolia.APIKey)
+	cf = controllers.NewControllerFactory(db, session, mailSvc, client, sClient.InitIndex("contacts-index-v3"))
 
 	// set up the router
 	router := routers.SetupRouter(cf)
