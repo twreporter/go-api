@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 // CreateAPeriodicDonation creates the draft record along with the first draft tap pay transaction

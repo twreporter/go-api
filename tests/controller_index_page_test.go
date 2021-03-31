@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"twreporter.org/go-api/globals"
+	"github.com/twreporter/go-api/globals"
 )
 
 type indexPageResponse struct {

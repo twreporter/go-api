@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/configs"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/configs"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
 
 	log "github.com/sirupsen/logrus"
 )

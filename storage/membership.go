@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 // MembershipStorage defines the methods we need to implement,

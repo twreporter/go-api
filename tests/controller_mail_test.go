@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/utils"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/utils"
 )
 
 func TestSendActivation(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/twreporter/go-api/internal/query"
 	"gopkg.in/guregu/null.v3"
-	"twreporter.org/go-api/internal/query"
 )
 
 type Query struct {
@@ -23,6 +23,8 @@ type Filter struct {
 	Categories []string
 	Tags       []string
 	IDs        []string
+	Name       string
+	Author     authorFilter
 }
 
 type SortBy struct {
@@ -43,6 +45,8 @@ const (
 	querySort       = "sort"
 	queryOffset     = "offset"
 	queryLimit      = "limit"
+	queryKeywords   = "keywords"
+	queryAuthorID   = "author_id"
 )
 
 type Option func(*Query)
@@ -51,6 +55,11 @@ var defaultQuery = Query{
 	Pagination: query.Pagination{Offset: 0, Limit: 10},
 	Filter:     Filter{State: "published"},
 	Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
+}
+
+var defaultAuthorQuery = Query{
+	Pagination: query.Pagination{Offset: 0, Limit: 10},
+	Sort:       SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}},
 }
 
 // NewQuery returns a default query along with the options(pagination/sort/filter).
@@ -102,6 +111,15 @@ func WithFilterStyle(style string) Option {
 func WithFilterIsFeatured(isFeatured bool) Option {
 	return func(q *Query) {
 		q.Filter.IsFeatured = null.BoolFrom(isFeatured)
+	}
+}
+
+// WithFilterIDs adds the ids filter on the query
+func WithFilterIDs(ids ...string) Option {
+	return func(q *Query) {
+		if len(ids) > 0 {
+			q.Filter.IDs = ids
+		}
 	}
 }
 
@@ -191,8 +209,63 @@ func parseSingleQuery(c *gin.Context) *Query {
 		q.Filter.Slug = slug
 	}
 
+	if authorID := c.Param(queryAuthorID); authorID != "" {
+		q.Filter.Author = authorFilter{ID: authorID}
+	}
+
 	if full, err := strconv.ParseBool(c.Query(queryFull)); err == nil {
 		q.Full = full
 	}
+	return &q
+}
+
+func ParseAuthorListQuery(c *gin.Context) *Query {
+	var q Query
+
+	q = defaultAuthorQuery
+	if keywords := c.Query(queryKeywords); keywords != "" {
+		q.Filter.Name = keywords
+	}
+	// Parse pagination
+	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
+		q.Offset = offset
+	}
+	if limit, err := strconv.Atoi(c.Query(queryLimit)); err == nil {
+		q.Limit = limit
+	}
+
+	// Parse sorting
+	if sort := c.Query(querySort); sort != "" {
+		switch sort {
+		case sortByUpdatedAt:
+			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(true)}}
+		case sortByDescending + sortByUpdatedAt:
+			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}}
+		}
+	}
+	return &q
+}
+
+func ParseSingleAuthorQuery(c *gin.Context) *Query {
+	return parseSingleQuery(c)
+
+}
+
+func ParseAuthorPostListQuery(c *gin.Context) *Query {
+	var q Query
+
+	q = defaultQuery
+	// Parse author_id
+	if authorID := c.Param("author_id"); authorID != "" {
+		q.Filter.Author = authorFilter{authorID, true}
+	}
+	// Parse pagination
+	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
+		q.Offset = offset
+	}
+	if limit, err := strconv.Atoi(c.Query(queryLimit)); err == nil {
+		q.Limit = limit
+	}
+
 	return &q
 }

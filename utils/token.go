@@ -6,7 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
 
-	"twreporter.org/go-api/globals"
+	"github.com/twreporter/go-api/globals"
 )
 
 type AuthTokenType int

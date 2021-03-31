@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/storage"
+	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/storage"
 )
 
 func TestSignIn(t *testing.T) {

@@ -21,7 +21,7 @@ COPY go.sum .
 RUN go mod download
 RUN go mod verify
 
-WORKDIR /go/src/twreporter.org/go-api
+WORKDIR /go/src/github.com/twreporter/go-api
 
 # Copy the local package files to the container's workspace.
 COPY . .

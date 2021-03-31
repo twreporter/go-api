@@ -19,8 +19,8 @@ import (
 	"gopkg.in/matryer/try.v1"
 	"gopkg.in/mgo.v2"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
 )
 
 // InitDB initiates the MySQL database connection

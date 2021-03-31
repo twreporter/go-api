@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"twreporter.org/go-api/configs"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/configs"
+	"github.com/twreporter/go-api/models"
 )
 
 /*

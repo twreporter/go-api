@@ -1,4 +1,5 @@
 ## Unreleased
+### 6.2.0
 
 ## Released
 ### 6.1.3

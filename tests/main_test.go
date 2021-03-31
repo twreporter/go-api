@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -11,22 +12,26 @@ import (
 	"testing"
 	"time"
 
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
+	"github.com/twreporter/go-api/configs"
+	"github.com/twreporter/go-api/controllers"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/routers"
+	"github.com/twreporter/go-api/storage"
+	"github.com/twreporter/go-api/utils"
 	mongodriver "go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"twreporter.org/go-api/configs"
-	"twreporter.org/go-api/controllers"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/routers"
-	"twreporter.org/go-api/storage"
-	"twreporter.org/go-api/utils"
 )
 
 var Globs globalVariables
+
+var testMongoClient *mongodriver.Client
 
 func init() {
 	var defaults = defaultVariables{
@@ -276,9 +281,16 @@ func (s mockMailStrategy) Send(to, subject, body string) error {
 	return nil
 }
 
+type mockIndexSearcher struct{}
+
+func (mockIndexSearcher) Search(query string, opts ...interface{}) (res search.QueryRes, err error) {
+	return search.QueryRes{}, errors.New("no index search support during test")
+}
+
 func setupGinServer(gormDB *gorm.DB, mgoDB *mgo.Session, client *mongodriver.Client) *gin.Engine {
 	mailSvc := mockMailStrategy{}
-	cf := controllers.NewControllerFactory(gormDB, mgoDB, mailSvc, client)
+	searcher := mockIndexSearcher{}
+	cf := controllers.NewControllerFactory(gormDB, mgoDB, mailSvc, client, searcher)
 	engine := routers.SetupRouter(cf)
 	return engine
 }
@@ -304,6 +316,7 @@ func TestMain(m *testing.M) {
 
 	Globs.GormDB = gormDB
 	Globs.MgoDB = mgoDB
+	testMongoClient = client
 
 	// set up gin server
 	engine := setupGinServer(gormDB, mgoDB, client)
@@ -312,6 +325,7 @@ func TestMain(m *testing.M) {
 
 	defer Globs.GormDB.Close()
 	defer Globs.MgoDB.Close()
+	defer func() { testMongoClient.Disconnect(context.Background()) }()
 
 	// start server for testing
 	// the reason why we start the server

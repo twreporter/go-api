@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/twreporter/go-api/internal/news"
+
 	"github.com/jinzhu/gorm"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/services"
+	"github.com/twreporter/go-api/storage"
+	"github.com/twreporter/go-api/utils"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/services"
-	"twreporter.org/go-api/storage"
-	"twreporter.org/go-api/utils"
 )
 
 // ControllerFactory generates controlloers by given persistent storage connection
@@ -20,6 +22,7 @@ type ControllerFactory struct {
 	mgoSession  *mgo.Session
 	mailService services.MailService
 	mongoClient *mongo.Client
+	indexClient news.AlgoliaSearcher
 }
 
 // GetOAuthController returns OAuth struct
@@ -48,7 +51,7 @@ func (cf *ControllerFactory) GetNewsController() *NewsController {
 }
 
 func (cf *ControllerFactory) GetNewsV2Controller() *newsV2Controller {
-	return NewNewsV2Controller(storage.NewMongoV2Storage(cf.mongoClient))
+	return NewNewsV2Controller(storage.NewMongoV2Storage(cf.mongoClient), cf.indexClient)
 }
 
 // GetMailController returns *MailController struct
@@ -84,11 +87,12 @@ func (cf *ControllerFactory) GetGormDB() *gorm.DB {
 }
 
 // NewControllerFactory generate *ControllerFactory struct
-func NewControllerFactory(gormDB *gorm.DB, mgoSession *mgo.Session, mailSvc services.MailService, client *mongo.Client) *ControllerFactory {
+func NewControllerFactory(gormDB *gorm.DB, mgoSession *mgo.Session, mailSvc services.MailService, client *mongo.Client, sClient news.AlgoliaSearcher) *ControllerFactory {
 	return &ControllerFactory{
 		gormDB:      gormDB,
 		mgoSession:  mgoSession,
 		mailService: mailSvc,
 		mongoClient: client,
+		indexClient: sClient,
 	}
 }

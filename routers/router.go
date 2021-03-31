@@ -2,6 +2,7 @@ package routers
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -10,9 +11,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	f "github.com/twreporter/logformatter"
 
-	"twreporter.org/go-api/controllers"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/middlewares"
+	"github.com/twreporter/go-api/controllers"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/middlewares"
 )
 
 const (
@@ -163,6 +164,16 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v2Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetTopics)
 	v2Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetATopic)
 	v2Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), ncV2.GetIndexPage)
+
+	v2Group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ncV2.GetAuthors)
+	v2Group.GET("/authors/:author_id", middlewares.SetCacheControl("public,max-age=600"), ncV2.GetAuthorByID)
+	v2Group.GET("/authors/:author_id/:publication", middlewares.SetCacheControl("public,max-age=900"), func(c *gin.Context) {
+		if c.Param("publication") == "posts" {
+			ncV2.GetPostsByAuthor(c)
+			return
+		}
+		c.AbortWithStatus(http.StatusNotFound)
+	})
 	// =============================
 	// v2 oauth endpoints
 	// =============================
