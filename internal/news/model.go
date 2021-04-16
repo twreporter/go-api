@@ -80,6 +80,7 @@ type Post struct {
 		ShortTitle string               `bson:"topic_name" json:"short_title"`
 		Slug       string               `bson:"slug" json:"slug"`
 		Relateds   []primitive.ObjectID `bson:"relateds" json:"relateds,omitempty"`
+		State      string               `bson:"state" json:"state"`
 	} `bson:"topics" json:"topic,omitempty"`
 	UpdatedAt time.Time `bson:"updatedAt" json:"updated_at"`
 	// TODO: rename the bson field to `writers`
