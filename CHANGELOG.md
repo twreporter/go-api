@@ -1,8 +1,17 @@
 ## Unreleased
 
+### 6.2.1
+
+#### Notable Changes
+
+- api/news:
+  - api/news: add state of the topic field in a post
+  
+#### Commits
+
 ## Released
 
-### 6.2.0
+### 6.2.0, 2021-04-16
 
 #### Notable Changes
 
