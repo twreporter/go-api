@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/models"
 )
 
 // GetTopics receive HTTP GET method request, and return the topics.

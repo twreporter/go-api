@@ -1,6 +1,55 @@
 ## Unreleased
 
 ## Released
+
+### 6.2.0
+
+#### Notable Changes
+
+- core:
+  - rename module to github host([#416](https://github.com/twreporter/go-api/pull/416))
+  
+- chore:
+  - fix configGenerator issue during CI([#423](https://github.com/twreporter/go-api/pull/423))
+  
+- api/donation:
+  - return error if patch record failed([#418](https://github.com/twreporter/go-api/pull/418))
+  
+- api/news:
+  - add /v2/authors, /v2/authors/:author_id, /v2/authors/:author_id/posts route([#419](https://github.com/twreporter/go-api/pull/419), [#420](https://github.com/twreporter/go-api/pull/420))
+
+#### Commits
+- [[3671230](https://github.com/twreporter/go-api/commit/367123017c72e3847bc83cc746496e01848cfed9)] - chore: workaround configMapGenerator issue(Ching-Yang, Tseng)
+- [[d47794f](https://github.com/twreporter/go-api/commit/d47794fffb1de5c2e49688566dae70c17db6adc8)] - chore: bump version for demo the author page(Ching-Yang, Tseng)
+- [[0bacc08](https://github.com/twreporter/go-api/commit/0bacc082757847b055453a28967bd05bf8d447a1)] - api/news: assemble the authors data in mongo(Ching-Yang, Tseng)
+- [[55fa742](https://github.com/twreporter/go-api/commit/55fa742d31e7a5480d2149135e6d1effa04c679b)] - api/news: add timeout during algolia search(Ching-Yang, Tseng)
+- [[32fc662](https://github.com/twreporter/go-api/commit/32fc662ceea2f57a43855ee3cd2c5f0b49387388)] - api/news: add timeout for author page(Ching-Yang, Tseng)
+- [[971d33a](https://github.com/twreporter/go-api/commit/971d33a16479beb5174157c0460970212fc6708d)] - api/news: return 204 if no further content available(Ching-Yang, Tseng)
+- [[b3faadf](https://github.com/twreporter/go-api/commit/b3faadf2c2583b0ea6d657567670ab85715fe0b5)] - api/news: fix author id unmarshaler(Ching-Yang, Tseng)
+- [[6e6c562](https://github.com/twreporter/go-api/commit/6e6c562f048c255fe5b79ab6d457b9687de59b9b)] - api/news: get authors from algolia in primary(Ching-Yang, Tseng)
+- [[5aa2c5e](https://github.com/twreporter/go-api/commit/5aa2c5e6f33a4c1e47185b37d5793ef6a1614bcd)] - api/news: fix incorrect thumbnail and update time(Ching-Yang, Tseng)
+- [[3e3b610](https://github.com/twreporter/go-api/commit/3e3b610e54617c84270a22f20c98cc547ecfd602)] - api/news: fix GetAuthorByID should return 404 if Invalid ID is provided(Ching-Yang, Tseng)
+- [[ddbb553](https://github.com/twreporter/go-api/commit/ddbb5532866d3867a212dba710d32a57804b8b2b)] - api/news: fix TestGetAuthorByID with InvalidID(Ching-Yang, Tseng)
+- [[8c47673](https://github.com/twreporter/go-api/commit/8c476733dddd4d5e93d68ed497ca942a7ebc602b)] - api/news: add test for getting post by an author (writer)(Ching-Yang, Tseng)
+- [[e1ff366](https://github.com/twreporter/go-api/commit/e1ff3667137553f7213823a85fea2e319c50428f)] - api/news: add test for getting posts by an author (photographer)(Ching-Yang, Tseng)
+- [[32bc2b3](https://github.com/twreporter/go-api/commit/32bc2b3a9fde7f4e5f6d900e12b889ad0e9a680f)] - api/news: add test for getting posts by an author (designer)(Ching-Yang, Tseng)
+- [[e0c9343](https://github.com/twreporter/go-api/commit/e0c934326fb654d06722d3bd6de92aff38bba3b5)] - api/news: Implement `/v2/authors/:author_id/posts`(Ching-Yang, Tseng)
+- [[0771fda](https://github.com/twreporter/go-api/commit/0771fda8308b4cbb1fa045944dd12639b2eeb251)] - api/news: add test for getting posts by an author (engineer)(Ching-Yang, Tseng)
+- [[5ed40bc](https://github.com/twreporter/go-api/commit/5ed40bc14c758adbc6831c52bf41b0e80e7fe308)] - api/news: return 404 if author_id not exists(Ching-Yang, Tseng)
+- [[187105f](https://github.com/twreporter/go-api/commit/187105f5aa35650c75e08edbb460997e073495af)] - api/news: add test for unable to get an author(Ching-Yang, Tseng)
+- [[5d39b1e](https://github.com/twreporter/go-api/commit/5d39b1e60fecd42b0f0fd99fabf4cee85d7ec8cc)] - api/news: implement `/v2/author/:author_id`(Ching-Yang, Tseng)
+- [[2b527c6](https://github.com/twreporter/go-api/commit/2b527c6b157e19f90a7a41aa566ab771a6b0c0a9)] - api/news: add test for get an author by ID(Ching-Yang, Tseng)
+- [[620fa7a](https://github.com/twreporter/go-api/commit/620fa7a98d0f78101f541655c171e8656053d362)] - api/news: return 204 if no author match(Ching-Yang, Tseng)
+- [[c88715a](https://github.com/twreporter/go-api/commit/c88715a25901f05485c67bca7a20c71f0d15f462)] - api/news: add test for search returns empty(Ching-Yang, Tseng)
+- [[655e74e](https://github.com/twreporter/go-api/commit/655e74e833afb74cea8b961f13837743e9bcf070)] - api/news: implement /v2/authors endpoint(Ching-Yang, Tseng)
+- [[151e5ca](https://github.com/twreporter/go-api/commit/151e5ca9a5a8ae49de65e59b74d6528dc546533a)] - api/news: add test for author keyword search(Ching-Yang, Tseng)
+- [[7cf094c](https://github.com/twreporter/go-api/commit/7cf094c8df9e36a146756f966b01ca401e77a957)] - chore: add another mongo testdb(Ching-Yang, Tseng)
+- [[02f366a](https://github.com/twreporter/go-api/commit/02f366aa717eee02d2c946951afd2216c14be517)] - doc: add api document of /v2/authors/{author_id}/post(Ching-Yang, Tseng)
+- [[8d4257b](https://github.com/twreporter/go-api/commit/8d4257b5e98f8d55f922c6b6c121228e78f99478)] - doc: add api document for /v2/authors/{author_id}(Ching-Yang, Tseng)
+- [[8c01fc3](https://github.com/twreporter/go-api/commit/8c01fc3cd01712e8218bd64425ee57c1cbe4a48d)] - doc: add api document to /v2/authors endpoint(Ching-Yang, Tseng)
+- [[f0cf6a1](https://github.com/twreporter/go-api/commit/f0cf6a13f0298743f2dd15d76a0d604a27117ad0)] - api/donations: return error if patch record failed(Ching-Yang, Tseng)
+- [[4c816a4](https://github.com/twreporter/go-api/commit/4c816a4f17e25b1fa0c59cf34476ba9861e71101)] - all: rename module to github host(Ching-Yang, Tseng)
+
 ### 6.1.3
 
 #### Notable Changes

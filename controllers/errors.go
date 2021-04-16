@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 
-	"twreporter.org/go-api/storage"
+	"github.com/twreporter/go-api/storage"
 )
 
 func toResponse(err error) (int, gin.H, error) {

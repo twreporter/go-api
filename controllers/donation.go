@@ -25,9 +25,9 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
-	"twreporter.org/go-api/storage"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/storage"
 )
 
 const (
@@ -723,7 +723,10 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		"user_id":      reqBody.UserID,
 		"order_number": orderNumber,
 	}, d); err != nil {
-		return 0, gin.H{}, err
+		return http.StatusInternalServerError, gin.H{
+			"status":  "error",
+			"message": "unable to patch the record",
+		}, err
 	}
 
 	if rowsAffected == 0 {

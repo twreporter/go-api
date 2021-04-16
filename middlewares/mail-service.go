@@ -6,7 +6,7 @@ import (
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"twreporter.org/go-api/globals"
+	"github.com/twreporter/go-api/globals"
 )
 
 const jwtUserPropertyForMailService = "mail-service-jwt"

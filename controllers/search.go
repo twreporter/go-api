@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	f "github.com/twreporter/logformatter"
 
-	"twreporter.org/go-api/globals"
+	"github.com/twreporter/go-api/globals"
 )
 
 // search - search records from algolia webservice

@@ -7,19 +7,21 @@ import (
 	"os"
 	"time"
 
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	f "github.com/twreporter/logformatter"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
-	"twreporter.org/go-api/configs"
-	"twreporter.org/go-api/controllers"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/internal/mongo"
-	"twreporter.org/go-api/routers"
-	"twreporter.org/go-api/services"
-	"twreporter.org/go-api/utils"
+	"github.com/twreporter/go-api/configs"
+	"github.com/twreporter/go-api/controllers"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/internal/mongo"
+	"github.com/twreporter/go-api/routers"
+	"github.com/twreporter/go-api/services"
+	"github.com/twreporter/go-api/utils"
 )
 
 func main() {
@@ -73,7 +75,8 @@ func main() {
 	// mailSender := services.NewSMTPMailService() // use office365 to send mails
 	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails
 
-	cf = controllers.NewControllerFactory(db, session, mailSvc, client)
+	sClient := search.NewClient(globals.Conf.Algolia.ApplicationID, globals.Conf.Algolia.APIKey)
+	cf = controllers.NewControllerFactory(db, session, mailSvc, client, sClient.InitIndex("contacts-index-v3"))
 
 	// set up the router
 	router := routers.SetupRouter(cf)

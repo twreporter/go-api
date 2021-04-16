@@ -8,7 +8,7 @@ jobs:
         environment:
           GO111MODULE: "on"
 
-    working_directory: /go/src/twreporter.org/go-api
+    working_directory: /go/src/github.com/twreporter/go-api
 
     steps:
       - checkout
@@ -38,7 +38,7 @@ jobs:
           command: go run ./.circleci/scripts/read-changelog.go > .pkg-version
 
       - persist_to_workspace:
-          root: /go/src/twreporter.org/go-api
+          root: /go/src/github.com/twreporter/go-api
           paths:
             - ./*
 
@@ -56,7 +56,7 @@ jobs:
           MYSQL_PASSWORD: gorm
           MYSQL_ROOT_HOST: "%"
 
-    working_directory: /go/src/twreporter.org/go-api
+    working_directory: /go/src/github.com/twreporter/go-api
 
     steps:
       - attach_workspace:
@@ -87,13 +87,13 @@ jobs:
     docker:
       - image: google/cloud-sdk
 
-    working_directory: /go/src/twreporter.org/go-api
+    working_directory: /go/src/github.com/twreporter/go-api
 
     steps:
       - setup_remote_docker
 
       - attach_workspace:
-          at: /go/src/twreporter.org/go-api
+          at: /go/src/github.com/twreporter/go-api
 
       - run:
           name: Setup custom environment variables
@@ -162,18 +162,8 @@ jobs:
       - run:
           name: Install kustomize binaries
           command: |
-            opsys=linux
-
-            curl -s "https://api.github.com/repos/kubernetes-sigs/kustomize/releases" |\
-            grep browser_download |\
-            grep $opsys |\
-            cut -d '"' -f 4 |\
-            grep /kustomize/v |\
-            sort | tail -n 1 |\
-            xargs curl -O -L
-            tar xzf ./kustomize_v*_${opsys}_amd64.tar.gz -C /usr/bin
-            kustomize version
-
+            curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash -s 3.8.9
+            mv ./kustomize /usr/local/bin/
       - run:
           name: Prepare for kubernetes config build
           command: |

@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"twreporter.org/go-api/configs"
+	"github.com/twreporter/go-api/configs"
 )
 
 func TestLoadConf(t *testing.T) {

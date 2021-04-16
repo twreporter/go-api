@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2/bson"
 
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/models"
 )
 
 // GetFullAuthors finds the authors according to mongo aggregation pipeline stages

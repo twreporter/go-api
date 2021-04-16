@@ -8,8 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/guregu/null.v3"
 
-	"twreporter.org/go-api/configs/constants"
-	"twreporter.org/go-api/models"
+	"github.com/twreporter/go-api/configs/constants"
+	"github.com/twreporter/go-api/models"
 )
 
 // GetUserByID gets the user by its ID

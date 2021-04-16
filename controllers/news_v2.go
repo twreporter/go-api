@@ -3,13 +3,14 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"sort"
 	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"twreporter.org/go-api/globals"
-	"twreporter.org/go-api/internal/news"
+	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/internal/news"
 )
 
 type newsV2Storage interface {
@@ -17,17 +18,20 @@ type newsV2Storage interface {
 	GetMetaOfPosts(context.Context, *news.Query) ([]news.MetaOfPost, error)
 	GetFullTopics(context.Context, *news.Query) ([]news.Topic, error)
 	GetMetaOfTopics(context.Context, *news.Query) ([]news.MetaOfTopic, error)
+	GetAuthors(context.Context, *news.Query) ([]news.Author, error)
 
-	GetPostCount(context.Context, *news.Query) (int, error)
-	GetTopicCount(context.Context, *news.Query) (int, error)
+	GetPostCount(context.Context, *news.Query) (int64, error)
+	GetTopicCount(context.Context, *news.Query) (int64, error)
+	GetAuthorCount(context.Context, *news.Query) (int64, error)
 }
 
-func NewNewsV2Controller(s newsV2Storage) *newsV2Controller {
-	return &newsV2Controller{s}
+func NewNewsV2Controller(s newsV2Storage, client news.AlgoliaSearcher) *newsV2Controller {
+	return &newsV2Controller{s, client}
 }
 
 type newsV2Controller struct {
-	Storage newsV2Storage
+	Storage     newsV2Storage
+	indexClient news.AlgoliaSearcher
 }
 
 func (nc *newsV2Controller) GetPosts(c *gin.Context) {
@@ -339,4 +343,128 @@ func (nc *newsV2Controller) helperCleanup(c *gin.Context, err error) {
 		}
 		log.Errorf("%+v", err)
 	}
+}
+
+func (nc *newsV2Controller) GetAuthors(c *gin.Context) {
+	var err error
+
+	ctx, cancel := context.WithTimeout(context.Background(), globals.Conf.News.AuthorPageTimeout)
+	defer cancel()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.ParseAuthorListQuery(c)
+
+	var authors []news.Author
+	var total int64
+	var authorIDs []string
+	authorIDs, total, err = news.GetRankedAuthorIDs(ctx, nc.indexClient, q)
+	switch {
+	// Return early if timeout occurs
+	case errors.Is(err, context.DeadlineExceeded):
+		return
+	// Fallback to database query if algolia search unavailable(e.g. quota exceeds)
+	// Note that empty search result will not produce any error
+	case err != nil:
+		if authors, err = nc.Storage.GetAuthors(ctx, q); err != nil {
+			return
+		}
+
+		if total, err = nc.Storage.GetAuthorCount(ctx, q); err != nil {
+			return
+		}
+	// Proceeds to database query with ranked author IDs to assemble the API response if result is available
+	case len(authorIDs) > 0:
+		queryForResponse := &news.Query{
+			Filter: news.Filter{
+				IDs: authorIDs,
+			},
+		}
+		if authors, err = nc.Storage.GetAuthors(ctx, queryForResponse); err != nil {
+			return
+		}
+		// Create lookup map for preserving the authors order as ranked result
+		lookupIds := make(map[string]int)
+		for index, id := range authorIDs {
+			lookupIds[id] = index
+		}
+		// Sort the data w.r.t the map
+		sort.SliceStable(authors, func(i, j int) bool {
+			return lookupIds[authors[i].ID.Hex()] < lookupIds[authors[j].ID.Hex()]
+		})
+	}
+
+	if len(authors) == 0 {
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": authors, "meta": gin.H{
+		"total":  total,
+		"offset": q.Offset,
+		"limit":  q.Limit,
+	}}})
+}
+
+func (nc *newsV2Controller) GetAuthorByID(c *gin.Context) {
+	var err error
+
+	ctx, cancel := context.WithTimeout(context.Background(), globals.Conf.News.AuthorPageTimeout)
+	defer cancel()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.ParseSingleAuthorQuery(c)
+
+	authors, err := nc.Storage.GetAuthors(ctx, q)
+
+	if err != nil {
+		return
+	}
+
+	if len(authors) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{"author_id": "Cannot find the author from the author_id"}})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": authors[0]})
+}
+func (nc *newsV2Controller) GetPostsByAuthor(c *gin.Context) {
+	var err error
+
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.PostPageTimeout)
+	defer cancel()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.ParseAuthorPostListQuery(c)
+
+	posts, err := nc.Storage.GetMetaOfPosts(ctx, q)
+
+	if err != nil {
+		return
+	}
+
+	total, err := nc.Storage.GetPostCount(ctx, q)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": posts, "meta": gin.H{
+		"total":  total,
+		"offset": q.Offset,
+		"limit":  q.Limit,
+	}}})
 }
