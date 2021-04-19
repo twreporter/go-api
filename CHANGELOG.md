@@ -1,15 +1,16 @@
 ## Unreleased
 
-### 6.2.1
+## Released
+
+### 6.2.1 (Current), 2021-04-19
 
 #### Notable Changes
 
 - api/news:
-  - api/news: add state of the topic field in a post
+  - api/news: add state of the topic field in a post([#428](https://github.com/twreporter/go-api/pull/428))
   
 #### Commits
-
-## Released
+- [[ad4a6a4](https://github.com/twreporter/go-api/commit/ad4a6a4aa63ea920331c31873ed8c88785758dd8)] - api/news: add state of the topic in a post(Ching-Yang, Tseng)
 
 ### 6.2.0, 2021-04-16
 
@@ -59,7 +60,7 @@
 - [[f0cf6a1](https://github.com/twreporter/go-api/commit/f0cf6a13f0298743f2dd15d76a0d604a27117ad0)] - api/donations: return error if patch record failed(Ching-Yang, Tseng)
 - [[4c816a4](https://github.com/twreporter/go-api/commit/4c816a4f17e25b1fa0c59cf34476ba9861e71101)] - all: rename module to github host(Ching-Yang, Tseng)
 
-### 6.1.3
+### 6.1.3, 2020-10-21
 
 #### Notable Changes
 
@@ -83,7 +84,7 @@
 - [[fb204bb](https://github.com/twreporter/go-api/commit/fb204bbcfd8bd1c994313aeb35dfa256b9f1d40b)] - doc: update CHANGELOG(Ching-Yang, Tseng)
 - [[e76f5fb](https://github.com/twreporter/go-api/commit/e76f5fb137ee2e58aa81e68a642d90f2fc3bd71f)] - api/donation: add receipt_header field(Ching-Yang, Tseng)
 
-### 6.1.2 (Current), 2020-09-18
+### 6.1.2, 2020-09-18
 
 #### Notable Changes
 
