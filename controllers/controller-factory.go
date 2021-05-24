@@ -44,12 +44,6 @@ func (cf *ControllerFactory) GetMembershipController() *MembershipController {
 	return NewMembershipController(gs)
 }
 
-// GetNewsController returns *NewsController struct
-func (cf *ControllerFactory) GetNewsController() *NewsController {
-	ms := storage.NewMongoStorage(cf.mgoSession)
-	return NewNewsController(ms)
-}
-
 func (cf *ControllerFactory) GetNewsV2Controller() *newsV2Controller {
 	return NewNewsV2Controller(storage.NewMongoV2Storage(cf.mongoClient), cf.indexClient)
 }
