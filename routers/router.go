@@ -141,8 +141,6 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	// endpoints for topics
 	v1Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetTopics))
 	v1Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetATopic))
-	v1Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), nc.GetIndexPageContents)
-	v1Group.GET("/index_page_categories", middlewares.SetCacheControl("public,max-age=1800"), nc.GetCategoriesPosts)
 	// endpoints for search
 	v1Group.GET("/search/authors", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchAuthors)
 	v1Group.GET("/search/posts", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchPosts)
