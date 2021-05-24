@@ -130,14 +130,6 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v1Group.GET("/web-push/subscriptions", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.IsWebPushSubscribed))
 
 	// =============================
-	// news service endpoints
-	// =============================
-	nc := cf.GetNewsController()
-	// endpoints for search
-	v1Group.GET("/search/authors", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchAuthors)
-	v1Group.GET("/search/posts", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchPosts)
-
-	// =============================
 	// mail service endpoints
 	// =============================
 
