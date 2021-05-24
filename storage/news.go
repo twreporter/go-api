@@ -17,10 +17,6 @@ type NewsStorage interface {
 	/** Close DB Connection **/
 	Close() error
 
-	/** Posts methods **/
-	GetMetaOfTopics(models.MongoQuery, int, int, string, []string) ([]models.Topic, int, error)
-	GetFullTopics(models.MongoQuery, int, int, string, []string) ([]models.Topic, int, error)
-
 	/** Authors methods **/
 	GetFullAuthors(int, int, string) ([]models.FullAuthor, int, error)
 }
