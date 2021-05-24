@@ -55,9 +55,6 @@ func TestGetATopic(t *testing.T) {
 	res = topicResponse{}
 	json.Unmarshal(body, &res)
 	assert.Equal(t, res.Record.ID, Globs.Defaults.TopicID)
-	assert.Equal(t, len(res.Record.Relateds), 2)
-	assert.Equal(t, res.Record.Relateds[0].ID, Globs.Defaults.PostID1)
-	assert.Equal(t, res.Record.Relateds[1].ID, Globs.Defaults.PostID2)
 	assert.Equal(t, res.Record.LeadingImage.ID, Globs.Defaults.ImgID1)
 	assert.Equal(t, res.Record.LeadingVideo.ID, Globs.Defaults.VideoID)
 	assert.Equal(t, res.Record.OgImage.ID, Globs.Defaults.ImgID1)
@@ -97,7 +94,6 @@ func TestGetTopics(t *testing.T) {
 	assert.Equal(t, topic.ID, Globs.Defaults.TopicCol.ID)
 	assert.Equal(t, topic.LeadingImage.ID, Globs.Defaults.ImgID1)
 	assert.Equal(t, topic.LeadingVideo.ID, Globs.Defaults.VideoID)
-	assert.Equal(t, len(topic.Relateds), 2)
 	// End -- Get all the posts //
 
 	// Start -- Get the topics with slug=mock-topic-slug//

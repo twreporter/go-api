@@ -18,8 +18,6 @@ type NewsStorage interface {
 	Close() error
 
 	/** Posts methods **/
-	GetMetaOfPosts(models.MongoQuery, int, int, string, []string) ([]models.Post, int, error)
-	GetFullPosts(models.MongoQuery, int, int, string, []string) ([]models.Post, int, error)
 	GetMetaOfTopics(models.MongoQuery, int, int, string, []string) ([]models.Topic, int, error)
 	GetFullTopics(models.MongoQuery, int, int, string, []string) ([]models.Topic, int, error)
 
