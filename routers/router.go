@@ -133,8 +133,6 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	// news service endpoints
 	// =============================
 	nc := cf.GetNewsController()
-	// endpoints for authors
-	v1Group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ginResponseWrapper(nc.GetAuthors))
 	// endpoints for search
 	v1Group.GET("/search/authors", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchAuthors)
 	v1Group.GET("/search/posts", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchPosts)

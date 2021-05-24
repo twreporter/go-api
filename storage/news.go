@@ -16,9 +16,6 @@ import (
 type NewsStorage interface {
 	/** Close DB Connection **/
 	Close() error
-
-	/** Authors methods **/
-	GetFullAuthors(int, int, string) ([]models.FullAuthor, int, error)
 }
 
 // NewMongoStorage initializes the storage connected to Mongo database
