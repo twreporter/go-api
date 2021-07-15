@@ -217,8 +217,16 @@ type (
 		ReceiptHeader null.String       `json:"receipt_header"`
 	}
 
+	queryFilterTime struct {
+		StartTime null.Int `json:"start_time"`
+		EndTime   null.Int `json:"end_time"`
+	}
+
 	queryFilter struct {
-		OrderNumber string `json:"order_number" binding:"required"`
+		OrderNumber       string           `json:"order_number" binding:"required"`
+		BankTransactionID null.String      `json:"bank_transaction_id"`
+		RecTradeID        null.String      `json:"rec_trade_id"`
+		Time              *queryFilterTime `json:"time"`
 	}
 
 	queryReq struct {
@@ -941,6 +949,13 @@ func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, e
 		}}, nil
 	}
 
+	// If the required fields `bank_transaction_id` or `rec_trade_id` are not specified, append the time filter of one month range from now
+	if reqBody.Filters.RecTradeID.IsZero() && reqBody.Filters.BankTransactionID.IsZero() {
+		end := time.Now()
+		start := end.AddDate(0, -1, 0)
+		reqBody.Filters.Time.EndTime = null.IntFrom(end.Unix())
+		reqBody.Filters.Time.StartTime = null.IntFrom(start.Unix())
+	}
 	tapPayResp, err := reqBody.QueryServer()
 
 	if err != nil {
