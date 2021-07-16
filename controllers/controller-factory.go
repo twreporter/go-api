@@ -6,13 +6,13 @@ import (
 
 	"github.com/twreporter/go-api/internal/news"
 
+	"github.com/globalsign/mgo"
 	"github.com/jinzhu/gorm"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/services"
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/utils"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2"
 )
 
 // ControllerFactory generates controlloers by given persistent storage connection

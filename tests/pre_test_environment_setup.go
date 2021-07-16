@@ -8,10 +8,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"github.com/jinzhu/gorm"
 	mongodriver "go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/mongo"

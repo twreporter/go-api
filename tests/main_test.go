@@ -15,6 +15,7 @@ import (
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 
 	"github.com/gin-gonic/gin"
+	"github.com/globalsign/mgo"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 	"github.com/twreporter/go-api/configs"
@@ -25,7 +26,6 @@ import (
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/utils"
 	mongodriver "go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2"
 )
 
 var Globs globalVariables
