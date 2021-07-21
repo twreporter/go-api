@@ -36,9 +36,7 @@ Post to get a tappay record
             {
                 "status": "fail",
                 "data": {
-                    "filters": {
-                        "order_number": "not found"
-                    }
+                    "filters": "{\"order_number\": \"twreporter-123\"} cannot address a existing resource."
                 }
             }
    
@@ -51,6 +49,8 @@ Post to get a tappay record
 + records_per_page: 1 (optional, number)
 + filters
     + `order_number`: `twreporter-153371414230837160610` (required)
+    + `rec_trade_id`: LN201711088cHQHr (optional)
+    + `bank_transaction_id`: TP201711088cHQHr (optional)
 
 ### TappayTradeRecords
 + record_status: 0 (number)
