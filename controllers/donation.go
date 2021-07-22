@@ -713,6 +713,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	}
 
 	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
+		log.WithField("payload", reqBody).Infof("cannot patch the personal info of the donor, %v", failData)
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
