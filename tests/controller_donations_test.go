@@ -3,6 +3,7 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -1463,17 +1464,25 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 
 }
 
+type (
+	recordFilter struct {
+		OrderNumber       string      `json:"order_number"`
+		RecTradeID        null.String `json:"rec_trade_id"`
+		BankTransactionID null.String `json:"bank_transaction_id"`
+		Time              struct {
+			StartTime null.Int `json:"start_time"`
+			EndTime   null.Int `json:"end_time"`
+		}
+	}
+
+	recordRequestBody struct {
+		RecordsPerPage uint         `json:"records_per_page"`
+		Filters        recordFilter `json:"filters"`
+	}
+)
+
 func TestQueryTappayServer(t *testing.T) {
 	type (
-		filter struct {
-			OrderNumber string `json:"order_number"`
-		}
-
-		requestBody struct {
-			RecordsPerPage uint   `json:"records_per_page"`
-			Filters        filter `json:"filters"`
-		}
-
 		tradeRecord struct {
 			RecordStatus int `json:"record_status"`
 		}
@@ -1540,10 +1549,15 @@ func TestQueryTappayServer(t *testing.T) {
 		Msg:    "Gateway timeout",
 	}
 
+	queryMissingTimeRecord := tappayRecord{
+		Status: 537,
+		Msg:    "Invalid arguments : filters > time > end_time",
+	}
+
 	cases := []struct {
 		reqHeader
 		name             string
-		reqBody          *requestBody
+		reqBody          *recordRequestBody
 		preRecord        *models.PayByPrimeDonation
 		stubTappayServer *httptest.Server
 		resultCode       int
@@ -1562,8 +1576,8 @@ func TestQueryTappayServer(t *testing.T) {
 				Cookie:        &maliciousCookie,
 				Authorization: maliciousAuthorization,
 			},
-			reqBody: &requestBody{
-				Filters: filter{
+			reqBody: &recordRequestBody{
+				Filters: recordFilter{
 					OrderNumber: "ValidOrderNumber1",
 				},
 			},
@@ -1576,8 +1590,8 @@ func TestQueryTappayServer(t *testing.T) {
 				Cookie:        &cookie,
 				Authorization: authorization,
 			},
-			reqBody: &requestBody{
-				Filters: filter{
+			reqBody: &recordRequestBody{
+				Filters: recordFilter{
 					OrderNumber: "Invalid Order Number",
 				},
 			},
@@ -1585,20 +1599,52 @@ func TestQueryTappayServer(t *testing.T) {
 			resultCode: http.StatusNotFound,
 		},
 		{
+			name: "StatusCode=StatusOK,Query Success&Transaction Success&Provide required rec_trade_id or bank_transaction_id",
+			reqHeader: reqHeader{
+				Cookie:        &cookie,
+				Authorization: authorization,
+			},
+			reqBody: &recordRequestBody{
+				Filters: recordFilter{
+					OrderNumber:       "ValidOrderNumber1",
+					RecTradeID:        null.StringFrom("ValidRecTradeID1"),
+					BankTransactionID: null.StringFrom("ValidBankTransactionID1"),
+				},
+			},
+			preRecord: &dbRecord,
+			stubTappayServer: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("Content-Type", "application/json")
+				var resp []byte
+				if ValidateRecordRequest(t, r.Body) {
+					resp, _ = json.Marshal(transactionSuccessRecord)
+				} else {
+					resp, _ = json.Marshal(queryMissingTimeRecord)
+				}
+				w.Write(resp)
+			})),
+			resultCode:    http.StatusOK,
+			resultCompare: &transactionSuccessRecord,
+		},
+		{
 			name: "StatusCode=StatusOK,Query Success&Transaction Success",
 			reqHeader: reqHeader{
 				Cookie:        &cookie,
 				Authorization: authorization,
 			},
-			reqBody: &requestBody{
-				Filters: filter{
+			reqBody: &recordRequestBody{
+				Filters: recordFilter{
 					OrderNumber: "ValidOrderNumber1",
 				},
 			},
 			preRecord: &dbRecord,
 			stubTappayServer: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Add("Content-Type", "application/json")
-				resp, _ := json.Marshal(transactionSuccessRecord)
+				var resp []byte
+				if ValidateRecordRequest(t, r.Body) {
+					resp, _ = json.Marshal(transactionSuccessRecord)
+				} else {
+					resp, _ = json.Marshal(queryMissingTimeRecord)
+				}
 				w.Write(resp)
 			})),
 			resultCode:    http.StatusOK,
@@ -1610,15 +1656,20 @@ func TestQueryTappayServer(t *testing.T) {
 				Cookie:        &cookie,
 				Authorization: authorization,
 			},
-			reqBody: &requestBody{
-				Filters: filter{
+			reqBody: &recordRequestBody{
+				Filters: recordFilter{
 					OrderNumber: "ValidOrderNumber1",
 				},
 			},
 			preRecord: &dbRecord,
 			stubTappayServer: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Add("Content-Type", "application/json")
-				resp, _ := json.Marshal(transactionFailRecord)
+				var resp []byte
+				if ValidateRecordRequest(t, r.Body) {
+					resp, _ = json.Marshal(transactionFailRecord)
+				} else {
+					resp, _ = json.Marshal(queryMissingTimeRecord)
+				}
 				w.Write(resp)
 			})),
 			resultCode:    http.StatusOK,
@@ -1631,8 +1682,8 @@ func TestQueryTappayServer(t *testing.T) {
 				Authorization: authorization,
 			},
 
-			reqBody: &requestBody{
-				Filters: filter{
+			reqBody: &recordRequestBody{
+				Filters: recordFilter{
 					OrderNumber: "ValidOrderNumber1",
 				},
 			},
@@ -1688,6 +1739,37 @@ func TestQueryTappayServer(t *testing.T) {
 			}
 		})
 	}
+}
+
+func ValidateRecordRequest(t *testing.T, body io.ReadCloser) bool {
+	t.Helper()
+	var err error
+	defer func() {
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+
+	b, err := ioutil.ReadAll(body)
+	if err != nil {
+		return false
+	}
+	defer body.Close()
+
+	var rb recordRequestBody
+	err = json.Unmarshal(b, &rb)
+	if err != nil {
+		return false
+	}
+
+	// If the request filter does not provide either `rec_trade_id` or `bank_transaction_id` filter,
+	// the time filter should be set.
+	if rb.Filters.RecTradeID.IsZero() && rb.Filters.BankTransactionID.IsZero() {
+		if rb.Filters.Time.EndTime.IsZero() || rb.Filters.Time.StartTime.IsZero() {
+			return false
+		}
+	}
+	return true
 }
 
 /* GetDonationsOfAUser is not implemented yet

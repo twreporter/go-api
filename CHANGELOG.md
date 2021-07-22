@@ -1,5 +1,16 @@
 ## Unreleased
 
+### 7.0.0
+
+### Notable Changes
+
+- api/donation:
+  - record api update ([#433](https://github.com/twreporter/go-api/pull/433))
+  - log donor info if the update occurs error ([#436](https://github.com/twreporter/go-api/pull/436))
+
+- api/auth:
+  - fix invalid mgo session ([#434](https://github.com/twreporter/go-api/pull/434))
+
 ## Released
 
 ### 6.2.1 (Current), 2021-04-19

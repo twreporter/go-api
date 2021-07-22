@@ -2,43 +2,14 @@ package tests
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/globalsign/mgo"
 	"github.com/jinzhu/gorm"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
-	"github.com/twreporter/go-api/models"
 )
 
 type defaultVariables struct {
 	Account string
 	Service string
 	Token   string
-
-	// objectID
-	ImgID1           bson.ObjectId
-	ImgID2           bson.ObjectId
-	VideoID          bson.ObjectId
-	PostID1          bson.ObjectId
-	PostID2          bson.ObjectId
-	TopicID          bson.ObjectId
-	TagID            bson.ObjectId
-	CatReviewID      bson.ObjectId
-	CatPhotographyID bson.ObjectId
-	ThemeID          bson.ObjectId
-
-	// collection
-	ImgCol1           models.MongoImage
-	ImgCol2           models.MongoImage
-	VideoCol          models.MongoVideo
-	PostCol1          models.Post
-	PostCol2          models.Post
-	TagCol            models.Tag
-	CatReviewCol      models.Category
-	CatPhotographyCol models.Category
-	TopicCol          models.Topic
-	ThemeCol          models.Theme
-
-	MockPostSlug1 string
-	MockTopicSlug string
 
 	ErrorEmailAddress string
 }

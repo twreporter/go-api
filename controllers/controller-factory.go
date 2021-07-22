@@ -6,13 +6,13 @@ import (
 
 	"github.com/twreporter/go-api/internal/news"
 
+	"github.com/globalsign/mgo"
 	"github.com/jinzhu/gorm"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/services"
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/utils"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2"
 )
 
 // ControllerFactory generates controlloers by given persistent storage connection
@@ -42,12 +42,6 @@ func (cf *ControllerFactory) GetOAuthController(oauthType string) (oauth *OAuth)
 func (cf *ControllerFactory) GetMembershipController() *MembershipController {
 	gs := storage.NewGormStorage(cf.gormDB)
 	return NewMembershipController(gs)
-}
-
-// GetNewsController returns *NewsController struct
-func (cf *ControllerFactory) GetNewsController() *NewsController {
-	ms := storage.NewMongoStorage(cf.mgoSession)
-	return NewNewsController(ms)
 }
 
 func (cf *ControllerFactory) GetNewsV2Controller() *newsV2Controller {
