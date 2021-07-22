@@ -2,8 +2,8 @@ package tests
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/globalsign/mgo"
 	"github.com/jinzhu/gorm"
-	"gopkg.in/mgo.v2"
 )
 
 type defaultVariables struct {

@@ -1,10 +1,10 @@
 package storage
 
 import (
+	"github.com/globalsign/mgo"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2"
 )
 
 // ErrRecordNotFound record not found error, happens when haven't find any matched data when looking up with a struct
