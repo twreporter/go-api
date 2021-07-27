@@ -5,11 +5,12 @@
 ### Notable Changes
 
 - api/donation:
-  - record api update ([#433](https://github.com/twreporter/go-api/pull/433))
+  - record api update ([#433](https://github.com/twreporter/go-api/pull/433), [#440](https://github.com/twreporter/go-api/pull/440))
   - log donor info if the update occurs error ([#436](https://github.com/twreporter/go-api/pull/436))
 
 - api/auth:
   - fix invalid mgo session ([#434](https://github.com/twreporter/go-api/pull/434))
+  - log error if the session cannot be saved ([#435](https://github.com/twreporter/go-api/pull/435))
 
 ## Released
 
