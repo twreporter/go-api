@@ -950,12 +950,12 @@ func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, e
 		}}, nil
 	}
 
-	// If the required fields `bank_transaction_id` or `rec_trade_id` are not specified, append the time filter of one month range from now
+	// If the required fields `bank_transaction_id` or `rec_trade_id` are not specified, append the time filter of the 90 days interval from now
 	if reqBody.Filters.RecTradeID.IsZero() && reqBody.Filters.BankTransactionID.IsZero() {
 		end := time.Now()
-		start := end.AddDate(0, -1, 0)
-		reqBody.Filters.Time.EndTime = null.IntFrom(end.Unix())
-		reqBody.Filters.Time.StartTime = null.IntFrom(start.Unix())
+		start := end.AddDate(0, 0, -90)
+		reqBody.Filters.Time.EndTime = null.IntFrom(end.Unix() * 1000)
+		reqBody.Filters.Time.StartTime = null.IntFrom(start.Unix() * 1000)
 	}
 	tapPayResp, err := reqBody.QueryServer()
 
