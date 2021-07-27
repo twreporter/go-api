@@ -13,6 +13,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	f "github.com/twreporter/logformatter"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/google"
@@ -85,7 +86,15 @@ func beginAuth(c *gin.Context, conf *oauth2.Config) {
 	session := sessions.Default(c)
 	session.Set("state", state)
 	session.Set("destination", destination)
-	session.Save()
+	err = session.Save()
+	if err != nil {
+		err = errors.WithStack(err)
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", err)
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+	}
 
 	url := conf.AuthCodeURL(state)
 
