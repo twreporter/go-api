@@ -217,8 +217,16 @@ type (
 		ReceiptHeader null.String       `json:"receipt_header"`
 	}
 
+	queryFilterTime struct {
+		StartTime null.Int `json:"start_time"`
+		EndTime   null.Int `json:"end_time"`
+	}
+
 	queryFilter struct {
-		OrderNumber string `json:"order_number" binding:"required"`
+		OrderNumber       string           `json:"order_number" binding:"required"`
+		BankTransactionID null.String      `json:"bank_transaction_id"`
+		RecTradeID        null.String      `json:"rec_trade_id"`
+		Time              *queryFilterTime `json:"time"`
 	}
 
 	queryReq struct {
@@ -705,6 +713,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	}
 
 	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
+		log.WithField("payload", reqBody).Infof("cannot patch the personal info of the donor, %v", failData)
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -941,6 +950,13 @@ func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, e
 		}}, nil
 	}
 
+	// If the required fields `bank_transaction_id` or `rec_trade_id` are not specified, append the time filter of the 90 days interval from now
+	if reqBody.Filters.RecTradeID.IsZero() && reqBody.Filters.BankTransactionID.IsZero() {
+		end := time.Now()
+		start := end.AddDate(0, 0, -90)
+		reqBody.Filters.Time.EndTime = null.IntFrom(end.Unix() * 1000)
+		reqBody.Filters.Time.StartTime = null.IntFrom(start.Unix() * 1000)
+	}
 	tapPayResp, err := reqBody.QueryServer()
 
 	if err != nil {

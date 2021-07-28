@@ -8,10 +8,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"github.com/jinzhu/gorm"
 	mongodriver "go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/mongo"
@@ -96,28 +96,7 @@ func setGormDefaultRecords(gormDB *gorm.DB) {
 }
 
 func setMgoDefaultRecords(mgoDB *mgo.Session) {
-	// insert img1 and  img2
-	mgoDB.DB(mgoDBName).C(mgoImgCol).Insert(Globs.Defaults.ImgCol1)
 
-	mgoDB.DB(mgoDBName).C(mgoImgCol).Insert(Globs.Defaults.ImgCol2)
-	// insert video
-	mgoDB.DB(mgoDBName).C(mgoVideoCol).Insert(Globs.Defaults.VideoCol)
-
-	// insert tag and postcategory
-	mgoDB.DB(mgoDBName).C(mgoTagCol).Insert(Globs.Defaults.TagCol)
-	mgoDB.DB(mgoDBName).C(mgoCategoriesCol).Insert(Globs.Defaults.CatReviewCol)
-	mgoDB.DB(mgoDBName).C(mgoCategoriesCol).Insert(Globs.Defaults.CatPhotographyCol)
-
-	// insert post1 and post2
-	mgoDB.DB(mgoDBName).C(mgoPostCol).Insert(Globs.Defaults.PostCol1)
-
-	// insert theme
-	mgoDB.DB(mgoDBName).C(mgoThemeCol).Insert(Globs.Defaults.ThemeCol)
-
-	mgoDB.DB(mgoDBName).C(mgoPostCol).Insert(Globs.Defaults.PostCol2)
-
-	// insert topic
-	mgoDB.DB(mgoDBName).C(mgoTopicCol).Insert(Globs.Defaults.TopicCol)
 }
 
 func openGormConnection() (db *gorm.DB, err error) {

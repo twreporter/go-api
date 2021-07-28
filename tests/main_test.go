@@ -15,6 +15,7 @@ import (
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 
 	"github.com/gin-gonic/gin"
+	"github.com/globalsign/mgo"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 	"github.com/twreporter/go-api/configs"
@@ -25,8 +26,6 @@ import (
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/utils"
 	mongodriver "go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var Globs globalVariables
@@ -35,151 +34,12 @@ var testMongoClient *mongodriver.Client
 
 func init() {
 	var defaults = defaultVariables{
-		Account:          "developer@twreporter.org",
-		Service:          "default_service",
-		Token:            "default_token",
-		ImgID1:           bson.NewObjectId(),
-		ImgID2:           bson.NewObjectId(),
-		VideoID:          bson.NewObjectId(),
-		PostID1:          bson.NewObjectId(),
-		PostID2:          bson.NewObjectId(),
-		TopicID:          bson.NewObjectId(),
-		TagID:            bson.NewObjectId(),
-		CatReviewID:      bson.ObjectIdHex(configs.ReviewListID),
-		CatPhotographyID: bson.ObjectIdHex(configs.PhotographyListID),
-		ThemeID:          bson.NewObjectId(),
-
-		MockPostSlug1: "mock-post-slug-1",
-		MockTopicSlug: "mock-topic-slug",
+		Account: "developer@twreporter.org",
+		Service: "default_service",
+		Token:   "default_token",
 
 		ErrorEmailAddress: "error@twreporter.org",
 	}
-
-	img1 := models.MongoImage{
-		ID:          defaults.ImgID1,
-		Description: "mock image desc",
-		Copyright:   "",
-		Image: models.MongoImageAsset{
-			Height:   1200,
-			Filetype: "image/jpg",
-			Width:    2000,
-			URL:      "https://www.twreporter.org/images/mock-image-1.jpg",
-			ResizedTargets: models.ResizedTargets{
-				Mobile: models.ImageAsset{
-					Height: 600,
-					Width:  800,
-					URL:    "https://www.twreporter.org/images/mock-image-1-mobile.jpg",
-				},
-				Tablet: models.ImageAsset{
-					Height: 1000,
-					Width:  1400,
-					URL:    "https://www.twreporter.org/images/mock-image-1-tablet.jpg",
-				},
-				Desktop: models.ImageAsset{
-					Height: 1200,
-					Width:  2000,
-					URL:    "https://www.twreporter.org/images/mock-image-1-desktop.jpg",
-				},
-				Tiny: models.ImageAsset{
-					Height: 60,
-					Width:  80,
-					URL:    "https://www.twreporter.org/images/mock-image-1-tiny.jpg",
-				},
-				W400: models.ImageAsset{
-					Height: 300,
-					Width:  400,
-					URL:    "https://www.twreporter.org/images/mock-image-1-w400.jpg",
-				},
-			},
-		},
-	}
-	defaults.ImgCol1 = img1
-	img2 := img1
-	img2.ID = defaults.ImgID2
-	defaults.ImgCol2 = img2
-
-	video := models.MongoVideo{
-		ID:    defaults.VideoID,
-		Title: "mock video title",
-		Video: models.MongoVideoAsset{
-			Filetype: "video/mp4",
-			Size:     1000,
-			URL:      "https://www.twreporter.org/videos/mock-video.mp4",
-		},
-	}
-	defaults.VideoCol = video
-
-	tag := models.Tag{
-		ID:   defaults.TagID,
-		Name: "mock tag",
-	}
-	defaults.TagCol = tag
-
-	defaults.CatReviewCol = models.Category{
-		ID:   defaults.CatReviewID,
-		Name: "評論",
-	}
-
-	defaults.CatPhotographyCol = models.Category{
-		ID:   defaults.CatPhotographyID,
-		Name: "攝影",
-	}
-
-	theme := models.Theme{
-		ID:            defaults.ThemeID,
-		Name:          "photograph",
-		TitlePosition: "title-above",
-	}
-	defaults.ThemeCol = theme
-
-	post1 := models.Post{
-		ID:               defaults.PostID1,
-		Slug:             defaults.MockPostSlug1,
-		Name:             "mock post slug 1",
-		Style:            "article:v2:default",
-		State:            "published",
-		ThemeOrigin:      defaults.ThemeID,
-		PublishedDate:    time.Now(),
-		HeroImageOrigin:  defaults.ImgID1,
-		CategoriesOrigin: []bson.ObjectId{defaults.CatPhotographyID},
-		OgImageOrigin:    defaults.ImgID1,
-		IsFeatured:       true,
-		TopicOrigin:      defaults.TopicID,
-		RelatedsOrigin:   []bson.ObjectId{defaults.PostID2},
-	}
-	defaults.PostCol1 = post1
-
-	post2 := models.Post{
-		ID:                         defaults.PostID2,
-		Slug:                       "mock-post-slug-2",
-		Name:                       "mock post slug 2",
-		Style:                      "article:v2:default",
-		State:                      "published",
-		ThemeOrigin:                defaults.ThemeID,
-		PublishedDate:              post1.PublishedDate.Add(time.Duration(1) * time.Minute),
-		HeroImageOrigin:            defaults.ImgID2,
-		CategoriesOrigin:           []bson.ObjectId{defaults.CatReviewID},
-		OgImageOrigin:              defaults.ImgID2,
-		IsFeatured:                 false,
-		LeadingImagePortraitOrigin: defaults.ImgID1,
-		TopicOrigin:                defaults.TopicID,
-		RelatedsOrigin:             []bson.ObjectId{defaults.PostID2},
-		TagsOrigin:                 []bson.ObjectId{defaults.TagID},
-	}
-	defaults.PostCol2 = post2
-
-	topic := models.Topic{
-		ID:                 defaults.TopicID,
-		Slug:               defaults.MockTopicSlug,
-		TopicName:          "mock topic slug",
-		Title:              "mock title",
-		State:              "published",
-		RelatedsOrigin:     []bson.ObjectId{defaults.PostID1, defaults.PostID2},
-		LeadingImageOrigin: defaults.ImgID1,
-		LeadingVideoOrigin: defaults.VideoID,
-		OgImageOrigin:      defaults.ImgID1,
-	}
-	defaults.TopicCol = topic
 
 	Globs = globalVariables{
 		Defaults: defaults,

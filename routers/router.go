@@ -130,24 +130,6 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v1Group.GET("/web-push/subscriptions", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.IsWebPushSubscribed))
 
 	// =============================
-	// news service endpoints
-	// =============================
-	nc := cf.GetNewsController()
-	// endpoints for authors
-	v1Group.GET("/authors", middlewares.SetCacheControl("public,max-age=600"), ginResponseWrapper(nc.GetAuthors))
-	// endpoints for posts
-	v1Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetPosts))
-	v1Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetAPost))
-	// endpoints for topics
-	v1Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetTopics))
-	v1Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), ginResponseWrapper(nc.GetATopic))
-	v1Group.GET("/index_page", middlewares.SetCacheControl("public,max-age=1800"), nc.GetIndexPageContents)
-	v1Group.GET("/index_page_categories", middlewares.SetCacheControl("public,max-age=1800"), nc.GetCategoriesPosts)
-	// endpoints for search
-	v1Group.GET("/search/authors", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchAuthors)
-	v1Group.GET("/search/posts", middlewares.SetCacheControl("public,max-age=3600"), nc.SearchPosts)
-
-	// =============================
 	// mail service endpoints
 	// =============================
 
