@@ -1,8 +1,13 @@
 ## Unreleased
 
-### 7.0.0
+## Released
 
-### Notable Changes
+### 7.0.0 (Current), 2021-07-27
+
+#### Notable Changes
+
+- api/news:
+  - deprecate /v1/posts, /v1/topics/, /v1/index_page, /v1/index_page_categories endpoints([#432](https://github.com/twreporter/go-api/pull/432))
 
 - api/donation:
   - record api update ([#433](https://github.com/twreporter/go-api/pull/433), [#440](https://github.com/twreporter/go-api/pull/440))
@@ -12,9 +17,26 @@
   - fix invalid mgo session ([#434](https://github.com/twreporter/go-api/pull/434))
   - log error if the session cannot be saved ([#435](https://github.com/twreporter/go-api/pull/435))
 
-## Released
+#### Commits
+- [[458d643](https://github.com/twreporter/go-api/commit/458d643f4417172d3e8bae0a214a9f584ba82b5d)] - doc: update CHANGELOG(Ching-Yang, Tseng)
+- [[bb6017b](https://github.com/twreporter/go-api/commit/bb6017b92c49bcd216b1b877d897910885b6140b)] - api/donation: fix time filter unit(Ching-Yang, Tseng)
+- [[4805a5c](https://github.com/twreporter/go-api/commit/4805a5c4c92a9fd959755a0a04bfd42ac179faac)] - doc: update CHANGELOG(Ching-Yang, Tseng)
+- [[bf53737](https://github.com/twreporter/go-api/commit/bf5373701373700817ef8210364c0d0cbf81f60d)] - api/donation: log donor info if the update occurs error(Ching-Yang, Tseng)
+- [[6584064](https://github.com/twreporter/go-api/commit/658406499bb7f6b7ec803d2f2934db11929fa6b8)] - api/auth: fix invalid mgo session(Ching-Yang, Tseng)
+- [[a6275bd](https://github.com/twreporter/go-api/commit/a6275bddb189b91132f1bb645b9e1a98b6778d3b)] - api/donation: update the endpoint according API change(Ching-Yang, Tseng)
+- [[f78ebac](https://github.com/twreporter/go-api/commit/f78ebac6635b415039623fcc2775d35ea386b8c4)] - api/auth: log error if the session cannot be saved(Ching-Yang, Tseng)
+- [[5935451](https://github.com/twreporter/go-api/commit/593545154f8be646c9d8e407cf15f9fa77b2f850)] - api/donation: update test according to API change(Ching-Yang, Tseng)
+- [[37a540e](https://github.com/twreporter/go-api/commit/37a540e8ddffcb79e997d13f2ce2b6b3b4798b33)] - doc: update /v1/tappay_record endpoint(Ching-Yang, Tseng)
+- [[29e3316](https://github.com/twreporter/go-api/commit/29e331651ad04cdaf62a67873e2e947df4e4dc13)] - doc: remove deprecated api on readme(Ching-Yang, Tseng)
+- [[d814162](https://github.com/twreporter/go-api/commit/d8141621f617bd43bc663f504a75a49112af14eb)] - api/news: remove v1 news model files(Ching-Yang, Tseng)
+- [[cb87625](https://github.com/twreporter/go-api/commit/cb876252ab595d8e4786a14683b8d49fcee885b5)] - api/news: remove NewsController(Ching-Yang, Tseng)
+- [[d7904b6](https://github.com/twreporter/go-api/commit/d7904b6f53cee1ea4bedaa75d3e374a4b679b138)] - api/news: remove /v1/search/authors, /v1/search/posts(Ching-Yang, Tseng)
+- [[7ef2b47](https://github.com/twreporter/go-api/commit/7ef2b47cbce4a4107238bf5d0c6ad63687614c03)] - api/news: remove /v1/authors endpoint(Ching-Yang, Tseng)
+- [[5875add](https://github.com/twreporter/go-api/commit/5875addeca498ffb81e2518cecbbc68072f6fdc2)] - api/news: remove /v1/topics, /v1/topics/:slug(Ching-Yang, Tseng)
+- [[1cefd32](https://github.com/twreporter/go-api/commit/1cefd32542ada626df534622b087a2eb41cc9afc)] - api/news: remove /v1/posts, /v1/posts/:slug(Ching-Yang, Tseng)
+- [[f2f32fd](https://github.com/twreporter/go-api/commit/f2f32fdd2c379d7b9f4d8cd5701a4be02bde4310)] - api/news: deprecate /v1/index_page(Ching-Yang, Tseng)
 
-### 6.2.1 (Current), 2021-04-19
+### 6.2.1, 2021-04-19
 
 #### Notable Changes
 
