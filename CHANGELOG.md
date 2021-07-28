@@ -6,6 +6,9 @@
 
 #### Notable Changes
 
+- api/news:
+  - deprecate /v1/posts, /v1/topics/, /v1/index_page, /v1/index_page_categories endpoints([#432](https://github.com/twreporter/go-api/pull/432))
+
 - api/donation:
   - record api update ([#433](https://github.com/twreporter/go-api/pull/433), [#440](https://github.com/twreporter/go-api/pull/440))
   - log donor info if the update occurs error ([#436](https://github.com/twreporter/go-api/pull/436))
