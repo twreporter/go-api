@@ -1193,7 +1193,7 @@ func TestLinePayNotify(t *testing.T) {
 			resultCode: http.StatusUnprocessableEntity,
 		},
 		{
-			name:      "StatusCode=StatusNoContent,Success linepay info using credit card",
+			name:      "StatusCode=StatusOK,Success linepay info using credit card",
 			preRecord: &record,
 			reqBody: tapPayRequestBody{
 				RecTradeID:        testRecTradeID,
@@ -1211,7 +1211,7 @@ func TestLinePayNotify(t *testing.T) {
 				BankResultMsg:  newBankResultMsg,
 				BankResultCode: newBankResultCode,
 			},
-			resultCode: http.StatusNoContent,
+			resultCode: http.StatusOK,
 			resultCompare: &resultPatchField{
 				Method:          "CREDIT_CARD",
 				LastFour:        "5566",
@@ -1223,7 +1223,7 @@ func TestLinePayNotify(t *testing.T) {
 			},
 		},
 		{
-			name:      "StatusCode=StatusNoContent,Success linepay info using balance but with redundant credit card number",
+			name:      "StatusCode=StatusOK,Success linepay info using balance but with redundant credit card number",
 			preRecord: &record,
 			reqBody: tapPayRequestBody{
 				RecTradeID:        testRecTradeID,
@@ -1241,7 +1241,7 @@ func TestLinePayNotify(t *testing.T) {
 				BankResultMsg:  newBankResultMsg,
 				BankResultCode: newBankResultCode,
 			},
-			resultCode: http.StatusNoContent,
+			resultCode: http.StatusOK,
 			resultCompare: &resultPatchField{
 				Method:          "BALANCE",
 				Point:           0,
@@ -1252,7 +1252,7 @@ func TestLinePayNotify(t *testing.T) {
 			},
 		},
 		{
-			name:      "StatusCode=StatusNoContent, Linepay Transaction cancelled",
+			name:      "StatusCode=StatusOK, Linepay Transaction cancelled",
 			preRecord: &record,
 			reqBody: tapPayRequestBody{
 				RecTradeID:        testRecTradeID,
@@ -1265,7 +1265,7 @@ func TestLinePayNotify(t *testing.T) {
 				BankResultMsg:     errBankResultMsg,
 				BankResultCode:    errBankResultCode,
 			},
-			resultCode: http.StatusNoContent,
+			resultCode: http.StatusOK,
 			resultCompare: &resultPatchField{
 				Status:          statusFail,
 				BankResultMsg:   errBankResultMsg,

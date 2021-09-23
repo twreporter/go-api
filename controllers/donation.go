@@ -914,7 +914,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		go mc.sendDonationThankYouMail(*mail)
 	}
 
-	return http.StatusNoContent, gin.H{}, nil
+	return http.StatusOK, gin.H{}, nil
 }
 
 func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, error) {
