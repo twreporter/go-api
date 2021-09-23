@@ -2,7 +2,19 @@
 
 ## Released
 
-### 7.0.0 (Current), 2021-07-27
+### 7.0.1 (Current), 2021-09-23
+
+#### Notable Changes
+
+- api/donation:
+  - adjust backend notification status ([#447](https://github.com/twreporter/go-api/pull/447))
+
+#### Commits
+- [[7e754db](https://github.com/twreporter/go-api/commit/7e754db82083171f8e0b15dade0df6183ef569ee)] - doc: update CHANGELOG(Ching-Yang, Tseng)
+- [[d03d6fb](https://github.com/twreporter/go-api/commit/d03d6fb761a374896bdaeaa15c75ca5fadeb401b)] - api/donation: adjust backend notification status(Ching-Yang, Tseng)
+- [[b841258](https://github.com/twreporter/go-api/commit/b841258f012bbaa9bf9b2c9c9e72320ea0984e37)] - doc: adjust backend notify success status code(Ching-Yang, Tseng)
+
+### 7.0.0, 2021-07-27
 
 #### Notable Changes
 
