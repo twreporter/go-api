@@ -60,13 +60,11 @@ func (contrl *MailController) LoadTemplateFiles(filenames ...string) {
 func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error) {
 	const subject = "歡迎登入報導者，體驗會員專屬功能"
 	var err error
-	var failData gin.H
 	var mailBody string
 	var out bytes.Buffer
 	var reqBody activationReqBody
-	var valid bool
 
-	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
+	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -92,15 +90,12 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	const subject = "扣款成功，感謝您支持報導者持續追蹤重要議題"
 	var donationDatetime time.Time
 	var err error
-	var failData gin.H
 	var location *time.Location
 	var mailBody string
 	var out bytes.Buffer
 	var reqBody donationSuccessReqBody
-	var valid bool
 
-	// parse requst JSON into struct
-	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
+	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
