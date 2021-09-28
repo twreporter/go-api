@@ -870,17 +870,6 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		}
 	}
 
-	if linePayMethodCreditCard == callbackPayload.PayInfo.Method.String {
-		// Validate Line Pay Masked Credit Card Number format
-		// sample: ************1234
-		re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
-
-		if re.MatchString(callbackPayload.PayInfo.MaskedCreditCardNumber.String) == false {
-			log.Infof("Invalid line pay credit number format: %s", callbackPayload.PayInfo.MaskedCreditCardNumber.String)
-			return http.StatusBadRequest, gin.H{}, nil
-		}
-	}
-
 	updateData := models.PayByPrimeDonation{}
 	if tapPayRespStatusSuccess == callbackPayload.Status {
 		callbackPayload.AppendLinePayOnPrimeDonation(&updateData, statusPaid)
@@ -1078,7 +1067,11 @@ func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *models.PayByPr
 	m.PayInfo = resp.PayInfo
 	m.TappayApiStatus = null.IntFrom(resp.Status)
 
-	if resp.PayInfo.Method.String == linePayMethodCreditCard {
+	// Validate Line Pay Masked Credit Card Number format
+	// sample: ************1234
+	// Only store the last four digits if it is valid
+	re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
+	if resp.PayInfo.Method.String == linePayMethodCreditCard && re.MatchString(resp.PayInfo.Method.String) {
 		m.CardInfo.LastFour = null.StringFrom(strings.Replace(resp.PayInfo.MaskedCreditCardNumber.String, "*", "", -1))
 	}
 	m.BankResultMsg = resp.BankResultMsg
