@@ -457,12 +457,11 @@ func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMetho
 	cr.Frequency = oneTimeFrequency
 }
 
-func bindRequestJSONBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
-	var err error
+func bindRequestJSONBody(c *gin.Context, reqBody interface{}) (gin.H, error) {
 	// Validate request body
 	// gin.Context.Bind does not support to bind `JSON` body multiple times
 	// the alternative is to use gin.Context.ShouldBindBodyWith function to bind
-	if err = c.ShouldBindBodyWith(reqBody, binding.JSON); nil != err {
+	if err := c.ShouldBindBodyWith(reqBody, binding.JSON); err != nil {
 		// bind other format rather than JSON
 		failData := gin.H{}
 
@@ -474,12 +473,16 @@ func bindRequestJSONBody(c *gin.Context, reqBody interface{}) (gin.H, bool) {
 				failData[errField.Name] = "cannot be empty"
 			}
 		default:
-			// Omit intentionally
+			err = errors.WithStack(err)
+			if globals.Conf.Environment == "development" {
+				log.Errorf("%+v", err)
+			} else {
+				log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+			}
 		}
-		return failData, false
+		return failData, err
 	}
-
-	return gin.H{}, true
+	return gin.H{}, nil
 }
 
 func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
@@ -540,7 +543,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	var reqBody clientReq
 	var tapPayResp tapPayTransactionResp
 
-	if failData, valid := bindRequestJSONBody(c, &reqBody); valid == false {
+	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -621,7 +624,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	var tapPayResp tapPayTransactionResp
 
 	// Validate client request
-	if failData, valid := bindRequestJSONBody(c, &reqBody); valid == false {
+	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -702,17 +705,15 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
 	var d interface{}
 	var err error
-	var failData gin.H
 	var reqBody patchBody
 	var rowsAffected int64
-	var valid bool
 	var orderNumber string
 
 	if orderNumber = c.Param("order"); "" == orderNumber {
 		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, order_number should be provided in the url"}, nil
 	}
 
-	if failData, valid = bindRequestJSONBody(c, &reqBody); valid == false {
+	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
 		log.WithField("payload", reqBody).Infof("cannot patch the personal info of the donor, %v", failData)
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
@@ -856,7 +857,7 @@ func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (
 func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H, error) {
 	var callbackPayload tapPayTransactionResp
 
-	if failData, valid := bindRequestJSONBody(c, &callbackPayload); valid == false {
+	if failData, err := bindRequestJSONBody(c, &callbackPayload); err != nil {
 		log.Infof("Fail to bind callback payload, %v", failData)
 		return http.StatusBadRequest, gin.H{}, nil
 	}
@@ -865,17 +866,6 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 	if callbackPayload.PayInfo.Method.IsZero() == false {
 		if valid := validateLinePayMethod(callbackPayload.PayInfo.Method.String); valid == false {
 			log.Infof("Invalid line pay method %s, should be %s", callbackPayload.PayInfo.Method.String, strings.Join(linePayMethods, ","))
-			return http.StatusBadRequest, gin.H{}, nil
-		}
-	}
-
-	if linePayMethodCreditCard == callbackPayload.PayInfo.Method.String {
-		// Validate Line Pay Masked Credit Card Number format
-		// sample: ************1234
-		re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
-
-		if re.MatchString(callbackPayload.PayInfo.MaskedCreditCardNumber.String) == false {
-			log.Infof("Invalid line pay credit number format: %s", callbackPayload.PayInfo.MaskedCreditCardNumber.String)
 			return http.StatusBadRequest, gin.H{}, nil
 		}
 	}
@@ -923,7 +913,7 @@ func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, e
 		d       models.PayByPrimeDonation
 	)
 
-	if failData, valid := bindRequestJSONBody(c, &reqBody); valid == false {
+	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
@@ -1077,7 +1067,11 @@ func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *models.PayByPr
 	m.PayInfo = resp.PayInfo
 	m.TappayApiStatus = null.IntFrom(resp.Status)
 
-	if resp.PayInfo.Method.String == linePayMethodCreditCard {
+	// Validate Line Pay Masked Credit Card Number format
+	// sample: ************1234
+	// Only store the last four digits if it is valid
+	re := regexp.MustCompile("^[\\*]{12}[\\d]{4}$")
+	if resp.PayInfo.Method.String == linePayMethodCreditCard && re.MatchString(resp.PayInfo.Method.String) {
 		m.CardInfo.LastFour = null.StringFrom(strings.Replace(resp.PayInfo.MaskedCreditCardNumber.String, "*", "", -1))
 	}
 	m.BankResultMsg = resp.BankResultMsg
