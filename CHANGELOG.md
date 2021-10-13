@@ -2,7 +2,18 @@
 
 ## Released
 
-### 7.0.1 (Current), 2021-09-23
+### 7.0.2 (Current), 2021-10-13
+
+#### Notable Changes
+
+- api/donation:
+  - fix patch of Line POINT only transaction ([#451](https://github.com/twreporter/go-api/pull/451)) 
+
+#### Commits
+- [[32866db](https://github.com/twreporter/go-api/commit/32866dbb29d7bcf93153217c49681daa9684ff43)] - api/donation: fix patch of Line POINT only transaction(Ching-Yang, Tseng)
+- [[c229bec](https://github.com/twreporter/go-api/commit/c229bec14c403a7946f85aaf1a6d764d2801a4a0)] - api/donation: return error detail(Ching-Yang, Tseng)
+
+### 7.0.1, 2021-09-23
 
 #### Notable Changes
 
