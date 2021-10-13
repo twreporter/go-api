@@ -1223,7 +1223,7 @@ func TestLinePayNotify(t *testing.T) {
 			},
 		},
 		{
-			name:      "StatusCode=StatusOK,Success linepay info using balance but with redundant credit card number",
+			name:      "StatusCode=StatusOK,Success transaction with line point only but the POINT method is not enabled",
 			preRecord: &record,
 			reqBody: tapPayRequestBody{
 				RecTradeID:        testRecTradeID,
@@ -1233,8 +1233,8 @@ func TestLinePayNotify(t *testing.T) {
 				Status:            0,
 				TransactionTime:   endTransactionTime.Unix() * 1000, //millisecond
 				PayInfo: models.PayInfo{
-					Method:                 null.StringFrom("BALANCE"),
-					MaskedCreditCardNumber: null.StringFrom("************5566"),
+					Method:                 null.StringFrom("CREDIT_CARD"),
+					MaskedCreditCardNumber: null.StringFrom(""),
 					Point:                  null.IntFrom(0),
 				},
 				Acquirer:       testAcquirer,
