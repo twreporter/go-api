@@ -152,10 +152,217 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	}}, nil
 }
 
+// AuthenticateV2 - send email containing authenticate information to the client
+func (mc *MembershipController) AuthenticateV2(c *gin.Context) (int, gin.H, error) {
+	// AuthenticateBody is to store POST body
+	type AuthenticateBody struct {
+		Email       string `json:"email" form:"email" binding:"required"`
+		Destination string `json:"destination" form:"destination"`
+	}
+
+	var activateHost string
+	var activeToken string
+	var email string
+	var err error
+	var matchedUser models.User
+	var ra models.ReporterAccount
+	var authentication AuthenticateBody
+	var statusCode int
+
+	switch globals.Conf.Environment {
+	case "development":
+		activateHost = "localhost"
+	case "staging":
+		activateHost = "staging-go-api.twreporter.org"
+	case "production":
+		activateHost = "go-api.twreporter.org"
+	default:
+		activateHost = "localhost"
+	}
+
+	// extract email and password field in POST body
+	if err = c.Bind(&authentication); err != nil {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": AuthenticateBody{
+			Email:       "email is required",
+			Destination: "destination is optional",
+		}}, nil
+	}
+
+	email = authentication.Email
+
+	// Check if mail address is not malform
+	_, err = mail.ParseAddress(email)
+	if err != nil {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": AuthenticateBody{
+			Email: "email is malform",
+		}}, nil
+	}
+
+	// generate active token
+	activeToken, err = utils.GenerateRandomString(8)
+	if err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Generating active token occurs error"}, err
+	}
+
+	// get reporter account by email from reporter_account table
+	ra, err = mc.Storage.GetReporterAccountData(email)
+	// account is already signed in before
+	if err == nil {
+		// update active token and token expire time
+		ra.ActivateToken = activeToken
+		ra.ActExpTime = time.Now().Add(time.Duration(15) * time.Minute)
+		if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Updating DB occurs error"}, err
+		}
+
+		statusCode = http.StatusOK
+	} else {
+		// account is not signed in before
+		if !storage.IsNotFound(err) {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("internal server error. %s", err.Error())}, err
+		}
+
+		ra = models.ReporterAccount{
+			Email:         email,
+			ActivateToken: activeToken,
+			// expire time is 15 minute
+			ActExpTime: time.Now().Add(time.Duration(15) * time.Minute),
+		}
+
+		// try to find record by email in users table
+		matchedUser, err = mc.Storage.GetUserByEmail(email)
+		// the user record is not existed
+		if err != nil {
+			// create records both in reporter_accounts and users table
+			_, err = mc.Storage.InsertUserByReporterAccount(ra)
+			if err != nil {
+				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
+			}
+		} else {
+			// if user existed,
+			// create a record in reporter_accounts table
+			// and connect these two records
+			ra.UserID = matchedUser.ID
+			err = mc.Storage.InsertReporterAccount(ra)
+			if err != nil {
+				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
+			}
+		}
+
+		statusCode = http.StatusCreated
+	}
+
+	// send activation email
+	err = postMailServiceEndpoint(activationReqBody{
+		Email: email,
+		ActivateLink: fmt.Sprintf("%s://%s:%s/v2/auth/activateauth?email=%s&token=%s&destination=%s",
+			globals.Conf.App.Protocol,
+			activateHost,
+			globals.Conf.App.Port,
+			url.QueryEscape(email),
+			url.QueryEscape(activeToken),
+			url.QueryEscape(authentication.Destination),
+		),
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationAuthRoutePath))
+
+	if err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Sending activation email occurs error"}, err
+	}
+
+	return statusCode, gin.H{"status": "success", "data": AuthenticateBody{
+		Email:       email,
+		Destination: authentication.Destination,
+	}}, nil
+}
+
 // ActivateV2 - validate the reporter account
 // if validated, then sign in successfully,
 // otherwise, sign in unsuccessfully.
 func (mc *MembershipController) ActivateV2(c *gin.Context) {
+	var defaultDomain = globals.Conf.App.Domain
+	var ra models.ReporterAccount
+	var user models.User
+
+	email := c.Query("email")
+	token := c.Query("token")
+	destination := c.Query("destination")
+
+	// If destination is unavailable or invalid, redirect back to main site.
+	u, err := url.Parse(destination)
+	if nil != err {
+		destination = defaultRedirectPage
+		u, _ = url.Parse(destination)
+	}
+
+	// Error clean up
+	defer func() {
+		if nil != err {
+			// Client side error. Do not trigger error reporting
+			log.Infof("%v", err)
+
+			//Always redirect to a designated page
+			c.Redirect(http.StatusTemporaryRedirect, authErrorPage)
+		}
+	}()
+
+	// get reporter account by email from reporter_account table
+	if ra, err = mc.Storage.GetReporterAccountData(email); err != nil {
+		return
+	}
+
+	// check expire time
+	if ra.ActExpTime.Sub(time.Now()) < time.Duration(0) {
+		err = errors.New("ActivateToken is expired")
+		return
+	}
+
+	// validate token
+	if ra.ActivateToken != token {
+		err = errors.New("Token is invalid")
+		return
+	}
+
+	// set active expire time to now to ensure the same token only being used once
+	ra.ActExpTime = time.Now()
+
+	// Error occurs during updating the record in reporter_account table
+	if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
+		return
+	}
+
+	// Error occurs during querying the record from users table
+	if user, err = mc.Storage.GetUserDataByReporterAccount(ra); err != nil {
+		return
+	}
+
+	// Create id token for jwt endpoint retrival
+	idToken, err := utils.RetrieveV2IDToken(user.ID, user.Email.ValueOrZero(), user.FirstName.ValueOrZero(), user.LastName.ValueOrZero(), idTokenExpiration)
+	if nil != err {
+		idToken = "twreporter-id-token"
+	}
+
+	// Setup Set-Cookie header in response header
+
+	// Determine cookie property
+	secure := false
+
+	if "https" == u.Scheme {
+		secure = true
+	}
+
+	parameters := u.Query()
+	parameters.Add("login_time", fmt.Sprintf("%d", time.Now().Unix()))
+	u.RawQuery = parameters.Encode()
+	destination = u.String()
+
+	c.SetCookie("id_token", idToken, idTokenExpiration, defaultPath, defaultDomain, secure, true)
+	c.Redirect(http.StatusTemporaryRedirect, destination)
+}
+
+// ActivateAuthV2 - validate the reporter account
+// if validated, then authenticate successfully,
+// otherwise, authenticate unsuccessfully.
+func (mc *MembershipController) ActivateAuthV2(c *gin.Context) {
 	var defaultDomain = globals.Conf.App.Domain
 	var ra models.ReporterAccount
 	var user models.User
