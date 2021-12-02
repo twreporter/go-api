@@ -85,6 +85,36 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 	return http.StatusNoContent, gin.H{}, nil
 }
 
+// SendAuthentication retrieves email and authentication link from rqeuest body,
+// and invoke MailService to send authentication mail
+func (contrl *MailController) SendAuthentication(c *gin.Context) (int, gin.H, error) {
+	const subject = "請驗證您的信箱"
+	var err error
+	var mailBody string
+	var out bytes.Buffer
+	var reqBody activationReqBody
+
+	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
+	}
+
+	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "authenticate.tmpl", struct {
+		Href string
+	}{
+		reqBody.ActivateLink,
+	}); err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create authenticate mail body"}, errors.WithStack(err)
+	}
+
+	mailBody = out.String()
+
+	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send authenticate mail to %s", reqBody.Email)}, err
+	}
+
+	return http.StatusNoContent, gin.H{}, nil
+}
+
 func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.H, error) {
 	const taipeiLocationName = "Asia/Taipei"
 	const subject = "扣款成功，感謝您支持報導者持續追蹤重要議題"

@@ -29,8 +29,7 @@ const (
 
 var defaultPath = "/"
 
-// SignInV2 - send email containing sign-in information to the client
-func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
+func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath string) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
 		Email       string `json:"email" form:"email" binding:"required"`
@@ -43,8 +42,8 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	var err error
 	var matchedUser models.User
 	var ra models.ReporterAccount
-	var signIn SignInBody
 	var statusCode int
+	var signIn SignInBody
 
 	switch globals.Conf.Environment {
 	case "development":
@@ -140,7 +139,7 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 			url.QueryEscape(activeToken),
 			url.QueryEscape(signIn.Destination),
 		),
-	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, sendMailRoutePath))
 
 	if err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Sending activation email occurs error"}, err
@@ -150,6 +149,16 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 		Email:       email,
 		Destination: signIn.Destination,
 	}}, nil
+}
+
+// SignInV2 - send email containing sign-in information to the client
+func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
+	return mc.AuthByEmail(c, globals.SendActivationRoutePath)
+}
+
+// AuthenticateV2 - send email containing authenticate information to the client
+func (mc *MembershipController) AuthenticateV2(c *gin.Context) (int, gin.H, error) {
+	return mc.AuthByEmail(c, globals.SendAuthenticationRoutePath)
 }
 
 // ActivateV2 - validate the reporter account
