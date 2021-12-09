@@ -21,6 +21,7 @@ const (
 
 	// route path
 	SendActivationRoutePath      = "mail/send_activation"
+	SendAuthenticationRoutePath  = "mail/send_authentication"
 	SendSuccessDonationRoutePath = "mail/send_success_donation"
 
 	// controller name
