@@ -60,7 +60,7 @@ func (cf *ControllerFactory) GetMailController() *MailController {
 		templateDir = utils.GetProjectRoot() + "/template"
 	}
 
-	contrl.LoadTemplateFiles(fmt.Sprintf("%s/signin.tmpl", templateDir), fmt.Sprintf("%s/success-donation.tmpl", templateDir))
+	contrl.LoadTemplateFiles(fmt.Sprintf("%s/signin.tmpl", templateDir), fmt.Sprintf("%s/success-donation.tmpl", templateDir), fmt.Sprintf("%s/authenticate.tmpl", templateDir))
 
 	return contrl
 }
