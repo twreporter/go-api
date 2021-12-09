@@ -1,5 +1,19 @@
 ## Unreleased
 
+### 7.1.0
+
+#### Notable Changes
+
+- api/account:
+  - add authenticate endpoint ([#456](https://github.com/twreporter/go-api/pull/456)) 
+- api/mail:
+  - update authenticate and signin email ([#456](https://github.com/twreporter/go-api/pull/456)) 
+
+#### Commits
+* [[`d680a128c0`](https://github.com/nodejs/node/commit/d680a128c0)] - api/mail: update authenticate and signin email (Tai-Jiun Fang)
+* [[`ebbbf188e1`](https://github.com/nodejs/node/commit/ebbbf188e1)] - api/account: add authenticate endpoint (Tai-Jiun Fang)
+* [[`fdef35f7e9`](https://github.com/nodejs/node/commit/fdef35f7e9)] - **doc**: add /v2/authenticate (Tai-Jiun Fang)
+
 ## Released
 
 ### 7.0.2 (Current), 2021-10-13
