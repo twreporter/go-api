@@ -1837,7 +1837,8 @@ The email contains the following attributes</p>
 <div id="membership-service-signin" class="resource"><h3 class="resource-heading">Signin <a href="#membership-service-signin" class="permalink">&nbsp;&para;</a></h3><p>Validate the logining user and send the activation email</p>
 <div id="membership-service-signin-post" class="action post"><h4 class="action-heading"><div class="name">User signins</div><a href="#membership-service-signin-post" class="method post">POST</a><code class="uri">/v2/signin</code></h4><h4>Example URI</h4><div class="definition"><span class="method post">POST</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/signin</span></div><div class="title"><strong>Request&nbsp;&nbsp;<code>with Body</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"user@example.com"</span></span>,
-  "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
+  "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span></span>,
+  "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -1846,6 +1847,9 @@ The email contains the following attributes</p>
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
     "<span class="hljs-attribute">destination</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}
   </span>}</span>,
@@ -1856,7 +1860,8 @@ The email contains the following attributes</p>
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"user@example.com"</span></span>,
-    "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
+    "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span></span>,
+    "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -1872,6 +1877,9 @@ The email contains the following attributes</p>
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">destination</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
@@ -1888,7 +1896,8 @@ The email contains the following attributes</p>
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"user@example.com"</span></span>,
-    "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
+    "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span></span>,
+    "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -1904,6 +1913,9 @@ The email contains the following attributes</p>
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">destination</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
@@ -1964,7 +1976,8 @@ The email contains the following attributes</p>
 </span>}</code></pre><div style="height: 1px;"></div></div></div></div></div><div id="membership-service-authenticate" class="resource"><h3 class="resource-heading">Authenticate <a href="#membership-service-authenticate" class="permalink">&nbsp;&para;</a></h3><p>Validate the logining user and send the authentication email</p>
 <div id="membership-service-authenticate-post" class="action post"><h4 class="action-heading"><div class="name">User authenticates</div><a href="#membership-service-authenticate-post" class="method post">POST</a><code class="uri">/v2/authenticate</code></h4><h4>Example URI</h4><div class="definition"><span class="method post">POST</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/authenticate</span></div><div class="title"><strong>Request&nbsp;&nbsp;<code>with Body</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"user@example.com"</span></span>,
-  "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
+  "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span></span>,
+  "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -1973,6 +1986,9 @@ The email contains the following attributes</p>
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
     "<span class="hljs-attribute">destination</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}
   </span>}</span>,
@@ -1983,7 +1999,8 @@ The email contains the following attributes</p>
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"user@example.com"</span></span>,
-    "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
+    "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span></span>,
+    "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -1999,6 +2016,9 @@ The email contains the following attributes</p>
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">destination</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
@@ -2015,7 +2035,8 @@ The email contains the following attributes</p>
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"user@example.com"</span></span>,
-    "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
+    "<span class="hljs-attribute">destination</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span></span>,
+    "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value"><span class="hljs-string">"https://www.twreporter.org"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -2031,6 +2052,9 @@ The email contains the following attributes</p>
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">destination</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">errorRedirection</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
@@ -15357,7 +15381,7 @@ The email contains the following attributes</p>
     <span class="hljs-string">"status"</span>,
     <span class="hljs-string">"message"</span>
   ]
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 03 Dec 2021</p><script>/* eslint-env browser */
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 21 Dec 2021</p><script>/* eslint-env browser */
 /* eslint quotes: [2, "single"] */
 'use strict';
 

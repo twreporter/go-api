@@ -5,11 +5,15 @@
 #### Notable Changes
 
 - api/account:
-  - add authenticate endpoint ([#456](https://github.com/twreporter/go-api/pull/456)) 
+  - add authenticate endpoint ([#456](https://github.com/twreporter/go-api/pull/456))
+  - redirect to the error redirection URL when error occurs ([#459](https://github.com/twreporter/go-api/pull/459))
 - api/mail:
   - update authenticate and signin email ([#456](https://github.com/twreporter/go-api/pull/456)) 
 
 #### Commits
+* [[`9d29f0a162`](https://github.com/nodejs/node/commit/9d29f0a162)] - **doc**: update signin body (Tai-Jiun Fang)
+* [[`2a973c116e`](https://github.com/nodejs/node/commit/2a973c116e)] - api/account: redirect to the error redirection URL when error occurs (Tai-Jiun Fang)
+* [[`66691f4005`](https://github.com/nodejs/node/commit/66691f4005)] - **doc**: update CHANGELOG.md (#457) (Tai-Jiun Fang)
 * [[`d680a128c0`](https://github.com/nodejs/node/commit/d680a128c0)] - api/mail: update authenticate and signin email (Tai-Jiun Fang)
 * [[`ebbbf188e1`](https://github.com/nodejs/node/commit/ebbbf188e1)] - api/account: add authenticate endpoint (Tai-Jiun Fang)
 * [[`fdef35f7e9`](https://github.com/nodejs/node/commit/fdef35f7e9)] - **doc**: add /v2/authenticate (Tai-Jiun Fang)
