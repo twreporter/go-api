@@ -18,22 +18,17 @@ import (
 	"github.com/twreporter/go-api/utils"
 )
 
-const (
-	// TODO: Update later after UX designed
-	authErrorPage = "https://www.twreporter.org/"
+const idTokenExpiration = 60 * 60 * 24 * 30 * 6
 
-	defaultRedirectPage = "https://www.twreporter.org/"
-
-	idTokenExpiration = 60 * 60 * 24 * 30 * 6
-)
-
+var defaultRedirectPage = "https://www.twreporter.org/"
 var defaultPath = "/"
 
 func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath string) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
-		Email       string `json:"email" form:"email" binding:"required"`
-		Destination string `json:"destination" form:"destination"`
+		Email            string `json:"email" form:"email" binding:"required"`
+		Destination      string `json:"destination" form:"destination"`
+		ErrorRedirection string `json:"errorRedirection" form:"errorRedirection"`
 	}
 
 	var activateHost string
@@ -59,8 +54,9 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 	// extract email and password field in POST body
 	if err = c.Bind(&signIn); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": SignInBody{
-			Email:       "email is required",
-			Destination: "destination is optional",
+			Email:            "email is required",
+			Destination:      "destination is optional",
+			ErrorRedirection: "errorRedirection is optional",
 		}}, nil
 	}
 
@@ -131,13 +127,14 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 	// send activation email
 	err = postMailServiceEndpoint(activationReqBody{
 		Email: email,
-		ActivateLink: fmt.Sprintf("%s://%s:%s/v2/auth/activate?email=%s&token=%s&destination=%s",
+		ActivateLink: fmt.Sprintf("%s://%s:%s/v2/auth/activate?email=%s&token=%s&destination=%s&error_redirection=%s",
 			globals.Conf.App.Protocol,
 			activateHost,
 			globals.Conf.App.Port,
 			url.QueryEscape(email),
 			url.QueryEscape(activeToken),
 			url.QueryEscape(signIn.Destination),
+			url.QueryEscape(signIn.ErrorRedirection),
 		),
 	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, sendMailRoutePath))
 
@@ -146,8 +143,9 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 	}
 
 	return statusCode, gin.H{"status": "success", "data": SignInBody{
-		Email:       email,
-		Destination: signIn.Destination,
+		Email:            email,
+		Destination:      signIn.Destination,
+		ErrorRedirection: signIn.ErrorRedirection,
 	}}, nil
 }
 
@@ -172,11 +170,17 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	email := c.Query("email")
 	token := c.Query("token")
 	destination := c.Query("destination")
+	errorRedirection := c.Query("error_redirection")
 
-	// If destination is unavailable or invalid, redirect back to main site.
+	_, err := url.Parse(errorRedirection)
+	if nil != err {
+		errorRedirection = defaultRedirectPage
+	}
+
+	// If destination is unavailable or invalid, redirect back to default redirect page.
 	u, err := url.Parse(destination)
 	if nil != err {
-		destination = defaultRedirectPage
+		destination = errorRedirection
 		u, _ = url.Parse(destination)
 	}
 
@@ -186,8 +190,8 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 			// Client side error. Do not trigger error reporting
 			log.Infof("%v", err)
 
-			//Always redirect to a designated page
-			c.Redirect(http.StatusTemporaryRedirect, authErrorPage)
+			//Always redirect to a error redirection page
+			c.Redirect(http.StatusTemporaryRedirect, errorRedirection)
 		}
 	}()
 
