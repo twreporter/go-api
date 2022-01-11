@@ -1,4 +1,4 @@
-ALTER TABLE `user`
+ALTER TABLE `users`
 DROP `nickname`,
 DROP `title`,
 DROP `legal_name`,

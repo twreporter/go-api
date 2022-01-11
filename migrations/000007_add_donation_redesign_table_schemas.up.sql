@@ -1,4 +1,4 @@
-ALTER TABLE `user`
+ALTER TABLE `users`
 ADD `nickname` varchar(50) DEFAULT NULL,
 ADD `title` varchar(30) DEFAULT NULL,
 ADD `legal_name` varchar(30) DEFAULT NULL,
