@@ -117,7 +117,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             + legal_name: 報導者文化基金會
             + gender: M  
             + age_range: 25_to_34  
-            + read_preference: ["human_right","cross_straits"] 
+            + read_preference: human_right,cross_straits 
             + words_for_twreporter: 加油！  
         + send_receipt: no_receipt
         + is_anonymous: true
@@ -155,7 +155,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                         "legal_name": "legal_name(string) is optional",
                         "gender": "gender(string) is optional. only support 'F', 'M', 'X', 'U'",
                         "age_range": "age_range(string) is optional",
-                        "read_preference": "age_range(array of string) is optional",
+                        "read_preference": "read_preference(string) is optional",
                         "words_for_twreporter": "words_for_twreporter(string) is optional",
                     },
                     "send_receipt": "send_receipt(string) is optional. only support 'no_receipt', 'digital_receipt_by_month' and 'digital_receipt_by_year', 'paperback_receipt_by_month', 'paperback_receipt_by_year'",
@@ -367,7 +367,7 @@ Endpoint for tappay server to notify line pay transaction result
     + legal_name: 報導者文化基金會 (optional)
     + gender: M (optional)  
     + age_range: 25_to_34 (optional) 
-    + read_preference: ["human_right","cross_straits"] (optional)
+    + read_preference: human_right,cross_straits (optional)
     + words_for_twreporter: 加油！(optional)  
 + receipt (optional)
     + header: 王小明 (optional)
