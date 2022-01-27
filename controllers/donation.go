@@ -112,34 +112,35 @@ var linePayMethods = []string{
 
 type (
 	clientReq struct {
-		Amount       uint              `json:"amount" binding:"required"`
-		Cardholder   models.Cardholder `json:"donor" binding:"required,dive"`
-		Currency     string            `json:"currency"`
-		Details      string            `json:"details"`
-		Frequency    string            `json:"frequency"`
-		MerchantID   string            `json:"merchant_id"`
-		PayMethod    string            `json:"pay_method"`
-		Prime        string            `json:"prime" binding:"required"`
-		UserID       uint              `json:"user_id" binding:"required"`
-		MaxPaidTimes uint              `json:"max_paid_times"`
+		Amount       uint                 `json:"amount" binding:"required"`
+		Cardholder   models.Cardholder    `json:"donor" binding:"required,dive"`
+		Receipt      models.ReceiptDetail `json:"receipt" binding:"required,dive"`
+		Currency     string               `json:"currency"`
+		Details      string               `json:"details"`
+		Frequency    string               `json:"frequency"`
+		MerchantID   string               `json:"merchant_id"`
+		PayMethod    string               `json:"pay_method"`
+		Prime        string               `json:"prime" binding:"required"`
+		UserID       uint                 `json:"user_id" binding:"required"`
+		MaxPaidTimes uint                 `json:"max_paid_times"`
 	}
 
 	clientResp struct {
-		Amount        uint              `json:"amount"`
-		CardInfo      models.CardInfo   `json:"card_info"`
-		Cardholder    models.Cardholder `json:"cardholder"`
-		Currency      string            `json:"currency"`
-		Details       string            `json:"details"`
-		Frequency     string            `json:"frequency"`
-		ID            uint              `json:"id"`
-		Notes         string            `json:"notes"`
-		OrderNumber   string            `json:"order_number"`
-		PayMethod     string            `json:"pay_method"`
-		SendReceipt   string            `json:"send_receipt"`
-		ToFeedback    bool              `json:"to_feedback"`
-		IsAnonymous   bool              `json:"is_anonymous"`
-		PaymentUrl    string            `json:"payment_url"`
-		ReceiptHeader null.String       `json:"receipt_header"`
+		Amount        uint                `json:"amount"`
+		CardInfo      models.CardInfo     `json:"card_info"`
+		Cardholder    models.Cardholder   `json:"cardholder"`
+		Receipt      models.ReceiptDetail `json:"receipt"`
+		Currency      string              `json:"currency"`
+		Details       string              `json:"details"`
+		Frequency     string              `json:"frequency"`
+		ID            uint                `json:"id"`
+		Notes         string              `json:"notes"`
+		OrderNumber   string              `json:"order_number"`
+		PayMethod     string              `json:"pay_method"`
+		SendReceipt   string              `json:"send_receipt"`
+		ToFeedback    bool                `json:"to_feedback"`
+		IsAnonymous   bool                `json:"is_anonymous"`
+		PaymentUrl    string              `json:"payment_url"`
 	}
 
 	bankTransactionTime struct {
@@ -208,13 +209,14 @@ type (
 	payType int
 
 	patchBody struct {
-		Donor         models.Cardholder `json:"donor"`
-		Notes         string            `json:"notes"`
-		SendReceipt   string            `json:"send_receipt"`
-		ToFeedback    bool              `json:"to_feedback"`
-		UserID        uint              `json:"user_id" binding:"required"`
-		IsAnonymous   bool              `json:"is_anonymous"`
-		ReceiptHeader null.String       `json:"receipt_header"`
+		Donor           models.Cardholder    `json:"donor"`
+		Receipt         models.ReceiptDetail `json:"receipt"`
+		Notes           string               `json:"notes"`
+		SendReceipt     string               `json:"send_receipt"`
+		ToFeedback      bool                 `json:"to_feedback"`
+		UserID          uint                 `json:"user_id" binding:"required"`
+		IsAnonymous     bool                 `json:"is_anonymous"`
+		AutoTaxDedution bool                 `json:"auto_tax_dedution"`
 	}
 
 	queryFilterTime struct {
@@ -238,23 +240,25 @@ type (
 func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m := new(models.PeriodicDonation)
 	m.Cardholder = p.Donor
+	m.ReceiptDetail = p.Receipt
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.ToFeedback = null.BoolFrom(p.ToFeedback)
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
-	m.ReceiptHeader = p.ReceiptHeader
+	m.AutoTaxDedution = null.BoolFrom(p.AutoTaxDedution)
 	return *m
 }
 
 func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	m := new(models.PayByPrimeDonation)
 	m.Cardholder = p.Donor
+	m.ReceiptDetail = p.Receipt
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
-	m.ReceiptHeader = p.ReceiptHeader
+	m.AutoTaxDedution = null.BoolFrom(p.AutoTaxDedution)
 	return *m
 }
 
@@ -406,6 +410,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.Amount = d.Amount
 	cr.Cardholder = d.Cardholder
 	cr.CardInfo = d.CardInfo
+	cr.Receipt = d.ReceiptDetail
 	cr.Currency = d.Currency
 	cr.Details = d.Details
 	cr.Frequency = d.Frequency
@@ -416,13 +421,13 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.ToFeedback = d.ToFeedback.ValueOrZero()
 	cr.PayMethod = payMethodCreditCard
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
-	cr.ReceiptHeader = d.ReceiptHeader
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.Amount = d.Amount
 	cr.Cardholder = d.Cardholder
 	cr.CardInfo = d.CardInfo
+	cr.Receipt = d.ReceiptDetail
 	cr.Currency = d.Currency
 	cr.Details = d.Details
 	cr.ID = d.ID
@@ -433,7 +438,6 @@ func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.ToFeedback = false
 	cr.Frequency = oneTimeFrequency
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
-	cr.ReceiptHeader = d.ReceiptHeader
 }
 
 func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {
@@ -442,6 +446,7 @@ func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMetho
 		Name:        null.StringFrom(d.Name),
 		Email:       d.Email,
 		NationalID:  null.StringFrom(d.NationalID),
+		SecurityID:  null.StringFrom(d.SecurityID),
 		Address:     null.StringFrom(d.Address),
 		PhoneNumber: null.StringFrom(d.PhoneNumber),
 		ZipCode:     null.StringFrom(d.ZipCode),
