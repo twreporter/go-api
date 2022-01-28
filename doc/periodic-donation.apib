@@ -20,13 +20,16 @@ The Periodic Donation resource has the following attributes;
 - card_info.level
 - card_info.type
 - cardholder
-- cardholder.address
+- cardholder.address_country
+- cardholder.address_state
+- cardholder.address_city
+- cardholder.address_detail
+- cardholder.address_zip_code
 - cardholder.email
 - cardholder.first_name
 - cardholder.last_name
 - cardholder.security_id
 - cardholder.phone_number
-- cardholder.zip_code
 - cardholder.nickname
 - cardholder.title
 - cardholder.legal_name
@@ -130,7 +133,11 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             
     + Attributes (object)
         + donor (object)
-            + address: 臺北市南京東路一段300巷300號6樓
+            + address_country: 臺灣
+            + address_state: 臺北市
+            + address_city: 中山區
+            + address_detail: 南京東路一段300巷300號6樓
+            + address_zip_code: 104
             + email: developer@twreporter.org
             + first_name: 小明
             + last_name: 王
@@ -153,10 +160,10 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             + email: developer@twreporter.org
             + address_country: 臺灣
             + address_state: 臺北市
-            + address_city: 中山區 
-            + address_detail: 南京東路一段300巷300號6樓 
-            + address_zip_code: 104 
-        + auto_tax_dedution: 1
+            + address_city: 中山區
+            + address_detail: 南京東路一段300巷300號6樓
+            + address_zip_code: 104
+        + auto_tax_dedution: true
 
 + Response 204
 
@@ -169,10 +176,13 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                 "data": {
                     "donor": {
                         "email": "email(string) is optional",
-                        "address": "address(string) is optional",
+                        "address_country": "address_country(string) is optional",
+                        "address_state": "address_state(string) is optional",
+                        "address_city": "address_city(string) is optional",
+                        "address_detail": "address_detail(string) is optional",
+                        "address_zip_code": "address_zip_code(string) is optional",
                         "last_name": "last_name(string) is optional",
                         "first_name": "first_name(string) is optional",
-                        "zip_code": "zip_code(string) is optional",
                         "phone_number": "phone_number(string) is optional",
                         "security_id": "security_id(string) is optional"
                         "nickname": "nickname(string) is optional",
@@ -197,7 +207,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                         "address_detail": "address_detail(string) is optional",
                         "address_zip_code": "address_zip_code(string) is optional",
                     },
-                    "auto_tax_dedution": "auto_tax_dedution(number) is optional",
+                    "auto_tax_dedution": "auto_tax_dedution(bool) is optional",
                 }
             }
 
@@ -330,10 +340,13 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
     + email: developer@twreporter.org (required)
     + first_name: 小明 (optional)
     + last_name: 王 (optional)
-    + address: 臺北市南京東路一段300巷300號6樓 (optional)
+    + address_country: 臺灣 (optional)
+    + address_state: 臺北市 (optional)
+    + address_city: 中山區 (optional)
+    + address_detail: 南京東路一段300巷300號6樓 (optional)
+    + address_zip_code: 104 (optional)
     + phone_number: +886912345678 (optional)
     + `security_id`: A12345678 (optional)
-    + `zip_code`: 104 (optional)
     + nickname: 小明 (optional)
     + title: 工程師 (optional) (optional)
     + legal_name: 報導者文化基金會 (optional)
@@ -350,7 +363,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
     + address_city: 中山區 (optional)
     + address_detail: 南京東路一段300巷300號6樓 (optional)
     + address_zip_code: 104 (optional)
-+ auto_tax_dedution: 1 (optional)
++ auto_tax_dedution: true (optional)
 
 ### PeriodicDonationResponse
 + status: success (required)
