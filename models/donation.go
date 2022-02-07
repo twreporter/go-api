@@ -2,9 +2,7 @@ package models
 
 import (
 	"time"
-	"fmt"
 
-	"github.com/jinzhu/gorm"
 	"gopkg.in/guregu/null.v3"
 )
 
@@ -36,7 +34,6 @@ type CardInfo struct {
 }
 
 type Cardholder struct {
-	Address            null.String `gorm:"column:cardholder_address;type:varchar(100)" json:"address"`
 	Email              string      `gorm:"column:cardholder_email;type:varchar(100);not null" json:"email" binding:"omitempty,email"`
 	Name               null.String `gorm:"column:cardholder_name;type:varchar(30)" json:"name"`
 	FirstName          null.String `gorm:"column:cardholder_first_name;type:varchar(30)" json:"first_name"`
@@ -52,6 +49,12 @@ type Cardholder struct {
 	SecurityID         null.String `gorm:"column:cardholder_security_id;type:varchar(20)" json:"security_id"`
 	PhoneNumber        null.String `gorm:"column:cardholder_phone_number;type:varchar(20)" json:"phone_number"`
 	ZipCode            null.String `gorm:"column:cardholder_zip_code;type:varchar(10)" json:"zip_code"`
+	Address            null.String `gorm:"column:cardholder_address;type:varchar(100)" json:"address"`
+	AddressCountry     null.String `gorm:"column:cardholder_address_country;type:varchar(45)" json:"address_country"`
+	AddressState       null.String `gorm:"column:cardholder_address_state;type:varchar(45)" json:"address_state"`
+	AddressCity        null.String `gorm:"column:cardholder_address_city;type:varchar(45)" json:"address_city"`
+	AddressDetail      null.String `gorm:"column:cardholder_address_detail;type:varchar(255)" json:"address_detail"`
+	AddressZipCode     null.String `gorm:"column:cardholder_address_zip_code;type:varchar(10)" json:"address_zip_code"`
 }
 
 type ReceiptDetail struct {
