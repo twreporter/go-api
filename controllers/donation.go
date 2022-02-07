@@ -708,11 +708,12 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 // PatchADonationOfAUser method
 // Handler for an authenticated user to patch an prime/token/periodic donation
 func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
-	var d interface{}
 	var err error
 	var reqBody patchBody
 	var rowsAffected int64
 	var orderNumber string
+	var userID uint
+	var _cardholder *models.Cardholder
 
 	if orderNumber = c.Param("order"); "" == orderNumber {
 		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, order_number should be provided in the url"}, nil
@@ -722,26 +723,40 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		log.WithField("payload", reqBody).Infof("cannot patch the personal info of the donor, %v", failData)
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
+	userID = reqBody.UserID
 
 	switch donationType {
 	case globals.PeriodicDonationType:
-		d = reqBody.BuildPeriodicDonation()
+		d := reqBody.BuildPeriodicDonation()
+		err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
+			"user_id":      userID,
+			"order_number": orderNumber,
+		}, d)
+		_cardholder = &d.Cardholder
+		break
 	case globals.PrimeDonationType:
-		d = reqBody.BuildPrimeDonation()
+		d := reqBody.BuildPrimeDonation()
+		err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
+			"user_id":      userID,
+			"order_number": orderNumber,
+		}, d)
+		_cardholder = &d.Cardholder
+		break
 	default:
 		return http.StatusInternalServerError,
 			gin.H{"status": "error", "message": fmt.Sprintf("donation type(%s) not supported", donationType)},
 			nil
 	}
 
-	if err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
-		"user_id":      reqBody.UserID,
-		"order_number": orderNumber,
-	}, d); err != nil {
+	if err != nil {
 		return http.StatusInternalServerError, gin.H{
 			"status":  "error",
 			"message": "unable to patch the record",
 		}, err
+	}
+
+	if err = mc.UpdateUserDataByCardholder(_cardholder, userID); err!= nil {
+		fmt.Println("sync data to user table err: %+v", err)
 	}
 
 	if rowsAffected == 0 {
@@ -751,6 +766,40 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
+}
+
+func BuildUserFromCardholder(c *models.Cardholder) (*models.User) {
+	u := new(models.User)
+	u.FirstName = c.FirstName
+	u.LastName = c.LastName
+	u.Nickname = c.Nickname
+	u.SecurityID = c.SecurityID
+	u.Title = c.Title
+	u.LegalName = c.LegalName
+	u.Country = c.AddressCountry
+	u.State = c.AddressState
+	u.City = c.AddressCity
+	u.Zip = c.AddressZipCode
+	u.Address = c.AddressDetail
+	u.Phone = c.PhoneNumber
+	u.Gender = c.Gender
+	u.AgeRange = c.AgeRange
+	u.ReadPreference = c.ReadPreference
+	u.WordsForTwreporter = c.WordsForTwreporter
+	return u
+}
+
+func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder, userID uint) (error) {
+	var err error
+	var rowsAffected int64
+
+	u := BuildUserFromCardholder(c)
+
+	err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
+		"id":      userID,
+	}, u)
+
+	return err
 }
 
 // TODO
