@@ -114,7 +114,7 @@ type (
 	clientReq struct {
 		Amount       uint                 `json:"amount" binding:"required"`
 		Cardholder   models.Cardholder    `json:"donor" binding:"required,dive"`
-		Receipt      models.ReceiptDetail `json:"receipt" binding:"required,dive"`
+		Receipt      models.Receipt       `json:"receipt" binding:"required,dive"`
 		Currency     string               `json:"currency"`
 		Details      string               `json:"details"`
 		Frequency    string               `json:"frequency"`
@@ -126,21 +126,22 @@ type (
 	}
 
 	clientResp struct {
-		Amount        uint                `json:"amount"`
-		CardInfo      models.CardInfo     `json:"card_info"`
-		Cardholder    models.Cardholder   `json:"cardholder"`
-		Receipt      models.ReceiptDetail `json:"receipt"`
-		Currency      string              `json:"currency"`
-		Details       string              `json:"details"`
-		Frequency     string              `json:"frequency"`
-		ID            uint                `json:"id"`
-		Notes         string              `json:"notes"`
-		OrderNumber   string              `json:"order_number"`
-		PayMethod     string              `json:"pay_method"`
-		SendReceipt   string              `json:"send_receipt"`
-		ToFeedback    bool                `json:"to_feedback"`
-		IsAnonymous   bool                `json:"is_anonymous"`
-		PaymentUrl    string              `json:"payment_url"`
+		Amount           uint              `json:"amount"`
+		CardInfo         models.CardInfo   `json:"card_info"`
+		Cardholder       models.Cardholder `json:"cardholder"`
+		Receipt          models.Receipt    `json:"receipt"`
+		Currency         string            `json:"currency"`
+		Details          string            `json:"details"`
+		Frequency        string            `json:"frequency"`
+		ID               uint              `json:"id"`
+		Notes            string            `json:"notes"`
+		OrderNumber      string            `json:"order_number"`
+		PayMethod        string            `json:"pay_method"`
+		SendReceipt      string            `json:"send_receipt"`
+		ToFeedback       bool              `json:"to_feedback"`
+		IsAnonymous      bool              `json:"is_anonymous"`
+		PaymentUrl       string            `json:"payment_url"`
+		AutoTaxDeduction bool              `json:"auto_tax_deduction"`
 	}
 
 	bankTransactionTime struct {
@@ -209,14 +210,14 @@ type (
 	payType int
 
 	patchBody struct {
-		Donor           models.Cardholder    `json:"donor"`
-		Receipt         models.ReceiptDetail `json:"receipt"`
-		Notes           string               `json:"notes"`
-		SendReceipt     string               `json:"send_receipt"`
-		ToFeedback      bool                 `json:"to_feedback"`
-		UserID          uint                 `json:"user_id" binding:"required"`
-		IsAnonymous     bool                 `json:"is_anonymous"`
-		AutoTaxDedution bool                 `json:"auto_tax_dedution"`
+		Donor            models.Cardholder    `json:"donor"`
+		Receipt          models.Receipt       `json:"receipt"`
+		Notes            string               `json:"notes"`
+		SendReceipt      string               `json:"send_receipt"`
+		ToFeedback       bool                 `json:"to_feedback"`
+		UserID           uint                 `json:"user_id" binding:"required"`
+		IsAnonymous      bool                 `json:"is_anonymous"`
+		AutoTaxDeduction bool                 `json:"auto_tax_deduction"`
 	}
 
 	queryFilterTime struct {
@@ -240,25 +241,25 @@ type (
 func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m := new(models.PeriodicDonation)
 	m.Cardholder = p.Donor
-	m.ReceiptDetail = p.Receipt
+	m.Receipt = p.Receipt
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.ToFeedback = null.BoolFrom(p.ToFeedback)
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
-	m.AutoTaxDedution = null.BoolFrom(p.AutoTaxDedution)
+	m.AutoTaxDeduction = null.BoolFrom(p.AutoTaxDeduction)
 	return *m
 }
 
 func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	m := new(models.PayByPrimeDonation)
 	m.Cardholder = p.Donor
-	m.ReceiptDetail = p.Receipt
+	m.Receipt = p.Receipt
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
-	m.AutoTaxDedution = null.BoolFrom(p.AutoTaxDedution)
+	m.AutoTaxDeduction = null.BoolFrom(p.AutoTaxDeduction)
 	return *m
 }
 
@@ -410,7 +411,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.Amount = d.Amount
 	cr.Cardholder = d.Cardholder
 	cr.CardInfo = d.CardInfo
-	cr.Receipt = d.ReceiptDetail
+	cr.Receipt = d.Receipt
 	cr.Currency = d.Currency
 	cr.Details = d.Details
 	cr.Frequency = d.Frequency
@@ -421,13 +422,14 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.ToFeedback = d.ToFeedback.ValueOrZero()
 	cr.PayMethod = payMethodCreditCard
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
+	cr.AutoTaxDeduction = d.AutoTaxDeduction.ValueOrZero()
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.Amount = d.Amount
 	cr.Cardholder = d.Cardholder
 	cr.CardInfo = d.CardInfo
-	cr.Receipt = d.ReceiptDetail
+	cr.Receipt = d.Receipt
 	cr.Currency = d.Currency
 	cr.Details = d.Details
 	cr.ID = d.ID
@@ -438,6 +440,7 @@ func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.ToFeedback = false
 	cr.Frequency = oneTimeFrequency
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
+	cr.AutoTaxDeduction = d.AutoTaxDeduction.ValueOrZero()
 }
 
 func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {
@@ -755,9 +758,8 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		}, err
 	}
 
-	if err = mc.UpdateUserDataByCardholder(_cardholder, userID); err!= nil {
-		fmt.Println("sync data to user table err: %+v", err)
-	}
+	// sync user data by cardholder aynchronous
+	go mc.UpdateUserDataByCardholder(_cardholder, userID)
 
 	if rowsAffected == 0 {
 		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
@@ -791,11 +793,10 @@ func BuildUserFromCardholder(c *models.Cardholder) (*models.User) {
 
 func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder, userID uint) (error) {
 	var err error
-	var rowsAffected int64
 
 	u := BuildUserFromCardholder(c)
 
-	err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
+	err, _ = mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id":      userID,
 	}, u)
 
