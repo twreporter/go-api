@@ -67,7 +67,7 @@ check-version: check-migrate
 		@migrate -database $(DB_CONN) -path $(MIGRATION_DIR) version
 
 check-migrate:
-		@printf "Check if migrate CLI (https://github.com/golang-migrate/migrate/tree/master/cli) is installed."
+		@printf "Check if migrate CLI (https://github.com/golang-migrate/migrate/tree/master/cmd/migrate) is installed."
 		@type migrate > /dev/null
 		@echo ....OK
 
