@@ -86,16 +86,45 @@ Change `MongoDBSettings` fields to connect to your own database, like following 
 ```
 
 ### AWS SES Setup
-Currently the source code sends email through AWS SES,
+Currently the source code sends email through AWS SES. 
+If you want to send email through your AWS SES, the config with credentials is needed.
 
-If you want to send email through your AWS SES, just put your AWS SES config under `~/.aws/credentials`
+To get credentials, please go to [Identity and Access Management (IAM)](https://console.aws.amazon.com/iamv2/home?#/users) page and add new user. Note that you need to set user details as follows:
+  - set user name
+    - naming convention:  `ses-smtp-user.{YYYYMMDD}-develop`
+  - select AWS access type: select `Access key - Programmatic access`
+
+After creating a new user, remember to copy the `Access key ID` and `Secret access key` and put them in AWS SES config under `~/.aws/credentials`
 ```
 [default]
 aws_access_key_id = ${AWS_ACCESS_KEY_ID}
 aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}
 ```
 
+For more information, please refer to [this guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html). 
+
 Otherwise, you have to change the `utils/mail.go` to integrate with your email service.
+
+### OAuth Setup
+- Google
+  - go to [APIs & Services](https://console.developers.google.com/apis/credentials/oauthclient/505721902139-u57i4r21h1e0b9rhdqcehleb4b05fcsf.apps.googleusercontent.com?project=coastal-run-106202&authuser=0&pli=1)
+  - copy  `Client ID` and `Client secret` 
+  - edit `configs/config.go`
+    ```
+    oauth:
+      google:
+        id: $Client_ID
+        secret: $Client_secret
+    ```
+- Facebook
+  - go to [apps setting](https://developers.facebook.com/apps/760575077441512/settings/basic/)  - copy `App ID` and `App secret` 
+  - edit `configs/config.go`
+    ```
+    oauth:
+      facebook:
+        id: $App_ID
+        secret: $App_secret
+    ```
 
 ### Database Migrations
 Go-api integrates [go-migrate](https://github.com/golang-migrate/migrate) to do the schema version control. You can follow the instructions to install the cli from [here](https://github.com/golang-migrate/migrate/tree/master/cli).
