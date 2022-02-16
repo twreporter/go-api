@@ -791,16 +791,20 @@ func BuildUserFromCardholder(c *models.Cardholder) (*models.User) {
 	return u
 }
 
-func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder, userID uint) (error) {
-	var err error
-
+func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder, userID uint) {
 	u := BuildUserFromCardholder(c)
 
-	err, _ = mc.Storage.UpdateByConditions(map[string]interface{}{
+	if err, _ := mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id":      userID,
-	}, u)
+	}, u); err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("fail to update user %s by cardholder", userID))
 
-	return err
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", err)
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+	}
 }
 
 // TODO
