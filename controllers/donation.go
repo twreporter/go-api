@@ -112,34 +112,36 @@ var linePayMethods = []string{
 
 type (
 	clientReq struct {
-		Amount       uint              `json:"amount" binding:"required"`
-		Cardholder   models.Cardholder `json:"donor" binding:"required,dive"`
-		Currency     string            `json:"currency"`
-		Details      string            `json:"details"`
-		Frequency    string            `json:"frequency"`
-		MerchantID   string            `json:"merchant_id"`
-		PayMethod    string            `json:"pay_method"`
-		Prime        string            `json:"prime" binding:"required"`
-		UserID       uint              `json:"user_id" binding:"required"`
-		MaxPaidTimes uint              `json:"max_paid_times"`
+		Amount       uint                 `json:"amount" binding:"required"`
+		Cardholder   models.Cardholder    `json:"donor" binding:"required,dive"`
+		Receipt      models.Receipt       `json:"receipt" binding:"required,dive"`
+		Currency     string               `json:"currency"`
+		Details      string               `json:"details"`
+		Frequency    string               `json:"frequency"`
+		MerchantID   string               `json:"merchant_id"`
+		PayMethod    string               `json:"pay_method"`
+		Prime        string               `json:"prime" binding:"required"`
+		UserID       uint                 `json:"user_id" binding:"required"`
+		MaxPaidTimes uint                 `json:"max_paid_times"`
 	}
 
 	clientResp struct {
-		Amount        uint              `json:"amount"`
-		CardInfo      models.CardInfo   `json:"card_info"`
-		Cardholder    models.Cardholder `json:"cardholder"`
-		Currency      string            `json:"currency"`
-		Details       string            `json:"details"`
-		Frequency     string            `json:"frequency"`
-		ID            uint              `json:"id"`
-		Notes         string            `json:"notes"`
-		OrderNumber   string            `json:"order_number"`
-		PayMethod     string            `json:"pay_method"`
-		SendReceipt   string            `json:"send_receipt"`
-		ToFeedback    bool              `json:"to_feedback"`
-		IsAnonymous   bool              `json:"is_anonymous"`
-		PaymentUrl    string            `json:"payment_url"`
-		ReceiptHeader null.String       `json:"receipt_header"`
+		Amount           uint              `json:"amount"`
+		CardInfo         models.CardInfo   `json:"card_info"`
+		Cardholder       models.Cardholder `json:"cardholder"`
+		Receipt          models.Receipt    `json:"receipt"`
+		Currency         string            `json:"currency"`
+		Details          string            `json:"details"`
+		Frequency        string            `json:"frequency"`
+		ID               uint              `json:"id"`
+		Notes            string            `json:"notes"`
+		OrderNumber      string            `json:"order_number"`
+		PayMethod        string            `json:"pay_method"`
+		SendReceipt      string            `json:"send_receipt"`
+		ToFeedback       bool              `json:"to_feedback"`
+		IsAnonymous      bool              `json:"is_anonymous"`
+		PaymentUrl       string            `json:"payment_url"`
+		AutoTaxDeduction bool              `json:"auto_tax_deduction"`
 	}
 
 	bankTransactionTime struct {
@@ -208,13 +210,14 @@ type (
 	payType int
 
 	patchBody struct {
-		Donor         models.Cardholder `json:"donor"`
-		Notes         string            `json:"notes"`
-		SendReceipt   string            `json:"send_receipt"`
-		ToFeedback    bool              `json:"to_feedback"`
-		UserID        uint              `json:"user_id" binding:"required"`
-		IsAnonymous   bool              `json:"is_anonymous"`
-		ReceiptHeader null.String       `json:"receipt_header"`
+		Donor            models.Cardholder    `json:"donor"`
+		Receipt          models.Receipt       `json:"receipt"`
+		Notes            string               `json:"notes"`
+		SendReceipt      string               `json:"send_receipt"`
+		ToFeedback       bool                 `json:"to_feedback"`
+		UserID           uint                 `json:"user_id" binding:"required"`
+		IsAnonymous      bool                 `json:"is_anonymous"`
+		AutoTaxDeduction bool                 `json:"auto_tax_deduction"`
 	}
 
 	queryFilterTime struct {
@@ -238,23 +241,25 @@ type (
 func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	m := new(models.PeriodicDonation)
 	m.Cardholder = p.Donor
+	m.Receipt = p.Receipt
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.ToFeedback = null.BoolFrom(p.ToFeedback)
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
-	m.ReceiptHeader = p.ReceiptHeader
+	m.AutoTaxDeduction = null.BoolFrom(p.AutoTaxDeduction)
 	return *m
 }
 
 func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
 	m := new(models.PayByPrimeDonation)
 	m.Cardholder = p.Donor
+	m.Receipt = p.Receipt
 	m.Notes = p.Notes
 	m.SendReceipt = p.SendReceipt
 	m.UserID = p.UserID
 	m.IsAnonymous = null.BoolFrom(p.IsAnonymous)
-	m.ReceiptHeader = p.ReceiptHeader
+	m.AutoTaxDeduction = null.BoolFrom(p.AutoTaxDeduction)
 	return *m
 }
 
@@ -406,6 +411,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.Amount = d.Amount
 	cr.Cardholder = d.Cardholder
 	cr.CardInfo = d.CardInfo
+	cr.Receipt = d.Receipt
 	cr.Currency = d.Currency
 	cr.Details = d.Details
 	cr.Frequency = d.Frequency
@@ -416,13 +422,14 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.ToFeedback = d.ToFeedback.ValueOrZero()
 	cr.PayMethod = payMethodCreditCard
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
-	cr.ReceiptHeader = d.ReceiptHeader
+	cr.AutoTaxDeduction = d.AutoTaxDeduction.ValueOrZero()
 }
 
 func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.Amount = d.Amount
 	cr.Cardholder = d.Cardholder
 	cr.CardInfo = d.CardInfo
+	cr.Receipt = d.Receipt
 	cr.Currency = d.Currency
 	cr.Details = d.Details
 	cr.ID = d.ID
@@ -433,7 +440,7 @@ func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.ToFeedback = false
 	cr.Frequency = oneTimeFrequency
 	cr.IsAnonymous = d.IsAnonymous.ValueOrZero()
-	cr.ReceiptHeader = d.ReceiptHeader
+	cr.AutoTaxDeduction = d.AutoTaxDeduction.ValueOrZero()
 }
 
 func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {
@@ -442,6 +449,7 @@ func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMetho
 		Name:        null.StringFrom(d.Name),
 		Email:       d.Email,
 		NationalID:  null.StringFrom(d.NationalID),
+		SecurityID:  null.StringFrom(d.SecurityID),
 		Address:     null.StringFrom(d.Address),
 		PhoneNumber: null.StringFrom(d.PhoneNumber),
 		ZipCode:     null.StringFrom(d.ZipCode),
@@ -703,11 +711,12 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 // PatchADonationOfAUser method
 // Handler for an authenticated user to patch an prime/token/periodic donation
 func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationType string) (int, gin.H, error) {
-	var d interface{}
 	var err error
 	var reqBody patchBody
 	var rowsAffected int64
 	var orderNumber string
+	var userID uint
+	var _cardholder *models.Cardholder
 
 	if orderNumber = c.Param("order"); "" == orderNumber {
 		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, order_number should be provided in the url"}, nil
@@ -717,27 +726,40 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		log.WithField("payload", reqBody).Infof("cannot patch the personal info of the donor, %v", failData)
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
+	userID = reqBody.UserID
 
 	switch donationType {
 	case globals.PeriodicDonationType:
-		d = reqBody.BuildPeriodicDonation()
+		d := reqBody.BuildPeriodicDonation()
+		err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
+			"user_id":      userID,
+			"order_number": orderNumber,
+		}, d)
+		_cardholder = &d.Cardholder
+		break
 	case globals.PrimeDonationType:
-		d = reqBody.BuildPrimeDonation()
+		d := reqBody.BuildPrimeDonation()
+		err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
+			"user_id":      userID,
+			"order_number": orderNumber,
+		}, d)
+		_cardholder = &d.Cardholder
+		break
 	default:
 		return http.StatusInternalServerError,
 			gin.H{"status": "error", "message": fmt.Sprintf("donation type(%s) not supported", donationType)},
 			nil
 	}
 
-	if err, rowsAffected = mc.Storage.UpdateByConditions(map[string]interface{}{
-		"user_id":      reqBody.UserID,
-		"order_number": orderNumber,
-	}, d); err != nil {
+	if err != nil {
 		return http.StatusInternalServerError, gin.H{
 			"status":  "error",
 			"message": "unable to patch the record",
 		}, err
 	}
+
+	// sync user data by cardholder aynchronous
+	go mc.UpdateUserDataByCardholder(_cardholder, userID)
 
 	if rowsAffected == 0 {
 		return http.StatusNotFound, gin.H{"status": "fail", "data": gin.H{
@@ -746,6 +768,43 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
+}
+
+func BuildUserFromCardholder(c *models.Cardholder) (*models.User) {
+	u := new(models.User)
+	u.FirstName = c.FirstName
+	u.LastName = c.LastName
+	u.Nickname = c.Nickname
+	u.SecurityID = c.SecurityID
+	u.Title = c.Title
+	u.LegalName = c.LegalName
+	u.Country = c.AddressCountry
+	u.State = c.AddressState
+	u.City = c.AddressCity
+	u.Zip = c.AddressZipCode
+	u.Address = c.AddressDetail
+	u.Phone = c.PhoneNumber
+	u.Gender = c.Gender
+	u.AgeRange = c.AgeRange
+	u.ReadPreference = c.ReadPreference
+	u.WordsForTwreporter = c.WordsForTwreporter
+	return u
+}
+
+func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder, userID uint) {
+	u := BuildUserFromCardholder(c)
+
+	if err, _ := mc.Storage.UpdateByConditions(map[string]interface{}{
+		"id":      userID,
+	}, u); err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("fail to update user %d by cardholder", userID))
+
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", err)
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+	}
 }
 
 // TODO

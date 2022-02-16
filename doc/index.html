@@ -45,22 +45,55 @@ It reprensents one periodic donation record identified by the order number(:orde
 <p>cardholder</p>
 </li>
 <li>
-<p>cardholder.address</p>
+<p>cardholder.address_country</p>
+</li>
+<li>
+<p>cardholder.address_state</p>
+</li>
+<li>
+<p>cardholder.address_city</p>
+</li>
+<li>
+<p>cardholder.address_detail</p>
+</li>
+<li>
+<p>cardholder.address_zip_code</p>
 </li>
 <li>
 <p>cardholder.email</p>
 </li>
 <li>
-<p><a href="http://cardholder.name">cardholder.name</a></p>
+<p>cardholder.first_name</p>
 </li>
 <li>
-<p>cardholder.national_id</p>
+<p>cardholder.last_name</p>
+</li>
+<li>
+<p>cardholder.security_id</p>
 </li>
 <li>
 <p>cardholder.phone_number</p>
 </li>
 <li>
-<p>cardholder.zip_code</p>
+<p>cardholder.nickname</p>
+</li>
+<li>
+<p>cardholder.title</p>
+</li>
+<li>
+<p>cardholder.legal_name</p>
+</li>
+<li>
+<p>cardholder.gender</p>
+</li>
+<li>
+<p>cardholder.age_range</p>
+</li>
+<li>
+<p>cardholder.read_preference</p>
+</li>
+<li>
+<p>cardholder.words_for_twreporter</p>
 </li>
 <li>
 <p>currency</p>
@@ -72,10 +105,10 @@ It reprensents one periodic donation record identified by the order number(:orde
 <p>frequency</p>
 </li>
 <li>
-<p>notes</p>
+<p>order_number</p>
 </li>
 <li>
-<p>order_number</p>
+<p>pay_method</p>
 </li>
 <li>
 <p>send_receipt</p>
@@ -90,7 +123,34 @@ It reprensents one periodic donation record identified by the order number(:orde
 <p>is_anonymous</p>
 </li>
 <li>
-<p>receipt_header</p>
+<p>auto_tax_dedution</p>
+</li>
+<li>
+<p>receipt</p>
+</li>
+<li>
+<p>receipt.header</p>
+</li>
+<li>
+<p>receipt.security_id</p>
+</li>
+<li>
+<p>receipt.email</p>
+</li>
+<li>
+<p>receipt.address_country</p>
+</li>
+<li>
+<p>receipt.address_state</p>
+</li>
+<li>
+<p>receipt.address_city</p>
+</li>
+<li>
+<p>receipt.address_detail</p>
+</li>
+<li>
+<p>receipt.address_zip_code</p>
 </li>
 </ul>
 <p>The states <em>id</em> and <em>order_number</em> are assigned by the TWReporter Go API at the moment of creation.</p>
@@ -103,20 +163,41 @@ It reprensents one periodic donation record identified by the order number(:orde
     "<span class="hljs-attribute">currency</span>": <span class="hljs-value"><span class="hljs-string">"TWD"</span></span>,
     "<span class="hljs-attribute">details</span>": <span class="hljs-value"><span class="hljs-string">"報導者定期定額捐款"</span></span>,
     "<span class="hljs-attribute">frequency</span>": <span class="hljs-value"><span class="hljs-string">"monthly"</span></span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐給報導者喔"</span></span>,
     "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"twreporter-153985253506653918900"</span></span>,
-    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"monthly"</span></span>,
+    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"no_receipt"</span></span>,
     "<span class="hljs-attribute">to_feedback</span>": <span class="hljs-value"><span class="hljs-literal">true</span></span>,
     "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
     "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
     "<span class="hljs-attribute">cardholder</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
-      "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
-      "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+      "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"王"</span></span>,
+      "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+      "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+      "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+      "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-      "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
-    </span>}
+      "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+      "<span class="hljs-attribute">nickname</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+      "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"工程師"</span></span>,
+      "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"報導者文化基金會"</span></span>,
+      "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"M"</span></span>,
+      "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+      "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+      "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"加油！"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+      "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+      "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
+      "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+      "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+      "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+      "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"true"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -142,9 +223,6 @@ It reprensents one periodic donation record identified by the order number(:orde
         "<span class="hljs-attribute">frequency</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">notes</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-        </span>}</span>,
         "<span class="hljs-attribute">order_number</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
@@ -166,25 +244,90 @@ It reprensents one periodic donation record identified by the order number(:orde
             "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">first_name</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">address</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">last_name</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
             "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">nickname</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">gender</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}
           </span>}</span>,
           "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
             <span class="hljs-string">"email"</span>
           ]
+        </span>}</span>,
+        "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+          "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">header</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}
+          </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
       "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -226,18 +369,39 @@ It reprensents one periodic donation record identified by the order number(:orde
 </span>}</code></pre><div style="height: 1px;"></div></div></div></div><div id="periodic-donation-periodic-donation-patch" class="action patch"><h4 class="action-heading"><div class="name">Modify a Single Periodic Donation</div><a href="#periodic-donation-periodic-donation-patch" class="method patch">PATCH</a><code class="uri">/v1/periodic-donations/orders/{order}</code></h4><h4>Example URI</h4><div class="definition"><span class="method patch">PATCH</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v1/periodic-donations/orders/<span class="hljs-attribute" title="order">order</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>order</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<p>an order number of the Periodic Donation</p>
 </dd></dl></div><div class="title"><strong>Request</strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Cookie</span>: <span class="hljs-string">id_token=&lt;id_token&gt;</span><br><span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Bearer &lt;jwt&gt;</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">donor</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+    "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+    "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+    "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
-    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+    "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+    "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"王"</span></span>,
     "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-    "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span>
+    "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+    "<span class="hljs-attribute">nickname</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+    "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"工程師"</span></span>,
+    "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"報導者文化基金會"</span></span>,
+    "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"M"</span></span>,
+    "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+    "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+    "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"加油！"</span>
   </span>}</span>,
-  "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐款報導者喔"</span></span>,
-  "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"yearly"</span></span>,
+  "<span class="hljs-attribute">send_receipt: no_receipt</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
   "<span class="hljs-attribute">to_feedback</span>": <span class="hljs-value"><span class="hljs-string">"false"</span></span>,
   "<span class="hljs-attribute">user_id</span>": <span class="hljs-value"><span class="hljs-string">"1"</span></span>,
   "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-string">"true"</span></span>,
-  "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
+  "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+    "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+    "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
+    "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+    "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+    "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+    "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+  </span>}</span>,
+  "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"true"</span>
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -245,27 +409,60 @@ It reprensents one periodic donation record identified by the order number(:orde
     "<span class="hljs-attribute">donor</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
       "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
-        "<span class="hljs-attribute">address</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">first_name</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">last_name</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">nickname</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">gender</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}
     </span>}</span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-    </span>}</span>,
-    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">send_receipt: no_receipt</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
     "<span class="hljs-attribute">to_feedback</span>": <span class="hljs-value">{
@@ -277,7 +474,36 @@ It reprensents one periodic donation record identified by the order number(:orde
     "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">header</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}
+      </span>}
+    </span>}</span>,
+    "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}
   </span>}</span>,
@@ -285,23 +511,43 @@ It reprensents one periodic donation record identified by the order number(:orde
     <span class="hljs-string">"user_id"</span>
   ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>204</code></strong></div><div class="title"><strong>Response&nbsp;&nbsp;<code>400</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
-  "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"fail"</span></span>,
-  "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">donor</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"email(string) is optional"</span></span>,
-      "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"address(string) is optional"</span></span>,
-      "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"name(string) is optional"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"zip_code(string) is optional"</span></span>,
-      "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"phone_number(string) is optional"</span></span>,
-      "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"national_id(string) is optional"</span>
-    </span>}</span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"notes(string) is optional"</span></span>,
-    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'"</span></span>,
-    "<span class="hljs-attribute">to_feedback</span>": <span class="hljs-value"><span class="hljs-string">"to_feedback(bool) is optional."</span></span>,
-    "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-string">"is_anonymous(bool) is optional."</span></span>,
-    "<span class="hljs-attribute">user_id</span>": <span class="hljs-value"><span class="hljs-string">"user_id(number) is required"</span></span>,
-    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"receipt_header(string) is optional"</span>
-  </span>}
+    "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"fail"</span></span>,
+    "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">donor</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"email(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"address_country(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"address_state(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"address_city(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"address_detail(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"address_zip_code(string) is optional"</span></span>,
+            "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"last_name(string) is optional"</span></span>,
+            "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"first_name(string) is optional"</span></span>,
+            "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"phone_number(string) is optional"</span></span>,
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"security_id(string) is optional"</span>
+            <span class="hljs-string">"nickname"</span>: <span class="hljs-string">"nickname(string) is optional"</span></span>,
+            "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"title(string) is optional"</span></span>,
+            "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"legal_name(string) is optional"</span></span>,
+            "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"gender(string) is optional. only support 'F', 'M', 'X', 'U'"</span></span>,
+            "<span class="hljs-attribute">age_range</span>": <span class="hljs-value"><span class="hljs-string">"age_range(string) is optional"</span></span>,
+            "<span class="hljs-attribute">read_preference</span>": <span class="hljs-value"><span class="hljs-string">"read_preference(string) is optional"</span></span>,
+            "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"words_for_twreporter(string) is optional"</span></span>,
+        }</span>,
+        "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"send_receipt(string) is optional. only support 'no_receipt', 'digital_receipt_by_month' and 'digital_receipt_by_year', 'paperback_receipt_by_month', 'paperback_receipt_by_year'"</span></span>,
+        "<span class="hljs-attribute">to_feedback</span>": <span class="hljs-value"><span class="hljs-string">"to_feedback(bool) is optional."</span></span>,
+        "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-string">"is_anonymous(bool) is optional."</span></span>,
+        "<span class="hljs-attribute">user_id</span>": <span class="hljs-value"><span class="hljs-string">"user_id(number) is required"</span></span>,
+        "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"header(string) is optional"</span></span>,
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"security_id(string) is optional"</span></span>,
+            "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"email(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"address_country(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"address_state(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"address_city(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"address_detail(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"address_zip_code(string) is optional"</span></span>,
+        }</span>,
+        "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"auto_tax_dedution(bool) is optional"</span></span>,
+    }
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>401</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"fail"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
@@ -382,20 +628,41 @@ It reprensents one periodic donation record identified by the order number(:orde
     "<span class="hljs-attribute">currency</span>": <span class="hljs-value"><span class="hljs-string">"TWD"</span></span>,
     "<span class="hljs-attribute">details</span>": <span class="hljs-value"><span class="hljs-string">"報導者定期定額捐款"</span></span>,
     "<span class="hljs-attribute">frequency</span>": <span class="hljs-value"><span class="hljs-string">"monthly"</span></span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐給報導者喔"</span></span>,
     "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"twreporter-153985253506653918900"</span></span>,
-    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"monthly"</span></span>,
+    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"no_receipt"</span></span>,
     "<span class="hljs-attribute">to_feedback</span>": <span class="hljs-value"><span class="hljs-literal">true</span></span>,
     "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
     "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
     "<span class="hljs-attribute">cardholder</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
-      "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
-      "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+      "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"王"</span></span>,
+      "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+      "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+      "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+      "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-      "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
-    </span>}
+      "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+      "<span class="hljs-attribute">nickname</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+      "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"工程師"</span></span>,
+      "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"報導者文化基金會"</span></span>,
+      "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"M"</span></span>,
+      "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+      "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+      "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"加油！"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+      "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+      "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
+      "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+      "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+      "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+      "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"true"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -421,9 +688,6 @@ It reprensents one periodic donation record identified by the order number(:orde
         "<span class="hljs-attribute">frequency</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">notes</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-        </span>}</span>,
         "<span class="hljs-attribute">order_number</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
@@ -445,25 +709,90 @@ It reprensents one periodic donation record identified by the order number(:orde
             "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">first_name</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">address</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">last_name</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
             "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">nickname</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">gender</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}
           </span>}</span>,
           "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
             <span class="hljs-string">"email"</span>
           ]
+        </span>}</span>,
+        "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+          "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">header</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}
+          </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
       "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -514,8 +843,8 @@ It reprensents one periodic donation record identified by the order number(:orde
 </span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section><section id="prime-donation" class="resource-group"><h2 class="group-heading">Prime Donation <a href="#prime-donation" class="permalink">&para;</a></h2><p>Prime donation resources of go-api</p>
 <div id="prime-donation-prime-donation" class="resource"><h3 class="resource-heading">Prime Donation <a href="#prime-donation-prime-donation" class="permalink">&nbsp;&para;</a></h3><p>A single Prime Donation.
 The Prime Donation is the resource in the TWReporter Donation API.
-It reprensents one prime donation record identified by the order number (order).</p>
-<p>The Prime Donation resource has the following attributes;</p>
+It represents one prime donation record identified by the order number (order).</p>
+<p>The Prime Donation resource has the following attributes:</p>
 <ul>
 <li>
 <p>id</p>
@@ -557,22 +886,58 @@ It reprensents one prime donation record identified by the order number (order).
 <p>cardholder</p>
 </li>
 <li>
-<p>cardholder.address</p>
+<p>cardholder.address_country</p>
+</li>
+<li>
+<p>cardholder.address_state</p>
+</li>
+<li>
+<p>cardholder.address_city</p>
+</li>
+<li>
+<p>cardholder.address_detail</p>
+</li>
+<li>
+<p>cardholder.address_zip_code</p>
 </li>
 <li>
 <p>cardholder.email</p>
 </li>
 <li>
-<p><a href="http://cardholder.name">cardholder.name</a></p>
+<p>cardholder.first_name</p>
 </li>
 <li>
-<p>cardholder.national_id</p>
+<p>cardholder.last_name</p>
+</li>
+<li>
+<p>cardholder.security_id</p>
 </li>
 <li>
 <p>cardholder.phone_number</p>
 </li>
 <li>
 <p>cardholder.zip_code</p>
+</li>
+<li>
+<p>cardholder.nickname</p>
+</li>
+<li>
+<p>cardholder.title</p>
+</li>
+<li>
+<p>cardholder.legal_name</p>
+</li>
+<li>
+<p>cardholder.gender</p>
+</li>
+<li>
+<p>cardholder.age_range</p>
+</li>
+<li>
+<p>cardholder.read_preference</p>
+</li>
+<li>
+<p>cardholder.words_for_twreporter</p>
 </li>
 <li>
 <p>currency</p>
@@ -582,9 +947,6 @@ It reprensents one prime donation record identified by the order number (order).
 </li>
 <li>
 <p>frequency</p>
-</li>
-<li>
-<p>notes</p>
 </li>
 <li>
 <p>order_number</p>
@@ -599,7 +961,34 @@ It reprensents one prime donation record identified by the order number (order).
 <p>is_anonymous</p>
 </li>
 <li>
-<p>receipt_header</p>
+<p>receipt</p>
+</li>
+<li>
+<p>receipt.header</p>
+</li>
+<li>
+<p>receipt.security_id</p>
+</li>
+<li>
+<p>receipt.email</p>
+</li>
+<li>
+<p>receipt.address_country</p>
+</li>
+<li>
+<p>receipt.address_state</p>
+</li>
+<li>
+<p>receipt.address_city</p>
+</li>
+<li>
+<p>receipt.address_detail</p>
+</li>
+<li>
+<p>receipt.address_zip_code</p>
+</li>
+<li>
+<p>auto_tax_dedution</p>
 </li>
 </ul>
 <p>The states <em>id</em> and <em>order_number</em> are assigned by the TWReporter Go API at the moment of creation.</p>
@@ -609,20 +998,40 @@ It reprensents one prime donation record identified by the order number (order).
   "<span class="hljs-attribute">amount</span>": <span class="hljs-value"><span class="hljs-number">500</span></span>,
   "<span class="hljs-attribute">currency</span>": <span class="hljs-value"><span class="hljs-string">"TWD"</span></span>,
   "<span class="hljs-attribute">details</span>": <span class="hljs-value"><span class="hljs-string">"報導者單筆捐款"</span></span>,
-  "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐給報導者喔"</span></span>,
   "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"twreporter-153985253506653918900"</span></span>,
-  "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"monthly"</span></span>,
+  "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"no_receipt"</span></span>,
   "<span class="hljs-attribute">pay_method</span>": <span class="hljs-value"><span class="hljs-string">"credit_card"</span></span>,
   "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
-  "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
   "<span class="hljs-attribute">cardholder</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
-    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
-    "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+    "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"王"</span></span>,
     "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-    "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-    "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
-  </span>}
+    "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+    "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+    "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+    "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+    "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
+    "<span class="hljs-attribute">nickname</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+    "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"工程師"</span></span>,
+    "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"報導者文化基金會"</span></span>,
+    "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"M"</span></span>,
+    "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+    "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+    "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"加油！"</span>
+  </span>}</span>,
+  "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+    "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+    "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
+    "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+    "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+    "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+    "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+  </span>}</span>,
+  "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"true"</span>
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
   "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
@@ -638,9 +1047,6 @@ It reprensents one prime donation record identified by the order number (order).
     "<span class="hljs-attribute">details</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-    </span>}</span>,
     "<span class="hljs-attribute">order_number</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
@@ -653,34 +1059,96 @@ It reprensents one prime donation record identified by the order number (order).
     "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-    </span>}</span>,
     "<span class="hljs-attribute">cardholder</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
       "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
         "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">first_name</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">address</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">last_name</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">nickname</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">gender</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
       "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
         <span class="hljs-string">"email"</span>
       ]
+    </span>}</span>,
+    "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">header</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}
+      </span>}
+    </span>}</span>,
+    "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}
   </span>}</span>,
   "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -759,17 +1227,38 @@ It reprensents one prime donation record identified by the order number (order).
 </span>}</code></pre><div style="height: 1px;"></div></div></div></div><div id="prime-donation-prime-donation-patch" class="action patch"><h4 class="action-heading"><div class="name">Modify a Single Prime Donation</div><a href="#prime-donation-prime-donation-patch" class="method patch">PATCH</a><code class="uri">/v1/donations/prime/orders/{order}</code></h4><h4>Example URI</h4><div class="definition"><span class="method patch">PATCH</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v1/donations/prime/orders/<span class="hljs-attribute" title="order">order</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>order</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<p>an order number of the Prime Donation</p>
 </dd></dl></div><div class="title"><strong>Request</strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Cookie</span>: <span class="hljs-string">id_token=&lt;id_token&gt;</span><br><span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Bearer &lt;jwt&gt;</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">donor</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+    "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+    "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+    "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
     "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
-    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+    "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+    "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"王"</span></span>,
     "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-    "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span>
+    "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+    "<span class="hljs-attribute">nickname</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+    "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"工程師"</span></span>,
+    "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"報導者文化基金會"</span></span>,
+    "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"M"</span></span>,
+    "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+    "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+    "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"加油！"</span>
   </span>}</span>,
-  "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐款報導者喔"</span></span>,
-  "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"no"</span></span>,
+  "<span class="hljs-attribute">send_receipt: no_receipt</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
   "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-string">"true"</span></span>,
   "<span class="hljs-attribute">user_id</span>": <span class="hljs-value"><span class="hljs-string">"1"</span></span>,
-  "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span>
+  "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+    "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+    "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
+    "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+    "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+    "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+    "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+    "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+  </span>}</span>,
+  "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"true"</span>
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -777,27 +1266,60 @@ It reprensents one prime donation record identified by the order number (order).
     "<span class="hljs-attribute">donor</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
       "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
-        "<span class="hljs-attribute">address</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">first_name</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">last_name</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">nickname</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">gender</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}
     </span>}</span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-    </span>}</span>,
-    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">send_receipt: no_receipt</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
     "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value">{
@@ -806,7 +1328,36 @@ It reprensents one prime donation record identified by the order number (order).
     "<span class="hljs-attribute">user_id</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">header</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}
+      </span>}
+    </span>}</span>,
+    "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
     </span>}
   </span>}</span>,
@@ -814,22 +1365,42 @@ It reprensents one prime donation record identified by the order number (order).
     <span class="hljs-string">"user_id"</span>
   ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>204</code></strong></div><div class="title"><strong>Response&nbsp;&nbsp;<code>400</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
-  "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"fail"</span></span>,
-  "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">donor</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"email(string) is optional"</span></span>,
-      "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"address(string) is optional"</span></span>,
-      "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"name(string) is optional"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"zip_code(string) is optional"</span></span>,
-      "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"phone_number(string) is optional"</span></span>,
-      "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"national_id(string) is optional"</span>
-    </span>}</span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"notes(string) is optional"</span></span>,
-    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'"</span></span>,
-    "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-string">"is_anonymous(bool) is optional."</span></span>,
-    "<span class="hljs-attribute">user_id</span>": <span class="hljs-value"><span class="hljs-string">"user_id(number) is required"</span></span>,
-    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"receipt_header(string) is optional"</span>
-  </span>}
+    "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"fail"</span></span>,
+    "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">donor</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"email(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"address_country(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"address_state(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"address_city(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"address_detail(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"address_zip_code(string) is optional"</span></span>,
+            "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"first_name(string) is optional"</span></span>,
+            "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"last_name(string) is optional"</span></span>,
+            "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"phone_number(string) is optional"</span></span>,
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"security_id(string) is optional"</span>
+            <span class="hljs-string">"nickname"</span>: <span class="hljs-string">"nickname(string) is optional"</span></span>,
+            "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"title(string) is optional"</span></span>,
+            "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"legal_name(string) is optional"</span></span>,
+            "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"gender(string) is optional. only support 'F', 'M', 'X', 'U'"</span></span>,
+            "<span class="hljs-attribute">age_range</span>": <span class="hljs-value"><span class="hljs-string">"age_range(string) is optional"</span></span>,
+            "<span class="hljs-attribute">read_preference</span>": <span class="hljs-value"><span class="hljs-string">"read_preference(string) is optional"</span></span>,
+            "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"words_for_twreporter(string) is optional"</span></span>,
+        }</span>,
+        "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"send_receipt(string) is optional. only support 'no_receipt', 'digital_receipt_by_month' and 'digital_receipt_by_year', 'paperback_receipt_by_month', 'paperback_receipt_by_year'"</span></span>,
+        "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-string">"is_anonymous(bool) is optional."</span></span>,
+        "<span class="hljs-attribute">user_id</span>": <span class="hljs-value"><span class="hljs-string">"user_id(number) is required"</span></span>,
+        "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"header(string) is optional"</span></span>,
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"security_id(string) is optional"</span></span>,
+            "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"email(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"address_country(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"address_state(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"address_city(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"address_detail(string) is optional"</span></span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"address_zip_code(string) is optional"</span></span>,
+        }</span>,
+        "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"auto_tax_dedution(bool) is optional"</span></span>,
+    }
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>401</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"fail"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
@@ -991,20 +1562,40 @@ Only the linepay is required to do this verfication</p>
     "<span class="hljs-attribute">amount</span>": <span class="hljs-value"><span class="hljs-number">500</span></span>,
     "<span class="hljs-attribute">currency</span>": <span class="hljs-value"><span class="hljs-string">"TWD"</span></span>,
     "<span class="hljs-attribute">details</span>": <span class="hljs-value"><span class="hljs-string">"報導者單筆捐款"</span></span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐給報導者喔"</span></span>,
     "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"twreporter-153985253506653918900"</span></span>,
-    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"monthly"</span></span>,
+    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"no_receipt"</span></span>,
     "<span class="hljs-attribute">pay_method</span>": <span class="hljs-value"><span class="hljs-string">"credit_card"</span></span>,
     "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
-    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
     "<span class="hljs-attribute">cardholder</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
-      "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
-      "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+      "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"王"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-      "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
-    </span>}
+      "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+      "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+      "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+      "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+      "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
+      "<span class="hljs-attribute">nickname</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+      "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"工程師"</span></span>,
+      "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"報導者文化基金會"</span></span>,
+      "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"M"</span></span>,
+      "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+      "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+      "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"加油！"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+      "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+      "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
+      "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+      "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+      "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+      "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"true"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -1027,9 +1618,6 @@ Only the linepay is required to do this verfication</p>
         "<span class="hljs-attribute">details</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">notes</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-        </span>}</span>,
         "<span class="hljs-attribute">order_number</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
@@ -1042,34 +1630,96 @@ Only the linepay is required to do this verfication</p>
         "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-        </span>}</span>,
         "<span class="hljs-attribute">cardholder</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
           "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
             "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">first_name</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">address</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">last_name</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
             "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">nickname</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">gender</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}
           </span>}</span>,
           "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
             <span class="hljs-string">"email"</span>
           ]
+        </span>}</span>,
+        "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+          "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">header</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}
+          </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
       "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -1259,20 +1909,40 @@ Only the linepay is required to do this verfication</p>
     "<span class="hljs-attribute">amount</span>": <span class="hljs-value"><span class="hljs-number">500</span></span>,
     "<span class="hljs-attribute">currency</span>": <span class="hljs-value"><span class="hljs-string">"TWD"</span></span>,
     "<span class="hljs-attribute">details</span>": <span class="hljs-value"><span class="hljs-string">"報導者單筆捐款"</span></span>,
-    "<span class="hljs-attribute">notes</span>": <span class="hljs-value"><span class="hljs-string">"第一次捐給報導者喔"</span></span>,
     "<span class="hljs-attribute">order_number</span>": <span class="hljs-value"><span class="hljs-string">"twreporter-153985253506653918900"</span></span>,
-    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"monthly"</span></span>,
+    "<span class="hljs-attribute">send_receipt</span>": <span class="hljs-value"><span class="hljs-string">"no_receipt"</span></span>,
     "<span class="hljs-attribute">pay_method</span>": <span class="hljs-value"><span class="hljs-string">"credit_card"</span></span>,
     "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
-    "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
     "<span class="hljs-attribute">cardholder</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
-      "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
-      "<span class="hljs-attribute">address</span>": <span class="hljs-value"><span class="hljs-string">"台北市南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+      "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"王"</span></span>,
       "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value"><span class="hljs-string">"+886912345678"</span></span>,
-      "<span class="hljs-attribute">national_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
-      "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+      "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+      "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+      "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+      "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+      "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span></span>,
+      "<span class="hljs-attribute">nickname</span>": <span class="hljs-value"><span class="hljs-string">"小明"</span></span>,
+      "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"工程師"</span></span>,
+      "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value"><span class="hljs-string">"報導者文化基金會"</span></span>,
+      "<span class="hljs-attribute">gender</span>": <span class="hljs-value"><span class="hljs-string">"M"</span></span>,
+      "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+      "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
+      "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value"><span class="hljs-string">"加油！"</span>
     </span>}</span>,
+    "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">header</span>": <span class="hljs-value"><span class="hljs-string">"王小明"</span></span>,
+      "<span class="hljs-attribute">security_id</span>": <span class="hljs-value"><span class="hljs-string">"A12345678"</span></span>,
+      "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"developer@twreporter.org"</span></span>,
+      "<span class="hljs-attribute">address_country</span>": <span class="hljs-value"><span class="hljs-string">"臺灣"</span></span>,
+      "<span class="hljs-attribute">address_state</span>": <span class="hljs-value"><span class="hljs-string">"臺北市"</span></span>,
+      "<span class="hljs-attribute">address_city</span>": <span class="hljs-value"><span class="hljs-string">"中山區"</span></span>,
+      "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value"><span class="hljs-string">"南京東路一段300巷300號6樓"</span></span>,
+      "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value"><span class="hljs-string">"104"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value"><span class="hljs-string">"true"</span></span>,
     "<span class="hljs-attribute">payment_url</span>": <span class="hljs-value"><span class="hljs-string">"https://sandbox-redirect.tappaysdk.com/redirect/906ec8348e5e893e098e56f1c061ae178fc80d193649305e83ca8788054e839d"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
@@ -1296,9 +1966,6 @@ Only the linepay is required to do this verfication</p>
         "<span class="hljs-attribute">details</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">notes</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-        </span>}</span>,
         "<span class="hljs-attribute">order_number</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
@@ -1311,34 +1978,96 @@ Only the linepay is required to do this verfication</p>
         "<span class="hljs-attribute">is_anonymous</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
         </span>}</span>,
-        "<span class="hljs-attribute">receipt_header</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-        </span>}</span>,
         "<span class="hljs-attribute">cardholder</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
           "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
             "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">first_name</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">address</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">last_name</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
             "<span class="hljs-attribute">phone_number</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">national_id</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}</span>,
-            "<span class="hljs-attribute">zip_code</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">nickname</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">title</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">legal_name</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">gender</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">age_range: 25_to_34</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">read_preference: human_right,cross_straits</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">words_for_twreporter</span>": <span class="hljs-value">{
               "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
             </span>}
           </span>}</span>,
           "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
             <span class="hljs-string">"email"</span>
           ]
+        </span>}</span>,
+        "<span class="hljs-attribute">receipt</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+          "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">header</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">security_id</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_country</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_state</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_city</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_detail</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}</span>,
+            "<span class="hljs-attribute">address_zip_code</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+            </span>}
+          </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">auto_tax_dedution</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">payment_url</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
@@ -15381,7 +16110,7 @@ The email contains the following attributes</p>
     <span class="hljs-string">"status"</span>,
     <span class="hljs-string">"message"</span>
   ]
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 21 Dec 2021</p><script>/* eslint-env browser */
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 28 Jan 2022</p><script>/* eslint-env browser */
 /* eslint quotes: [2, "single"] */
 'use strict';
 

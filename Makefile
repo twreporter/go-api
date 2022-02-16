@@ -47,19 +47,27 @@ create-migrations: check-migrate
 		@migrate create -ext $(MIGRATION_EXT) -dir $(MIGRATION_DIR) -seq $(MIGRATION_NAME)
 
 upgrade-schema: check-migrate
-		@echo Upgrade schema to latest version
-		migrate -database $(DB_CONN) -path $(MIGRATION_DIR) up
+		@echo Upgrade UP schema or to latest version
+		migrate -database $(DB_CONN) -path $(MIGRATION_DIR) up $(UP)
 
 downgrade-schema: check-migrate
-	        @echo CAUTION: Remove all the schema
-		@migrate -database $(DB_CONN) -path $(MIGRATION_DIR) down
+	        @echo CAUTION: Remove DOWN schema or all the schema
+		@migrate -database $(DB_CONN) -path $(MIGRATION_DIR) down $(DOWN)
 
 goto-schema: check-migrate
 		@echo "Roll up or down to the specified version"
 		@migrate -database $(DB_CONN) -path $(MIGRATION_DIR) goto $(SCHEMA_VERSION)
 
+force-schema: check-migrate
+		@echo "Force to specified version without actually migrate"
+		@migrate -database $(DB_CONN) -path $(MIGRATION_DIR) force $(SCHEMA_VERSION)
+
+check-version: check-migrate
+		@echo "Check current migrate version"
+		@migrate -database $(DB_CONN) -path $(MIGRATION_DIR) version
+
 check-migrate:
-		@printf "Check if migrate CLI (https://github.com/golang-migrate/migrate/tree/master/cli) is installed."
+		@printf "Check if migrate CLI (https://github.com/golang-migrate/migrate/tree/master/cmd/migrate) is installed."
 		@type migrate > /dev/null
 		@echo ....OK
 

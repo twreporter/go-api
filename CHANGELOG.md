@@ -1,5 +1,36 @@
 ## Unreleased
 
+### 7.1.1
+
+### Notable Changes
+- model/donation
+  - upsert fields for donation redesign [#463](https://github.com/twreporter/go-api/pull/463)
+- api/donation
+  - address updated fields data flow [#463](https://github.com/twreporter/go-api/pull/463)
+  - add UpdateUserDataByCardholder func [#463](https://github.com/twreporter/go-api/pull/463)
+- doc/prime-donation, doc/periodic-donation
+  - update donation docs due to spec change [#462](https://github.com/twreporter/go-api/pull/462), [#464](https://github.com/twreporter/go-api/pull/464), [#465](https://github.com/twreporter/go-api/pull/465)
+
+### Commits
+* [[`43d852583b`](https://github.com/nodejs/node/commit/43d852583b)] - **fix**: fix sprintf type (Aylie Chou)
+* [[`4d9571758d`](https://github.com/nodejs/node/commit/4d9571758d)] - **fix**: print out err in UpdateUserDataByCarholder func (Aylie Chou)
+* [[`7680c04eba`](https://github.com/nodejs/node/commit/7680c04eba)] - **doc**: add development guide about OAuth setting to README.md (#466) (Tai-Jiun Fang)
+* [[`1831ab39a8`](https://github.com/nodejs/node/commit/1831ab39a8)] - **doc**: add migration usage with Makefile in README.md (Aylie Chou)
+* [[`419571eca5`](https://github.com/nodejs/node/commit/419571eca5)] - **fix**: fix typo & add migrate cmd in Makefile (Aylie Chou)
+* [[`7bd3b89181`](https://github.com/nodejs/node/commit/7bd3b89181)] - **fix**: fix typo & sync cardholder to user table asynchronously (Aylie Chou)
+* [[`73ecddf94e`](https://github.com/nodejs/node/commit/73ecddf94e)] - api/donation: add updateUserDataFromCardholder function (Aylie Chou)
+* [[`ef6b28361d`](https://github.com/nodejs/node/commit/ef6b28361d)] - model/donation: add address related fields to cardholder schema (Aylie Chou)
+* [[`a09c6cb32a`](https://github.com/nodejs/node/commit/a09c6cb32a)] - **chore**: update aglio doc index.html (Aylie Chou)
+* [[`385c2b097c`](https://github.com/nodejs/node/commit/385c2b097c)] - **doc**: update prime-donation & periodic-donation doc (Aylie Chou)
+* [[`2f9c449b05`](https://github.com/nodejs/node/commit/2f9c449b05)] - **doc**: update type of `read\_preference` (#464) (Tai-Jiun Fang)
+* [[`cdb79a21ec`](https://github.com/nodejs/node/commit/cdb79a21ec)] - **feat**: add data flow for updated db schema (Aylie Chou)
+* [[`c60442832d`](https://github.com/nodejs/node/commit/c60442832d)] - **fix**: add field update & preserve to-be-drop field fornew-old compatibility (Aylie Chou)
+* [[`46197c5195`](https://github.com/nodejs/node/commit/46197c5195)] - **doc**: update donation docs due to spec change (#462) (Tai-Jiun Fang)
+* [[`14aac66ef7`](https://github.com/nodejs/node/commit/14aac66ef7)] - **fix**: fix syntax error (Aylie Chou)
+* [[`3a924a4d02`](https://github.com/nodejs/node/commit/3a924a4d02)] - **fix**: fix table name (user -\> users) (Aylie Chou)
+* [[`39e8035321`](https://github.com/nodejs/node/commit/39e8035321)] - **chore**: update migrate file (000007/000008) (Aylie Chou)
+* [[`020804f829`](https://github.com/nodejs/node/commit/020804f829)] - **chore**: add migrate up/down file (Aylie Chou)
+
 ### 7.1.0
 
 #### Notable Changes

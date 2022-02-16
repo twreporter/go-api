@@ -24,20 +24,20 @@ type (
 		BackendRedirectURL  string `json:"backend_redirect_url"`
 	}
 	donationRecord struct {
-		Amount        uint              `json:"amount"`
-		Cardholder    models.Cardholder `json:"cardholder"`
-		Currency      string            `json:"currency"`
-		Details       string            `json:"details"`
-		Frequency     string            `json:"frequency"`
-		ID            uint              `json:"id"`
-		Notes         string            `json:"notes"`
-		OrderNumber   string            `json:"order_number"`
-		PayMethod     string            `json:"pay_method"`
-		SendReceipt   string            `json:"send_receipt"`
-		ToFeedback    bool              `json:"to_feedback"`
-		IsAnonymous   bool              `json:"is_anonymous"`
-		PaymentUrl    string            `json:"payment_url"`
-		ReceiptHeader null.String       `json:"receipt_header"`
+		Amount           uint                 `json:"amount"`
+		Cardholder       models.Cardholder    `json:"cardholder"`
+		Receipt          models.Receipt       `json:"receipt"`
+		Currency         string               `json:"currency"`
+		Details          string               `json:"details"`
+		Frequency        string               `json:"frequency"`
+		ID               uint                 `json:"id"`
+		OrderNumber      string               `json:"order_number"`
+		PayMethod        string               `json:"pay_method"`
+		SendReceipt      string               `json:"send_receipt"`
+		ToFeedback       bool                 `json:"to_feedback"`
+		IsAnonymous      bool                 `json:"is_anonymous"`
+		PaymentUrl       string               `json:"payment_url"`
+		AutoTaxDeduction bool                 `json:"auto_tax_deduction"`
 	}
 	responseBody struct {
 		Status string         `json:"status"`
@@ -55,17 +55,16 @@ type (
 		} `json:"data"`
 	}
 	requestBody struct {
-		Amount      uint              `json:"amount"`
-		Cardholder  models.Cardholder `json:"donor"`
-		Currency    string            `json:"currency"`
-		Details     string            `json:"details"`
-		Frequency   string            `json:"frequency"`
-		MerchantID  string            `json:"merchant_id"`
-		PayMethod   string            `json:"pay_method"`
-		Prime       string            `json:"prime"`
-		UserID      uint              `json:"user_id"`
-		ToFeedback  bool              `json:"to_feedback"`
-		IsAnonymous bool              `json:"is_anonymous"`
+		Amount          uint                 `json:"amount"`
+		Cardholder      models.Cardholder    `json:"donor"`
+		Receipt         models.Receipt       `json:"receipt"`
+		Currency        string               `json:"currency"`
+		Details         string               `json:"details"`
+		Frequency       string               `json:"frequency"`
+		MerchantID      string               `json:"merchant_id"`
+		PayMethod       string               `json:"pay_method"`
+		Prime           string               `json:"prime"`
+		UserID          uint                 `json:"user_id"`
 	}
 
 	reqHeader struct {
@@ -98,12 +97,17 @@ const (
 	testAmount   uint = 500
 	testCurrency      = "TWD"
 	testFeedback      = true
+	testEmail         = "developer@twreporter.org"
 
-	testName        = "報導者測試者"
-	testAddress     = "台北市南京東路一段32巷100號10樓"
-	testNationalID  = "A12345678"
-	testPhoneNumber = "+886912345678"
-	testZipCode     = "101"
+	testFirstName      = "測試者"
+	testLastName       = "報導者"
+	testAddressCountry = "臺灣"
+	testAddressState   = "臺北市"
+	testAddressCity    = "中山區"
+	testAddressDetail  = "南京東路一段32巷100號10樓"
+	testSecurityID     = "A12345678"
+	testPhoneNumber    = "+886912345678"
+	testZipCode        = "101"
 
 	monthlyFrequency = "monthly"
 	yearlyFrequency  = "yearly"
@@ -387,12 +391,16 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 	var resBodyInBytes []byte
 
 	testCardholder := models.Cardholder{
-		PhoneNumber: null.StringFrom("+886912345678"),
-		Name:        null.StringFrom("王小明"),
-		Email:       "developer@twreporter.org",
-		ZipCode:     null.StringFrom("104"),
-		Address:     null.StringFrom("台北市中山區南京東路X巷X號X樓"),
-		NationalID:  null.StringFrom("A123456789"),
+		PhoneNumber:    null.StringFrom(testPhoneNumber),
+		FirstName:      null.StringFrom(testFirstName),
+		LastName:       null.StringFrom(testLastName),
+		AddressCountry: null.StringFrom(testAddressCountry),
+		AddressState:   null.StringFrom(testAddressState),
+		AddressCity:    null.StringFrom(testAddressCity),
+		AddressDetail:  null.StringFrom(testAddressDetail),
+		SecurityID:     null.StringFrom(testSecurityID),
+		ZipCode:        null.StringFrom(testZipCode),
+		Email:          testEmail,
 	}
 
 	cases := []struct {
@@ -416,7 +424,7 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 			reqBody: requestBody{
 				Amount: testAmount,
 				Cardholder: models.Cardholder{
-					Email: "developer@twreporter.org",
+					Email: testEmail,
 				},
 				Frequency:  frequency,
 				MerchantID: methodToMerchant[payMethod],
@@ -462,15 +470,18 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 			}
 
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
-			assert.Empty(t, resBody.Data.Notes)
 
 			assert.Equal(t, defaultAnonymity, resBody.Data.IsAnonymous)
 			assert.Equal(t, c.reqBody.Cardholder.PhoneNumber.ValueOrZero(), resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
-			assert.Equal(t, c.reqBody.Cardholder.Name.ValueOrZero(), resBody.Data.Cardholder.Name.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.FirstName.ValueOrZero(), resBody.Data.Cardholder.FirstName.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.LastName.ValueOrZero(), resBody.Data.Cardholder.LastName.ValueOrZero())
 			assert.Equal(t, c.reqBody.Cardholder.Email, resBody.Data.Cardholder.Email)
 			assert.Equal(t, c.reqBody.Cardholder.ZipCode.ValueOrZero(), resBody.Data.Cardholder.ZipCode.ValueOrZero())
-			assert.Equal(t, c.reqBody.Cardholder.NationalID.ValueOrZero(), resBody.Data.Cardholder.NationalID.ValueOrZero())
-			assert.Equal(t, c.reqBody.Cardholder.Address.ValueOrZero(), resBody.Data.Cardholder.Address.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.SecurityID.ValueOrZero(), resBody.Data.Cardholder.SecurityID.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.AddressCountry.ValueOrZero(), resBody.Data.Cardholder.AddressCountry.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.AddressState.ValueOrZero(), resBody.Data.Cardholder.AddressState.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.AddressCity.ValueOrZero(), resBody.Data.Cardholder.AddressCity.ValueOrZero())
+			assert.Equal(t, c.reqBody.Cardholder.AddressDetail.ValueOrZero(), resBody.Data.Cardholder.AddressDetail.ValueOrZero())
 
 			if payMethod == linePayMethod {
 				assert.NotEmpty(t, resBody.Data.PaymentUrl)
@@ -542,12 +553,16 @@ func createDefaultPeriodicDonationRecord(user models.User, frequency string) res
 	reqBody := requestBody{
 		Amount: testAmount,
 		Cardholder: models.Cardholder{
-			Address:     null.StringFrom(testAddress),
-			Email:       user.Email.ValueOrZero(),
-			Name:        null.StringFrom(testName),
-			NationalID:  null.StringFrom(testNationalID),
-			PhoneNumber: null.StringFrom(testPhoneNumber),
-			ZipCode:     null.StringFrom(testZipCode),
+			AddressCountry: null.StringFrom(testAddressCountry),
+			AddressState:   null.StringFrom(testAddressState),
+			AddressCity:    null.StringFrom(testAddressCity),
+			AddressDetail:  null.StringFrom(testAddressDetail),
+			Email:          user.Email.ValueOrZero(),
+			FirstName:      null.StringFrom(testFirstName),
+			LastName:       null.StringFrom(testLastName),
+			SecurityID:     null.StringFrom(testSecurityID),
+			PhoneNumber:    null.StringFrom(testPhoneNumber),
+			ZipCode:        null.StringFrom(testZipCode),
 		},
 		Details:    testDetails,
 		Frequency:  frequency,
@@ -566,10 +581,14 @@ func createDefaultPrimeDonationRecord(user models.User, payMethod string) respon
 	reqBody := requestBody{
 		Amount: testAmount,
 		Cardholder: models.Cardholder{
-			Address:     null.StringFrom(testAddress),
+			AddressCountry: null.StringFrom(testAddressCountry),
+			AddressState:   null.StringFrom(testAddressState),
+			AddressCity:    null.StringFrom(testAddressCity),
+			AddressDetail:  null.StringFrom(testAddressDetail),
 			Email:       user.Email.ValueOrZero(),
-			Name:        null.StringFrom(testName),
-			NationalID:  null.StringFrom(testNationalID),
+			FirstName:   null.StringFrom(testFirstName),
+			LastName:    null.StringFrom(testLastName),
+			SecurityID:  null.StringFrom(testSecurityID),
 			PhoneNumber: null.StringFrom(testPhoneNumber),
 			ZipCode:     null.StringFrom(testZipCode),
 		},
@@ -642,7 +661,7 @@ func testDonationPatchClientError(t *testing.T, userID uint, pathPrefix, authori
 		{
 			name: "StatusCode=StatusNotFound,Invalid Order Number",
 			reqBody: &map[string]interface{}{
-				"send_receipt": "no",
+				"send_receipt": "no_receipt",
 				"to_feedback":  !testFeedback,
 				"user_id":      userID,
 			},
@@ -703,16 +722,18 @@ func testDonationPatchServerError(t *testing.T, userID uint, path string, setup 
 		wantStatus int
 	}{
 		{
-			name: `Status=InternalServerError, Patch exceeded quota string to note field`,
+			name: `Status=InternalServerError, Patch exceeded quota string to words_for_twreporter field`,
 			reqBody: map[string]interface{}{
-				"notes": func() string {
-					const notesLen = 100
-					var b strings.Builder
-					for i := 0; i <= 100; i++ {
-						fmt.Fprint(&b, "a")
-					}
-					return b.String()
-				}(),
+				"donor": map[string]string{
+					"words_for_twreporter": func() string {
+						const wordsLen = 256
+						var b strings.Builder
+						for i := 0; i <= wordsLen; i++ {
+							fmt.Fprint(&b, "a")
+						}
+						return b.String()
+					}(),
+				},
 				"user_id": userID,
 			},
 			wantStatus: http.StatusInternalServerError,
@@ -765,11 +786,13 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt":   "no",
+				"send_receipt":   "no_receipt",
 				"is_anonymous":   null.BoolFrom(true),
 				"to_feedback":    false,
 				"user_id":        user.ID,
-				"receipt_header": "mock header",
+				"receipt": map[string]string{
+					"header": "mock header",
+				},
 			},
 		},
 		{
@@ -784,18 +807,22 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 				Cardholder: models.Cardholder{
 					Email: user.Email.String,
 				},
-				ReceiptHeader: null.StringFrom("existing header"),
+				Receipt: models.Receipt{
+					Header: null.StringFrom("existing header"),
+				},
 			},
 			reqBody: map[string]interface{}{
 				"donor": map[string]string{
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt":   "no",
+				"send_receipt":   "no_receipt",
 				"is_anonymous":   null.BoolFrom(true),
 				"to_feedback":    false,
 				"user_id":        user.ID,
-				"receipt_header": "",
+				"receipt": map[string]string{
+					"header": "",
+				},
 			},
 		},
 	} {
@@ -821,7 +848,7 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
 			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
 
-			assert.Equal(t, tc.reqBody["receipt_header"], dataAfterPatch.ReceiptHeader.String)
+			assert.Equal(t, tc.reqBody["receipt"].(map[string]string)["header"], dataAfterPatch.Receipt.Header.String)
 		})
 	}
 }
@@ -851,10 +878,12 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt":   "no",
+				"send_receipt":   "no_receipt",
 				"is_anonymous":   null.BoolFrom(true),
 				"user_id":        user.ID,
-				"receipt_header": "mock header",
+				"receipt": map[string]string{
+					"header": "mock header",
+				},
 			},
 		},
 		{
@@ -869,17 +898,21 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 				Cardholder: models.Cardholder{
 					Email: user.Email.String,
 				},
-				ReceiptHeader: null.StringFrom("existing header"),
+				Receipt: models.Receipt{
+					Header: null.StringFrom("existing header"),
+				},
 			},
 			reqBody: map[string]interface{}{
 				"donor": map[string]string{
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt":   "no",
+				"send_receipt":   "no_receipt",
 				"is_anonymous":   null.BoolFrom(true),
 				"user_id":        user.ID,
-				"receipt_header": "",
+				"receipt": map[string]string{
+					"header": "",
+				},
 			},
 		},
 	} {
@@ -903,7 +936,7 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 			assert.Equal(t, tc.reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
 			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["address"], dataAfterPatch.Cardholder.Address.ValueOrZero())
 			assert.Equal(t, tc.reqBody["donor"].(map[string]string)["name"], dataAfterPatch.Cardholder.Name.ValueOrZero())
-			assert.Equal(t, tc.reqBody["receipt_header"], dataAfterPatch.ReceiptHeader.String)
+			assert.Equal(t, tc.reqBody["receipt"].(map[string]string)["header"], dataAfterPatch.Receipt.Header.String)
 		})
 	}
 }
@@ -1019,18 +1052,20 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 			assert.Equal(t, testAmount, resBody.Data.Amount)
 			assert.Equal(t, testDetails, resBody.Data.Details)
 			assert.Equal(t, donorEmail, resBody.Data.Cardholder.Email)
-			assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
-			assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
-			assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
+			assert.Equal(t, testAddressCountry, resBody.Data.Cardholder.AddressCountry.ValueOrZero())
+			assert.Equal(t, testAddressState, resBody.Data.Cardholder.AddressState.ValueOrZero())
+			assert.Equal(t, testAddressCity, resBody.Data.Cardholder.AddressCity.ValueOrZero())
+			assert.Equal(t, testAddressDetail, resBody.Data.Cardholder.AddressDetail.ValueOrZero())
+			assert.Equal(t, testFirstName, resBody.Data.Cardholder.FirstName.ValueOrZero())
+			assert.Equal(t, testLastName, resBody.Data.Cardholder.LastName.ValueOrZero())
+			assert.Equal(t, testSecurityID, resBody.Data.Cardholder.SecurityID.ValueOrZero())
 			assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
 			assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
 			assert.Equal(t, testCurrency, resBody.Data.Currency)
 			assert.Equal(t, p, resBody.Data.PayMethod)
-			assert.Equal(t, "no", resBody.Data.SendReceipt)
-			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
-			if !resBody.Data.ReceiptHeader.IsZero() {
-				assert.Empty(t, resBody.Data.ReceiptHeader.String)
+			if !resBody.Data.Receipt.Header.IsZero() {
+				assert.Empty(t, resBody.Data.Receipt.Header.String)
 			}
 		})
 	}
@@ -1069,19 +1104,21 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 			assert.Equal(t, testAmount, resBody.Data.Amount)
 			assert.Equal(t, testDetails, resBody.Data.Details)
 			assert.Equal(t, donorEmail, resBody.Data.Cardholder.Email)
-			assert.Equal(t, testAddress, resBody.Data.Cardholder.Address.ValueOrZero())
-			assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
-			assert.Equal(t, testNationalID, resBody.Data.Cardholder.NationalID.ValueOrZero())
+			assert.Equal(t, testAddressCountry, resBody.Data.Cardholder.AddressCountry.ValueOrZero())
+			assert.Equal(t, testAddressState, resBody.Data.Cardholder.AddressState.ValueOrZero())
+			assert.Equal(t, testAddressCity, resBody.Data.Cardholder.AddressCity.ValueOrZero())
+			assert.Equal(t, testAddressDetail, resBody.Data.Cardholder.AddressDetail.ValueOrZero())
+			assert.Equal(t, testFirstName, resBody.Data.Cardholder.FirstName.ValueOrZero())
+			assert.Equal(t, testLastName, resBody.Data.Cardholder.LastName.ValueOrZero())
+			assert.Equal(t, testSecurityID, resBody.Data.Cardholder.SecurityID.ValueOrZero())
 			assert.Equal(t, testPhoneNumber, resBody.Data.Cardholder.PhoneNumber.ValueOrZero())
 			assert.Equal(t, testZipCode, resBody.Data.Cardholder.ZipCode.ValueOrZero())
 			assert.Equal(t, testCurrency, resBody.Data.Currency)
-			assert.Equal(t, "no", resBody.Data.SendReceipt)
 			assert.Equal(t, true, resBody.Data.ToFeedback)
 			assert.Equal(t, f, resBody.Data.Frequency)
-			assert.Empty(t, resBody.Data.Notes)
 			assert.NotEmpty(t, resBody.Data.OrderNumber)
-			if !resBody.Data.ReceiptHeader.IsZero() {
-				assert.Empty(t, resBody.Data.ReceiptHeader.String)
+			if !resBody.Data.Receipt.Header.IsZero() {
+				assert.Empty(t, resBody.Data.Receipt.Header.String)
 			}
 		})
 	}
