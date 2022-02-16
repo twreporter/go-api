@@ -797,7 +797,7 @@ func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder,
 	if err, _ := mc.Storage.UpdateByConditions(map[string]interface{}{
 		"id":      userID,
 	}, u); err != nil {
-		err = errors.Wrap(err, fmt.Sprintf("fail to update user %s by cardholder", userID))
+		err = errors.Wrap(err, fmt.Sprintf("fail to update user %d by cardholder", userID))
 
 		if globals.Conf.Environment == "development" {
 			log.Errorf("%+v", err)
