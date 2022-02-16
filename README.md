@@ -129,6 +129,71 @@ Otherwise, you have to change the `utils/mail.go` to integrate with your email s
 ### Database Migrations
 Go-api integrates [go-migrate](https://github.com/golang-migrate/migrate) to do the schema version control. You can follow the instructions to install the cli from [here](https://github.com/golang-migrate/migrate/tree/master/cli).
 
+To use Makefile, check following instruction:
+
+Check Current Migration Version
+```bash
+$ make check-version
+```
+
+Upgrade Migration Version
+```bash
+# usage:
+# make upgrade-schema UP=<number of version to upgrade>
+#   UP: <number>, if undefined, upgrade to latest number
+
+# example: upgrade 4 versions
+$ make upgrade-schema UP=4
+
+# example: upgrade to latest version
+$ make upgrade-schema
+```
+
+Downgrade Migration Version
+```bash
+# usage:
+# make downgrade-schema DOWN=<number of version to downgrade>
+#   DOWN: <number>, if undefined, clear all migration
+
+# example: downgrade 1 version
+$ make downgrade-schema DOWN=1
+
+# example: remove all migration
+$ make downgrade-schema
+```
+
+Goto Certain Migration Version
+```bash
+# usage:
+# make goto-schema SCHEMA_VERSION=<index of which version you want to goto>
+#   SCHEMA_VERSION: <index number>, if undefined, interactive prompt will ask for index in next line.
+
+# example: goto version 3
+$ make goto-schema SCHEMA_VERSION=3
+
+# example: goto version 3
+$ make goto-schema
+$ 3
+```
+
+Force to Certain Migration Version
+```bash
+# usage:
+# make force-schema SCHEMA_VERSION=<index of which version you want to force to>
+#   SCHEMA_VERSION: <index number>, if undefined, interactive prompt will ask for index in next line.
+
+# notice:
+#   migrations will not be executed if you use this function.
+#   you can use this function to clean dirty state while development
+
+# example: force to version 4
+$ make force-schema SCHEMA_VERSION=4
+
+# example: force to version 4
+$ make force-schema
+$ 4
+```
+
 Basic operations are listed below:
 
 Create
