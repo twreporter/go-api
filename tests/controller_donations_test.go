@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/pkg/donationmodel"
 )
 
 type (
@@ -24,20 +25,20 @@ type (
 		BackendRedirectURL  string `json:"backend_redirect_url"`
 	}
 	donationRecord struct {
-		Amount           uint                 `json:"amount"`
-		Cardholder       models.Cardholder    `json:"cardholder"`
-		Receipt          models.Receipt       `json:"receipt"`
-		Currency         string               `json:"currency"`
-		Details          string               `json:"details"`
-		Frequency        string               `json:"frequency"`
-		ID               uint                 `json:"id"`
-		OrderNumber      string               `json:"order_number"`
-		PayMethod        string               `json:"pay_method"`
-		SendReceipt      string               `json:"send_receipt"`
-		ToFeedback       bool                 `json:"to_feedback"`
-		IsAnonymous      bool                 `json:"is_anonymous"`
-		PaymentUrl       string               `json:"payment_url"`
-		AutoTaxDeduction bool                 `json:"auto_tax_deduction"`
+		Amount           uint                     `json:"amount"`
+		Cardholder       donationmodel.Cardholder `json:"cardholder"`
+		Receipt          donationmodel.Receipt    `json:"receipt"`
+		Currency         string                   `json:"currency"`
+		Details          string                   `json:"details"`
+		Frequency        string                   `json:"frequency"`
+		ID               uint                     `json:"id"`
+		OrderNumber      string                   `json:"order_number"`
+		PayMethod        string                   `json:"pay_method"`
+		SendReceipt      string                   `json:"send_receipt"`
+		ToFeedback       bool                     `json:"to_feedback"`
+		IsAnonymous      bool                     `json:"is_anonymous"`
+		PaymentUrl       string                   `json:"payment_url"`
+		AutoTaxDeduction bool                     `json:"auto_tax_deduction"`
 	}
 	responseBody struct {
 		Status string         `json:"status"`
@@ -55,16 +56,16 @@ type (
 		} `json:"data"`
 	}
 	requestBody struct {
-		Amount          uint                 `json:"amount"`
-		Cardholder      models.Cardholder    `json:"donor"`
-		Receipt         models.Receipt       `json:"receipt"`
-		Currency        string               `json:"currency"`
-		Details         string               `json:"details"`
-		Frequency       string               `json:"frequency"`
-		MerchantID      string               `json:"merchant_id"`
-		PayMethod       string               `json:"pay_method"`
-		Prime           string               `json:"prime"`
-		UserID          uint                 `json:"user_id"`
+		Amount          uint                     `json:"amount"`
+		Cardholder      donationmodel.Cardholder `json:"donor"`
+		Receipt         donationmodel.Receipt    `json:"receipt"`
+		Currency        string                   `json:"currency"`
+		Details         string                   `json:"details"`
+		Frequency       string                   `json:"frequency"`
+		MerchantID      string                   `json:"merchant_id"`
+		PayMethod       string                   `json:"pay_method"`
+		Prime           string                   `json:"prime"`
+		UserID          uint                     `json:"user_id"`
 	}
 
 	reqHeader struct {
@@ -73,7 +74,7 @@ type (
 	}
 
 	tapPayRequestBody struct {
-		models.PayInfo    `json:"pay_info"`
+		donationmodel.PayInfo    `json:"pay_info"`
 		RecTradeID        string `json:"rec_trade_id"`
 		BankTransactionID string `json:"bank_transaction_id"`
 		OrderNumber       string `json:"order_number"`
@@ -179,7 +180,7 @@ func testDonationCreateServerError(t *testing.T, path string, userID uint, frequ
 			name: "StatusCode=StatusInternalServerError,Invalid Prime",
 			reqBody: &requestBody{
 				Amount: testAmount,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: "developer@twreporter.org",
 				},
 				Prime:  "test_prime_which_will_occurs_error",
@@ -227,7 +228,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			name: "StatusCode=StatusBadRequest,Lack of UserID",
 			reqBody: &requestBody{
 				Amount: testAmount,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: "developer@twreporter.org",
 				},
 				PayMethod: creditCardPayMethod,
@@ -240,7 +241,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			name: "StatusCode=StatusBadRequest,Lack of Prime",
 			reqBody: &requestBody{
 				Amount: testAmount,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: "developer@twreporter.org",
 				},
 				PayMethod: creditCardPayMethod,
@@ -264,7 +265,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			name: "StatusCode=StatusBadRequest,Lack of Cardholder.Email",
 			reqBody: &requestBody{
 				Amount: testAmount,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Name:        null.StringFrom("王小明"),
 					PhoneNumber: null.StringFrom("+886912345678"),
 				},
@@ -278,7 +279,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 		{
 			name: "StatusCode=StatusBadRequest,Lack of Amount",
 			reqBody: &requestBody{
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: "developer@twreporter.org",
 				},
 				PayMethod: creditCardPayMethod,
@@ -292,7 +293,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			name: "StatusCode=StatusBadRequest,Lack of PayMethod",
 			reqBody: &requestBody{
 				Amount: testAmount,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: "developer@twreporter.org",
 				},
 				Prime:  methodToPrime[payMethod],
@@ -305,7 +306,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			name: "StatusCode=StatusBadRequest,Malformed email",
 			reqBody: &requestBody{
 				Amount: testAmount,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: "developer-twreporter,org",
 				},
 				PayMethod: creditCardPayMethod,
@@ -319,7 +320,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			name: "StatusCode=StatusBadRequest,Amount less than 1",
 			reqBody: &requestBody{
 				Amount: 0,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: "developer@twreporter.org",
 				},
 				PayMethod: creditCardPayMethod,
@@ -333,7 +334,7 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 			name: "StatusCode=StatusBadRequest,Malformed Cardholder.PhoneNumber (E.164 format)",
 			reqBody: &requestBody{
 				Amount: testAmount,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email:       "developer-twreporter,org",
 					PhoneNumber: null.StringFrom("0912345678"),
 				},
@@ -390,7 +391,7 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 	var reqBodyInBytes []byte
 	var resBodyInBytes []byte
 
-	testCardholder := models.Cardholder{
+	testCardholder := donationmodel.Cardholder{
 		PhoneNumber:    null.StringFrom(testPhoneNumber),
 		FirstName:      null.StringFrom(testFirstName),
 		LastName:       null.StringFrom(testLastName),
@@ -423,7 +424,7 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 			name: "StatusCode=StatusCreated,minimum fields",
 			reqBody: requestBody{
 				Amount: testAmount,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: testEmail,
 				},
 				Frequency:  frequency,
@@ -552,7 +553,7 @@ func createDefaultPeriodicDonationRecord(user models.User, frequency string) res
 
 	reqBody := requestBody{
 		Amount: testAmount,
-		Cardholder: models.Cardholder{
+		Cardholder: donationmodel.Cardholder{
 			AddressCountry: null.StringFrom(testAddressCountry),
 			AddressState:   null.StringFrom(testAddressState),
 			AddressCity:    null.StringFrom(testAddressCity),
@@ -580,7 +581,7 @@ func createDefaultPrimeDonationRecord(user models.User, payMethod string) respon
 
 	reqBody := requestBody{
 		Amount: testAmount,
-		Cardholder: models.Cardholder{
+		Cardholder: donationmodel.Cardholder{
 			AddressCountry: null.StringFrom(testAddressCountry),
 			AddressState:   null.StringFrom(testAddressState),
 			AddressCity:    null.StringFrom(testAddressCity),
@@ -765,19 +766,19 @@ func testDonationPatchServerError(t *testing.T, userID uint, path string, setup 
 func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user models.User, authorization string, cookie http.Cookie) {
 	for _, tc := range []struct {
 		name        string
-		existRecord models.PeriodicDonation
+		existRecord donationmodel.PeriodicDonation
 		reqBody     map[string]interface{}
 	}{
 		{
 			name: "StatusCode=StatusNoContent,Patch fields with changes",
-			existRecord: models.PeriodicDonation{
+			existRecord: donationmodel.PeriodicDonation{
 				Amount:      500,
 				Currency:    "TWD",
 				Details:     "test donation",
 				OrderNumber: "twrepoter-test-order-number",
 				Status:      statusPaid,
 				UserID:      user.ID,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: user.Email.String,
 				},
 			},
@@ -797,17 +798,17 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 		},
 		{
 			name: "StatusCode=StatusNoContent,Patch fields with deletion(receipt_header)",
-			existRecord: models.PeriodicDonation{
+			existRecord: donationmodel.PeriodicDonation{
 				Amount:      500,
 				Currency:    "TWD",
 				Details:     "test donation",
 				OrderNumber: "twrepoter-test-order-number",
 				Status:      statusPaid,
 				UserID:      user.ID,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: user.Email.String,
 				},
-				Receipt: models.Receipt{
+				Receipt: donationmodel.Receipt{
 					Header: null.StringFrom("existing header"),
 				},
 			},
@@ -840,7 +841,7 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 			resp := serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 			assert.Equal(t, http.StatusNoContent, resp.Code)
 
-			var dataAfterPatch models.PeriodicDonation
+			var dataAfterPatch donationmodel.PeriodicDonation
 			Globs.GormDB.Where("id = ?", tc.existRecord.ID).Find(&dataAfterPatch)
 			assert.Equal(t, tc.reqBody["send_receipt"], dataAfterPatch.SendReceipt)
 			assert.Equal(t, tc.reqBody["to_feedback"], dataAfterPatch.ToFeedback.ValueOrZero())
@@ -856,12 +857,12 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 
 	for _, tc := range []struct {
 		name        string
-		existRecord models.PayByPrimeDonation
+		existRecord donationmodel.PayByPrimeDonation
 		reqBody     map[string]interface{}
 	}{
 		{
 			name: "StatusCode=StatusNoContent,Patch fields with changes",
-			existRecord: models.PayByPrimeDonation{
+			existRecord: donationmodel.PayByPrimeDonation{
 				Amount:      500,
 				Currency:    "TWD",
 				Details:     "test donation",
@@ -869,7 +870,7 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 				OrderNumber: "twrepoter-test-order-number",
 				Status:      statusPaid,
 				UserID:      user.ID,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: user.Email.String,
 				},
 			},
@@ -888,17 +889,17 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 		},
 		{
 			name: "StatusCode=StatusNoContent,Patch fields with deletion(receipt_header)",
-			existRecord: models.PayByPrimeDonation{
+			existRecord: donationmodel.PayByPrimeDonation{
 				Amount:      500,
 				Currency:    "TWD",
 				Details:     "test donation",
 				OrderNumber: "twrepoter-test-order-number",
 				Status:      statusPaid,
 				UserID:      user.ID,
-				Cardholder: models.Cardholder{
+				Cardholder: donationmodel.Cardholder{
 					Email: user.Email.String,
 				},
-				Receipt: models.Receipt{
+				Receipt: donationmodel.Receipt{
 					Header: null.StringFrom("existing header"),
 				},
 			},
@@ -930,7 +931,7 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 			resp := serveHTTPWithCookies("PATCH", path, string(reqBodyInBytes), "application/json", authorization, cookie)
 			assert.Equal(t, http.StatusNoContent, resp.Code)
 
-			var dataAfterPatch models.PayByPrimeDonation
+			var dataAfterPatch donationmodel.PayByPrimeDonation
 			Globs.GormDB.Where("id = ?", tc.existRecord.ID).Find(&dataAfterPatch)
 			assert.Equal(t, tc.reqBody["send_receipt"], dataAfterPatch.SendReceipt)
 			assert.Equal(t, tc.reqBody["is_anonymous"], dataAfterPatch.IsAnonymous)
@@ -1147,9 +1148,9 @@ func TestLinePayNotify(t *testing.T) {
 
 	user := createUser(testDonorEmail)
 	defer func() { deleteUser(user) }()
-	record := models.PayByPrimeDonation{
+	record := donationmodel.PayByPrimeDonation{
 		Amount: testAmount,
-		Cardholder: models.Cardholder{
+		Cardholder: donationmodel.Cardholder{
 			Email: testDonorEmail,
 		},
 		Currency:    testCurrency,
@@ -1157,7 +1158,7 @@ func TestLinePayNotify(t *testing.T) {
 		OrderNumber: testOrderNumber,
 		PayMethod:   linePayMethod,
 		Status:      statusPaying,
-		TappayResp: models.TappayResp{
+		TappayResp: donationmodel.TappayResp{
 			RecTradeID:        testRecTradeID,
 			BankTransactionID: testBankTransactionID,
 		},
@@ -1176,7 +1177,7 @@ func TestLinePayNotify(t *testing.T) {
 	db := Globs.GormDB
 	cases := []struct {
 		name          string
-		preRecord     *models.PayByPrimeDonation
+		preRecord     *donationmodel.PayByPrimeDonation
 		reqBody       tapPayRequestBody
 		resultCode    int
 		resultCompare *resultPatchField
@@ -1184,7 +1185,7 @@ func TestLinePayNotify(t *testing.T) {
 		{
 			name: "StatusCode=StatusBadRequest,Invalid Line Pay Method",
 			reqBody: tapPayRequestBody{
-				PayInfo: models.PayInfo{
+				PayInfo: donationmodel.PayInfo{
 					Method: null.StringFrom("Invalid Method"),
 				},
 			},
@@ -1195,7 +1196,7 @@ func TestLinePayNotify(t *testing.T) {
 			preRecord: &record,
 			reqBody: tapPayRequestBody{
 				OrderNumber: "UnknownOrderNumber",
-				PayInfo: models.PayInfo{
+				PayInfo: donationmodel.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
 					Point:                  null.IntFrom(0),
@@ -1208,7 +1209,7 @@ func TestLinePayNotify(t *testing.T) {
 			preRecord: &record,
 			reqBody: tapPayRequestBody{
 				RecTradeID: "UnknownRecTradeID",
-				PayInfo: models.PayInfo{
+				PayInfo: donationmodel.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
 					Point:                  null.IntFrom(0),
@@ -1221,7 +1222,7 @@ func TestLinePayNotify(t *testing.T) {
 			preRecord: &record,
 			reqBody: tapPayRequestBody{
 				BankTransactionID: "UnknownBankTransactionID",
-				PayInfo: models.PayInfo{
+				PayInfo: donationmodel.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
 					Point:                  null.IntFrom(0),
@@ -1239,7 +1240,7 @@ func TestLinePayNotify(t *testing.T) {
 				Amount:            testAmount,
 				Status:            0,
 				TransactionTime:   endTransactionTime.Unix() * 1000, //millisecond
-				PayInfo: models.PayInfo{
+				PayInfo: donationmodel.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom("************5566"),
 					Point:                  null.IntFrom(0),
@@ -1269,7 +1270,7 @@ func TestLinePayNotify(t *testing.T) {
 				Amount:            testAmount,
 				Status:            0,
 				TransactionTime:   endTransactionTime.Unix() * 1000, //millisecond
-				PayInfo: models.PayInfo{
+				PayInfo: donationmodel.PayInfo{
 					Method:                 null.StringFrom("CREDIT_CARD"),
 					MaskedCreditCardNumber: null.StringFrom(""),
 					Point:                  null.IntFrom(0),
@@ -1332,7 +1333,7 @@ func TestLinePayNotify(t *testing.T) {
 
 			// Check if the transaction information updated correctly
 			if c.resultCode == http.StatusNoContent {
-				m := models.PayByPrimeDonation{}
+				m := donationmodel.PayByPrimeDonation{}
 				db.Where("order_number = ?", c.preRecord.OrderNumber).Find(&m)
 				assert.Equal(t, c.resultCompare.Method, m.PayInfo.Method.String)
 				assert.Equal(t, c.resultCompare.LastFour, m.CardInfo.LastFour.String)
@@ -1356,9 +1357,9 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 	authorization, cookie := helperSetupAuth(user)
 	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
 
-	record := models.PayByPrimeDonation{
+	record := donationmodel.PayByPrimeDonation{
 		Amount: testAmount,
-		Cardholder: models.Cardholder{
+		Cardholder: donationmodel.Cardholder{
 			Email: user.Email.String,
 		},
 		Currency:    testCurrency,
@@ -1366,16 +1367,16 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 		OrderNumber: "ValidOrderNumber1",
 		PayMethod:   linePayMethod,
 		Status:      "paid",
-		TappayResp: models.TappayResp{
+		TappayResp: donationmodel.TappayResp{
 			RecTradeID:        "ValidRecTradeID1",
 			BankTransactionID: "ValidBankTransactionID1",
 			TappayApiStatus:   null.IntFrom(0),
 		},
 	}
 
-	failRecord := models.PayByPrimeDonation{
+	failRecord := donationmodel.PayByPrimeDonation{
 		Amount: testAmount,
-		Cardholder: models.Cardholder{
+		Cardholder: donationmodel.Cardholder{
 			Email: user.Email.String,
 		},
 		Currency:    testCurrency,
@@ -1383,7 +1384,7 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 		OrderNumber: "ValidOrderNumber1",
 		PayMethod:   linePayMethod,
 		Status:      "fail",
-		TappayResp: models.TappayResp{
+		TappayResp: donationmodel.TappayResp{
 			RecTradeID:        "ValidRecTradeID1",
 			BankTransactionID: "ValidBankTransactionID1",
 			TappayApiStatus:   null.IntFrom(421), // Gateway Timeout Error
@@ -1406,7 +1407,7 @@ func TestGetVerificationOfATransaction(t *testing.T) {
 	cases := []struct {
 		reqHeader
 		name          string
-		preRecord     *models.PayByPrimeDonation
+		preRecord     *donationmodel.PayByPrimeDonation
 		orderNumber   string
 		resultCode    int
 		resultCompare *verificationResp
@@ -1544,9 +1545,9 @@ func TestQueryTappayServer(t *testing.T) {
 	authorization, cookie := helperSetupAuth(user)
 	maliciousAuthorization, maliciousCookie := helperSetupAuth(maliciousUser)
 
-	dbRecord := models.PayByPrimeDonation{
+	dbRecord := donationmodel.PayByPrimeDonation{
 		Amount: testAmount,
-		Cardholder: models.Cardholder{
+		Cardholder: donationmodel.Cardholder{
 			Email: user.Email.String,
 		},
 		Currency:    testCurrency,
@@ -1554,7 +1555,7 @@ func TestQueryTappayServer(t *testing.T) {
 		OrderNumber: "ValidOrderNumber1",
 		PayMethod:   linePayMethod,
 		Status:      statusPaying,
-		TappayResp: models.TappayResp{
+		TappayResp: donationmodel.TappayResp{
 			RecTradeID:        "ValidRecTradeID1",
 			BankTransactionID: "ValidBankTransactionID1",
 			TappayApiStatus:   null.IntFrom(0),
@@ -1595,7 +1596,7 @@ func TestQueryTappayServer(t *testing.T) {
 		reqHeader
 		name             string
 		reqBody          *recordRequestBody
-		preRecord        *models.PayByPrimeDonation
+		preRecord        *donationmodel.PayByPrimeDonation
 		stubTappayServer *httptest.Server
 		resultCode       int
 		resultCompare    *tappayRecord

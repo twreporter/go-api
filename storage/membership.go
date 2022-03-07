@@ -8,6 +8,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/pkg/donationmodel"
 )
 
 // MembershipStorage defines the methods we need to implement,
@@ -51,9 +52,9 @@ type MembershipStorage interface {
 	GetAWebPushSubscription(uint32, string) (models.WebPushSubscription, error)
 
 	/** Donation methods **/
-	CreateAPeriodicDonation(*models.PeriodicDonation, *models.PayByCardTokenDonation) error
-	DeleteAPeriodicDonation(uint, models.PayByCardTokenDonation) error
-	UpdatePeriodicAndCardTokenDonationInTRX(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
+	CreateAPeriodicDonation(*donationmodel.PeriodicDonation, *donationmodel.PayByCardTokenDonation) error
+	DeleteAPeriodicDonation(uint, donationmodel.PayByCardTokenDonation) error
+	UpdatePeriodicAndCardTokenDonationInTRX(uint, donationmodel.PeriodicDonation, donationmodel.PayByCardTokenDonation) error
 }
 
 // NewGormStorage initializes the storage connected to MySQL database by gorm library

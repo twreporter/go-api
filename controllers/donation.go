@@ -28,6 +28,7 @@ import (
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
+	"github.com/twreporter/go-api/pkg/donationmodel"
 )
 
 const (
@@ -112,36 +113,36 @@ var linePayMethods = []string{
 
 type (
 	clientReq struct {
-		Amount       uint                 `json:"amount" binding:"required"`
-		Cardholder   models.Cardholder    `json:"donor" binding:"required,dive"`
-		Receipt      models.Receipt       `json:"receipt" binding:"required,dive"`
-		Currency     string               `json:"currency"`
-		Details      string               `json:"details"`
-		Frequency    string               `json:"frequency"`
-		MerchantID   string               `json:"merchant_id"`
-		PayMethod    string               `json:"pay_method"`
-		Prime        string               `json:"prime" binding:"required"`
-		UserID       uint                 `json:"user_id" binding:"required"`
-		MaxPaidTimes uint                 `json:"max_paid_times"`
+		Amount       uint                     `json:"amount" binding:"required"`
+		Cardholder   donationmodel.Cardholder `json:"donor" binding:"required,dive"`
+		Receipt      donationmodel.Receipt    `json:"receipt" binding:"required,dive"`
+		Currency     string                   `json:"currency"`
+		Details      string                   `json:"details"`
+		Frequency    string                   `json:"frequency"`
+		MerchantID   string                   `json:"merchant_id"`
+		PayMethod    string                   `json:"pay_method"`
+		Prime        string                   `json:"prime" binding:"required"`
+		UserID       uint                     `json:"user_id" binding:"required"`
+		MaxPaidTimes uint                     `json:"max_paid_times"`
 	}
 
 	clientResp struct {
-		Amount           uint              `json:"amount"`
-		CardInfo         models.CardInfo   `json:"card_info"`
-		Cardholder       models.Cardholder `json:"cardholder"`
-		Receipt          models.Receipt    `json:"receipt"`
-		Currency         string            `json:"currency"`
-		Details          string            `json:"details"`
-		Frequency        string            `json:"frequency"`
-		ID               uint              `json:"id"`
-		Notes            string            `json:"notes"`
-		OrderNumber      string            `json:"order_number"`
-		PayMethod        string            `json:"pay_method"`
-		SendReceipt      string            `json:"send_receipt"`
-		ToFeedback       bool              `json:"to_feedback"`
-		IsAnonymous      bool              `json:"is_anonymous"`
-		PaymentUrl       string            `json:"payment_url"`
-		AutoTaxDeduction bool              `json:"auto_tax_deduction"`
+		Amount           uint                     `json:"amount"`
+		CardInfo         donationmodel.CardInfo   `json:"card_info"`
+		Cardholder       donationmodel.Cardholder `json:"cardholder"`
+		Receipt          donationmodel.Receipt    `json:"receipt"`
+		Currency         string                   `json:"currency"`
+		Details          string                   `json:"details"`
+		Frequency        string                   `json:"frequency"`
+		ID               uint                     `json:"id"`
+		Notes            string                   `json:"notes"`
+		OrderNumber      string                   `json:"order_number"`
+		PayMethod        string                   `json:"pay_method"`
+		SendReceipt      string                   `json:"send_receipt"`
+		ToFeedback       bool                     `json:"to_feedback"`
+		IsAnonymous      bool                     `json:"is_anonymous"`
+		PaymentUrl       string                   `json:"payment_url"`
+		AutoTaxDeduction bool                     `json:"auto_tax_deduction"`
 	}
 
 	bankTransactionTime struct {
@@ -160,30 +161,30 @@ type (
 	}
 
 	tapPayTransactionReq struct {
-		Amount                 uint              `json:"amount"`
-		Cardholder             models.Cardholder `json:"cardholder"`
-		Currency               string            `json:"currency"`
-		Details                string            `json:"details"`
-		MerchantID             string            `json:"merchant_id"`
-		OrderNumber            string            `json:"order_number"`
-		PartnerKey             string            `json:"partner_key"`
-		Prime                  string            `json:"prime"`
-		Remember               bool              `json:"remember"`
-		ResultUrl              linePayResultUrl  `json:"result_url"`
-		LinePayProductImageUrl null.String       `json:"line_pay_product_image_url"`
+		Amount                 uint                     `json:"amount"`
+		Cardholder             donationmodel.Cardholder `json:"cardholder"`
+		Currency               string                   `json:"currency"`
+		Details                string                   `json:"details"`
+		MerchantID             string                   `json:"merchant_id"`
+		OrderNumber            string                   `json:"order_number"`
+		PartnerKey             string                   `json:"partner_key"`
+		Prime                  string                   `json:"prime"`
+		Remember               bool                     `json:"remember"`
+		ResultUrl              linePayResultUrl         `json:"result_url"`
+		LinePayProductImageUrl null.String              `json:"line_pay_product_image_url"`
 	}
 
 	tapPayTransactionResp struct {
-		models.TappayResp
-		models.PayInfo        `json:"pay_info"`
-		BankTransactionTime   bankTransactionTime `json:"bank_transaction_time"`
-		CardInfo              models.CardInfo     `json:"card_info"`
-		CardSecret            cardSecret          `json:"card_secret"`
-		Status                int64               `json:"status"`
-		TransactionTimeMillis int64               `json:"transaction_time_millis"`
-		PaymentUrl            string              `json:"payment_url"`
-		Amount                int                 `json:"amount"`
-		OrderNumber           string              `json:"order_number"`
+		donationmodel.TappayResp
+		donationmodel.PayInfo    `json:"pay_info"`
+		BankTransactionTime      bankTransactionTime    `json:"bank_transaction_time"`
+		CardInfo                 donationmodel.CardInfo `json:"card_info"`
+		CardSecret               cardSecret             `json:"card_secret"`
+		Status                   int64                  `json:"status"`
+		TransactionTimeMillis    int64                  `json:"transaction_time_millis"`
+		PaymentUrl               string                 `json:"payment_url"`
+		Amount                   int                    `json:"amount"`
+		OrderNumber              string                 `json:"order_number"`
 	}
 
 	tapPayMinTransactionResp struct {
@@ -210,14 +211,14 @@ type (
 	payType int
 
 	patchBody struct {
-		Donor            models.Cardholder    `json:"donor"`
-		Receipt          models.Receipt       `json:"receipt"`
-		Notes            string               `json:"notes"`
-		SendReceipt      string               `json:"send_receipt"`
-		ToFeedback       bool                 `json:"to_feedback"`
-		UserID           uint                 `json:"user_id" binding:"required"`
-		IsAnonymous      bool                 `json:"is_anonymous"`
-		AutoTaxDeduction bool                 `json:"auto_tax_deduction"`
+		Donor            donationmodel.Cardholder `json:"donor"`
+		Receipt          donationmodel.Receipt    `json:"receipt"`
+		Notes            string                   `json:"notes"`
+		SendReceipt      string                   `json:"send_receipt"`
+		ToFeedback       bool                     `json:"to_feedback"`
+		UserID           uint                     `json:"user_id" binding:"required"`
+		IsAnonymous      bool                     `json:"is_anonymous"`
+		AutoTaxDeduction bool                     `json:"auto_tax_deduction"`
 	}
 
 	queryFilterTime struct {
@@ -238,8 +239,8 @@ type (
 	}
 )
 
-func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
-	m := new(models.PeriodicDonation)
+func (p *patchBody) BuildPeriodicDonation() donationmodel.PeriodicDonation {
+	m := new(donationmodel.PeriodicDonation)
 	m.Cardholder = p.Donor
 	m.Receipt = p.Receipt
 	m.Notes = p.Notes
@@ -251,8 +252,8 @@ func (p *patchBody) BuildPeriodicDonation() models.PeriodicDonation {
 	return *m
 }
 
-func (p *patchBody) BuildPrimeDonation() models.PayByPrimeDonation {
-	m := new(models.PayByPrimeDonation)
+func (p *patchBody) BuildPrimeDonation() donationmodel.PayByPrimeDonation {
+	m := new(donationmodel.PayByPrimeDonation)
 	m.Cardholder = p.Donor
 	m.Receipt = p.Receipt
 	m.Notes = p.Notes
@@ -328,11 +329,11 @@ func (req clientReq) BuildTapPayReq(orderNumber, details, payMethod string) tapP
 	return *primeReq
 }
 
-func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.PeriodicDonation {
+func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) donationmodel.PeriodicDonation {
 	const defaultDetails = "一般線上定期定額捐款"
 	const defaultMaxPaidTimes = 2147483647
 
-	m := new(models.PeriodicDonation)
+	m := new(donationmodel.PeriodicDonation)
 
 	m.Amount = req.Amount
 	m.Cardholder = req.Cardholder
@@ -364,9 +365,9 @@ func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.Perio
 	return *m
 }
 
-func (req clientReq) BuildPrimeDraftRecord(orderNumber string, payMethod string) models.PayByPrimeDonation {
+func (req clientReq) BuildPrimeDraftRecord(orderNumber string, payMethod string) donationmodel.PayByPrimeDonation {
 	const defaultDetails = "一般線上單筆捐款"
-	m := new(models.PayByPrimeDonation)
+	m := new(donationmodel.PayByPrimeDonation)
 
 	m.Amount = req.Amount
 	m.Cardholder = req.Cardholder
@@ -387,9 +388,9 @@ func (req clientReq) BuildPrimeDraftRecord(orderNumber string, payMethod string)
 	return *m
 }
 
-func (req clientReq) BuildTokenDraftRecord(orderNumber string) models.PayByCardTokenDonation {
+func (req clientReq) BuildTokenDraftRecord(orderNumber string) donationmodel.PayByCardTokenDonation {
 	const defaultDetails = "一般線上定期定額捐款"
-	m := new(models.PayByCardTokenDonation)
+	m := new(donationmodel.PayByCardTokenDonation)
 
 	m.Amount = req.Amount
 	m.Currency = req.Currency
@@ -407,7 +408,7 @@ func (req clientReq) BuildTokenDraftRecord(orderNumber string) models.PayByCardT
 	return *m
 }
 
-func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) {
+func (cr *clientResp) BuildFromPeriodicDonationModel(d donationmodel.PeriodicDonation) {
 	cr.Amount = d.Amount
 	cr.Cardholder = d.Cardholder
 	cr.CardInfo = d.CardInfo
@@ -425,7 +426,7 @@ func (cr *clientResp) BuildFromPeriodicDonationModel(d models.PeriodicDonation) 
 	cr.AutoTaxDeduction = d.AutoTaxDeduction.ValueOrZero()
 }
 
-func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
+func (cr *clientResp) BuildFromPrimeDonationModel(d donationmodel.PayByPrimeDonation) {
 	cr.Amount = d.Amount
 	cr.Cardholder = d.Cardholder
 	cr.CardInfo = d.CardInfo
@@ -443,9 +444,9 @@ func (cr *clientResp) BuildFromPrimeDonationModel(d models.PayByPrimeDonation) {
 	cr.AutoTaxDeduction = d.AutoTaxDeduction.ValueOrZero()
 }
 
-func (cr *clientResp) BuildFromOtherMethodDonationModel(d models.PayByOtherMethodDonation) {
+func (cr *clientResp) BuildFromOtherMethodDonationModel(d donationmodel.PayByOtherMethodDonation) {
 	cr.Amount = d.Amount
-	cr.Cardholder = models.Cardholder{
+	cr.Cardholder = donationmodel.Cardholder{
 		Name:        null.StringFrom(d.Name),
 		Email:       d.Email,
 		NationalID:  null.StringFrom(d.NationalID),
@@ -594,10 +595,10 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail' and mark the periodic donation as 'invalid'.
-			td := models.PayByCardTokenDonation{}
+			td := donationmodel.PayByCardTokenDonation{}
 			tapPayResp.AppendRespOnTokenDonation(&td, statusFail)
 
-			pd := models.PeriodicDonation{}
+			pd := donationmodel.PeriodicDonation{}
 			pd.Status = statusInvalid
 			pd.CardInfo = tapPayResp.CardInfo
 
@@ -668,7 +669,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	if nil != err {
 		if tapPayRespStatusSuccess != tapPayResp.Status {
 			// If tappay error occurs, update the transaction status to 'fail'
-			d := models.PayByPrimeDonation{}
+			d := donationmodel.PayByPrimeDonation{}
 			tapPayResp.AppendRespOnPrimeDonation(&d, statusFail)
 
 			mc.Storage.UpdateByConditions(map[string]interface{}{
@@ -716,7 +717,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	var rowsAffected int64
 	var orderNumber string
 	var userID uint
-	var _cardholder *models.Cardholder
+	var _cardholder *donationmodel.Cardholder
 
 	if orderNumber = c.Param("order"); "" == orderNumber {
 		return http.StatusNotFound, gin.H{"status": "error", "message": "record not found, order_number should be provided in the url"}, nil
@@ -770,7 +771,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	return http.StatusNoContent, gin.H{}, nil
 }
 
-func BuildUserFromCardholder(c *models.Cardholder) (*models.User) {
+func BuildUserFromCardholder(c *donationmodel.Cardholder) (*models.User) {
 	u := new(models.User)
 	u.FirstName = c.FirstName
 	u.LastName = c.LastName
@@ -791,7 +792,7 @@ func BuildUserFromCardholder(c *models.Cardholder) (*models.User) {
 	return u
 }
 
-func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder, userID uint) {
+func (mc *MembershipController) UpdateUserDataByCardholder(c *donationmodel.Cardholder, userID uint) {
 	u := BuildUserFromCardholder(c)
 
 	if err, _ := mc.Storage.UpdateByConditions(map[string]interface{}{
@@ -827,7 +828,7 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 
 	switch donationType {
 	case globals.PeriodicDonationType:
-		d := models.PeriodicDonation{}
+		d := donationmodel.PeriodicDonation{}
 		err = mc.Storage.GetByConditions(map[string]interface{}{
 			"order_number": orderNumber,
 		}, &d)
@@ -835,7 +836,7 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 		_userID = uint(d.UserID)
 		break
 	case globals.PrimeDonationType:
-		d := models.PayByPrimeDonation{}
+		d := donationmodel.PayByPrimeDonation{}
 		err = mc.Storage.GetByConditions(map[string]interface{}{
 			"order_number": orderNumber,
 		}, &d)
@@ -843,7 +844,7 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 		_userID = uint(d.UserID)
 		break
 	case globals.OthersDonationType:
-		d := models.PayByOtherMethodDonation{}
+		d := donationmodel.PayByOtherMethodDonation{}
 		err = mc.Storage.GetByConditions(map[string]interface{}{
 			"order_number": orderNumber,
 		}, &d)
@@ -880,7 +881,7 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 }
 
 func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (int, gin.H, error) {
-	var d models.PayByPrimeDonation
+	var d donationmodel.PayByPrimeDonation
 
 	orderNumber := c.Param("order")
 	err := mc.Storage.GetByConditions(map[string]interface{}{
@@ -929,7 +930,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		}
 	}
 
-	updateData := models.PayByPrimeDonation{}
+	updateData := donationmodel.PayByPrimeDonation{}
 	if tapPayRespStatusSuccess == callbackPayload.Status {
 		callbackPayload.AppendLinePayOnPrimeDonation(&updateData, statusPaid)
 	} else {
@@ -952,7 +953,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 	}
 
 	if updateData.Status == statusPaid {
-		var d models.PayByPrimeDonation
+		var d donationmodel.PayByPrimeDonation
 		mail := new(clientResp)
 
 		mc.Storage.GetByConditions(map[string]interface{}{
@@ -969,7 +970,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, error) {
 	var (
 		reqBody queryReq
-		d       models.PayByPrimeDonation
+		d       donationmodel.PayByPrimeDonation
 	)
 
 	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
@@ -1015,7 +1016,7 @@ func (mc *MembershipController) QueryTappayServer(c *gin.Context) (int, gin.H, e
 	return http.StatusOK, gin.H{"status": "success", "data": tapPayResp}, nil
 }
 
-func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
+func (resp tapPayTransactionResp) AppendRespOnPrimeDonation(m *donationmodel.PayByPrimeDonation, status string) {
 	m.CardInfo = resp.CardInfo
 	m.TappayResp = resp.TappayResp
 	m.TappayApiStatus = null.IntFrom(resp.Status)
@@ -1084,7 +1085,7 @@ func (q queryReq) BuildTapPayRecordReq() (t tapPayTransactionRecordReq) {
 	return
 }
 
-func (resp tapPayTransactionResp) AppendRespOnPerodicDonation(m *models.PeriodicDonation) {
+func (resp tapPayTransactionResp) AppendRespOnPerodicDonation(m *donationmodel.PeriodicDonation) {
 	m.CardInfo = resp.CardInfo
 
 	ciphertext := encrypt(resp.CardSecret.CardToken, globals.Conf.Donation.CardSecretKey)
@@ -1098,7 +1099,7 @@ func (resp tapPayTransactionResp) AppendRespOnPerodicDonation(m *models.Periodic
 	m.Status = statusPaid
 }
 
-func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardTokenDonation, status string) {
+func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *donationmodel.PayByCardTokenDonation, status string) {
 	m.TappayResp = resp.TappayResp
 	m.TappayApiStatus = null.IntFrom(resp.Status)
 
@@ -1122,7 +1123,7 @@ func (resp tapPayTransactionResp) AppendRespOnTokenDonation(m *models.PayByCardT
 	m.Status = status
 }
 
-func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *models.PayByPrimeDonation, status string) {
+func (resp tapPayTransactionResp) AppendLinePayOnPrimeDonation(m *donationmodel.PayByPrimeDonation, status string) {
 	m.PayInfo = resp.PayInfo
 	m.TappayApiStatus = null.IntFrom(resp.Status)
 
