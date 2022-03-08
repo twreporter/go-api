@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"gopkg.in/guregu/null.v3"
+	"github.com/twreporter/go-mod-lib/pkg/donationmodel"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
-	"github.com/twreporter/go-api/pkg/donationmodel"
 )
 
 type (

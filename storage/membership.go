@@ -6,9 +6,9 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
+	"github.com/twreporter/go-mod-lib/pkg/donationmodel"
 
 	"github.com/twreporter/go-api/models"
-	"github.com/twreporter/go-api/pkg/donationmodel"
 )
 
 // MembershipStorage defines the methods we need to implement,
