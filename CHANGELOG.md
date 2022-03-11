@@ -10,8 +10,11 @@
   - add UpdateUserDataByCardholder func [#463](https://github.com/twreporter/go-api/pull/463)
 - doc/prime-donation, doc/periodic-donation
   - update donation docs due to spec change [#462](https://github.com/twreporter/go-api/pull/462), [#464](https://github.com/twreporter/go-api/pull/464), [#465](https://github.com/twreporter/go-api/pull/465)
+- api/mail
+  - update success donation email content [#470](https://github.com/twreporter/go-api/pull/470)
 
 ### Commits
+* [[`b1cd841d9c`](https://github.com/nodejs/node/commit/b1cd841d9c)] - api/mail: update success donation email content (#470) (Tai-Jiun Fang)
 * [[`43d852583b`](https://github.com/nodejs/node/commit/43d852583b)] - **fix**: fix sprintf type (Aylie Chou)
 * [[`4d9571758d`](https://github.com/nodejs/node/commit/4d9571758d)] - **fix**: print out err in UpdateUserDataByCarholder func (Aylie Chou)
 * [[`7680c04eba`](https://github.com/nodejs/node/commit/7680c04eba)] - **doc**: add development guide about OAuth setting to README.md (#466) (Tai-Jiun Fang)
