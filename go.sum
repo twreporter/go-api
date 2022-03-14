@@ -378,8 +378,8 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/tidwall/pretty v0.0.0-20180105212114-65a9db5fad51/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
-github.com/twreporter/go-mod-lib v0.0.0-20220314084521-529e536cc8fe h1:r87B5hNTQYAzuCqoACjHJFM18uGHkwGhKcQAJMgTv/Q=
-github.com/twreporter/go-mod-lib v0.0.0-20220314084521-529e536cc8fe/go.mod h1:6LVgy764FKKeCh+0jzdXXM3re6JNBziRL+7oaBZ23yo=
+github.com/twreporter/go-mod-lib v0.0.0-20220314100338-6bdb39b5b0da h1:ruSocFGdnFD4usEIr4x4z9b30eztv/cPpATIPgBt50I=
+github.com/twreporter/go-mod-lib v0.0.0-20220314100338-6bdb39b5b0da/go.mod h1:6LVgy764FKKeCh+0jzdXXM3re6JNBziRL+7oaBZ23yo=
 github.com/twreporter/logformatter v0.0.0-20200211094126-60fe42618206 h1:If2shnAGxnAOXxCgyU86fu6LHvhOoLcbqZTQW+pPTzo=
 github.com/twreporter/logformatter v0.0.0-20200211094126-60fe42618206/go.mod h1:bx6HffT8NtPfXKh4yD9QBFLXw5RNKUBPbgfc2GVEkr8=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=

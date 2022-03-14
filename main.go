@@ -79,7 +79,7 @@ func main() {
 		ProjectID: globals.Conf.Neticrm.ProjectID,
 		Topic: globals.Conf.Neticrm.Topic,
 	}
-	cloudpub.NewPublisher(context.TODO(), pubConfig)
+	cloudpub.NewPublisher(ctx, pubConfig)
 
 	// mailSender := services.NewSMTPMailService() // use office365 to send mails
 	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails
