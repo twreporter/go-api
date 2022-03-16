@@ -76,6 +76,9 @@ const (
 	TokenDonationType    = "token"
 	OthersDonationType   = "others"
 
+	// userType
+	UserType = "user"
+
 	// jwt prefix
 	MailServiceJWTPrefix = "mail-service-jwt-"
 
