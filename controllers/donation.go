@@ -848,7 +848,17 @@ func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder,
 		} else {
 			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 		}
+		return
 	}
+
+	// publish to cloud pub/sub
+	ms := []*cloudpub.Message{
+		&cloudpub.Message{
+			ID: userID,
+			Type: globals.UserType,
+		},
+	}
+	go publishToNeticrm(ms)
 }
 
 // TODO

@@ -38,7 +38,7 @@ require (
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.6.1
-	github.com/twreporter/go-mod-lib v0.0.0-20220314100338-6bdb39b5b0da
+	github.com/twreporter/go-mod-lib v0.0.0-20220317065819-804efc386ad3
 	github.com/twreporter/logformatter v0.0.0-20200211094126-60fe42618206
 	github.com/ugorji/go v1.2.6 // indirect
 	go.mongodb.org/mongo-driver v1.4.6
