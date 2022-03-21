@@ -1,5 +1,15 @@
 ## Unreleased
 
+### 7.1.3
+
+### Notable Changes
+- .circleci
+  - add pubsub credencials
+
+### Commits
+* [[`b201454e52`](https://github.com/nodejs/node/commit/b201454e52)] - **fix**: set env GOOGLE\_APPLICATION\_CREDENTIALS to pubsub\_credentials path (Aylie Chou)
+* [[`a96f92e69b`](https://github.com/nodejs/node/commit/a96f92e69b)] - **fix**: add pubsub credentials (Aylie Chou)
+
 ### 7.1.2
 
 ### Notable Changes
