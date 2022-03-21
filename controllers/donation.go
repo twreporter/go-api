@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
@@ -24,6 +25,7 @@ import (
 	f "github.com/twreporter/logformatter"
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
+	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
 
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
@@ -544,6 +546,14 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 
 }
 
+func publishToNeticrm(ms []*cloudpub.Message) {
+	errors := cloudpub.PublishNotifications(context.Background(), ms)
+	if errors != nil {
+		// todo: add notification to slack
+		log.Errorf("errors: %+v", errors)
+	}
+}
+
 // Handler for an authenticated user to create a periodic donation
 func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
 	// Validate client request
@@ -621,6 +631,21 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 	// send success mail asynchronously
 	go mc.sendDonationThankYouMail(*resp)
+
+	// publish to cloud pub/sub
+	ms := []*cloudpub.Message{
+		&cloudpub.Message{
+			ID: periodicDonation.ID,
+			OrderNumber: periodicDonation.OrderNumber,
+			Type: globals.PeriodicDonationType,
+		},
+		&cloudpub.Message{
+			ID: tokenDonation.ID,
+			OrderNumber: tokenDonation.OrderNumber,
+			Type: globals.TokenDonationType,
+		},
+	}
+	go publishToNeticrm(ms)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -705,6 +730,16 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		go mc.sendDonationThankYouMail(*resp)
 	}
 
+	// publish to cloud pub/sub
+	ms := []*cloudpub.Message{
+		&cloudpub.Message{
+			ID: primeDonation.ID,
+			OrderNumber: primeDonation.OrderNumber,
+			Type: globals.PrimeDonationType,
+		},
+	}
+	go publishToNeticrm(ms)
+
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
 
@@ -767,6 +802,15 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		}, nil
 	}
 
+	// publish to cloud pub/sub
+	ms := []*cloudpub.Message{
+		&cloudpub.Message{
+			OrderNumber: orderNumber,
+			Type: donationType,
+		},
+	}
+	go publishToNeticrm(ms)
+
 	return http.StatusNoContent, gin.H{}, nil
 }
 
@@ -804,7 +848,17 @@ func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder,
 		} else {
 			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 		}
+		return
 	}
+
+	// publish to cloud pub/sub
+	ms := []*cloudpub.Message{
+		&cloudpub.Message{
+			ID: userID,
+			Type: globals.UserType,
+		},
+	}
+	go publishToNeticrm(ms)
 }
 
 // TODO
