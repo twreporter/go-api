@@ -59,11 +59,13 @@ ARG server_user
 WORKDIR /home/${server_user}
 
 COPY ./aws_credentials /home/${server_user}/.aws/credentials 
+COPY ./pubsub_credentials /home/${server_user}/pubsub_credentials
 COPY ./entrypoint.sh /home/${server_user}/entrypoint.sh
 COPY ./migrations /home/${server_user}/migrations/
 COPY ./template /home/${server_user}/template/
 RUN chmod +x entrypoint.sh
 
+ENV GOOGLE_APPLICATION_CREDENTIALS /home/${server_user}/pubsub_credentials
 ENV MIGRATION_DIR /home/${server_user}/migrations/
 
 # Specify the user for running go-api
