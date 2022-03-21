@@ -13,7 +13,7 @@ require (
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/gin-contrib/cors v0.0.0-20170708080947-567de1916927
 	github.com/gin-contrib/sessions v0.0.3
-	github.com/gin-gonic/gin v1.6.3
+	github.com/gin-gonic/gin v1.7.0
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-playground/validator/v10 v10.7.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
