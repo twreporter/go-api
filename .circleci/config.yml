@@ -150,6 +150,9 @@ jobs:
             # aws config
             echo ${AWS_CREDENTIALS} | base64 -i --decode > ./aws_credentials
 
+            # pubsub config
+            echo ${PUBSUB_CREDENTIALS} | base64 -i --decode > ./pubsub_credentials
+
             docker build -t gcr.io/coastal-run-106202/${APP}:$PKG_VER .
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
             docker push gcr.io/coastal-run-106202/${APP}:$PKG_VER
