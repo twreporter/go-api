@@ -1,5 +1,18 @@
 ## Unreleased
 
+### 7.1.2
+
+### Notable Changes
+- api/donation
+  - publish donation/user update data to cloud pub/sub
+
+### Commits
+
+* [[`3b83dbf8bd`](https://github.com/nodejs/node/commit/3b83dbf8bd)] - **fix**: update go-mod-lib vresion & publish to pub.sub topic when user update (Aylie Chou)
+* [[`778e281c69`](https://github.com/nodejs/node/commit/778e281c69)] - **fix**: publish to cloud pub/sub topic when user update (Aylie Chou)
+* [[`a92b576558`](https://github.com/nodejs/node/commit/a92b576558)] - **fix**: update go-mod-lib version to fix test error (Aylie Chou)
+* [[`8421ff7a49`](https://github.com/nodejs/node/commit/8421ff7a49)] - **feat**: publish upsert donation info to cloud pub/sub (Aylie Chou)
+
 ### 7.1.1
 
 ### Notable Changes
