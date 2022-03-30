@@ -79,6 +79,7 @@ news:
 neticrm:
     project_id: "" # gcp project id
     pub_topic: "" # pub/sub topic
+    slack_webhook: "" # slack notify webhook
 `)
 
 type ConfYaml struct {
@@ -197,6 +198,7 @@ type NewsConfig struct {
 type NeticrmPubConfig struct {
 	ProjectID      string        `yaml:"project_id"`
 	Topic          string        `yaml:"pub_topic"`
+	SlackWebhook   string        `yaml:"slack_webhook"`
 }
 
 func init() {
@@ -283,6 +285,7 @@ func buildConf() ConfYaml {
 
 	conf.Neticrm.ProjectID = viper.GetString("neticrm.project_id")
 	conf.Neticrm.Topic = viper.GetString("neticrm.pub_topic")
+	conf.Neticrm.SlackWebhook = viper.GetString("neticrm.slack_webhook")
 	return conf
 }
 
