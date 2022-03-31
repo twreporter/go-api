@@ -21,6 +21,7 @@ const (
 
 	// route path
 	SendActivationRoutePath      = "mail/send_activation"
+	SendAuthenticationRoutePath  = "mail/send_authentication"
 	SendSuccessDonationRoutePath = "mail/send_success_donation"
 
 	// controller name
@@ -74,6 +75,9 @@ const (
 	PrimeDonationType    = "prime"
 	TokenDonationType    = "token"
 	OthersDonationType   = "others"
+
+	// userType
+	UserType = "user"
 
 	// jwt prefix
 	MailServiceJWTPrefix = "mail-service-jwt-"

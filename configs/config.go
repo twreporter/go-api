@@ -76,19 +76,23 @@ news:
     topic_page_timeout: 5s
     index_page_timeout: 5s
     author_page_timeout: 5s
+neticrm:
+    project_id: "" # gcp project id
+    pub_topic: "" # pub/sub topic
 `)
 
 type ConfYaml struct {
-	Environment string         `yaml:"environment"`
-	Cors        CorsConfig     `yaml:"cors"`
-	App         AppConfig      `yaml:"app"`
-	Email       EmailConfig    `yaml:"email"`
-	DB          DBConfig       `yaml:"db"`
-	Oauth       OauthConfig    `yaml:"oauth"`
-	Donation    DonationConfig `yaml:"donation"`
-	Algolia     AlgoliaConfig  `ymal:"algolia"`
-	Encrypt     EncryptConfig  `yaml:"encrypt"`
-	News        NewsConfig     `yaml:"news"`
+	Environment string           `yaml:"environment"`
+	Cors        CorsConfig       `yaml:"cors"`
+	App         AppConfig        `yaml:"app"`
+	Email       EmailConfig      `yaml:"email"`
+	DB          DBConfig         `yaml:"db"`
+	Oauth       OauthConfig      `yaml:"oauth"`
+	Donation    DonationConfig   `yaml:"donation"`
+	Algolia     AlgoliaConfig    `ymal:"algolia"`
+	Encrypt     EncryptConfig    `yaml:"encrypt"`
+	News        NewsConfig       `yaml:"news"`
+	Neticrm     NeticrmPubConfig `yaml:"neticrm"`
 }
 
 type CorsConfig struct {
@@ -190,6 +194,11 @@ type NewsConfig struct {
 	AuthorPageTimeout time.Duration `yaml:"author_page_timeout"`
 }
 
+type NeticrmPubConfig struct {
+	ProjectID      string        `yaml:"project_id"`
+	Topic          string        `yaml:"pub_topic"`
+}
+
 func init() {
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()        // read in environment variables that match
@@ -271,6 +280,9 @@ func buildConf() ConfYaml {
 	conf.News.TopicPageTimeout = viper.GetDuration("news.topic_page_timeout")
 	conf.News.IndexPageTimeout = viper.GetDuration("news.index_page_timeout")
 	conf.News.AuthorPageTimeout = viper.GetDuration("news.author_page_timeout")
+
+	conf.Neticrm.ProjectID = viper.GetString("neticrm.project_id")
+	conf.Neticrm.Topic = viper.GetString("neticrm.pub_topic")
 	return conf
 }
 

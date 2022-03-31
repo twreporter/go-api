@@ -1,5 +1,80 @@
 ## Unreleased
 
+### 7.1.3
+
+### Notable Changes
+- .circleci
+  - add pubsub credencials
+
+### Commits
+* [[`b201454e52`](https://github.com/nodejs/node/commit/b201454e52)] - **fix**: set env GOOGLE\_APPLICATION\_CREDENTIALS to pubsub\_credentials path (Aylie Chou)
+* [[`a96f92e69b`](https://github.com/nodejs/node/commit/a96f92e69b)] - **fix**: add pubsub credentials (Aylie Chou)
+
+### 7.1.2
+
+### Notable Changes
+- api/donation
+  - publish donation/user update data to cloud pub/sub
+
+### Commits
+
+* [[`3b83dbf8bd`](https://github.com/nodejs/node/commit/3b83dbf8bd)] - **fix**: update go-mod-lib vresion & publish to pub.sub topic when user update (Aylie Chou)
+* [[`778e281c69`](https://github.com/nodejs/node/commit/778e281c69)] - **fix**: publish to cloud pub/sub topic when user update (Aylie Chou)
+* [[`a92b576558`](https://github.com/nodejs/node/commit/a92b576558)] - **fix**: update go-mod-lib version to fix test error (Aylie Chou)
+* [[`8421ff7a49`](https://github.com/nodejs/node/commit/8421ff7a49)] - **feat**: publish upsert donation info to cloud pub/sub (Aylie Chou)
+
+### 7.1.1
+
+### Notable Changes
+- model/donation
+  - upsert fields for donation redesign [#463](https://github.com/twreporter/go-api/pull/463)
+- api/donation
+  - address updated fields data flow [#463](https://github.com/twreporter/go-api/pull/463)
+  - add UpdateUserDataByCardholder func [#463](https://github.com/twreporter/go-api/pull/463)
+- doc/prime-donation, doc/periodic-donation
+  - update donation docs due to spec change [#462](https://github.com/twreporter/go-api/pull/462), [#464](https://github.com/twreporter/go-api/pull/464), [#465](https://github.com/twreporter/go-api/pull/465)
+- api/mail
+  - update success donation email content [#470](https://github.com/twreporter/go-api/pull/470)
+
+### Commits
+* [[`b1cd841d9c`](https://github.com/nodejs/node/commit/b1cd841d9c)] - api/mail: update success donation email content (#470) (Tai-Jiun Fang)
+* [[`43d852583b`](https://github.com/nodejs/node/commit/43d852583b)] - **fix**: fix sprintf type (Aylie Chou)
+* [[`4d9571758d`](https://github.com/nodejs/node/commit/4d9571758d)] - **fix**: print out err in UpdateUserDataByCarholder func (Aylie Chou)
+* [[`7680c04eba`](https://github.com/nodejs/node/commit/7680c04eba)] - **doc**: add development guide about OAuth setting to README.md (#466) (Tai-Jiun Fang)
+* [[`1831ab39a8`](https://github.com/nodejs/node/commit/1831ab39a8)] - **doc**: add migration usage with Makefile in README.md (Aylie Chou)
+* [[`419571eca5`](https://github.com/nodejs/node/commit/419571eca5)] - **fix**: fix typo & add migrate cmd in Makefile (Aylie Chou)
+* [[`7bd3b89181`](https://github.com/nodejs/node/commit/7bd3b89181)] - **fix**: fix typo & sync cardholder to user table asynchronously (Aylie Chou)
+* [[`73ecddf94e`](https://github.com/nodejs/node/commit/73ecddf94e)] - api/donation: add updateUserDataFromCardholder function (Aylie Chou)
+* [[`ef6b28361d`](https://github.com/nodejs/node/commit/ef6b28361d)] - model/donation: add address related fields to cardholder schema (Aylie Chou)
+* [[`a09c6cb32a`](https://github.com/nodejs/node/commit/a09c6cb32a)] - **chore**: update aglio doc index.html (Aylie Chou)
+* [[`385c2b097c`](https://github.com/nodejs/node/commit/385c2b097c)] - **doc**: update prime-donation & periodic-donation doc (Aylie Chou)
+* [[`2f9c449b05`](https://github.com/nodejs/node/commit/2f9c449b05)] - **doc**: update type of `read\_preference` (#464) (Tai-Jiun Fang)
+* [[`cdb79a21ec`](https://github.com/nodejs/node/commit/cdb79a21ec)] - **feat**: add data flow for updated db schema (Aylie Chou)
+* [[`c60442832d`](https://github.com/nodejs/node/commit/c60442832d)] - **fix**: add field update & preserve to-be-drop field fornew-old compatibility (Aylie Chou)
+* [[`46197c5195`](https://github.com/nodejs/node/commit/46197c5195)] - **doc**: update donation docs due to spec change (#462) (Tai-Jiun Fang)
+* [[`14aac66ef7`](https://github.com/nodejs/node/commit/14aac66ef7)] - **fix**: fix syntax error (Aylie Chou)
+* [[`3a924a4d02`](https://github.com/nodejs/node/commit/3a924a4d02)] - **fix**: fix table name (user -\> users) (Aylie Chou)
+* [[`39e8035321`](https://github.com/nodejs/node/commit/39e8035321)] - **chore**: update migrate file (000007/000008) (Aylie Chou)
+* [[`020804f829`](https://github.com/nodejs/node/commit/020804f829)] - **chore**: add migrate up/down file (Aylie Chou)
+
+### 7.1.0
+
+#### Notable Changes
+
+- api/account:
+  - add authenticate endpoint ([#456](https://github.com/twreporter/go-api/pull/456))
+  - redirect to the error redirection URL when error occurs ([#459](https://github.com/twreporter/go-api/pull/459))
+- api/mail:
+  - update authenticate and signin email ([#456](https://github.com/twreporter/go-api/pull/456)) 
+
+#### Commits
+* [[`9d29f0a162`](https://github.com/nodejs/node/commit/9d29f0a162)] - **doc**: update signin body (Tai-Jiun Fang)
+* [[`2a973c116e`](https://github.com/nodejs/node/commit/2a973c116e)] - api/account: redirect to the error redirection URL when error occurs (Tai-Jiun Fang)
+* [[`66691f4005`](https://github.com/nodejs/node/commit/66691f4005)] - **doc**: update CHANGELOG.md (#457) (Tai-Jiun Fang)
+* [[`d680a128c0`](https://github.com/nodejs/node/commit/d680a128c0)] - api/mail: update authenticate and signin email (Tai-Jiun Fang)
+* [[`ebbbf188e1`](https://github.com/nodejs/node/commit/ebbbf188e1)] - api/account: add authenticate endpoint (Tai-Jiun Fang)
+* [[`fdef35f7e9`](https://github.com/nodejs/node/commit/fdef35f7e9)] - **doc**: add /v2/authenticate (Tai-Jiun Fang)
+
 ## Released
 
 ### 7.0.2 (Current), 2021-10-13

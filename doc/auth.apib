@@ -3,6 +3,7 @@
 ### SigninRequest
 + email: user@example.com (required)
 + destination: https://www.twreporter.org
++ errorRedirection: https://www.twreporter.org
 
 # Group Membership Service
 Twreporter Membership service api
@@ -11,6 +12,41 @@ Twreporter Membership service api
 Validate the logining user and send the activation email
 
 ### User signins [POST]
++ Request with Body (application/json)
+
+    + Attributes(SigninRequest)
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data (SigninRequest, required)
+        
++ Response 201 (application/json)
+    
+    + Attributes
+        + status: success (required)
+        + data (SigninRequest, required) 
+
++ Response 400
+
+    + Attributes
+        + status: fail (required)
+        + data
+            + email: "email is required"
+            + destination: "destination is optional"
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: "Generating active token occurs error"
+
+
+## Authenticate [/v2/authenticate]
+Validate the logining user and send the authentication email
+
+### User authenticates [POST]
 + Request with Body (application/json)
 
     + Attributes(SigninRequest)

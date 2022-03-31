@@ -4,9 +4,9 @@ Prime donation resources of go-api
 ## Prime Donation [/v1/donations/prime/orders/{order}]
 A single Prime Donation.
 The Prime Donation is the resource in the TWReporter Donation API. 
-It reprensents one prime donation record identified by the order number (order).
+It represents one prime donation record identified by the order number (order).
 
-The Prime Donation resource has the following attributes;
+The Prime Donation resource has the following attributes:
 - id
 - amount
 - card_info
@@ -20,21 +20,41 @@ The Prime Donation resource has the following attributes;
 - card_info.level
 - card_info.type
 - cardholder
-- cardholder.address
+- cardholder.address_country
+- cardholder.address_state
+- cardholder.address_city
+- cardholder.address_detail
+- cardholder.address_zip_code
 - cardholder.email
-- cardholder.name
-- cardholder.national_id
+- cardholder.first_name
+- cardholder.last_name
+- cardholder.security_id
 - cardholder.phone_number
 - cardholder.zip_code
+- cardholder.nickname
+- cardholder.title
+- cardholder.legal_name
+- cardholder.gender
+- cardholder.age_range
+- cardholder.read_preference
+- cardholder.words_for_twreporter
 - currency
 - details
 - frequency
-- notes
 - order_number
 - pay_method
 - send_receipt
 - is_anonymous
-- receipt_header
+- receipt 
+- receipt.header
+- receipt.security_id
+- receipt.email
+- receipt.address_country
+- receipt.address_state
+- receipt.address_city
+- receipt.address_detail
+- receipt.address_zip_code
+- auto_tax_dedution
 
 The states *id* and *order_number* are assigned by the TWReporter Go API at the moment of creation.
 
@@ -90,16 +110,36 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             
     + Attributes (object)
         + donor (object)
-            + address: 台北市南京東路一段300巷300號6樓
+            + address_country: 臺灣
+            + address_state: 臺北市
+            + address_city: 中山區
+            + address_detail: 南京東路一段300巷300號6樓
+            + address_zip_code: 104
             + email: developer@twreporter.org
-            + name: 王小明
+            + first_name: 小明 
+            + last_name: 王
             + phone_number: +886912345678
-            + national_id: A12345678
-        + notes: 第一次捐款報導者喔
-        + send_receipt: no
+            + security_id: A12345678
+            + nickname: 小明
+            + title: 工程師
+            + legal_name: 報導者文化基金會
+            + gender: M  
+            + age_range: 25_to_34  
+            + read_preference: human_right,cross_straits 
+            + words_for_twreporter: 加油！  
+        + send_receipt: no_receipt
         + is_anonymous: true
         + user_id: 1 (required)
-        + receipt_header: 王小明
+        + receipt (object)
+            + header: 王小明
+            + security_id: A12345678
+            + email: developer@twreporter.org
+            + address_country: 臺灣
+            + address_state: 臺北市
+            + address_city: 中山區 
+            + address_detail: 南京東路一段300巷300號6樓 
+            + address_zip_code: 104 
+        + auto_tax_dedution: true
 
 + Response 204
 
@@ -112,17 +152,37 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                 "data": {
                     "donor": {
                         "email": "email(string) is optional",
-                        "address": "address(string) is optional",
-                        "name": "name(string) is optional",
-                        "zip_code": "zip_code(string) is optional",
+                        "address_country": "address_country(string) is optional",
+                        "address_state": "address_state(string) is optional",
+                        "address_city": "address_city(string) is optional",
+                        "address_detail": "address_detail(string) is optional",
+                        "address_zip_code": "address_zip_code(string) is optional",
+                        "first_name": "first_name(string) is optional",
+                        "last_name": "last_name(string) is optional",
                         "phone_number": "phone_number(string) is optional",
-                        "national_id": "national_id(string) is optional"
+                        "security_id": "security_id(string) is optional"
+                        "nickname": "nickname(string) is optional",
+                        "title": "title(string) is optional",
+                        "legal_name": "legal_name(string) is optional",
+                        "gender": "gender(string) is optional. only support 'F', 'M', 'X', 'U'",
+                        "age_range": "age_range(string) is optional",
+                        "read_preference": "read_preference(string) is optional",
+                        "words_for_twreporter": "words_for_twreporter(string) is optional",
                     },
-                    "notes": "notes(string) is optional",
-                    "send_receipt": "send_receipt(string) is optional. only support 'no', 'monthly' and 'yearly'",
+                    "send_receipt": "send_receipt(string) is optional. only support 'no_receipt', 'digital_receipt_by_month' and 'digital_receipt_by_year', 'paperback_receipt_by_month', 'paperback_receipt_by_year'",
                     "is_anonymous": "is_anonymous(bool) is optional.",
                     "user_id": "user_id(number) is required",
-                    "receipt_header": "receipt_header(string) is optional"
+                    "receipt": {
+                        "header": "header(string) is optional",
+                        "security_id": "security_id(string) is optional",
+                        "email": "email(string) is optional",
+                        "address_country": "address_country(string) is optional",
+                        "address_state": "address_state(string) is optional",
+                        "address_city": "address_city(string) is optional",
+                        "address_detail": "address_detail(string) is optional",
+                        "address_zip_code": "address_zip_code(string) is optional",
+                    },
+                    "auto_tax_dedution": "auto_tax_dedution(bool) is optional",
                 }
             }
 
@@ -301,19 +361,38 @@ Endpoint for tappay server to notify line pay transaction result
 + amount: 500 (required, number)
 + currency: TWD (required)
 + details: 報導者單筆捐款 (required)
-+ notes: 第一次捐給報導者喔 (optional)
 + `order_number`: `twreporter-153985253506653918900` (required)
-+ `send_receipt`: monthly (required)
++ `send_receipt`: no_receipt (required)
 + `pay_method`: `credit_card` (required)
 + `is_anonymous`: false (required, boolean)
-+ `receipt_header`: 王小明 (optional)
 + `cardholder` (required)
     + email: developer@twreporter.org (required)
-    + name: 王小明 (optional)
-    + address: 台北市南京東路一段300巷300號6樓 (optional)
+    + first_name: 小明 (optional)
+    + last_name: 王 (optional)
     + phone_number: +886912345678 (optional)
-    + `national_id`: A12345678 (optional)
-    + `zip_code`: 104 (optional)
+    + `security_id`: A12345678 (optional)
+    + address_country: 臺灣 (optional)
+    + address_state: 臺北市 (optional)
+    + address_city: 中山區 (optional)
+    + address_detail: 南京東路一段300巷300號6樓 (optional)
+    + address_zip_code: 104 (optional)
+    + nickname: 小明 (optional)
+    + title: 工程師 (optional)
+    + legal_name: 報導者文化基金會 (optional)
+    + gender: M (optional)  
+    + age_range: 25_to_34 (optional) 
+    + read_preference: human_right,cross_straits (optional)
+    + words_for_twreporter: 加油！(optional)  
++ receipt (optional)
+    + header: 王小明 (optional)
+    + security_id: A12345678 (optional)
+    + email: developer@twreporter.org (optional)
+    + address_country: 臺灣 (optional)
+    + address_state: 臺北市 (optional)
+    + address_city: 中山區 (optional)
+    + address_detail: 南京東路一段300巷300號6樓 (optional)
+    + address_zip_code: 104 (optional)
++ auto_tax_dedution: true (optional)
 
 ### PrimeDonationByCreditCardResponse
 + status: success (required)

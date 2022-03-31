@@ -18,23 +18,17 @@ import (
 	"github.com/twreporter/go-api/utils"
 )
 
-const (
-	// TODO: Update later after UX designed
-	authErrorPage = "https://www.twreporter.org/"
+const idTokenExpiration = 60 * 60 * 24 * 30 * 6
 
-	defaultRedirectPage = "https://www.twreporter.org/"
-
-	idTokenExpiration = 60 * 60 * 24 * 30 * 6
-)
-
+var defaultRedirectPage = "https://www.twreporter.org/"
 var defaultPath = "/"
 
-// SignInV2 - send email containing sign-in information to the client
-func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
+func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath string) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
-		Email       string `json:"email" form:"email" binding:"required"`
-		Destination string `json:"destination" form:"destination"`
+		Email            string `json:"email" form:"email" binding:"required"`
+		Destination      string `json:"destination" form:"destination"`
+		ErrorRedirection string `json:"errorRedirection" form:"errorRedirection"`
 	}
 
 	var activateHost string
@@ -43,8 +37,8 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	var err error
 	var matchedUser models.User
 	var ra models.ReporterAccount
-	var signIn SignInBody
 	var statusCode int
+	var signIn SignInBody
 
 	switch globals.Conf.Environment {
 	case "development":
@@ -60,8 +54,9 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	// extract email and password field in POST body
 	if err = c.Bind(&signIn); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": SignInBody{
-			Email:       "email is required",
-			Destination: "destination is optional",
+			Email:            "email is required",
+			Destination:      "destination is optional",
+			ErrorRedirection: "errorRedirection is optional",
 		}}, nil
 	}
 
@@ -132,24 +127,36 @@ func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
 	// send activation email
 	err = postMailServiceEndpoint(activationReqBody{
 		Email: email,
-		ActivateLink: fmt.Sprintf("%s://%s:%s/v2/auth/activate?email=%s&token=%s&destination=%s",
+		ActivateLink: fmt.Sprintf("%s://%s:%s/v2/auth/activate?email=%s&token=%s&destination=%s&error_redirection=%s",
 			globals.Conf.App.Protocol,
 			activateHost,
 			globals.Conf.App.Port,
 			url.QueryEscape(email),
 			url.QueryEscape(activeToken),
 			url.QueryEscape(signIn.Destination),
+			url.QueryEscape(signIn.ErrorRedirection),
 		),
-	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, globals.SendActivationRoutePath))
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, sendMailRoutePath))
 
 	if err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Sending activation email occurs error"}, err
 	}
 
 	return statusCode, gin.H{"status": "success", "data": SignInBody{
-		Email:       email,
-		Destination: signIn.Destination,
+		Email:            email,
+		Destination:      signIn.Destination,
+		ErrorRedirection: signIn.ErrorRedirection,
 	}}, nil
+}
+
+// SignInV2 - send email containing sign-in information to the client
+func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
+	return mc.AuthByEmail(c, globals.SendActivationRoutePath)
+}
+
+// AuthenticateV2 - send email containing authenticate information to the client
+func (mc *MembershipController) AuthenticateV2(c *gin.Context) (int, gin.H, error) {
+	return mc.AuthByEmail(c, globals.SendAuthenticationRoutePath)
 }
 
 // ActivateV2 - validate the reporter account
@@ -163,11 +170,17 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	email := c.Query("email")
 	token := c.Query("token")
 	destination := c.Query("destination")
+	errorRedirection := c.Query("error_redirection")
 
-	// If destination is unavailable or invalid, redirect back to main site.
+	_, err := url.Parse(errorRedirection)
+	if nil != err {
+		errorRedirection = defaultRedirectPage
+	}
+
+	// If destination is unavailable or invalid, redirect back to default redirect page.
 	u, err := url.Parse(destination)
 	if nil != err {
-		destination = defaultRedirectPage
+		destination = errorRedirection
 		u, _ = url.Parse(destination)
 	}
 
@@ -177,8 +190,8 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 			// Client side error. Do not trigger error reporting
 			log.Infof("%v", err)
 
-			//Always redirect to a designated page
-			c.Redirect(http.StatusTemporaryRedirect, authErrorPage)
+			//Always redirect to a error redirection page
+			c.Redirect(http.StatusTemporaryRedirect, errorRedirection)
 		}
 	}()
 

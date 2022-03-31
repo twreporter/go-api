@@ -14,6 +14,7 @@ import (
 	f "github.com/twreporter/logformatter"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
 
 	"github.com/twreporter/go-api/configs"
 	"github.com/twreporter/go-api/controllers"
@@ -72,6 +73,14 @@ func main() {
 	defer func() {
 		client.Disconnect(ctx)
 	}()
+
+	// init cloudpub client
+	pubConfig := &cloudpub.Config{
+		ProjectID: globals.Conf.Neticrm.ProjectID,
+		Topic: globals.Conf.Neticrm.Topic,
+	}
+	cloudpub.NewPublisher(ctx, pubConfig)
+
 	// mailSender := services.NewSMTPMailService() // use office365 to send mails
 	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails
 
