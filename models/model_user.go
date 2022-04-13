@@ -32,12 +32,12 @@ type User struct {
 	Privilege          int             `gorm:"type:int(5);not null" json:"privilege"`
 	RegistrationDate   null.Time       `json:"registration_date"`
 	Birthday           null.Time       `json:"birthday"`
-	Gender             null.String     `gorm:"size:2" json:"gender"`     // e.g., "M", "F", "X, "U"
-	AgeRange           null.String     `gorm:"type:ENUM('less_than_18', '18_to_24', '25_to_34', '35_to_44', '45_to_54', '55_to_64', 'above_65')" json:"age_range"`
+	Gender             null.String     `gorm:"size:2" json:"gender"` // e.g., "M", "F", "X, "U"
+	AgeRange           null.String     `gorm:"type:ENUM('less_than_18', '19_to_24', '25_to_34', '35_to_44', '45_to_54', '55_to_64', 'above_65')" json:"age_range"`
 	Education          null.String     `gorm:"size:20" json:"education"` // e.g., "High School"
 	EnableEmail        int             `gorm:"type:int(5);size:2" json:"enable_email"`
-        ReadPreference     null.String     `gorm:"type:SET('international', 'cross_straits', 'human_right', 'society', 'environment', 'education', 'politics', 'economy', 'culture', 'art', 'life', 'health', 'sport', 'all')" json:"read_preference"` // e.g. "international, art, sport"
-        WordsForTwreporter null.String     `gorm:"size:255" json:"words_for_twreporter"`
+	ReadPreference     null.String     `gorm:"type:SET('international', 'cross_straits', 'human_right', 'society', 'environment', 'education', 'politics', 'economy', 'culture', 'art', 'life', 'health', 'sport', 'all')" json:"read_preference"` // e.g. "international, art, sport"
+	WordsForTwreporter null.String     `gorm:"size:255" json:"words_for_twreporter"`
 }
 
 // OAuthAccount ...
