@@ -163,4 +163,5 @@ type PeriodicDonation struct {
 	UserID           uint        `gorm:"type:int(10) unsigned;not null" json:"user_id"`
 	IsAnonymous      null.Bool   `gorm:"type:tinyint(1);default:0" json:"is_anonymous"`
 	AutoTaxDeduction null.Bool   `gorm:"type:tinyint(1)" json:"auto_tax_deduction"`
+	PayMethod        string      `gorm:"type:ENUM('credit_card','line','apple','google','samsung');not null;index:idx_periodic_donations_cardholder_email_pay_method" json:"pay_method"`
 }

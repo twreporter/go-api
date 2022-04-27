@@ -341,6 +341,7 @@ func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.Perio
 	m.Cardholder = req.Cardholder
 	m.Currency = req.Currency
 	m.UserID = req.UserID
+	m.PayMethod = req.PayMethod
 
 	if req.Frequency != "" {
 		m.Frequency = req.Frequency
