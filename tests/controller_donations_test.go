@@ -24,20 +24,20 @@ type (
 		BackendRedirectURL  string `json:"backend_redirect_url"`
 	}
 	donationRecord struct {
-		Amount           uint                 `json:"amount"`
-		Cardholder       models.Cardholder    `json:"cardholder"`
-		Receipt          models.Receipt       `json:"receipt"`
-		Currency         string               `json:"currency"`
-		Details          string               `json:"details"`
-		Frequency        string               `json:"frequency"`
-		ID               uint                 `json:"id"`
-		OrderNumber      string               `json:"order_number"`
-		PayMethod        string               `json:"pay_method"`
-		SendReceipt      string               `json:"send_receipt"`
-		ToFeedback       bool                 `json:"to_feedback"`
-		IsAnonymous      bool                 `json:"is_anonymous"`
-		PaymentUrl       string               `json:"payment_url"`
-		AutoTaxDeduction bool                 `json:"auto_tax_deduction"`
+		Amount           uint              `json:"amount"`
+		Cardholder       models.Cardholder `json:"cardholder"`
+		Receipt          models.Receipt    `json:"receipt"`
+		Currency         string            `json:"currency"`
+		Details          string            `json:"details"`
+		Frequency        string            `json:"frequency"`
+		ID               uint              `json:"id"`
+		OrderNumber      string            `json:"order_number"`
+		PayMethod        string            `json:"pay_method"`
+		SendReceipt      string            `json:"send_receipt"`
+		ToFeedback       bool              `json:"to_feedback"`
+		IsAnonymous      bool              `json:"is_anonymous"`
+		PaymentUrl       string            `json:"payment_url"`
+		AutoTaxDeduction bool              `json:"auto_tax_deduction"`
 	}
 	responseBody struct {
 		Status string         `json:"status"`
@@ -55,16 +55,16 @@ type (
 		} `json:"data"`
 	}
 	requestBody struct {
-		Amount          uint                 `json:"amount"`
-		Cardholder      models.Cardholder    `json:"donor"`
-		Receipt         models.Receipt       `json:"receipt"`
-		Currency        string               `json:"currency"`
-		Details         string               `json:"details"`
-		Frequency       string               `json:"frequency"`
-		MerchantID      string               `json:"merchant_id"`
-		PayMethod       string               `json:"pay_method"`
-		Prime           string               `json:"prime"`
-		UserID          uint                 `json:"user_id"`
+		Amount     uint              `json:"amount"`
+		Cardholder models.Cardholder `json:"donor"`
+		Receipt    models.Receipt    `json:"receipt"`
+		Currency   string            `json:"currency"`
+		Details    string            `json:"details"`
+		Frequency  string            `json:"frequency"`
+		MerchantID string            `json:"merchant_id"`
+		PayMethod  string            `json:"pay_method"`
+		Prime      string            `json:"prime"`
+		UserID     uint              `json:"user_id"`
 	}
 
 	reqHeader struct {
@@ -197,6 +197,7 @@ func testDonationCreateServerError(t *testing.T, path string, userID uint, frequ
 					c.reqBody.PayMethod = payMethod
 				case monthlyFrequency, yearlyFrequency:
 					c.reqBody.Frequency = frequency
+					c.reqBody.PayMethod = payMethod
 				}
 				reqBodyInBytes, _ = json.Marshal(c.reqBody)
 			}
@@ -441,6 +442,7 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 				c.reqBody.PayMethod = payMethod
 			} else {
 				c.reqBody.Frequency = frequency
+				c.reqBody.PayMethod = payMethod
 			}
 
 			reqBodyInBytes, _ = json.Marshal(c.reqBody)
@@ -569,6 +571,7 @@ func createDefaultPeriodicDonationRecord(user models.User, frequency string) res
 		MerchantID: testCreditCardMerchant,
 		Prime:      testCreditCardPrime,
 		UserID:     user.ID,
+		PayMethod:  creditCardPayMethod,
 	}
 
 	return createDefaultDonationRecord(reqBody, path, user)
@@ -585,12 +588,12 @@ func createDefaultPrimeDonationRecord(user models.User, payMethod string) respon
 			AddressState:   null.StringFrom(testAddressState),
 			AddressCity:    null.StringFrom(testAddressCity),
 			AddressDetail:  null.StringFrom(testAddressDetail),
-			Email:       user.Email.ValueOrZero(),
-			FirstName:   null.StringFrom(testFirstName),
-			LastName:    null.StringFrom(testLastName),
-			SecurityID:  null.StringFrom(testSecurityID),
-			PhoneNumber: null.StringFrom(testPhoneNumber),
-			ZipCode:     null.StringFrom(testZipCode),
+			Email:          user.Email.ValueOrZero(),
+			FirstName:      null.StringFrom(testFirstName),
+			LastName:       null.StringFrom(testLastName),
+			SecurityID:     null.StringFrom(testSecurityID),
+			PhoneNumber:    null.StringFrom(testPhoneNumber),
+			ZipCode:        null.StringFrom(testZipCode),
 		},
 		Details:    testDetails,
 		MerchantID: methodToMerchant[payMethod],
@@ -777,6 +780,7 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 				OrderNumber: "twrepoter-test-order-number",
 				Status:      statusPaid,
 				UserID:      user.ID,
+				PayMethod:   creditCardPayMethod,
 				Cardholder: models.Cardholder{
 					Email: user.Email.String,
 				},
@@ -786,10 +790,10 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt":   "no_receipt",
-				"is_anonymous":   null.BoolFrom(true),
-				"to_feedback":    false,
-				"user_id":        user.ID,
+				"send_receipt": "no_receipt",
+				"is_anonymous": null.BoolFrom(true),
+				"to_feedback":  false,
+				"user_id":      user.ID,
 				"receipt": map[string]string{
 					"header": "mock header",
 				},
@@ -804,6 +808,7 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 				OrderNumber: "twrepoter-test-order-number",
 				Status:      statusPaid,
 				UserID:      user.ID,
+				PayMethod:   creditCardPayMethod,
 				Cardholder: models.Cardholder{
 					Email: user.Email.String,
 				},
@@ -816,10 +821,10 @@ func testPeriodicDonationPatchSuccess(t *testing.T, frequency string, user model
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt":   "no_receipt",
-				"is_anonymous":   null.BoolFrom(true),
-				"to_feedback":    false,
-				"user_id":        user.ID,
+				"send_receipt": "no_receipt",
+				"is_anonymous": null.BoolFrom(true),
+				"to_feedback":  false,
+				"user_id":      user.ID,
 				"receipt": map[string]string{
 					"header": "",
 				},
@@ -878,9 +883,9 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt":   "no_receipt",
-				"is_anonymous":   null.BoolFrom(true),
-				"user_id":        user.ID,
+				"send_receipt": "no_receipt",
+				"is_anonymous": null.BoolFrom(true),
+				"user_id":      user.ID,
 				"receipt": map[string]string{
 					"header": "mock header",
 				},
@@ -907,9 +912,9 @@ func testPrimeDonationPatchSuccess(t *testing.T, payMethod string, user models.U
 					"name":    "test-name",
 					"address": "test-addres",
 				},
-				"send_receipt":   "no_receipt",
-				"is_anonymous":   null.BoolFrom(true),
-				"user_id":        user.ID,
+				"send_receipt": "no_receipt",
+				"is_anonymous": null.BoolFrom(true),
+				"user_id":      user.ID,
 				"receipt": map[string]string{
 					"header": "",
 				},
