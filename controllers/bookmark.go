@@ -13,7 +13,7 @@ import (
 // GetBookmarksOfAUser given userID this func will list all the bookmarks belongs to the user
 func (mc *MembershipController) GetBookmarksOfAUser(c *gin.Context) (int, gin.H, error) {
 	var err error
-	var bookmarks []models.Bookmark
+	var bookmarks []models.UserBookmark
 	var bookmark models.Bookmark
 	var total int
 

@@ -1,12 +1,35 @@
 ## Unreleased
 
-### 7.1.3
+### 7.2.0-rc.0
+
+### Notable Changes
+
+- api/donation
+  - add slack notify when publish to cloud pub/sub fail
+  - fix periodic donation do not store pay\_method field
+- api/doc
+  - fix typo for `auto\_tax\_deduction`
+- api/bookmark
+  - add `added\_at` in GetBookmarksOfAUser response
+
+### Commits
+
+- [[`63389f7753`](https://github.com/nodejs/node/commit/63389f7753)] - **fix**: add `added\_at` in GetBookmarksOfAUser response (Aylie Chou)
+- [[`6a8c3d6311`](https://github.com/nodejs/node/commit/6a8c3d6311)] - **fix**: fix test case & donation model declaration (Aylie Chou)
+- [[`9f757de4ba`](https://github.com/nodejs/node/commit/9f757de4ba)] - **fix**: fix periodic donation do not store pay\_method field (Aylie Chou)
+- [[`6ba0b9d25d`](https://github.com/nodejs/node/commit/6ba0b9d25d)] - **feat**: add slack notify when publish to cloud pub/sub fail (Aylie Chou)
+- [[`6d95cf8513`](https://github.com/nodejs/node/commit/6d95cf8513)] - api/doc: fix typo for `auto\_tax\_deduction` (#480) (Tai-Jiun Fang)
+
+## Released
+
+### 7.1.3 (Current)
 
 ### Notable Changes
 - .circleci
   - add pubsub credencials
 
 ### Commits
+
 * [[`b201454e52`](https://github.com/nodejs/node/commit/b201454e52)] - **fix**: set env GOOGLE\_APPLICATION\_CREDENTIALS to pubsub\_credentials path (Aylie Chou)
 * [[`a96f92e69b`](https://github.com/nodejs/node/commit/a96f92e69b)] - **fix**: add pubsub credentials (Aylie Chou)
 
