@@ -1,6 +1,8 @@
 ## Unreleased
 
-### 7.2.0-rc.0
+## Released
+
+### 7.2.0 (Current)
 
 ### Notable Changes
 
@@ -20,9 +22,7 @@
 - [[`6ba0b9d25d`](https://github.com/nodejs/node/commit/6ba0b9d25d)] - **feat**: add slack notify when publish to cloud pub/sub fail (Aylie Chou)
 - [[`6d95cf8513`](https://github.com/nodejs/node/commit/6d95cf8513)] - api/doc: fix typo for `auto\_tax\_deduction` (#480) (Tai-Jiun Fang)
 
-## Released
-
-### 7.1.3 (Current)
+### 7.1.3
 
 ### Notable Changes
 - .circleci
