@@ -46,7 +46,7 @@ The Periodic Donation resource has the following attributes;
 - to_feedback
 - max_paid_times
 - is_anonymous
-- auto_tax_dedution
+- auto_tax_deduction
 - receipt 
 - receipt.header
 - receipt.security_id
@@ -163,7 +163,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
             + address_city: 中山區
             + address_detail: 南京東路一段300巷300號6樓
             + address_zip_code: 104
-        + auto_tax_dedution: true
+        + auto_tax_deduction: true
 
 + Response 204
 
@@ -207,7 +207,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
                         "address_detail": "address_detail(string) is optional",
                         "address_zip_code": "address_zip_code(string) is optional",
                     },
-                    "auto_tax_dedution": "auto_tax_dedution(bool) is optional",
+                    "auto_tax_deduction": "auto_tax_deduction(bool) is optional",
                 }
             }
 
@@ -363,7 +363,7 @@ The states *id* and *order_number* are assigned by the TWReporter Go API at the 
     + address_city: 中山區 (optional)
     + address_detail: 南京東路一段300巷300號6樓 (optional)
     + address_zip_code: 104 (optional)
-+ auto_tax_dedution: true (optional)
++ auto_tax_deduction: true (optional)
 
 ### PeriodicDonationResponse
 + status: success (required)

@@ -15,6 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
+	"github.com/twreporter/go-mod-lib/pkg/slack"
 
 	"github.com/twreporter/go-api/configs"
 	"github.com/twreporter/go-api/controllers"
@@ -80,6 +81,12 @@ func main() {
 		Topic: globals.Conf.Neticrm.Topic,
 	}
 	cloudpub.NewPublisher(ctx, pubConfig)
+
+	// init slack notify client
+	slackConfig := &slack.Config{
+		Webhook: globals.Conf.Neticrm.SlackWebhook,
+	}
+	slack.NewClient(slackConfig)
 
 	// mailSender := services.NewSMTPMailService() // use office365 to send mails
 	mailSvc := services.NewAmazonMailService() // use Amazon SES to send mails

@@ -35,10 +35,11 @@ require (
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.4.2
+	github.com/slack-go/slack v0.10.2 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.6.1
-	github.com/twreporter/go-mod-lib v0.0.0-20220317065819-804efc386ad3
+	github.com/twreporter/go-mod-lib v0.0.0-20220330041607-4d484f68db8c
 	github.com/twreporter/logformatter v0.0.0-20200211094126-60fe42618206
 	github.com/ugorji/go v1.2.6 // indirect
 	go.mongodb.org/mongo-driver v1.4.6

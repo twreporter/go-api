@@ -22,3 +22,17 @@ type Bookmark struct {
 	Authors    string     `gorm:"size:250" json:"authors" form:"authors"`
 	PubDate    uint       `gorm:"not null;default:0" json:"published_date" form:"published_date"`
 }
+
+type UserBookmark struct {
+	AddedAt    time.Time `json:"added_at" db:"users_bookmarks.added_at"`
+	ID         uint      `json:"id" db:"bookmarks.id"`
+	Slug       string    `json:"slug" db:"bookmarks.slug"`
+	Title      string    `json:"title" db:"bookmarks.title"`
+	Desc       string    `json:"desc" db:"bookmarks.desc"`
+	Host       string    `json:"host" db:"bookmarks.host"`
+	Category   string    `json:"category" db:"bookmarks.category"`
+	IsExternal bool      `json:"is_external" db:"bookmarks.is_external"`
+	Thumbnail  string    `json:"thumbnail" db:"bookmarks.thumbnail"`
+	Authors    string    `json:"authors" db:"bookmarks.authors"`
+	PubDate    uint      `json:"published_date" db:"bookmarks.published_date"`
+}

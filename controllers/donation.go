@@ -26,6 +26,7 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
 	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
+	"github.com/twreporter/go-mod-lib/pkg/slack"
 
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
@@ -340,6 +341,7 @@ func (req clientReq) BuildDraftPeriodicDonation(orderNumber string) models.Perio
 	m.Cardholder = req.Cardholder
 	m.Currency = req.Currency
 	m.UserID = req.UserID
+	m.PayMethod = req.PayMethod
 
 	if req.Frequency != "" {
 		m.Frequency = req.Frequency
@@ -544,14 +546,6 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 		}
 	}
 
-}
-
-func publishToNeticrm(ms []*cloudpub.Message) {
-	errors := cloudpub.PublishNotifications(context.Background(), ms)
-	if errors != nil {
-		// todo: add notification to slack
-		log.Errorf("errors: %+v", errors)
-	}
 }
 
 // Handler for an authenticated user to create a periodic donation
@@ -1346,4 +1340,13 @@ func validateLinePayMethod(method string) bool {
 	}
 
 	return valid
+}
+
+func publishToNeticrm(ms []*cloudpub.Message) {
+	ctx := context.Background()
+	errors := cloudpub.PublishNotifications(ctx, ms)
+
+	if errors != nil {
+		slack.NeticrmNotify(ctx, errors)
+	}
 }

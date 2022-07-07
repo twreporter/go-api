@@ -48,13 +48,13 @@ func (g *GormStorage) GetABookmarkOfAUser(userID string, slug string, host strin
 }
 
 // GetBookmarksOfAUser lists bookmarks of the user
-func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]models.Bookmark, int, error) {
-	var bookmarks []models.Bookmark
+func (g *GormStorage) GetBookmarksOfAUser(id string, limit, offset int) ([]models.UserBookmark, int, error) {
+	var bookmarks []models.UserBookmark
 
 	// The reason I write the raw sql statement, not use gorm association(see the following commented code),
 	// err = g.db.Model(&user).Limit(limit).Offset(offset).Order("created_at desc").Related(&bookmarks, bookmarksStr).Error
-	// is because I need to sort/limit/offset the records occording to `users_bookmarks`.`created_at`.
-	err := g.db.Raw("SELECT `users_bookmarks`.created_at AS users_bookmarks_created_at, `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND ((`users_bookmarks`.`user_id` IN (?))) ORDER BY users_bookmarks_created_at desc LIMIT ? OFFSET ?", id, limit, offset).Scan(&bookmarks).Error
+	// is because I need to sort/limit/offset the records according to `users_bookmarks`.`created_at`.
+	err := g.db.Raw("SELECT `users_bookmarks`.created_at AS added_at, `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND ((`users_bookmarks`.`user_id` IN (?))) ORDER BY added_at desc LIMIT ? OFFSET ?", id, limit, offset).Scan(&bookmarks).Error
 
 	if err != nil {
 		return bookmarks, 0, errors.Wrap(err, fmt.Sprintf("get bookmarks of the user(id: %s) with conditions(limit: %d, offset: %d) occurs error", id, limit, offset))
