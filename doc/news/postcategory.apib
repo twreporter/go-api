@@ -1,0 +1,74 @@
+# Group Postcategories
+
+## Postcategory List [/v2/postcategories{?offset,limit}]
+A list contains information of the selected postcategories.
+
+### Get a list of postcategories [GET]
+
++ Parameters
+    + offset: `0` (integer, optional) - The number of tags to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of tags to return at a time
+        + Default: `10`
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data (required)
+            + records (array[Postcategory], fixed-type, required)
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+
+## Postcategory [/v2/postcategories/{id}]
+A postcategory contains full information with the id specified.
+
+### Get a single postcategory [GET]
+Get A single postcategory with given id.
+
++ Parameters
+    + `id`: `5edf118c3e631f0600198935` (optional) - Postcategory id
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data (Postcategory, required)
+
++ Response 404 (application/json)
+    
+    + Attributes
+        + status: fail (required)
+        + data (required)
+            + id: Cannot find the postcategory from the id (required)
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+
+# Data Structures
+
+## Postcategory
++ id: 5edf118c3e631f0600198935 (required)
++ key: `5edf118c3e631f0600198935` (required)
++ name: `2016總統大選` (required)
++ sort_order: 1 (required)
++ subcategory: `[5edf118c3e631f0600198935]`
