@@ -1,0 +1,38 @@
+# Group Tags
+
+## Tag List [/v2/tags{?is_latest,offset,limit}]
+A list contains information of the selected tags.
+
+### Get a list of Tags [GET]
+
++ Parameters
+    + `is_latest`: `true` (boolean, optional) - Search for tags of latest status referenced by is_latest
+    + offset: `0` (integer, optional) - The number of tags to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of tags to return at a time
+        + Default: `10`
+
++ Response 200 (application/json)
+    + Attributes
+        + status: success (required)
+        + data (required)
+            + records (array[Tag], fixed-type, required)
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)
+    
+# Data Structures
+
+## Tag
++ id: 5edf118c3e631f0600198935 (required)
++ key: `5edf118c3e631f0600198935` (required)
++ name: `2016總統大選` (required)
