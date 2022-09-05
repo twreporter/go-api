@@ -1,12 +1,12 @@
 # Group Tags
 
-## Tag List [/v2/tags{?is_latest,offset,limit}]
+## Tag List [/v2/tags{?latest_order,offset,limit}]
 A list contains information of the selected tags.
 
 ### Get a list of Tags [GET]
 
 + Parameters
-    + `is_latest`: `true` (boolean, optional) - Search for tags of latest status referenced by is_latest
+    + `latest_order`: `1` (integer, optional) - Search for tags of latest_order greater than or equal to given latest_order
     + offset: `0` (integer, optional) - The number of tags to skip
         + Default: `0`
     + limit: `10` (integer, optional) - The maximum number of tags to return at a time
@@ -36,3 +36,4 @@ A list contains information of the selected tags.
 + id: 5edf118c3e631f0600198935 (required)
 + key: `5edf118c3e631f0600198935` (required)
 + name: `2016總統大選` (required)
++ latest_order: 1 (number, required)
