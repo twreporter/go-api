@@ -365,3 +365,57 @@ func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection s
 
 	return count, nil
 }
+
+func (m *mongoStorage) GetTags(ctx context.Context, q *news.Query) ([]news.Tag, error) {
+	var tags []news.Tag
+
+	mq := news.NewMongoQuery(q)
+
+	// build aggregate stages from query
+	stages := news.BuildQueryStatements(mq)
+
+	select {
+	case <-ctx.Done():
+		return nil, errors.WithStack(ctx.Err())
+	case result, ok := <-m.getTags(ctx, stages):
+		switch {
+		case !ok:
+			return nil, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, result.Error
+		}
+		tags = result.Content.([]news.Tag)
+	}
+
+	return tags, nil
+}
+
+func (m *mongoStorage) getTags(ctx context.Context, stages []bson.D) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, stages []bson.D) {
+		defer close(result)
+		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColTags).Aggregate(ctx, stages)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		defer cursor.Close(ctx)
+
+		var tags []news.Tag
+		for cursor.Next(ctx) {
+			var tag news.Tag
+			err := cursor.Decode(&tag)
+			if err != nil {
+				result <- fetchResult{Error: errors.WithStack(err)}
+				return
+			}
+			tags = append(tags, tag)
+		}
+		if err := cursor.Err(); err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		result <- fetchResult{Content: tags}
+	}(ctx, stages)
+	return result
+}

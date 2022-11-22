@@ -20,6 +20,8 @@ type newsV2Storage interface {
 	GetMetaOfTopics(context.Context, *news.Query) ([]news.MetaOfTopic, error)
 	GetAuthors(context.Context, *news.Query) ([]news.Author, error)
 
+	GetTags(context.Context, *news.Query) ([]news.Tag, error)
+
 	GetPostCount(context.Context, *news.Query) (int64, error)
 	GetTopicCount(context.Context, *news.Query) (int64, error)
 	GetAuthorCount(context.Context, *news.Query) (int64, error)
@@ -56,6 +58,14 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 
 	total, err := nc.Storage.GetPostCount(ctx, q)
 	if err != nil {
+		return
+	}
+
+	if q.Filter.SubcategoryID != "" && len(posts) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"message": "category & subcategory is not consistent",
+		})
 		return
 	}
 
@@ -105,6 +115,37 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": post})
+}
+
+func (nc *newsV2Controller) GetTags(c *gin.Context) {
+	var err error
+
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.PostPageTimeout)
+	defer cancel()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.ParseTagListQuery(c)
+
+	tags, err := nc.Storage.GetTags(ctx, q)
+
+	if err != nil {
+		return
+	}
+
+	if tags == nil {
+		tags = make([]news.Tag, 0)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"records": tags, "meta": gin.H{
+		"latest_order": q.Filter.LatestOrder,
+		"offset":       q.Offset,
+		"limit":        q.Limit,
+	}}})
 }
 
 func (nc *newsV2Controller) GetTopics(c *gin.Context) {
@@ -290,6 +331,24 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 			v.Name,
 			typePost,
 			news.NewQuery(news.WithFilterCategoryIDs(v.ID), news.WithLimit(1)),
+		})
+	}
+
+	// v2 categories in index page
+	for _, v := range []news.CategorySet{
+		news.World,
+		news.Humanrights,
+		news.PoliticsAndSociety,
+		news.Health,
+		news.Econ,
+		news.Culture,
+		news.Education,
+		// news.Test,
+	} {
+		jobs = append(jobs, job{
+			v.Name,
+			typePost,
+			news.NewQuery(news.WithFilterCategorySet(v.Key), news.WithLimit(1)),
 		})
 	}
 

@@ -8,11 +8,14 @@ const (
 	OpExpr         = "$expr"
 	OpIn           = "$in"
 	OpLet          = "$let"
+	OpGte          = "$gte"
 	OpOr           = "$or"
 	OpReduce       = "$reduce"
 
 	OrderAsc  = 1
 	OrderDesc = -1
+
+	ElemMatch = "$elemMatch"
 
 	// Define mongo pipeline stage
 	StageAddFields = "$addFields"

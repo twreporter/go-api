@@ -73,16 +73,23 @@ type authorFilter struct {
 	AuthorInPost bool
 }
 
+type categorySet struct {
+	Category    string
+	Subcategory string
+}
+
 type mongoFilter struct {
-	Slug       string               `mongo:"slug"`
-	State      string               `mongo:"state"`
-	Style      string               `mongo:"style"`
-	IsFeatured null.Bool            `mongo:"isFeatured"`
-	Categories []primitive.ObjectID `mongo:"categories"`
-	Tags       []primitive.ObjectID `mongo:"tags"`
-	IDs        []primitive.ObjectID `mongo:"_id"`
-	Name       primitive.Regex      `mongo:"name"`
-	Author     authorFilter         `mongo:"author"`
+	Slug        string               `mongo:"slug"`
+	State       string               `mongo:"state"`
+	Style       string               `mongo:"style"`
+	IsFeatured  null.Bool            `mongo:"isFeatured"`
+	Categories  []primitive.ObjectID `mongo:"categories"`
+	Tags        []primitive.ObjectID `mongo:"tags"`
+	IDs         []primitive.ObjectID `mongo:"_id"`
+	Name        primitive.Regex      `mongo:"name"`
+	Author      authorFilter         `mongo:"author"`
+	CategorySet categorySet          `mongo:"category_set"`
+	LatestOrder int                  `mongo:"latest_order"`
 }
 
 func (mf mongoFilter) BuildStage() []bson.D {
@@ -109,6 +116,11 @@ func (mf mongoFilter) BuildElements() []bson.E {
 			v := fieldV.Interface().(string)
 			if v != "" {
 				elements = append(elements, mongo.BuildElement(tag, v))
+			}
+		case int:
+			v := fieldV.Interface().(int)
+			if v >= 1 {
+				elements = append(elements, mongo.BuildElement(fieldLatestOrder, mongo.BuildDocument(mongo.OpGte, v)))
 			}
 		case null.Bool:
 			v := fieldV.Interface().(null.Bool)
@@ -148,6 +160,22 @@ func (mf mongoFilter) BuildElements() []bson.E {
 					elements = append(elements, mongo.BuildElement(fieldID, id))
 				}
 			}
+		case categorySet:
+			v := fieldV.Interface().(categorySet)
+
+			if v.Category != "" && v.Subcategory != "" {
+				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
+					mongo.ElemMatch, bson.D{{Key: "category", Value: v.Category}, {Key: "subcategory", Value: v.Subcategory}},
+				)))
+			} else if v.Category != "" {
+				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
+					mongo.ElemMatch, bson.D{{Key: "category", Value: v.Category}},
+				)))
+			} else if v.Subcategory != "" {
+				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
+					mongo.ElemMatch, bson.D{{Key: "subcategory", Value: v.Subcategory}},
+				)))
+			}
 		default:
 			log.Errorf("Unimplemented type %+v", fieldT.Type)
 		}
@@ -157,15 +185,17 @@ func (mf mongoFilter) BuildElements() []bson.E {
 
 func fromFilter(f Filter) mongoFilter {
 	return mongoFilter{
-		Slug:       f.Slug,
-		State:      f.State,
-		Style:      f.Style,
-		IsFeatured: f.IsFeatured,
-		Categories: hexToObjectIDs(f.Categories),
-		Tags:       hexToObjectIDs(f.Tags),
-		IDs:        hexToObjectIDs(f.IDs),
-		Name:       primitive.Regex{Pattern: f.Name},
-		Author:     f.Author,
+		Slug:        f.Slug,
+		State:       f.State,
+		Style:       f.Style,
+		IsFeatured:  f.IsFeatured,
+		Categories:  hexToObjectIDs(f.Categories),
+		Tags:        hexToObjectIDs(f.Tags),
+		IDs:         hexToObjectIDs(f.IDs),
+		Name:        primitive.Regex{Pattern: f.Name},
+		Author:      f.Author,
+		CategorySet: f.CategorySet,
+		LatestOrder: f.LatestOrder,
 	}
 }
 
@@ -248,8 +278,11 @@ const (
 	fieldOgImage              = "og_image"
 	fieldLeadingVideo         = "leading_video"
 	fieldTheme                = "theme"
+	fieldCategory             = "category"
 	fieldCategories           = "categories"
+	fieldCategorySet          = "category_set"
 	fieldTags                 = "tags"
+	fieldLatestOrder          = "latest_order"
 	// TODO: rename the field to topic
 	fieldTopics           = "topics"
 	fieldRelatedDocuments = "relateds"
@@ -301,6 +334,10 @@ var (
 
 	LookupAuthor = map[string]lookupInfo{
 		fieldThumbnail: {Collection: ColImages, ToUnwind: true},
+	}
+
+	LookupTag = map[string]lookupInfo{
+		fieldCategory: {Collection: ColPostCategories},
 	}
 )
 

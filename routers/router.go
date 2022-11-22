@@ -87,6 +87,7 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	// membership service endpoints
 	// =============================
 	mc := cf.GetMembershipController()
+
 	// endpoints for bookmarks of users
 	v1Group.GET("/users/:userID/bookmarks", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
 	v1Group.GET("/users/:userID/bookmarks/:bookmarkSlug", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetBookmarksOfAUser))
@@ -132,7 +133,6 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	// =============================
 	// mail service endpoints
 	// =============================
-
 	mailContrl := cf.GetMailController()
 	mailMiddleware := middlewares.GetMailServiceMiddleware()
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendActivation))
@@ -143,6 +143,9 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	ncV2 := cf.GetNewsV2Controller()
 	v2Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetPosts)
 	v2Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetAPost)
+
+	v2Group.GET("/tags", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetTags)
+
 	// endpoints for topics
 	v2Group.GET("/topics", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetTopics)
 	v2Group.GET("/topics/:slug", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetATopic)
@@ -157,6 +160,7 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 		}
 		c.AbortWithStatus(http.StatusNotFound)
 	})
+
 	// =============================
 	// v2 oauth endpoints
 	// =============================
