@@ -360,9 +360,12 @@ func tagResponse(id primitive.ObjectID) string {
 	return fmt.Sprintf(`
 	{
 	"id": "%s",
-	"name": "測試標籤"
+	"name": "測試標籤",
+	"category": [],
+	"key": "%s",
+	"latest_order": 0
 	}
-`, id.Hex())
+`, id.Hex(), id.Hex())
 }
 
 func categoriesResponse(ids ...primitive.ObjectID) string {
@@ -499,9 +502,11 @@ func createVideoDocument(id primitive.ObjectID) bson.M {
 
 func createTagDocument(id primitive.ObjectID) bson.M {
 	return bson.M{
-		"_id":  id,
-		"key":  id.Hex(),
-		"name": "測試標籤",
+		"_id":          id,
+		"key":          id.Hex(),
+		"name":         "測試標籤",
+		"category":     bson.A{},
+		"latest_order": 0,
 	}
 }
 
