@@ -110,8 +110,21 @@ type category struct {
 }
 
 type category_set struct {
-	Category    string `bson:"category" json:"category"`
-	Subcategory string `bson:"subcategory" json:"subcategory"`
+	Category    *set_category    `bson:"category" json:"category"`
+	Subcategory *set_subcategory `bson:"subcategory" json:"subcategory"`
+}
+
+type set_category struct {
+	ID        primitive.ObjectID `bson:"_id" json:"id"`
+	SortOrder uint               `bson:"sortOrder" json:"sort_order"`
+	Name      string             `bson:"name" json:"name"`
+}
+
+type set_subcategory struct {
+	ID          primitive.ObjectID `bson:"_id" json:"id"`
+	Key         string             `bson:"key" json:"key"`
+	LatestOrder int32              `bson:"latest_order" json:"latest_order"`
+	Name        string             `bson:"name" json:"name"`
 }
 
 type Image struct {

@@ -353,6 +353,8 @@ func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 			stages = append(stages, mongo.BuildUnwindStage(field))
 		}
 	}
+	// join category_set data
+	stages = append(stages, mongo.BuildCategorySetStage()...)
 	return stages
 }
 

@@ -194,6 +194,7 @@ func ParsePostListQuery(c *gin.Context) *Query {
 
 	if subcategoryID := c.Query(querySubcategoryID); subcategoryID != "" {
 		q.Filter.SubcategoryID = subcategoryID
+		q.Filter.Categories = nil
 		q.Filter.CategorySet = categorySet{Category: c.Query(queryCategoryID), Subcategory: subcategoryID}
 	}
 

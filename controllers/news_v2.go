@@ -343,6 +343,7 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 		news.Econ,
 		news.Culture,
 		news.Education,
+		news.Environment,
 	} {
 		jobs = append(jobs, job{
 			v.Name,

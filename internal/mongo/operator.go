@@ -18,15 +18,17 @@ const (
 	ElemMatch = "$elemMatch"
 
 	// Define mongo pipeline stage
-	StageAddFields = "$addFields"
-	StageFilter    = "$filter"
-	StageLimit     = "$limit"
-	StageLookup    = "$lookup"
-	StageMatch     = "$match"
-	StageSkip      = "$skip"
-	StageSort      = "$sort"
-	StageUnwind    = "$unwind"
-	StageProject   = "$project"
+	StageAddFields   = "$addFields"
+	StageGroup       = "$group"
+	StageFilter      = "$filter"
+	StageLimit       = "$limit"
+	StageLookup      = "$lookup"
+	StageMatch       = "$match"
+	StageSkip        = "$skip"
+	StageSort        = "$sort"
+	StageUnwind      = "$unwind"
+	StageReplaceRoot = "$replaceRoot"
+	StageProject     = "$project"
 
 	// Define Meta fields for nested stages (e.g., lookup)
 	MetaAs           = "as"
