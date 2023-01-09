@@ -191,7 +191,7 @@ workflows:
           requires:
             - prepare
       - build_and_deploy:
-          context: twreporter
+          context: twreporter-gcp
           requires:
             - test
           filters:
