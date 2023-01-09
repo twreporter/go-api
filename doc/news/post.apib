@@ -1,12 +1,13 @@
 # Group Posts
 
-## Post List [/v2/posts{?category_id,tag_id,id,sort,offset,limit}]
+## Post List [/v2/posts{?category_id,subcategory_id,tag_id,id,sort,offset,limit}]
 A list contains meta(brief) information of the selected posts.
 
 ## Get a list of posts [GET]
 
 + Parameters
     + `category_id`: `5edf118c3e631f0600198935` (optional) - Search for posts of the categories referenced by the category_id
+    + `subcategory_id`: `5edf118c3e631f0600198935` (optional) - Search for posts of the subcategories referenced by the sucategory_id
     + `tag_id`: `5edf118c3e631f0600198935` (optional) - Search for posts with the tags referenced by the tag ids
     + id: `5edf118c3e631f0600198935` (optional) - Search for posts with the referenced ids
     + sort: `-published_date` (optional) - which field to sort by
@@ -28,6 +29,12 @@ A list contains meta(brief) information of the selected posts.
         + data
             + meta (meta, fixed-type, required)
             + records (array[MetaOfPost], fixed-type, required)
+
++ Response 400 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Category and subcategory are not consistent. (required)
 
 + Response 500 (application/json)
 
@@ -127,6 +134,7 @@ Get a single post with the given slug
 + title: post title (required)
 + subtitle: post subtitle (required)
 + categories (array[category], fixed-type, required)
++ category_set (array[category_set], fixed-type, required)
 + published_date: `2020-06-8T16:00:00Z` (required)
 + is_external: false (boolean, required)
 + tags (array[tag], fixed-type, required)
