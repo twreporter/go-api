@@ -2,7 +2,27 @@
 
 ## Released
 
-### 7.2.0 (Current)
+### 7.2.1 (Current)
+
+### Notable Changes
+
+- circleci
+  - use gke-gcloud-auth-plugin
+  - use twreporter-gcp context for gcp related credential
+- api/doc
+  - update api docs for new info structure
+
+### Commits
+
+- [[`0105fa91d9`](https://github.com/nodejs/node/commit/0105fa91d9)] - **fix**: use twreporter-gcp context for gcp related credential (Aylie Chou)
+- [[`0d6dba4f20`](https://github.com/nodejs/node/commit/0d6dba4f20)] - **fix**: use gke-gcloud-auth-plugin (Aylie Chou)
+- [[`acac5b7678`](https://github.com/nodejs/node/commit/acac5b7678)] - **docs**: add new category info to /v2/index-page (Aylie Chou)
+- [[`53dba2da89`](https://github.com/nodejs/node/commit/53dba2da89)] - **docs**: update api doc (Aylie Chou)
+- [[`3379bb8c7e`](https://github.com/nodejs/node/commit/3379bb8c7e)] - **docs**: update api doc for parameter type change (Aylie Chou)
+- [[`2a848b6195`](https://github.com/nodejs/node/commit/2a848b6195)] - **docs**: update doc/index.html for github page (Aylie Chou)
+* [[`42df484e9f`](https://github.com/nodejs/node/commit/42df484e9f)] - **docs**: add docs for category sets (Aylie Chou)
+
+### 7.2.0
 
 ### Notable Changes
 
