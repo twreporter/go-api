@@ -1,6 +1,8 @@
 ## Unreleased
 
-### 7.2.1-rc.0
+## Released
+
+### 7.2.1 (Current)
 
 ### Notable Changes
 
@@ -20,9 +22,7 @@
 - [[`2a848b6195`](https://github.com/nodejs/node/commit/2a848b6195)] - **docs**: update doc/index.html for github page (Aylie Chou)
 * [[`42df484e9f`](https://github.com/nodejs/node/commit/42df484e9f)] - **docs**: add docs for category sets (Aylie Chou)
 
-## Released
-
-### 7.2.0 (Current)
+### 7.2.0
 
 ### Notable Changes
 
