@@ -317,6 +317,7 @@ var (
 		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
 		fieldTags:                 {Collection: ColTags},
 		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
+		fieldCategorySet:          {},
 	}
 
 	LookupFullTopic = map[string]lookupInfo{
@@ -344,17 +345,20 @@ var (
 func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 	var stages []bson.D
 	for field, info := range m {
-		if shouldPreserveOrder(field) {
-			stages = append(stages, buildPreserveLookupOrderStatement(field, info)...)
+		if field == fieldCategorySet {
+			// join category_set data
+			stages = append(stages, mongo.BuildCategorySetStage()...)
 		} else {
-			stages = append(stages, mongo.BuildLookupByIDStage(field, info.Collection))
-		}
-		if info.ToUnwind {
-			stages = append(stages, mongo.BuildUnwindStage(field))
+			if shouldPreserveOrder(field) {
+				stages = append(stages, buildPreserveLookupOrderStatement(field, info)...)
+			} else {
+				stages = append(stages, mongo.BuildLookupByIDStage(field, info.Collection))
+			}
+			if info.ToUnwind {
+				stages = append(stages, mongo.BuildUnwindStage(field))
+			}
 		}
 	}
-	// join category_set data
-	stages = append(stages, mongo.BuildCategorySetStage()...)
 	return stages
 }
 
