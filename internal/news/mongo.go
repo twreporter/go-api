@@ -309,6 +309,7 @@ var (
 		fieldTags:                 {Collection: ColTags},
 		fieldTopics:               {Collection: ColTopics, ToUnwind: true},
 		fieldWriters:              {Collection: ColContacts},
+		fieldCategorySet:          {},
 	}
 
 	LookupMetaOfPost = map[string]lookupInfo{
