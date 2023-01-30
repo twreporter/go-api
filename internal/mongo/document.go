@@ -66,7 +66,7 @@ func BuildCategorySetStage() []bson.D {
 	result = append(result, bson.D{{Key: StageLookup, Value: bson.D{
 		{Key: MetaFrom, Value: "postcategories"},
 		{Key: MetaLocalField, Value: "category_set.category"},
-		{Key: MetaForeignField, Value: "key"},
+		{Key: MetaForeignField, Value: "_id"},
 		{Key: MetaAs, Value: "category_set.category"},
 	}}})
 
@@ -74,7 +74,7 @@ func BuildCategorySetStage() []bson.D {
 	result = append(result, bson.D{{Key: StageLookup, Value: bson.D{
 		{Key: MetaFrom, Value: "tags"},
 		{Key: MetaLocalField, Value: "category_set.subcategory"},
-		{Key: MetaForeignField, Value: "key"},
+		{Key: MetaForeignField, Value: "_id"},
 		{Key: MetaAs, Value: "category_set.subcategory"},
 	}}})
 
