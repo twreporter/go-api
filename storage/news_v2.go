@@ -330,9 +330,6 @@ func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int64
 }
 
 func (m *mongoStorage) CheckCategorySetValid(ctx context.Context, q *news.Query) (bool, error) {
-	if q.Filter.CategorySet.Category == "" {
-		return false, nil
-	}
 	if q.Filter.CategorySet.Subcategory == "" {
 		return true, nil
 	}
