@@ -130,7 +130,16 @@ func (mf mongoFilter) BuildElements() []bson.E {
 
 		case []primitive.ObjectID:
 			if v, ok := mongo.BuildArray(fieldV.Interface().([]primitive.ObjectID)); ok {
-				elements = append(elements, mongo.BuildElement(tag, mongo.BuildDocument(mongo.OpIn, v)))
+				if tag == "categories" {
+					elements = append(elements, bson.E{Key: mongo.OpOr, Value: bson.A{
+						mongo.BuildDocument(tag, mongo.BuildDocument(mongo.OpIn, v)),
+						mongo.BuildDocument(fieldCategorySet, mongo.BuildDocument(
+							mongo.ElemMatch, bson.D{{Key: "category", Value: v[0]}},
+						)),
+					}})
+				} else {
+					elements = append(elements, mongo.BuildElement(tag, mongo.BuildDocument(mongo.OpIn, v)))
+				}
 			}
 		case primitive.Regex:
 			v := fieldV.Interface().(primitive.Regex)
@@ -164,16 +173,36 @@ func (mf mongoFilter) BuildElements() []bson.E {
 			v := fieldV.Interface().(categorySet)
 
 			if v.Category != "" && v.Subcategory != "" {
+				var categoryId interface{} = v.Category
+				objectID, err := primitive.ObjectIDFromHex(v.Category)
+				if err == nil {
+					categoryId = objectID
+				}
+				var subcategoryId interface{} = v.Subcategory
+				objectID, err = primitive.ObjectIDFromHex(v.Subcategory)
+				if err == nil {
+					subcategoryId = objectID
+				}
 				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
-					mongo.ElemMatch, bson.D{{Key: "category", Value: v.Category}, {Key: "subcategory", Value: v.Subcategory}},
+					mongo.ElemMatch, bson.D{{Key: "category", Value: categoryId}, {Key: "subcategory", Value: subcategoryId}},
 				)))
 			} else if v.Category != "" {
+				var categoryId interface{} = v.Category
+				objectID, err := primitive.ObjectIDFromHex(v.Category)
+				if err == nil {
+					categoryId = objectID
+				}
 				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
-					mongo.ElemMatch, bson.D{{Key: "category", Value: v.Category}},
+					mongo.ElemMatch, bson.D{{Key: "category", Value: categoryId}},
 				)))
 			} else if v.Subcategory != "" {
+				var subcategoryId interface{} = v.Subcategory
+				objectID, err := primitive.ObjectIDFromHex(v.Subcategory)
+				if err == nil {
+					subcategoryId = objectID
+				}
 				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
-					mongo.ElemMatch, bson.D{{Key: "subcategory", Value: v.Subcategory}},
+					mongo.ElemMatch, bson.D{{Key: "subcategory", Value: subcategoryId}},
 				)))
 			}
 		default:
