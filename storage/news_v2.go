@@ -334,7 +334,7 @@ func (m *mongoStorage) CheckCategorySetValid(ctx context.Context, q *news.Query)
 	if q.Filter.CategorySet.Subcategory == "" {
 		return true, nil
 	}
-	// if no subcateogry but has category then error
+	// if has subcateogry but no category then error
 	if q.Filter.CategorySet.Category == "" {
 		return false, nil
 	}
