@@ -329,7 +329,7 @@ func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int64
 	return m.getCount(ctx, q, news.ColContacts)
 }
 
-func (m *mongoStorage) GetCategoryCount(ctx context.Context, q *news.Query) (int64, error) {
+func (m *mongoStorage) CheckCategorySetValid(ctx context.Context, q *news.Query) (bool, error) {
 	result := make(chan fetchResult)
 	go func(ctx context.Context) {
 		// document := bson.D{}
@@ -341,10 +341,8 @@ func (m *mongoStorage) GetCategoryCount(ctx context.Context, q *news.Query) (int
 		}
 
 		query := bson.M{
-			"$and": []bson.M{
-				{"_id": categoryId},
-				{"subcategory": q.Filter.CategorySet.Subcategory},
-			},
+			"_id":         categoryId,
+			"subcategory": q.Filter.CategorySet.Subcategory,
 		}
 
 		count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection("postcategories").CountDocuments(ctx, query)
@@ -358,15 +356,15 @@ func (m *mongoStorage) GetCategoryCount(ctx context.Context, q *news.Query) (int
 	var count int64
 	select {
 	case <-ctx.Done():
-		return 0, errors.WithStack(ctx.Err())
+		return false, errors.WithStack(ctx.Err())
 	case res := <-result:
 		if res.Error != nil {
-			return 0, res.Error
+			return false, res.Error
 		}
 		count = res.Content.(int64)
 	}
 
-	return count, nil
+	return (count > 0), nil
 }
 
 func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection string) (int64, error) {

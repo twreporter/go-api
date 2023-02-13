@@ -25,7 +25,8 @@ type newsV2Storage interface {
 	GetPostCount(context.Context, *news.Query) (int64, error)
 	GetTopicCount(context.Context, *news.Query) (int64, error)
 	GetAuthorCount(context.Context, *news.Query) (int64, error)
-	GetCategoryCount(context.Context, *news.Query) (int64, error)
+
+	CheckCategorySetValid(context.Context, *news.Query) (bool, error)
 }
 
 func NewNewsV2Controller(s newsV2Storage, client news.AlgoliaSearcher) *newsV2Controller {
@@ -62,8 +63,8 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 		return
 	}
 
-	categorySetCount, err := nc.Storage.GetCategoryCount(ctx, q)
-	if err != nil || categorySetCount == 0 {
+	categorySetIsValid, err := nc.Storage.CheckCategorySetValid(ctx, q)
+	if err != nil || !categorySetIsValid {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "error",
 			"message": "category & subcategory is not consistent",
