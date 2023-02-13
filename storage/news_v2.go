@@ -7,6 +7,7 @@ import (
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -326,6 +327,46 @@ func (m *mongoStorage) GetTopicCount(ctx context.Context, q *news.Query) (int64,
 
 func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int64, error) {
 	return m.getCount(ctx, q, news.ColContacts)
+}
+
+func (m *mongoStorage) GetCategoryCount(ctx context.Context, q *news.Query) (int64, error) {
+	result := make(chan fetchResult)
+	go func(ctx context.Context) {
+		// document := bson.D{}
+
+		var categoryId interface{} = q.Filter.CategorySet.Category
+		objectID, err := primitive.ObjectIDFromHex(q.Filter.CategorySet.Category)
+		if err == nil {
+			categoryId = objectID
+		}
+
+		query := bson.M{
+			"$and": []bson.M{
+				{"_id": categoryId},
+				{"subcategory": q.Filter.CategorySet.Subcategory},
+			},
+		}
+
+		count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection("postcategories").CountDocuments(ctx, query)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		result <- fetchResult{Content: count}
+	}(ctx)
+
+	var count int64
+	select {
+	case <-ctx.Done():
+		return 0, errors.WithStack(ctx.Err())
+	case res := <-result:
+		if res.Error != nil {
+			return 0, res.Error
+		}
+		count = res.Content.(int64)
+	}
+
+	return count, nil
 }
 
 func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection string) (int64, error) {
