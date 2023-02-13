@@ -16,15 +16,18 @@ type Query struct {
 }
 
 type Filter struct {
-	Slug       string
-	State      string
-	Style      string
-	IsFeatured null.Bool
-	Categories []string
-	Tags       []string
-	IDs        []string
-	Name       string
-	Author     authorFilter
+	Slug          string
+	State         string
+	Style         string
+	IsFeatured    null.Bool
+	Categories    []string
+	CategorySet   categorySet
+	Tags          []string
+	IDs           []string
+	Name          string
+	SubcategoryID string
+	Author        authorFilter
+	LatestOrder   int
 }
 
 type SortBy struct {
@@ -37,16 +40,18 @@ const (
 	sortByUpdatedAt     = "updated_at"
 	sortByDescending    = "-"
 
-	queryFull       = "full"
-	querySlug       = "slug"
-	queryCategoryID = "category_id"
-	queryTagID      = "tag_id"
-	queryPostID     = "id"
-	querySort       = "sort"
-	queryOffset     = "offset"
-	queryLimit      = "limit"
-	queryKeywords   = "keywords"
-	queryAuthorID   = "author_id"
+	queryFull          = "full"
+	querySlug          = "slug"
+	queryCategoryID    = "category_id"
+	querySubcategoryID = "subcategory_id"
+	queryTagID         = "tag_id"
+	queryPostID        = "id"
+	querySort          = "sort"
+	queryOffset        = "offset"
+	queryLimit         = "limit"
+	queryKeywords      = "keywords"
+	queryAuthorID      = "author_id"
+	queryLatestOrder   = "latest_order"
 )
 
 type Option func(*Query)
@@ -58,6 +63,11 @@ var defaultQuery = Query{
 }
 
 var defaultAuthorQuery = Query{
+	Pagination: query.Pagination{Offset: 0, Limit: 10},
+	Sort:       SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}},
+}
+
+var defaultTagQuery = Query{
 	Pagination: query.Pagination{Offset: 0, Limit: 10},
 	Sort:       SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}},
 }
@@ -89,6 +99,17 @@ func WithFilterCategoryIDs(ids ...string) Option {
 	return func(q *Query) {
 		if len(ids) > 0 {
 			q.Filter.Categories = ids
+		}
+	}
+}
+
+// FilterCategorySet adds category_set into filter on the query
+func WithFilterCategorySet(catAndSub ...string) Option {
+	return func(q *Query) {
+		if len(catAndSub) > 1 {
+			q.Filter.CategorySet = categorySet{Category: catAndSub[0], Subcategory: catAndSub[1]}
+		} else if len(catAndSub) > 0 {
+			q.Filter.CategorySet = categorySet{Category: catAndSub[0]}
 		}
 	}
 }
@@ -170,6 +191,13 @@ func ParsePostListQuery(c *gin.Context) *Query {
 			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}}
 		}
 	}
+
+	if subcategoryID := c.Query(querySubcategoryID); subcategoryID != "" {
+		q.Filter.SubcategoryID = subcategoryID
+		q.Filter.Categories = nil
+		q.Filter.CategorySet = categorySet{Category: c.Query(queryCategoryID), Subcategory: subcategoryID}
+	}
+
 	return &q
 }
 
@@ -259,6 +287,26 @@ func ParseAuthorPostListQuery(c *gin.Context) *Query {
 	if authorID := c.Param("author_id"); authorID != "" {
 		q.Filter.Author = authorFilter{authorID, true}
 	}
+	// Parse pagination
+	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
+		q.Offset = offset
+	}
+	if limit, err := strconv.Atoi(c.Query(queryLimit)); err == nil {
+		q.Limit = limit
+	}
+
+	return &q
+}
+
+func ParseTagListQuery(c *gin.Context) *Query {
+	var q Query
+
+	q = defaultTagQuery
+	// Parse filter
+	if latestOrder, err := strconv.Atoi(c.Query(queryLatestOrder)); err == nil {
+		q.Filter.LatestOrder = latestOrder
+	}
+
 	// Parse pagination
 	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
 		q.Offset = offset

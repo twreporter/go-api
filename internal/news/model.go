@@ -51,6 +51,7 @@ type MetaOfPost struct {
 	Title                string             `bson:"title" json:"title"`
 	Subtitle             string             `bson:"subtitle" json:"subtitle"`
 	Categories           []category         `bson:"categories" json:"categories,omitempty"`
+	CategorySet          []category_set     `bson:"category_set" json:"category_set,omitempty"`
 	PublishedDate        time.Time          `bson:"publishedDate" json:"published_date"`
 	IsExternal           bool               `bson:"is_external" json:"is_external"`
 	Tags                 []Tag              `bson:"tags" json:"tags,omitempty"`
@@ -108,6 +109,24 @@ type category struct {
 	Name      string             `bson:"name" json:"name"`
 }
 
+type category_set struct {
+	Category    *set_category    `bson:"category" json:"category"`
+	Subcategory *set_subcategory `bson:"subcategory" json:"subcategory"`
+}
+
+type set_category struct {
+	ID        primitive.ObjectID `bson:"_id" json:"id"`
+	SortOrder uint               `bson:"sortOrder" json:"sort_order"`
+	Name      string             `bson:"name" json:"name"`
+}
+
+type set_subcategory struct {
+	ID          primitive.ObjectID `bson:"_id" json:"id"`
+	Key         string             `bson:"key" json:"key"`
+	LatestOrder int32              `bson:"latest_order" json:"latest_order"`
+	Name        string             `bson:"name" json:"name"`
+}
+
 type Image struct {
 	ImageMeta   `bson:"image"`
 	ID          primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
@@ -134,8 +153,11 @@ type ResizedTargets struct {
 }
 
 type Tag struct {
-	ID   primitive.ObjectID `bson:"_id" json:"id"`
-	Name string             `bson:"name" json:"name"`
+	ID          primitive.ObjectID `bson:"_id" json:"id"`
+	Key         string             `bson:"key" json:"key"`
+	LatestOrder int32              `bson:"latest_order" json:"latest_order"`
+	Name        string             `bson:"name" json:"name"`
+	Category    []string           `bson:"category" json:"category"`
 }
 
 type VideoMeta struct {

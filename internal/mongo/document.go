@@ -55,3 +55,55 @@ func BuildUnwindStage(field string) bson.D {
 		{Key: MetaPreserveNullAndEmptyArrays, Value: true},
 	}}}
 }
+
+func BuildCategorySetStage() []bson.D {
+	var result []bson.D
+
+	// unwind category_set
+	result = append(result, bson.D{{Key: StageUnwind, Value: "$category_set"}})
+
+	// lookup postcategories
+	result = append(result, bson.D{{Key: StageLookup, Value: bson.D{
+		{Key: MetaFrom, Value: "postcategories"},
+		{Key: MetaLocalField, Value: "category_set.category"},
+		{Key: MetaForeignField, Value: "_id"},
+		{Key: MetaAs, Value: "category_set.category"},
+	}}})
+
+	// lookup tags
+	result = append(result, bson.D{{Key: StageLookup, Value: bson.D{
+		{Key: MetaFrom, Value: "tags"},
+		{Key: MetaLocalField, Value: "category_set.subcategory"},
+		{Key: MetaForeignField, Value: "_id"},
+		{Key: MetaAs, Value: "category_set.subcategory"},
+	}}})
+
+	// addFields
+	result = append(result, bson.D{{Key: StageAddFields, Value: bson.D{
+		{Key: "category_set.category", Value: bson.D{
+			{Key: "$arrayElemAt", Value: bson.A{"$category_set.category", 0}},
+		}},
+		{Key: "category_set.subcategory", Value: bson.D{
+			{Key: "$arrayElemAt", Value: bson.A{"$category_set.subcategory", 0}},
+		}},
+	}}})
+
+	// group
+	result = append(result, bson.D{{Key: StageGroup, Value: bson.D{
+		{Key: "_id", Value: "$_id"},
+		{Key: "category_set", Value: bson.D{{Key: "$push", Value: "$category_set"}}},
+		{Key: "data", Value: bson.D{{Key: "$first", Value: "$$ROOT"}}},
+	}}})
+
+	// addFields
+	result = append(result, bson.D{{Key: StageAddFields, Value: bson.D{
+		{Key: "data.category_set", Value: "$category_set"},
+	}}})
+
+	// replaceRoot
+	result = append(result, bson.D{{Key: StageReplaceRoot, Value: bson.D{
+		{Key: "newRoot", Value: "$data"},
+	}}})
+
+	return result
+}
