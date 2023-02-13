@@ -330,10 +330,15 @@ func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int64
 }
 
 func (m *mongoStorage) CheckCategorySetValid(ctx context.Context, q *news.Query) (bool, error) {
+	if q.Filter.CategorySet.Category == "" {
+		return false, nil
+	}
+	if q.Filter.CategorySet.Subcategory == "" {
+		return true, nil
+	}
+
 	result := make(chan fetchResult)
 	go func(ctx context.Context) {
-		// document := bson.D{}
-
 		var categoryId interface{} = q.Filter.CategorySet.Category
 		objectID, err := primitive.ObjectIDFromHex(q.Filter.CategorySet.Category)
 		if err == nil {
