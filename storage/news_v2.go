@@ -330,11 +330,13 @@ func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int64
 }
 
 func (m *mongoStorage) CheckCategorySetValid(ctx context.Context, q *news.Query) (bool, error) {
-	if q.Filter.CategorySet.Category == "" {
-		return false, nil
-	}
+	// if no subcategory then always true
 	if q.Filter.CategorySet.Subcategory == "" {
 		return true, nil
+	}
+	// if has subcateogry but no category then error
+	if q.Filter.CategorySet.Category == "" {
+		return false, nil
 	}
 
 	result := make(chan fetchResult)
