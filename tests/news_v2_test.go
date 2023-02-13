@@ -37,6 +37,8 @@ type testPost struct {
 	Designers     []primitive.ObjectID
 	Photographers []primitive.ObjectID
 	Writers       []primitive.ObjectID
+	Category      string
+	SubCategory   string
 }
 
 func TestGetPostsByAuthors_AuthorIsAnEngineer(t *testing.T) {
@@ -253,14 +255,16 @@ func TestGetPostsByAuthors_AuthorIsAWriter(t *testing.T) {
 			// Without loss of generosity,
 			// use dedicate timestamp to ensure the JSON equality
 			// with no decimal points precision
-			CreatedAt:  time.Unix(1612337400, 0),
-			Slug:       "test-slug-1",
-			State:      "published",
-			Image:      primitive.NewObjectID(),
-			Video:      primitive.NewObjectID(),
-			Writers:    []primitive.ObjectID{authors["王小明"].id},
-			Categories: []primitive.ObjectID{primitive.NewObjectID()},
-			Tags:       []primitive.ObjectID{primitive.NewObjectID()},
+			CreatedAt:   time.Unix(1612337400, 0),
+			Slug:        "test-slug-1",
+			State:       "published",
+			Image:       primitive.NewObjectID(),
+			Video:       primitive.NewObjectID(),
+			Writers:     []primitive.ObjectID{authors["王小明"].id},
+			Categories:  []primitive.ObjectID{primitive.NewObjectID()},
+			Tags:        []primitive.ObjectID{primitive.NewObjectID()},
+			Category:    "",
+			SubCategory: "",
 		},
 		"劉大華的文章": {
 			ID:         primitive.NewObjectID(),
@@ -331,6 +335,7 @@ func metaOfPostResponse(p testPost) string {
 	"id": "%s",
 	"style": "article:v2:default",
 	"slug": "%s",
+	"category_set": [{"category": null, "subcategory": null}],
 	"hero_image": %s,
 	"leading_image_portrait": %s,
 	"og_image": %s,
@@ -343,7 +348,15 @@ func metaOfPostResponse(p testPost) string {
 	"tags": %s,
 	"full": false
 	}
-`, p.ID.Hex(), p.Slug, imageResponse(p.Image), imageResponse(p.Image), imageResponse(p.Image), categoriesResponse(p.Categories...), p.CreatedAt.UTC().Format(time.RFC3339), tagsResponse(p.Tags...))
+`,
+		p.ID.Hex(),
+		p.Slug,
+		imageResponse(p.Image),
+		imageResponse(p.Image),
+		imageResponse(p.Image),
+		categoriesResponse(p.Categories...),
+		p.CreatedAt.UTC().Format(time.RFC3339),
+		tagsResponse(p.Tags...))
 }
 
 func tagsResponse(ids ...primitive.ObjectID) string {
@@ -360,9 +373,12 @@ func tagResponse(id primitive.ObjectID) string {
 	return fmt.Sprintf(`
 	{
 	"id": "%s",
-	"name": "測試標籤"
+	"name": "測試標籤",
+	"category": [],
+	"key": "%s",
+	"latest_order": 0
 	}
-`, id.Hex())
+`, id.Hex(), id.Hex())
 }
 
 func categoriesResponse(ids ...primitive.ObjectID) string {
@@ -392,19 +408,23 @@ func categoryResponse(id primitive.ObjectID) string {
 // slug, mame,
 func createPostDocument(p testPost) bson.M {
 	return bson.M{
-		"_id":           p.ID,
-		"updatedBy":     p.Editor,
-		"updatedAt":     p.CreatedAt,
-		"createdBy":     p.Editor,
-		"createdAt":     p.CreatedAt,
-		"slug":          p.Slug,
-		"name":          p.Slug,
-		"toAutoNotify":  true,
-		"relateds":      p.Relateds,
-		"tags":          p.Tags,
-		"style":         "article:v2:default",
-		"copyright":     "Copyrighted",
-		"categories":    p.Categories,
+		"_id":          p.ID,
+		"updatedBy":    p.Editor,
+		"updatedAt":    p.CreatedAt,
+		"createdBy":    p.Editor,
+		"createdAt":    p.CreatedAt,
+		"slug":         p.Slug,
+		"name":         p.Slug,
+		"toAutoNotify": true,
+		"relateds":     p.Relateds,
+		"tags":         p.Tags,
+		"style":        "article:v2:default",
+		"copyright":    "Copyrighted",
+		"categories":   p.Categories,
+		"category_set": bson.M{
+			"category":    nil,
+			"subcategory": nil,
+		},
 		"heroImageSize": "normal",
 		"engineers":     p.Engineers,
 		"designers":     p.Designers,
@@ -499,9 +519,11 @@ func createVideoDocument(id primitive.ObjectID) bson.M {
 
 func createTagDocument(id primitive.ObjectID) bson.M {
 	return bson.M{
-		"_id":  id,
-		"key":  id.Hex(),
-		"name": "測試標籤",
+		"_id":          id,
+		"key":          id.Hex(),
+		"name":         "測試標籤",
+		"category":     bson.A{},
+		"latest_order": 0,
 	}
 }
 
