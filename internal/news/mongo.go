@@ -35,6 +35,21 @@ func BuildQueryStatements(mq *mongoQuery) []bson.D {
 
 	return stages
 }
+func BuildFilterQueryStatements(mq *mongoQuery) []bson.D {
+	var stages []bson.D
+
+	stages = append(stages, mq.mongoFilter.BuildStage()...)
+
+	return stages
+}
+func BuildSortPageQueryStatements(mq *mongoQuery) []bson.D {
+	var stages []bson.D
+
+	stages = append(stages, mq.mongoSort.BuildStage()...)
+	stages = append(stages, mq.mongoPagination.BuildStage()...)
+
+	return stages
+}
 
 func NewMongoQuery(q *Query) *mongoQuery {
 	return &mongoQuery{

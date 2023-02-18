@@ -91,9 +91,11 @@ func (m *mongoStorage) GetMetaOfPosts(ctx context.Context, q *news.Query) ([]new
 	mq := news.NewMongoQuery(q)
 
 	// build aggregate stages from query
-	stages := news.BuildQueryStatements(mq)
+	stages := news.BuildFilterQueryStatements(mq)
 	// build lookup(join) stages according to required fields
 	stages = append(stages, news.BuildLookupStatements(news.LookupMetaOfPost)...)
+	// build sorting and paging stages from query
+	stages = append(stages, news.BuildSortPageQueryStatements(mq)...)
 
 	select {
 	case <-ctx.Done():
