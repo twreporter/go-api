@@ -1,5 +1,16 @@
 ## Unreleased
 
+### 7.2.2-rc.0
+
+### Notable Changes
+
+- chore
+  - revert #510
+
+### Commits
+
+- [[`0105fa91d9`](https://github.com/twreporter/go-api/commit/9bd62e938e)] - **fix**: sorting large data (Howard Ou)
+
 ## Released
 
 ### 7.2.1 (Current)
