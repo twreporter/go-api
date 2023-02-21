@@ -1,5 +1,37 @@
 ## Unreleased
 
+### 7.2.2-rc.1
+
+### Notable Changes
+
+- chore
+  - revert #510
+
+### Commits
+
+- [[`1ecbf5ad5a`](https://github.com/twreporter/go-api/commit/1ecbf5ad5a)] - Revert **fix**: sorting large data (Howard Ou)
+
+### 7.2.2-rc.0
+
+### Notable Changes
+
+- api/posts
+  - add category_set related functions
+
+### Commits
+
+- [[`9bd62e938e`](https://github.com/twreporter/go-api/commit/9bd62e938e)] - **fix**: sorting large data (Howard Ou)
+- [[`81bed66e21`](https://github.com/twreporter/go-api/commit/81bed66e21)] - **fix**: sorting & paging for posts api (Howard Ou)
+- [[`3985e4442b`](https://github.com/twreporter/go-api/commit/3985e4442b)] - **fix**: wording (Howard Ou)
+- [[`5b45c30d70`](https://github.com/twreporter/go-api/commit/5b45c30d70)] - **fix**: update logic (Howard Ou)
+- [[`9b6f222027`](https://github.com/twreporter/go-api/commit/9b6f222027)] - **fix**: update category_set check (Howard Ou)
+- [[`f74f09689a`](https://github.com/twreporter/go-api/commit/f74f09689a)] - **fix**: add cases for category_set check (Howard Ou)
+- [[`bd2231a618`](https://github.com/twreporter/go-api/commit/bd2231a618)] - **fix**: fine tune category_set checking function (Howard Ou)
+- [[`e6a3749c4b`](https://github.com/twreporter/go-api/commit/e6a3749c4b)] - **fix**: change category_set consistancy test (Howard Ou)
+- [[`f860033af4`](https://github.com/twreporter/go-api/commit/f860033af4)] - **fix**: join new and old categories/categoryset search result (Howard Ou)
+- [[`d18214a94e`](https://github.com/twreporter/go-api/commit/d18214a94e)] - **fix**: category_set for full post (Howard Ou)
+- [[`540616faa9`](https://github.com/twreporter/go-api/commit/540616faa9)] - **fix**: test case for category_set (Howard Ou)
+
 ## Released
 
 ### 7.2.1 (Current)
