@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type fetchResult struct {
@@ -118,7 +117,7 @@ func (m *mongoStorage) getMetaOfPosts(ctx context.Context, stages []bson.D) <-ch
 	result := make(chan fetchResult)
 	go func(ctx context.Context, stages []bson.D) {
 		defer close(result)
-		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColPosts).Aggregate(ctx, stages, options.Aggregate().SetAllowDiskUse(true))
+		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColPosts).Aggregate(ctx, stages)
 		if err != nil {
 			result <- fetchResult{Error: errors.WithStack(err)}
 			return
