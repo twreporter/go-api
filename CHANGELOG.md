@@ -11,6 +11,8 @@
 
 - [[`0105fa91d9`](https://github.com/twreporter/go-api/commit/9bd62e938e)] - **fix**: sorting large data (Howard Ou)
 
+### 7.2.2-rc.0
+
 ### Notable Changes
 
 - api/posts
