@@ -9,7 +9,7 @@
 
 ### Commits
 
-- [[`9bd62e938e`](https://github.com/twreporter/go-api/commit/9bd62e938e)] - **fix**: sorting large data (Howard Ou)
+- [[`1ecbf5ad5a`](https://github.com/twreporter/go-api/commit/1ecbf5ad5a)] - Revert **fix**: sorting large data (Howard Ou)
 
 ### 7.2.2-rc.0
 
