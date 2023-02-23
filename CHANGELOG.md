@@ -1,5 +1,18 @@
 ## Unreleased
 
+### 7.2.2-rc.2
+
+### Notable Changes
+
+- api/posts
+  - fix category_set related sorting issue
+
+### Commits
+
+- [[`633c49a169`](https://github.com/twreporter/go-api/commit/633c49a169)] - **fix**: getMetaOfPosts sorting issue (Howard Ou)
+- [[`3853a0e600`](https://github.com/twreporter/go-api/commit/3853a0e600)] - **fix**: typo (Howard Ou)
+- [[`68fae18b38`](https://github.com/twreporter/go-api/commit/68fae18b38)] - **fix**: typo (Howard Ou)
+
 ### 7.2.2-rc.1
 
 ### Notable Changes
