@@ -1009,6 +1009,15 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		mail.BuildFromPrimeDonationModel(d)
 
 		go mc.sendDonationThankYouMail(*mail)
+
+		// publish to cloud pub/sub
+		ms := []*cloudpub.Message{
+			&cloudpub.Message{
+				OrderNumber: callbackPayload.OrderNumber,
+				Type: globals.PrimeDonationType,
+			},
+		}
+		go publishToNeticrm(ms)
 	}
 
 	return http.StatusOK, gin.H{}, nil
