@@ -1,5 +1,16 @@
 ## Unreleased
 
+### 7.2.2-rc.3
+
+### Notable Changes
+
+- api/donation
+  - publish data to neticrm on endpoint /line-notify
+
+### Commits
+
+- [[`d5e6a8499c`](https://github.com/twreporter/go-api/commit/d5e6a8499c)] - **fix**: endpoint /line-notify publish to neticrm topic (Aylie Chou)
+
 ### 7.2.2-rc.2
 
 ### Notable Changes
