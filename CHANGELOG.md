@@ -1,5 +1,17 @@
 ## Unreleased
 
+### 7.2.2-rc.4
+
+### Notable Changes
+
+- chore
+  - fix changelog typo
+
+### Commits
+
+- [[`873056179f`](https://github.com/twreporter/go-api/commit/873056179f)] - **fix**: CHANGELOG repo name typo (Aylie Chou)
+* [[`237abe1ae3`](https://github.com/twreporter/go-api/commit/237abe1ae3)] - **fix**: typo (Aylie Chou)
+
 ### 7.2.2-rc.3
 
 ### Notable Changes
