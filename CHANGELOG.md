@@ -1,61 +1,30 @@
 ## Unreleased
 
-### 7.2.2-rc.4
+## Released
 
-### Notable Changes
-
-- chore
-  - fix changelog typo
-
-### Commits
-
-- [[`873056179f`](https://github.com/twreporter/go-api/commit/873056179f)] - **fix**: CHANGELOG repo name typo (Aylie Chou)
-* [[`237abe1ae3`](https://github.com/twreporter/go-api/commit/237abe1ae3)] - **fix**: typo (Aylie Chou)
-
-### 7.2.2-rc.3
+### 7.2.2 (Current)
 
 ### Notable Changes
 
 - api/donation
   - publish data to neticrm on endpoint /line-notify
-
-### Commits
-
-- [[`d5e6a8499c`](https://github.com/twreporter/go-api/commit/d5e6a8499c)] - **fix**: endpoint /line-notify publish to neticrm topic (Aylie Chou)
-
-### 7.2.2-rc.2
-
-### Notable Changes
-
 - api/posts
   - fix category_set related sorting issue
-
-### Commits
-
-- [[`633c49a169`](https://github.com/twreporter/go-api/commit/633c49a169)] - **fix**: getMetaOfPosts sorting issue (Howard Ou)
-- [[`3853a0e600`](https://github.com/twreporter/go-api/commit/3853a0e600)] - **fix**: typo (Howard Ou)
-- [[`68fae18b38`](https://github.com/twreporter/go-api/commit/68fae18b38)] - **fix**: typo (Howard Ou)
-
-### 7.2.2-rc.1
-
-### Notable Changes
-
+  - add category_set related functions
 - chore
+  - fix changelog typo
   - revert #510
 
 ### Commits
 
-- [[`1ecbf5ad5a`](https://github.com/twreporter/go-api/commit/1ecbf5ad5a)] - Revert **fix**: sorting large data (Howard Ou)
-
-### 7.2.2-rc.0
-
+- [[`873056179f`](https://github.com/twreporter/go-api/commit/873056179f)] - **fix**: CHANGELOG repo name typo (Aylie Chou)
+* [[`237abe1ae3`](https://github.com/twreporter/go-api/commit/237abe1ae3)] - **fix**: typo (Aylie Chou)
+- [[`d5e6a8499c`](https://github.com/twreporter/go-api/commit/d5e6a8499c)] - **fix**: endpoint /line-notify publish to neticrm topic (Aylie Chou)
 ### Notable Changes
-
-- api/posts
-  - add category_set related functions
-
-### Commits
-
+- [[`633c49a169`](https://github.com/twreporter/go-api/commit/633c49a169)] - **fix**: getMetaOfPosts sorting issue (Howard Ou)
+- [[`3853a0e600`](https://github.com/twreporter/go-api/commit/3853a0e600)] - **fix**: typo (Howard Ou)
+- [[`68fae18b38`](https://github.com/twreporter/go-api/commit/68fae18b38)] - **fix**: typo (Howard Ou)
+- [[`1ecbf5ad5a`](https://github.com/twreporter/go-api/commit/1ecbf5ad5a)] - Revert **fix**: sorting large data (Howard Ou)
 - [[`9bd62e938e`](https://github.com/twreporter/go-api/commit/9bd62e938e)] - **fix**: sorting large data (Howard Ou)
 - [[`81bed66e21`](https://github.com/twreporter/go-api/commit/81bed66e21)] - **fix**: sorting & paging for posts api (Howard Ou)
 - [[`3985e4442b`](https://github.com/twreporter/go-api/commit/3985e4442b)] - **fix**: wording (Howard Ou)
@@ -68,9 +37,7 @@
 - [[`d18214a94e`](https://github.com/twreporter/go-api/commit/d18214a94e)] - **fix**: category_set for full post (Howard Ou)
 - [[`540616faa9`](https://github.com/twreporter/go-api/commit/540616faa9)] - **fix**: test case for category_set (Howard Ou)
 
-## Released
-
-### 7.2.1 (Current)
+### 7.2.1
 
 ### Notable Changes
 
