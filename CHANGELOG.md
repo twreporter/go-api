@@ -2,7 +2,42 @@
 
 ## Released
 
-### 7.2.1 (Current)
+### 7.2.2 (Current)
+
+### Notable Changes
+
+- api/donation
+  - publish data to neticrm on endpoint /line-notify
+- api/posts
+  - fix category_set related sorting issue
+  - add category_set related functions
+- chore
+  - fix changelog typo
+  - revert #510
+
+### Commits
+
+- [[`873056179f`](https://github.com/twreporter/go-api/commit/873056179f)] - **fix**: CHANGELOG repo name typo (Aylie Chou)
+* [[`237abe1ae3`](https://github.com/twreporter/go-api/commit/237abe1ae3)] - **fix**: typo (Aylie Chou)
+- [[`d5e6a8499c`](https://github.com/twreporter/go-api/commit/d5e6a8499c)] - **fix**: endpoint /line-notify publish to neticrm topic (Aylie Chou)
+### Notable Changes
+- [[`633c49a169`](https://github.com/twreporter/go-api/commit/633c49a169)] - **fix**: getMetaOfPosts sorting issue (Howard Ou)
+- [[`3853a0e600`](https://github.com/twreporter/go-api/commit/3853a0e600)] - **fix**: typo (Howard Ou)
+- [[`68fae18b38`](https://github.com/twreporter/go-api/commit/68fae18b38)] - **fix**: typo (Howard Ou)
+- [[`1ecbf5ad5a`](https://github.com/twreporter/go-api/commit/1ecbf5ad5a)] - Revert **fix**: sorting large data (Howard Ou)
+- [[`9bd62e938e`](https://github.com/twreporter/go-api/commit/9bd62e938e)] - **fix**: sorting large data (Howard Ou)
+- [[`81bed66e21`](https://github.com/twreporter/go-api/commit/81bed66e21)] - **fix**: sorting & paging for posts api (Howard Ou)
+- [[`3985e4442b`](https://github.com/twreporter/go-api/commit/3985e4442b)] - **fix**: wording (Howard Ou)
+- [[`5b45c30d70`](https://github.com/twreporter/go-api/commit/5b45c30d70)] - **fix**: update logic (Howard Ou)
+- [[`9b6f222027`](https://github.com/twreporter/go-api/commit/9b6f222027)] - **fix**: update category_set check (Howard Ou)
+- [[`f74f09689a`](https://github.com/twreporter/go-api/commit/f74f09689a)] - **fix**: add cases for category_set check (Howard Ou)
+- [[`bd2231a618`](https://github.com/twreporter/go-api/commit/bd2231a618)] - **fix**: fine tune category_set checking function (Howard Ou)
+- [[`e6a3749c4b`](https://github.com/twreporter/go-api/commit/e6a3749c4b)] - **fix**: change category_set consistancy test (Howard Ou)
+- [[`f860033af4`](https://github.com/twreporter/go-api/commit/f860033af4)] - **fix**: join new and old categories/categoryset search result (Howard Ou)
+- [[`d18214a94e`](https://github.com/twreporter/go-api/commit/d18214a94e)] - **fix**: category_set for full post (Howard Ou)
+- [[`540616faa9`](https://github.com/twreporter/go-api/commit/540616faa9)] - **fix**: test case for category_set (Howard Ou)
+
+### 7.2.1
 
 ### Notable Changes
 
@@ -14,13 +49,13 @@
 
 ### Commits
 
-- [[`0105fa91d9`](https://github.com/nodejs/node/commit/0105fa91d9)] - **fix**: use twreporter-gcp context for gcp related credential (Aylie Chou)
-- [[`0d6dba4f20`](https://github.com/nodejs/node/commit/0d6dba4f20)] - **fix**: use gke-gcloud-auth-plugin (Aylie Chou)
-- [[`acac5b7678`](https://github.com/nodejs/node/commit/acac5b7678)] - **docs**: add new category info to /v2/index-page (Aylie Chou)
-- [[`53dba2da89`](https://github.com/nodejs/node/commit/53dba2da89)] - **docs**: update api doc (Aylie Chou)
-- [[`3379bb8c7e`](https://github.com/nodejs/node/commit/3379bb8c7e)] - **docs**: update api doc for parameter type change (Aylie Chou)
-- [[`2a848b6195`](https://github.com/nodejs/node/commit/2a848b6195)] - **docs**: update doc/index.html for github page (Aylie Chou)
-* [[`42df484e9f`](https://github.com/nodejs/node/commit/42df484e9f)] - **docs**: add docs for category sets (Aylie Chou)
+- [[`0105fa91d9`](https://github.com/twreporter/go-api/commit/0105fa91d9)] - **fix**: use twreporter-gcp context for gcp related credential (Aylie Chou)
+- [[`0d6dba4f20`](https://github.com/twreporter/go-api/commit/0d6dba4f20)] - **fix**: use gke-gcloud-auth-plugin (Aylie Chou)
+- [[`acac5b7678`](https://github.com/twreporter/go-api/commit/acac5b7678)] - **docs**: add new category info to /v2/index-page (Aylie Chou)
+- [[`53dba2da89`](https://github.com/twreporter/go-api/commit/53dba2da89)] - **docs**: update api doc (Aylie Chou)
+- [[`3379bb8c7e`](https://github.com/twreporter/go-api/commit/3379bb8c7e)] - **docs**: update api doc for parameter type change (Aylie Chou)
+- [[`2a848b6195`](https://github.com/twreporter/go-api/commit/2a848b6195)] - **docs**: update doc/index.html for github page (Aylie Chou)
+* [[`42df484e9f`](https://github.com/twreporter/go-api/commit/42df484e9f)] - **docs**: add docs for category sets (Aylie Chou)
 
 ### 7.2.0
 
@@ -36,11 +71,11 @@
 
 ### Commits
 
-- [[`63389f7753`](https://github.com/nodejs/node/commit/63389f7753)] - **fix**: add `added\_at` in GetBookmarksOfAUser response (Aylie Chou)
-- [[`6a8c3d6311`](https://github.com/nodejs/node/commit/6a8c3d6311)] - **fix**: fix test case & donation model declaration (Aylie Chou)
-- [[`9f757de4ba`](https://github.com/nodejs/node/commit/9f757de4ba)] - **fix**: fix periodic donation do not store pay\_method field (Aylie Chou)
-- [[`6ba0b9d25d`](https://github.com/nodejs/node/commit/6ba0b9d25d)] - **feat**: add slack notify when publish to cloud pub/sub fail (Aylie Chou)
-- [[`6d95cf8513`](https://github.com/nodejs/node/commit/6d95cf8513)] - api/doc: fix typo for `auto\_tax\_deduction` (#480) (Tai-Jiun Fang)
+- [[`63389f7753`](https://github.com/twreporter/go-api/commit/63389f7753)] - **fix**: add `added\_at` in GetBookmarksOfAUser response (Aylie Chou)
+- [[`6a8c3d6311`](https://github.com/twreporter/go-api/commit/6a8c3d6311)] - **fix**: fix test case & donation model declaration (Aylie Chou)
+- [[`9f757de4ba`](https://github.com/twreporter/go-api/commit/9f757de4ba)] - **fix**: fix periodic donation do not store pay\_method field (Aylie Chou)
+- [[`6ba0b9d25d`](https://github.com/twreporter/go-api/commit/6ba0b9d25d)] - **feat**: add slack notify when publish to cloud pub/sub fail (Aylie Chou)
+- [[`6d95cf8513`](https://github.com/twreporter/go-api/commit/6d95cf8513)] - api/doc: fix typo for `auto\_tax\_deduction` (#480) (Tai-Jiun Fang)
 
 ### 7.1.3
 
@@ -50,8 +85,8 @@
 
 ### Commits
 
-* [[`b201454e52`](https://github.com/nodejs/node/commit/b201454e52)] - **fix**: set env GOOGLE\_APPLICATION\_CREDENTIALS to pubsub\_credentials path (Aylie Chou)
-* [[`a96f92e69b`](https://github.com/nodejs/node/commit/a96f92e69b)] - **fix**: add pubsub credentials (Aylie Chou)
+* [[`b201454e52`](https://github.com/twreporter/go-api/commit/b201454e52)] - **fix**: set env GOOGLE\_APPLICATION\_CREDENTIALS to pubsub\_credentials path (Aylie Chou)
+* [[`a96f92e69b`](https://github.com/twreporter/go-api/commit/a96f92e69b)] - **fix**: add pubsub credentials (Aylie Chou)
 
 ### 7.1.2
 
@@ -61,10 +96,10 @@
 
 ### Commits
 
-* [[`3b83dbf8bd`](https://github.com/nodejs/node/commit/3b83dbf8bd)] - **fix**: update go-mod-lib vresion & publish to pub.sub topic when user update (Aylie Chou)
-* [[`778e281c69`](https://github.com/nodejs/node/commit/778e281c69)] - **fix**: publish to cloud pub/sub topic when user update (Aylie Chou)
-* [[`a92b576558`](https://github.com/nodejs/node/commit/a92b576558)] - **fix**: update go-mod-lib version to fix test error (Aylie Chou)
-* [[`8421ff7a49`](https://github.com/nodejs/node/commit/8421ff7a49)] - **feat**: publish upsert donation info to cloud pub/sub (Aylie Chou)
+* [[`3b83dbf8bd`](https://github.com/twreporter/go-api/commit/3b83dbf8bd)] - **fix**: update go-mod-lib vresion & publish to pub.sub topic when user update (Aylie Chou)
+* [[`778e281c69`](https://github.com/twreporter/go-api/commit/778e281c69)] - **fix**: publish to cloud pub/sub topic when user update (Aylie Chou)
+* [[`a92b576558`](https://github.com/twreporter/go-api/commit/a92b576558)] - **fix**: update go-mod-lib version to fix test error (Aylie Chou)
+* [[`8421ff7a49`](https://github.com/twreporter/go-api/commit/8421ff7a49)] - **feat**: publish upsert donation info to cloud pub/sub (Aylie Chou)
 
 ### 7.1.1
 
@@ -80,25 +115,25 @@
   - update success donation email content [#470](https://github.com/twreporter/go-api/pull/470)
 
 ### Commits
-* [[`b1cd841d9c`](https://github.com/nodejs/node/commit/b1cd841d9c)] - api/mail: update success donation email content (#470) (Tai-Jiun Fang)
-* [[`43d852583b`](https://github.com/nodejs/node/commit/43d852583b)] - **fix**: fix sprintf type (Aylie Chou)
-* [[`4d9571758d`](https://github.com/nodejs/node/commit/4d9571758d)] - **fix**: print out err in UpdateUserDataByCarholder func (Aylie Chou)
-* [[`7680c04eba`](https://github.com/nodejs/node/commit/7680c04eba)] - **doc**: add development guide about OAuth setting to README.md (#466) (Tai-Jiun Fang)
-* [[`1831ab39a8`](https://github.com/nodejs/node/commit/1831ab39a8)] - **doc**: add migration usage with Makefile in README.md (Aylie Chou)
-* [[`419571eca5`](https://github.com/nodejs/node/commit/419571eca5)] - **fix**: fix typo & add migrate cmd in Makefile (Aylie Chou)
-* [[`7bd3b89181`](https://github.com/nodejs/node/commit/7bd3b89181)] - **fix**: fix typo & sync cardholder to user table asynchronously (Aylie Chou)
-* [[`73ecddf94e`](https://github.com/nodejs/node/commit/73ecddf94e)] - api/donation: add updateUserDataFromCardholder function (Aylie Chou)
-* [[`ef6b28361d`](https://github.com/nodejs/node/commit/ef6b28361d)] - model/donation: add address related fields to cardholder schema (Aylie Chou)
-* [[`a09c6cb32a`](https://github.com/nodejs/node/commit/a09c6cb32a)] - **chore**: update aglio doc index.html (Aylie Chou)
-* [[`385c2b097c`](https://github.com/nodejs/node/commit/385c2b097c)] - **doc**: update prime-donation & periodic-donation doc (Aylie Chou)
-* [[`2f9c449b05`](https://github.com/nodejs/node/commit/2f9c449b05)] - **doc**: update type of `read\_preference` (#464) (Tai-Jiun Fang)
-* [[`cdb79a21ec`](https://github.com/nodejs/node/commit/cdb79a21ec)] - **feat**: add data flow for updated db schema (Aylie Chou)
-* [[`c60442832d`](https://github.com/nodejs/node/commit/c60442832d)] - **fix**: add field update & preserve to-be-drop field fornew-old compatibility (Aylie Chou)
-* [[`46197c5195`](https://github.com/nodejs/node/commit/46197c5195)] - **doc**: update donation docs due to spec change (#462) (Tai-Jiun Fang)
-* [[`14aac66ef7`](https://github.com/nodejs/node/commit/14aac66ef7)] - **fix**: fix syntax error (Aylie Chou)
-* [[`3a924a4d02`](https://github.com/nodejs/node/commit/3a924a4d02)] - **fix**: fix table name (user -\> users) (Aylie Chou)
-* [[`39e8035321`](https://github.com/nodejs/node/commit/39e8035321)] - **chore**: update migrate file (000007/000008) (Aylie Chou)
-* [[`020804f829`](https://github.com/nodejs/node/commit/020804f829)] - **chore**: add migrate up/down file (Aylie Chou)
+* [[`b1cd841d9c`](https://github.com/twreporter/go-api/commit/b1cd841d9c)] - api/mail: update success donation email content (#470) (Tai-Jiun Fang)
+* [[`43d852583b`](https://github.com/twreporter/go-api/commit/43d852583b)] - **fix**: fix sprintf type (Aylie Chou)
+* [[`4d9571758d`](https://github.com/twreporter/go-api/commit/4d9571758d)] - **fix**: print out err in UpdateUserDataByCarholder func (Aylie Chou)
+* [[`7680c04eba`](https://github.com/twreporter/go-api/commit/7680c04eba)] - **doc**: add development guide about OAuth setting to README.md (#466) (Tai-Jiun Fang)
+* [[`1831ab39a8`](https://github.com/twreporter/go-api/commit/1831ab39a8)] - **doc**: add migration usage with Makefile in README.md (Aylie Chou)
+* [[`419571eca5`](https://github.com/twreporter/go-api/commit/419571eca5)] - **fix**: fix typo & add migrate cmd in Makefile (Aylie Chou)
+* [[`7bd3b89181`](https://github.com/twreporter/go-api/commit/7bd3b89181)] - **fix**: fix typo & sync cardholder to user table asynchronously (Aylie Chou)
+* [[`73ecddf94e`](https://github.com/twreporter/go-api/commit/73ecddf94e)] - api/donation: add updateUserDataFromCardholder function (Aylie Chou)
+* [[`ef6b28361d`](https://github.com/twreporter/go-api/commit/ef6b28361d)] - model/donation: add address related fields to cardholder schema (Aylie Chou)
+* [[`a09c6cb32a`](https://github.com/twreporter/go-api/commit/a09c6cb32a)] - **chore**: update aglio doc index.html (Aylie Chou)
+* [[`385c2b097c`](https://github.com/twreporter/go-api/commit/385c2b097c)] - **doc**: update prime-donation & periodic-donation doc (Aylie Chou)
+* [[`2f9c449b05`](https://github.com/twreporter/go-api/commit/2f9c449b05)] - **doc**: update type of `read\_preference` (#464) (Tai-Jiun Fang)
+* [[`cdb79a21ec`](https://github.com/twreporter/go-api/commit/cdb79a21ec)] - **feat**: add data flow for updated db schema (Aylie Chou)
+* [[`c60442832d`](https://github.com/twreporter/go-api/commit/c60442832d)] - **fix**: add field update & preserve to-be-drop field fornew-old compatibility (Aylie Chou)
+* [[`46197c5195`](https://github.com/twreporter/go-api/commit/46197c5195)] - **doc**: update donation docs due to spec change (#462) (Tai-Jiun Fang)
+* [[`14aac66ef7`](https://github.com/twreporter/go-api/commit/14aac66ef7)] - **fix**: fix syntax error (Aylie Chou)
+* [[`3a924a4d02`](https://github.com/twreporter/go-api/commit/3a924a4d02)] - **fix**: fix table name (user -\> users) (Aylie Chou)
+* [[`39e8035321`](https://github.com/twreporter/go-api/commit/39e8035321)] - **chore**: update migrate file (000007/000008) (Aylie Chou)
+* [[`020804f829`](https://github.com/twreporter/go-api/commit/020804f829)] - **chore**: add migrate up/down file (Aylie Chou)
 
 ### 7.1.0
 
@@ -111,12 +146,12 @@
   - update authenticate and signin email ([#456](https://github.com/twreporter/go-api/pull/456)) 
 
 #### Commits
-* [[`9d29f0a162`](https://github.com/nodejs/node/commit/9d29f0a162)] - **doc**: update signin body (Tai-Jiun Fang)
-* [[`2a973c116e`](https://github.com/nodejs/node/commit/2a973c116e)] - api/account: redirect to the error redirection URL when error occurs (Tai-Jiun Fang)
-* [[`66691f4005`](https://github.com/nodejs/node/commit/66691f4005)] - **doc**: update CHANGELOG.md (#457) (Tai-Jiun Fang)
-* [[`d680a128c0`](https://github.com/nodejs/node/commit/d680a128c0)] - api/mail: update authenticate and signin email (Tai-Jiun Fang)
-* [[`ebbbf188e1`](https://github.com/nodejs/node/commit/ebbbf188e1)] - api/account: add authenticate endpoint (Tai-Jiun Fang)
-* [[`fdef35f7e9`](https://github.com/nodejs/node/commit/fdef35f7e9)] - **doc**: add /v2/authenticate (Tai-Jiun Fang)
+* [[`9d29f0a162`](https://github.com/twreporter/go-api/commit/9d29f0a162)] - **doc**: update signin body (Tai-Jiun Fang)
+* [[`2a973c116e`](https://github.com/twreporter/go-api/commit/2a973c116e)] - api/account: redirect to the error redirection URL when error occurs (Tai-Jiun Fang)
+* [[`66691f4005`](https://github.com/twreporter/go-api/commit/66691f4005)] - **doc**: update CHANGELOG.md (#457) (Tai-Jiun Fang)
+* [[`d680a128c0`](https://github.com/twreporter/go-api/commit/d680a128c0)] - api/mail: update authenticate and signin email (Tai-Jiun Fang)
+* [[`ebbbf188e1`](https://github.com/twreporter/go-api/commit/ebbbf188e1)] - api/account: add authenticate endpoint (Tai-Jiun Fang)
+* [[`fdef35f7e9`](https://github.com/twreporter/go-api/commit/fdef35f7e9)] - **doc**: add /v2/authenticate (Tai-Jiun Fang)
 
 ## Released
 

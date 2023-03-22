@@ -7,6 +7,7 @@ import (
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -93,6 +94,8 @@ func (m *mongoStorage) GetMetaOfPosts(ctx context.Context, q *news.Query) ([]new
 	stages := news.BuildQueryStatements(mq)
 	// build lookup(join) stages according to required fields
 	stages = append(stages, news.BuildLookupStatements(news.LookupMetaOfPost)...)
+	// build sorting stages from query again to sort grouped data
+	stages = append(stages, news.BuildSortQueryStatements(mq)...)
 
 	select {
 	case <-ctx.Done():
@@ -328,6 +331,51 @@ func (m *mongoStorage) GetAuthorCount(ctx context.Context, q *news.Query) (int64
 	return m.getCount(ctx, q, news.ColContacts)
 }
 
+func (m *mongoStorage) CheckCategorySetValid(ctx context.Context, q *news.Query) (bool, error) {
+	// if no subcategory then always true
+	if q.Filter.CategorySet.Subcategory == "" {
+		return true, nil
+	}
+	// if has subcateogry but no category then error
+	if q.Filter.CategorySet.Category == "" {
+		return false, nil
+	}
+
+	result := make(chan fetchResult)
+	go func(ctx context.Context) {
+		var categoryId interface{} = q.Filter.CategorySet.Category
+		objectID, err := primitive.ObjectIDFromHex(q.Filter.CategorySet.Category)
+		if err == nil {
+			categoryId = objectID
+		}
+
+		query := bson.M{
+			"_id":         categoryId,
+			"subcategory": q.Filter.CategorySet.Subcategory,
+		}
+
+		count, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection("postcategories").CountDocuments(ctx, query)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		result <- fetchResult{Content: count}
+	}(ctx)
+
+	var count int64
+	select {
+	case <-ctx.Done():
+		return false, errors.WithStack(ctx.Err())
+	case res := <-result:
+		if res.Error != nil {
+			return false, res.Error
+		}
+		count = res.Content.(int64)
+	}
+
+	return (count > 0), nil
+}
+
 func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection string) (int64, error) {
 	result := make(chan fetchResult)
 	go func(ctx context.Context) {
@@ -364,4 +412,58 @@ func (m *mongoStorage) getCount(ctx context.Context, q *news.Query, collection s
 	}
 
 	return count, nil
+}
+
+func (m *mongoStorage) GetTags(ctx context.Context, q *news.Query) ([]news.Tag, error) {
+	var tags []news.Tag
+
+	mq := news.NewMongoQuery(q)
+
+	// build aggregate stages from query
+	stages := news.BuildQueryStatements(mq)
+
+	select {
+	case <-ctx.Done():
+		return nil, errors.WithStack(ctx.Err())
+	case result, ok := <-m.getTags(ctx, stages):
+		switch {
+		case !ok:
+			return nil, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, result.Error
+		}
+		tags = result.Content.([]news.Tag)
+	}
+
+	return tags, nil
+}
+
+func (m *mongoStorage) getTags(ctx context.Context, stages []bson.D) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, stages []bson.D) {
+		defer close(result)
+		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColTags).Aggregate(ctx, stages)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		defer cursor.Close(ctx)
+
+		var tags []news.Tag
+		for cursor.Next(ctx) {
+			var tag news.Tag
+			err := cursor.Decode(&tag)
+			if err != nil {
+				result <- fetchResult{Error: errors.WithStack(err)}
+				return
+			}
+			tags = append(tags, tag)
+		}
+		if err := cursor.Err(); err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		result <- fetchResult{Content: tags}
+	}(ctx, stages)
+	return result
 }

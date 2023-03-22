@@ -35,6 +35,13 @@ func BuildQueryStatements(mq *mongoQuery) []bson.D {
 
 	return stages
 }
+func BuildSortQueryStatements(mq *mongoQuery) []bson.D {
+	var stages []bson.D
+
+	stages = append(stages, mq.mongoSort.BuildStage()...)
+
+	return stages
+}
 
 func NewMongoQuery(q *Query) *mongoQuery {
 	return &mongoQuery{
@@ -73,16 +80,23 @@ type authorFilter struct {
 	AuthorInPost bool
 }
 
+type categorySet struct {
+	Category    string
+	Subcategory string
+}
+
 type mongoFilter struct {
-	Slug       string               `mongo:"slug"`
-	State      string               `mongo:"state"`
-	Style      string               `mongo:"style"`
-	IsFeatured null.Bool            `mongo:"isFeatured"`
-	Categories []primitive.ObjectID `mongo:"categories"`
-	Tags       []primitive.ObjectID `mongo:"tags"`
-	IDs        []primitive.ObjectID `mongo:"_id"`
-	Name       primitive.Regex      `mongo:"name"`
-	Author     authorFilter         `mongo:"author"`
+	Slug        string               `mongo:"slug"`
+	State       string               `mongo:"state"`
+	Style       string               `mongo:"style"`
+	IsFeatured  null.Bool            `mongo:"isFeatured"`
+	Categories  []primitive.ObjectID `mongo:"categories"`
+	Tags        []primitive.ObjectID `mongo:"tags"`
+	IDs         []primitive.ObjectID `mongo:"_id"`
+	Name        primitive.Regex      `mongo:"name"`
+	Author      authorFilter         `mongo:"author"`
+	CategorySet categorySet          `mongo:"category_set"`
+	LatestOrder int                  `mongo:"latest_order"`
 }
 
 func (mf mongoFilter) BuildStage() []bson.D {
@@ -110,6 +124,11 @@ func (mf mongoFilter) BuildElements() []bson.E {
 			if v != "" {
 				elements = append(elements, mongo.BuildElement(tag, v))
 			}
+		case int:
+			v := fieldV.Interface().(int)
+			if v >= 1 {
+				elements = append(elements, mongo.BuildElement(fieldLatestOrder, mongo.BuildDocument(mongo.OpGte, v)))
+			}
 		case null.Bool:
 			v := fieldV.Interface().(null.Bool)
 			if !v.IsZero() {
@@ -118,7 +137,16 @@ func (mf mongoFilter) BuildElements() []bson.E {
 
 		case []primitive.ObjectID:
 			if v, ok := mongo.BuildArray(fieldV.Interface().([]primitive.ObjectID)); ok {
-				elements = append(elements, mongo.BuildElement(tag, mongo.BuildDocument(mongo.OpIn, v)))
+				if tag == "categories" {
+					elements = append(elements, bson.E{Key: mongo.OpOr, Value: bson.A{
+						mongo.BuildDocument(tag, mongo.BuildDocument(mongo.OpIn, v)),
+						mongo.BuildDocument(fieldCategorySet, mongo.BuildDocument(
+							mongo.ElemMatch, bson.D{{Key: "category", Value: v[0]}},
+						)),
+					}})
+				} else {
+					elements = append(elements, mongo.BuildElement(tag, mongo.BuildDocument(mongo.OpIn, v)))
+				}
 			}
 		case primitive.Regex:
 			v := fieldV.Interface().(primitive.Regex)
@@ -148,6 +176,42 @@ func (mf mongoFilter) BuildElements() []bson.E {
 					elements = append(elements, mongo.BuildElement(fieldID, id))
 				}
 			}
+		case categorySet:
+			v := fieldV.Interface().(categorySet)
+
+			if v.Category != "" && v.Subcategory != "" {
+				var categoryId interface{} = v.Category
+				objectID, err := primitive.ObjectIDFromHex(v.Category)
+				if err == nil {
+					categoryId = objectID
+				}
+				var subcategoryId interface{} = v.Subcategory
+				objectID, err = primitive.ObjectIDFromHex(v.Subcategory)
+				if err == nil {
+					subcategoryId = objectID
+				}
+				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
+					mongo.ElemMatch, bson.D{{Key: "category", Value: categoryId}, {Key: "subcategory", Value: subcategoryId}},
+				)))
+			} else if v.Category != "" {
+				var categoryId interface{} = v.Category
+				objectID, err := primitive.ObjectIDFromHex(v.Category)
+				if err == nil {
+					categoryId = objectID
+				}
+				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
+					mongo.ElemMatch, bson.D{{Key: "category", Value: categoryId}},
+				)))
+			} else if v.Subcategory != "" {
+				var subcategoryId interface{} = v.Subcategory
+				objectID, err := primitive.ObjectIDFromHex(v.Subcategory)
+				if err == nil {
+					subcategoryId = objectID
+				}
+				elements = append(elements, mongo.BuildElement(fieldCategorySet, mongo.BuildDocument(
+					mongo.ElemMatch, bson.D{{Key: "subcategory", Value: subcategoryId}},
+				)))
+			}
 		default:
 			log.Errorf("Unimplemented type %+v", fieldT.Type)
 		}
@@ -157,15 +221,17 @@ func (mf mongoFilter) BuildElements() []bson.E {
 
 func fromFilter(f Filter) mongoFilter {
 	return mongoFilter{
-		Slug:       f.Slug,
-		State:      f.State,
-		Style:      f.Style,
-		IsFeatured: f.IsFeatured,
-		Categories: hexToObjectIDs(f.Categories),
-		Tags:       hexToObjectIDs(f.Tags),
-		IDs:        hexToObjectIDs(f.IDs),
-		Name:       primitive.Regex{Pattern: f.Name},
-		Author:     f.Author,
+		Slug:        f.Slug,
+		State:       f.State,
+		Style:       f.Style,
+		IsFeatured:  f.IsFeatured,
+		Categories:  hexToObjectIDs(f.Categories),
+		Tags:        hexToObjectIDs(f.Tags),
+		IDs:         hexToObjectIDs(f.IDs),
+		Name:        primitive.Regex{Pattern: f.Name},
+		Author:      f.Author,
+		CategorySet: f.CategorySet,
+		LatestOrder: f.LatestOrder,
 	}
 }
 
@@ -248,8 +314,11 @@ const (
 	fieldOgImage              = "og_image"
 	fieldLeadingVideo         = "leading_video"
 	fieldTheme                = "theme"
+	fieldCategory             = "category"
 	fieldCategories           = "categories"
+	fieldCategorySet          = "category_set"
 	fieldTags                 = "tags"
+	fieldLatestOrder          = "latest_order"
 	// TODO: rename the field to topic
 	fieldTopics           = "topics"
 	fieldRelatedDocuments = "relateds"
@@ -276,6 +345,7 @@ var (
 		fieldTags:                 {Collection: ColTags},
 		fieldTopics:               {Collection: ColTopics, ToUnwind: true},
 		fieldWriters:              {Collection: ColContacts},
+		fieldCategorySet:          {},
 	}
 
 	LookupMetaOfPost = map[string]lookupInfo{
@@ -284,6 +354,7 @@ var (
 		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
 		fieldTags:                 {Collection: ColTags},
 		fieldOgImage:              {Collection: ColImages, ToUnwind: true},
+		fieldCategorySet:          {},
 	}
 
 	LookupFullTopic = map[string]lookupInfo{
@@ -302,18 +373,27 @@ var (
 	LookupAuthor = map[string]lookupInfo{
 		fieldThumbnail: {Collection: ColImages, ToUnwind: true},
 	}
+
+	LookupTag = map[string]lookupInfo{
+		fieldCategory: {Collection: ColPostCategories},
+	}
 )
 
 func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 	var stages []bson.D
 	for field, info := range m {
-		if shouldPreserveOrder(field) {
-			stages = append(stages, buildPreserveLookupOrderStatement(field, info)...)
+		if field == fieldCategorySet {
+			// join category_set data
+			stages = append(stages, mongo.BuildCategorySetStage()...)
 		} else {
-			stages = append(stages, mongo.BuildLookupByIDStage(field, info.Collection))
-		}
-		if info.ToUnwind {
-			stages = append(stages, mongo.BuildUnwindStage(field))
+			if shouldPreserveOrder(field) {
+				stages = append(stages, buildPreserveLookupOrderStatement(field, info)...)
+			} else {
+				stages = append(stages, mongo.BuildLookupByIDStage(field, info.Collection))
+			}
+			if info.ToUnwind {
+				stages = append(stages, mongo.BuildUnwindStage(field))
+			}
 		}
 	}
 	return stages
