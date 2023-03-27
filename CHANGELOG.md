@@ -1,5 +1,16 @@
 ## Unreleased
 
+### 7.2.3-rc.0
+
+### Notable Changes
+
+- api/posts
+  - fix post without category_set should not return 404
+
+### Commits
+
+- [[`ebc9c88e2a`](https://github.com/twreporter/go-api/commit/ebc9c88e2a)] - **fix**: /posts endpoint return 404 if post.caetgory\_set is empty (Aylie Chou)
+
 ## Released
 
 ### 7.2.2 (Current)
