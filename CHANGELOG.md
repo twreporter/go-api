@@ -2,7 +2,18 @@
 
 ## Released
 
-### 7.2.2 (Current)
+### 7.2.3 (Current)
+
+### Notable Changes
+
+- api/posts
+  - fix post without category_set should not return 404
+
+### Commits
+
+- [[`ebc9c88e2a`](https://github.com/twreporter/go-api/commit/ebc9c88e2a)] - **fix**: /posts endpoint return 404 if post.caetgory\_set is empty (Aylie Chou)
+
+### 7.2.2
 
 ### Notable Changes
 
@@ -20,7 +31,6 @@
 - [[`873056179f`](https://github.com/twreporter/go-api/commit/873056179f)] - **fix**: CHANGELOG repo name typo (Aylie Chou)
 * [[`237abe1ae3`](https://github.com/twreporter/go-api/commit/237abe1ae3)] - **fix**: typo (Aylie Chou)
 - [[`d5e6a8499c`](https://github.com/twreporter/go-api/commit/d5e6a8499c)] - **fix**: endpoint /line-notify publish to neticrm topic (Aylie Chou)
-### Notable Changes
 - [[`633c49a169`](https://github.com/twreporter/go-api/commit/633c49a169)] - **fix**: getMetaOfPosts sorting issue (Howard Ou)
 - [[`3853a0e600`](https://github.com/twreporter/go-api/commit/3853a0e600)] - **fix**: typo (Howard Ou)
 - [[`68fae18b38`](https://github.com/twreporter/go-api/commit/68fae18b38)] - **fix**: typo (Howard Ou)

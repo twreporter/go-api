@@ -60,7 +60,10 @@ func BuildCategorySetStage() []bson.D {
 	var result []bson.D
 
 	// unwind category_set
-	result = append(result, bson.D{{Key: StageUnwind, Value: "$category_set"}})
+	result = append(result, bson.D{{Key: StageUnwind, Value: bson.D{
+		{Key: "path", Value: "$category_set"},
+		{Key: "preserveNullAndEmptyArrays", Value: true},
+	}}})
 
 	// lookup postcategories
 	result = append(result, bson.D{{Key: StageLookup, Value: bson.D{
