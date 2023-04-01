@@ -1,0 +1,6 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `users_mailgroups`;
+DROP TABLE IF EXISTS `jobs_mailchimp`;
+
+SET FOREIGN_KEY_CHECKS = 1;
