@@ -5,8 +5,8 @@ import (
 )
 
 type UserPreference struct {
-	Topics   []string `json:"topics"`
-	Maillist []string `json:"maillist"`
+	ReadPreference []string `json:"read_preference"`
+	Maillist       []string `json:"maillist"`
 }
 
 type UsersMailGroup struct {
