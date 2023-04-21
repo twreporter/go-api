@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS `users_roles` (
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `role_id` INT(10) UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`user_id`, `role_id`),
+  INDEX `role_id_idx` (`role_id` ASC),
+  CONSTRAINT `user_id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `role_id`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `roles` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
