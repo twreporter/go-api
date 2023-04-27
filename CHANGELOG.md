@@ -1,5 +1,13 @@
 ## Unreleased
 
+### 7.2.4-rc.0
+
+### Notable Changes
+
+- bump version to trigger CI/CD for applying new k8s config
+
+### Commits
+
 ## Released
 
 ### 7.2.3 (Current)
