@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 )
 
@@ -19,5 +21,22 @@ func (gs *GormStorage) CreateMaillistOfUser(uid string, maillist []string) error
 			return errors.Wrap(err, "insert user mailgroup error")
 		}
 	}
+
+	// Get the user's email from the user table
+	var userEmail []string
+	err = gs.db.Raw("SELECT email FROM users WHERE id = ?", uid).Pluck("email", &userEmail).Error
+	if err != nil {
+		return errors.Wrap(err, "get user email error")
+	}
+
+	// Convert maillist array to comma-separated string
+	maillistStr := strings.Join(maillist, ",")
+
+	// Insert new entry into jobs_mailchimp table
+	err = gs.db.Exec("INSERT INTO jobs_mailchimp (receiver, interests, state) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE interests = ?", userEmail[0], maillistStr, "new", maillistStr).Error
+	if err != nil {
+		return errors.Wrap(err, "insert user mailgroup error")
+	}
+
 	return nil
 }
