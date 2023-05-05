@@ -1,5 +1,18 @@
 ## Unreleased
 
+### 7.2.4-rc.1
+
+### Notable Changes
+
+- migrations
+  - create roles and users_roles table [#540](https://github.com/twreporter/go-api/pull/540)
+
+### Commits
+
+- [[`2198d0a`](https://github.com/twreporter/go-api/commit/2198d0a)] - migrations: migrations for roles table (Lucien Lu)
+- [[`b6c58d9`](https://github.com/twreporter/go-api/commit/b6c58d9)] - migrations: use current timestamp for updated_at and created_at (Lucien Lu)
+- [[`40ca155`](https://github.com/twreporter/go-api/commit/40ca155)] - migrations: migrations for users_roles table (Lucien Lu)
+
 ### 7.2.4-rc.0
 
 ### Notable Changes
