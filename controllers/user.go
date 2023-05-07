@@ -30,10 +30,31 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 		fmt.Println("Error decoding JSON:", err)
 	}
 
+	if !isValidMaillistValue(preferences.Maillist) {
+		return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, nil
+	}
+
 	// Call CreateMaillistOfUser to save the preferences.Maillist to DB
 	if err = mc.Storage.CreateMaillistOfUser(userID, preferences.Maillist); err != nil {
 		return toResponse(err)
 	}
 
 	return http.StatusCreated, gin.H{"status": "ok", "record": preferences}, nil
+}
+
+func isValidMaillistValue(values []string) bool {
+	acceptedValues := models.InterestIDs
+	for _, value := range values {
+		isValid := false
+		for _, acceptedValue := range acceptedValues {
+			if value == acceptedValue {
+				isValid = true
+				break
+			}
+		}
+		if !isValid {
+			return false
+		}
+	}
+	return true
 }

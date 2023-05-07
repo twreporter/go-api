@@ -14,3 +14,9 @@ type UsersMailGroup struct {
 	MailgroupID string
 	CreatedAt   time.Time
 }
+
+var InterestIDs = []string{
+	"b583571955", // 報導者精選
+	"49de5e7889", // 採訪幕後故事
+	"092053aaa1", // 報導者營運手記
+}
