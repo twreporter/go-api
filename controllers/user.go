@@ -30,6 +30,11 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 		fmt.Println("Error decoding JSON:", err)
 	}
 
+	// Call UpdateReadPreferencetOfUser to save the preferences.ReadPreference to DB
+	if err = mc.Storage.UpdateReadPreferencetOfUser(userID, preferences.ReadPreference); err != nil {
+		return toResponse(err)
+	}
+
 	if !isValidMaillistValue(preferences.Maillist) {
 		return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, nil
 	}

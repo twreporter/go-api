@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -178,6 +179,23 @@ func (gs *GormStorage) UpdateReporterAccount(ra models.ReporterAccount) error {
 
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+// UpdateReadPreferencetOfUser function will update the read preference of a user
+func (gs *GormStorage) UpdateReadPreferencetOfUser(userID string, readPreference []string) error {
+	user := models.User{}
+	err := gs.db.First(&user, userID).Error
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("get user(id: %s) error", userID))
+	}
+
+	user.ReadPreference = null.StringFrom(strings.Join(readPreference, ","))
+	err = gs.db.Save(&user).Error
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("update user(id: %s) error", userID))
 	}
 
 	return nil

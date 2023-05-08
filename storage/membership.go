@@ -38,6 +38,7 @@ type MembershipStorage interface {
 	UpdateOAuthData(models.OAuthAccount) (models.OAuthAccount, error)
 	UpdateReporterAccount(models.ReporterAccount) error
 	CreateMaillistOfUser(string, []string) error
+	UpdateReadPreferencetOfUser(string, []string) error
 
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)
