@@ -16,7 +16,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - go-mod-{{ checksum "go.sum" }}
+            - go-mod-{{ checksum "go.sum" }}
 
       - run:
           name: Download module dependencies
@@ -64,7 +64,7 @@ jobs:
 
       - restore_cache:
           keys:
-          - go-mod-{{ checksum "go.sum" }}
+            - go-mod-{{ checksum "go.sum" }}
 
       - run:
           name: Install dockerize for health check mysql status
@@ -80,8 +80,9 @@ jobs:
           command: |
             dockerize -wait tcp://${MYSQL_HOST}:3306 -timeout 30s
 
+      - run: mkdir -p test-results
       # run tests!
-      - run: go test ./...
+      - run: gotestsum --junitfile test-results/junit.xml ./...
 
   build_and_deploy:
     docker:
@@ -157,12 +158,12 @@ jobs:
             docker build -t gcr.io/coastal-run-106202/${APP}:$PKG_VER .
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
             docker push gcr.io/coastal-run-106202/${APP}:$PKG_VER
-      
+
       - run:
           name: Fetch Kubernetes config source
           command: |
             gcloud source repos clone ${K8S_CONFIG_REPO} 
-      
+
       - run:
           name: Install kustomize binaries
           command: |
