@@ -15,8 +15,8 @@ type UsersMailGroup struct {
 	CreatedAt   time.Time
 }
 
-var InterestIDs = []string{
-	"b583571955", // 報導者精選
-	"49de5e7889", // 採訪幕後故事
-	"092053aaa1", // 報導者營運手記
+var InterestIDs = map[string]string{
+	"featured":            "b583571955", // 報導者精選
+	"behind_the_scenes":   "49de5e7889", // 採訪幕後故事
+	"operational_journal": "092053aaa1", // 報導者營運手記
 }

@@ -184,18 +184,28 @@ func (gs *GormStorage) UpdateReporterAccount(ra models.ReporterAccount) error {
 	return nil
 }
 
-// UpdateReadPreferencetOfUser function will update the read preference of a user
-func (gs *GormStorage) UpdateReadPreferencetOfUser(userID string, readPreference []string) error {
+// UpdateReadPreferenceOfUser function will update the read preference of a user
+func (gs *GormStorage) UpdateReadPreferenceOfUser(userID string, readPreference []string) error {
+	tx := gs.db.Begin() // Start the transaction
+
 	user := models.User{}
-	err := gs.db.First(&user, userID).Error
+	err := tx.First(&user, userID).Error
 	if err != nil {
+		tx.Rollback() // Rollback the transaction if an error occurs
 		return errors.Wrap(err, fmt.Sprintf("get user(id: %s) error", userID))
 	}
 
 	user.ReadPreference = null.StringFrom(strings.Join(readPreference, ","))
-	err = gs.db.Save(&user).Error
+	err = tx.Save(&user).Error
 	if err != nil {
+		tx.Rollback() // Rollback the transaction if an error occurs
 		return errors.Wrap(err, fmt.Sprintf("update user(id: %s) error", userID))
+	}
+
+	err = tx.Commit().Error // Commit the transaction
+	if err != nil {
+		tx.Rollback() // Rollback the transaction if an error occurs during commit
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	return nil

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/twreporter/go-api/models"
 )
 
@@ -30,13 +31,18 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 		fmt.Println("Error decoding JSON:", err)
 	}
 
-	// Call UpdateReadPreferencetOfUser to save the preferences.ReadPreference to DB
-	if err = mc.Storage.UpdateReadPreferencetOfUser(userID, preferences.ReadPreference); err != nil {
-		return toResponse(err)
+	// Convert maillist values using the mapping array
+	for i, maillist := range preferences.Maillist {
+		convertedMaillist, exists := models.InterestIDs[maillist]
+		if !exists {
+			return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, errors.New("Invalid maillist value")
+		}
+		preferences.Maillist[i] = convertedMaillist
 	}
 
-	if !isValidMaillistValue(preferences.Maillist) {
-		return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, nil
+	// Call UpdateReadPreferenceOfUser to save the preferences.ReadPreference to DB
+	if err = mc.Storage.UpdateReadPreferenceOfUser(userID, preferences.ReadPreference); err != nil {
+		return toResponse(err)
 	}
 
 	// Call CreateMaillistOfUser to save the preferences.Maillist to DB
@@ -45,21 +51,4 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 	}
 
 	return http.StatusCreated, gin.H{"status": "ok", "record": preferences}, nil
-}
-
-func isValidMaillistValue(values []string) bool {
-	acceptedValues := models.InterestIDs
-	for _, value := range values {
-		isValid := false
-		for _, acceptedValue := range acceptedValues {
-			if value == acceptedValue {
-				isValid = true
-				break
-			}
-		}
-		if !isValid {
-			return false
-		}
-	}
-	return true
 }
