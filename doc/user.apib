@@ -1,0 +1,101 @@
+## Data Structures
+
+### UserData
++ data (object, required) - The user object
+    + user_id: 123 (string) - The unique identifier of the user
+    + email: example@email.com (string) - The email address of the user
+    + name: Full Name (string) - The full name of the user
+    + activated: true (boolean) - The activated status of the user (e.g. true / false)
+    + read_preference (array) - Subscribed topics
+    + maillist (array) - Subscribed mail list
+
+# Group User Service
+Twreporter User service api
+
+## User Info [/v2/users/{id}]
+
+### Get user [GET]
+
+Get user related data (e.g. preferences, activation status, subscribed topics)
+
++ Parameters
+    + id: 123 (string) - The unique identifier of the user
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Cookie: id_token=<id_token>
+            Authorization: Bearer <jwt>
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (string, required) - The status of the API request (e.g. "success", "error")
+        + data(UserData)
+
++ Response 400
+
+    + Attributes
+        + status: fail (required)
+        + message: Bad Request - The request body is missing required parameters or contains invalid data
+
++ Response 401
+
+    + Attributes
+        + status: error (required)
+        + message: Unauthorized - The access token is invalid or has expired
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Internal Server Error - An error occurred while processing the request
+
+### Set user [POST]
+
+Set user related data (e.g. preferences, subscribed topics and mail list subscriptions)
+
++ Parameters
+    + id: 123 (string) - The unique identifier of the user
+
++ Request with Body
+
+    + Headers
+
+            Content-Type: application/json
+            Cookie: id_token=<id_token>
+            Authorization: Bearer <jwt>
+
+    + Attributes
+        + read_preference (array) - The topics the user is interesting in
+            + international
+            + human_right
+        + maillist (array) - The mail list that user subscribed
+            + featured
+            + behind_the_scenes
+            + operational_journal
+
++ Response 201 (application/json)
+
+    + Attributes
+        + status: success (string, required)
+
++ Response 400
+
+    + Attributes
+        + status: fail (required)
+        + message: Bad Request - The request body is missing required parameters or contains invalid data
+
++ Response 401
+
+    + Attributes
+        + status: error (required)
+        + message: Unauthorized - The access token is invalid or has expired
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Internal Server Error - An error occurred while processing the request
