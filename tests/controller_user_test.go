@@ -15,10 +15,16 @@ func TestSetUser_Success(t *testing.T) {
 	var user models.User = getUser(Globs.Defaults.Account)
 	jwt := generateIDToken(user)
 
+	var InterestIDsKeys []string
+
+	for k := range models.InterestIDs {
+		InterestIDsKeys = append(InterestIDsKeys, k)
+	}
+
 	// Mocking preferences
 	preferences := models.UserPreference{
 		ReadPreference: []string{"international", "cross_straits"},
-		Maillist:       models.InterestIDs,
+		Maillist:       InterestIDsKeys,
 	}
 	payload, _ := json.Marshal(preferences)
 
