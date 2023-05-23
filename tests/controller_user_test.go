@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 )
 
@@ -17,7 +18,7 @@ func TestSetUser_Success(t *testing.T) {
 
 	var InterestIDsKeys []string
 
-	for k := range models.InterestIDs {
+	for k := range globals.Conf.Mailchimp.InterestIDs {
 		InterestIDsKeys = append(InterestIDsKeys, k)
 	}
 

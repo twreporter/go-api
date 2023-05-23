@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 )
 
@@ -33,7 +34,7 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 
 	// Convert maillist values using the mapping array
 	for i, maillist := range preferences.Maillist {
-		convertedMaillist, exists := models.InterestIDs[maillist]
+		convertedMaillist, exists := globals.Conf.Mailchimp.InterestIDs[maillist]
 		if !exists {
 			return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, errors.New("Invalid maillist value")
 		}

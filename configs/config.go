@@ -80,6 +80,11 @@ neticrm:
     project_id: "" # gcp project id
     pub_topic: "" # pub/sub topic
     slack_webhook: "" # slack notify webhook
+mailchimp:
+    interest_ids:
+        featured: b583571955 # 報導者精選
+        behind_the_scenes: 49de5e7889 # 採訪幕後故事
+        operational_journal: 092053aaa1 # 報導者營運手記
 `)
 
 type ConfYaml struct {
@@ -94,6 +99,7 @@ type ConfYaml struct {
 	Encrypt     EncryptConfig    `yaml:"encrypt"`
 	News        NewsConfig       `yaml:"news"`
 	Neticrm     NeticrmPubConfig `yaml:"neticrm"`
+	Mailchimp   MailchimpConfig  `yaml:"mailchimp"`
 }
 
 type CorsConfig struct {
@@ -196,9 +202,13 @@ type NewsConfig struct {
 }
 
 type NeticrmPubConfig struct {
-	ProjectID      string        `yaml:"project_id"`
-	Topic          string        `yaml:"pub_topic"`
-	SlackWebhook   string        `yaml:"slack_webhook"`
+	ProjectID    string `yaml:"project_id"`
+	Topic        string `yaml:"pub_topic"`
+	SlackWebhook string `yaml:"slack_webhook"`
+}
+
+type MailchimpConfig struct {
+	InterestIDs map[string]string `yaml:"interest_ids"`
 }
 
 func init() {
@@ -283,9 +293,14 @@ func buildConf() ConfYaml {
 	conf.News.IndexPageTimeout = viper.GetDuration("news.index_page_timeout")
 	conf.News.AuthorPageTimeout = viper.GetDuration("news.author_page_timeout")
 
+	// Neticrm
 	conf.Neticrm.ProjectID = viper.GetString("neticrm.project_id")
 	conf.Neticrm.Topic = viper.GetString("neticrm.pub_topic")
 	conf.Neticrm.SlackWebhook = viper.GetString("neticrm.slack_webhook")
+
+	// Mailchimp
+	conf.Mailchimp.InterestIDs = viper.GetStringMapString("mailchimp.interest_ids")
+
 	return conf
 }
 
