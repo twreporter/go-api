@@ -1,5 +1,37 @@
 ## Unreleased
 
+### 7.2.4-rc.2
+
+### Notable Changes
+
+- migration
+  - Add migration for job queue
+- api/user
+  - New function for setting user's preferences and maillist related
+- doc
+  - Add new User section
+
+### Commits
+
+- [[`60ae353`](https://github.com/twreporter/go-api/commit/60ae353)] - feat: Add Mailgroup, SetUser related functions
+- [[`77d708b`](https://github.com/twreporter/go-api/commit/77d708b)] - Merge branch 'twreporter:master' into master
+- [[`26f0957`](https://github.com/twreporter/go-api/commit/26f0957)] - fix: refactor naming for read preference
+- [[`abf8304`](https://github.com/twreporter/go-api/commit/abf8304)] - feat: add SetUser test case
+- [[`82cfdcf`](https://github.com/twreporter/go-api/commit/82cfdcf)] - feat: add mailchimp sync related functions
+- [[`3caa514`](https://github.com/twreporter/go-api/commit/3caa514)] - fix: reviews
+- [[`e5538bf`](https://github.com/twreporter/go-api/commit/e5538bf)] - feat: Complete SetUser by adding ReadPreference implementation
+- [[`ccfd7dd`](https://github.com/twreporter/go-api/commit/ccfd7dd)] - fix: reviews, add readable name for interestIDs, transaction for setUser
+- [[`6767394`](https://github.com/twreporter/go-api/commit/6767394)] - fix: test case
+- [[`74fbf33`](https://github.com/twreporter/go-api/commit/74fbf33)] - fix: move interest ids to config
+- [[`4b8ce95`](https://github.com/twreporter/go-api/commit/4b8ce95)] - fix: improve read_preferences transaction
+- [[`1698c91`](https://github.com/twreporter/go-api/commit/1698c91)] - fix: update configs
+- [[`d2ce95f`](https://github.com/twreporter/go-api/commit/d2ce95f)] - feat: Add User API related docs
+- [[`9fa30e9`](https://github.com/twreporter/go-api/commit/9fa30e9)] - fix: reviews and html
+- [[`7bdb079`](https://github.com/twreporter/go-api/commit/7bdb079)] - fix: reviews
+- [[`13b5c70`](https://github.com/twreporter/go-api/commit/13b5c70)] - fix: reviews, seperate to user.apib
+- [[`61f668a`](https://github.com/twreporter/go-api/commit/61f668a)] - fix: reveal read_preferences
+- [[`c8c52d1`](https://github.com/twreporter/go-api/commit/c8c52d1)] - fix: resolve migration sequence
+
 ### 7.2.4-rc.1
 
 ### Notable Changes
