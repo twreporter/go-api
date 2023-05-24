@@ -188,22 +188,25 @@ func (gs *GormStorage) UpdateReporterAccount(ra models.ReporterAccount) error {
 func (gs *GormStorage) UpdateReadPreferenceOfUser(userID string, readPreference []string) error {
 	tx := gs.db.Begin() // Start the transaction
 
-	user := models.User{}
-	err := tx.First(&user, userID).Error
-	if err != nil {
+	// Check if the user exists
+	var count int64
+	if err := tx.Model(&models.User{}).Where("id = ?", userID).Count(&count).Error; err != nil {
 		tx.Rollback() // Rollback the transaction if an error occurs
-		return errors.Wrap(err, fmt.Sprintf("get user(id: %s) error", userID))
+		return errors.Wrap(err, fmt.Sprintf("failed to check user existence (id: %s)", userID))
 	}
 
-	user.ReadPreference = null.StringFrom(strings.Join(readPreference, ","))
-	err = tx.Save(&user).Error
-	if err != nil {
-		tx.Rollback() // Rollback the transaction if an error occurs
-		return errors.Wrap(err, fmt.Sprintf("update user(id: %s) error", userID))
+	if count == 0 {
+		tx.Rollback() // Rollback the transaction if the user doesn't exist
+		return fmt.Errorf("user with ID %s does not exist", userID)
 	}
 
-	err = tx.Commit().Error // Commit the transaction
-	if err != nil {
+	// Update the user's read preference
+	if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("read_preference", null.StringFrom(strings.Join(readPreference, ","))).Error; err != nil {
+		tx.Rollback() // Rollback the transaction if an error occurs
+		return errors.Wrap(err, fmt.Sprintf("failed to update user's read preference (id: %s)", userID))
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		tx.Rollback() // Rollback the transaction if an error occurs during commit
 		return errors.Wrap(err, "failed to commit transaction")
 	}
