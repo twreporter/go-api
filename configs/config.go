@@ -82,9 +82,10 @@ neticrm:
     slack_webhook: "" # slack notify webhook
 mailchimp:
     interest_ids:
-        featured: b583571955 # 報導者精選
-        behind_the_scenes: 49de5e7889 # 採訪幕後故事
-        operational_journal: 092053aaa1 # 報導者營運手記
+        featured: 2f1c91a75a # 報導者精選
+        behind_the_scenes: 219df4131b # 採訪幕後故事
+        operational_journal: ca9d491549 # 報導者營運手記
+        event_updates: 0345c43d67 # 活動資訊與最新動態
 `)
 
 type ConfYaml struct {
