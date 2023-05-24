@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -178,6 +179,36 @@ func (gs *GormStorage) UpdateReporterAccount(ra models.ReporterAccount) error {
 
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+// UpdateReadPreferenceOfUser function will update the read preference of a user
+func (gs *GormStorage) UpdateReadPreferenceOfUser(userID string, readPreference []string) error {
+	tx := gs.db.Begin() // Start the transaction
+
+	// Check if the user exists
+	var count int64
+	if err := tx.Model(&models.User{}).Where("id = ?", userID).Count(&count).Error; err != nil {
+		tx.Rollback() // Rollback the transaction if an error occurs
+		return errors.Wrap(err, fmt.Sprintf("failed to check user existence (id: %s)", userID))
+	}
+
+	if count == 0 {
+		tx.Rollback() // Rollback the transaction if the user doesn't exist
+		return fmt.Errorf("user with ID %s does not exist", userID)
+	}
+
+	// Update the user's read preference
+	if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("read_preference", null.StringFrom(strings.Join(readPreference, ","))).Error; err != nil {
+		tx.Rollback() // Rollback the transaction if an error occurs
+		return errors.Wrap(err, fmt.Sprintf("failed to update user's read preference (id: %s)", userID))
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback() // Rollback the transaction if an error occurs during commit
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	return nil
