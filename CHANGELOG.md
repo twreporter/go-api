@@ -4,8 +4,12 @@
 
 ### Notable Changes
 
-- New function for setting user's preferences, including maillist related
-- Add User API related docs
+- migration
+  - Add migration for job queue
+- api/user
+  - New function for setting user's preferences and maillist related
+- doc
+  - Add new User section
 
 ### Commits
 
