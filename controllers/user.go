@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -28,9 +29,15 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		}
 	}
 
+	var activated *time.Time
+	if !user.Activated.IsZero() {
+		activated = &user.Activated
+	}
+
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
 		"email":             user.Email.String,
 		"registration_date": user.RegistrationDate.Time,
+		"activated":         activated,
 		"roles":             roles,
 	},
 	}, nil

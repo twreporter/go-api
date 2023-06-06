@@ -40,6 +40,7 @@ type User struct {
 	ReadPreference     null.String      `gorm:"type:SET('international', 'cross_straits', 'human_right', 'society', 'environment', 'education', 'politics', 'economy', 'culture', 'art', 'life', 'health', 'sport', 'all')" json:"read_preference"` // e.g. "international, art, sport"
 	WordsForTwreporter null.String      `gorm:"size:255" json:"words_for_twreporter"`
 	Roles              []Role           `gorm:"many2many:users_roles" json:"roles"`
+	Activated          time.Time        `json:"activated"`
 }
 
 // Role represents a user role
