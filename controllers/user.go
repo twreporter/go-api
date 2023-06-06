@@ -19,7 +19,21 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		return toResponse(err)
 	}
 
-	return http.StatusOK, gin.H{"status": "ok", "record": user}, nil
+	roles := make([]gin.H, len(user.Roles))
+	for i, role := range user.Roles {
+		roles[i] = gin.H{
+			"id":      role.ID, // does frontend need ID?
+			"name":    role.Name,
+			"name_en": role.NameEn,
+		}
+	}
+
+	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
+		"email":             user.Email.String,
+		"registration_date": user.RegistrationDate.Time,
+		"roles":             roles,
+	},
+	}, nil
 }
 
 // SetUser given userID and POST body, this func will try to create record in the related table,

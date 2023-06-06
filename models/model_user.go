@@ -39,6 +39,16 @@ type User struct {
 	EnableEmail        int              `gorm:"type:int(5);size:2" json:"enable_email"`
 	ReadPreference     null.String      `gorm:"type:SET('international', 'cross_straits', 'human_right', 'society', 'environment', 'education', 'politics', 'economy', 'culture', 'art', 'life', 'health', 'sport', 'all')" json:"read_preference"` // e.g. "international, art, sport"
 	WordsForTwreporter null.String      `gorm:"size:255" json:"words_for_twreporter"`
+	Roles              []Role           `gorm:"many2many:users_roles" json:"roles"`
+}
+
+// Role represents a user role
+type Role struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	NameEn    string    `json:"name_en"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // OAuthAccount ...

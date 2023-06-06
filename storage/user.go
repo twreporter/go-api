@@ -17,8 +17,9 @@ import (
 func (gs *GormStorage) GetUserByID(userID string) (models.User, error) {
 	user := models.User{}
 
-	// SELECT * FROM users WHERE ID = $userID
-	if err := gs.db.First(&user, "id = ?", userID).Error; err != nil {
+	// SELECT * FROM users WHERE ID = $userID and join roles table by users_roles table
+	err := gs.db.Preload("Roles").First(&user, "id = ?", userID).Error
+	if err != nil {
 		return user, errors.Wrap(err, fmt.Sprintf("get user(id: %s) error", userID))
 	}
 

@@ -162,6 +162,7 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	})
 
 	v2Group.POST("/user/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SetUser))
+	v2Group.GET("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetUser))
 
 	// =============================
 	// v2 oauth endpoints
