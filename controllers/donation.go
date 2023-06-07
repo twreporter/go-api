@@ -646,7 +646,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	if nil != err {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}
-	matchedUser.Activated = time.Now()
+	matchedUser.Activated = null.TimeFrom(time.Now())
 	if err = mc.Storage.UpdateUser(matchedUser); nil != err {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}
@@ -749,7 +749,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	if nil != err {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}
-	matchedUser.Activated = time.Now()
+	matchedUser.Activated = null.TimeFrom(time.Now())
 	if err = mc.Storage.UpdateUser(matchedUser); nil != err {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}

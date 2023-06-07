@@ -30,8 +30,8 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 	}
 
 	var activated *time.Time
-	if !user.Activated.IsZero() {
-		activated = &user.Activated
+	if user.Activated.Valid && !user.Activated.Time.IsZero() {
+		activated = &user.Activated.Time
 	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
