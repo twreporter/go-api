@@ -39,6 +39,7 @@ type MembershipStorage interface {
 	UpdateReporterAccount(models.ReporterAccount) error
 	CreateMaillistOfUser(string, []string) error
 	UpdateReadPreferenceOfUser(string, []string) error
+	UpdateUser(models.User) error
 
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)

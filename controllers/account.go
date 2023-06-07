@@ -245,6 +245,8 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	u.RawQuery = parameters.Encode()
 	destination = u.String()
 
+	activatedString := user.Activated.Format(time.RFC3339)
+	c.SetCookie("activated", activatedString, idTokenExpiration, defaultPath, defaultDomain, secure, true)
 	c.SetCookie("id_token", idToken, idTokenExpiration, defaultPath, defaultDomain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }

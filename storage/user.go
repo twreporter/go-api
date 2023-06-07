@@ -185,6 +185,17 @@ func (gs *GormStorage) UpdateReporterAccount(ra models.ReporterAccount) error {
 	return nil
 }
 
+// UpdateUser update a user
+func (gs *GormStorage) UpdateUser(user models.User) error {
+	err := gs.db.Model(&user).Updates(&user).Error
+
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
 // UpdateReadPreferenceOfUser function will update the read preference of a user
 func (gs *GormStorage) UpdateReadPreferenceOfUser(userID string, readPreference []string) error {
 	tx := gs.db.Begin() // Start the transaction
@@ -205,6 +216,12 @@ func (gs *GormStorage) UpdateReadPreferenceOfUser(userID string, readPreference 
 	if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("read_preference", null.StringFrom(strings.Join(readPreference, ","))).Error; err != nil {
 		tx.Rollback() // Rollback the transaction if an error occurs
 		return errors.Wrap(err, fmt.Sprintf("failed to update user's read preference (id: %s)", userID))
+	}
+
+	// Update the user's activated time to now
+	if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("activated", time.Now()).Error; err != nil {
+		tx.Rollback() // Rollback the transaction if an error occurs
+		return errors.Wrap(err, fmt.Sprintf("failed to update user's activated time (id: %s)", userID))
 	}
 
 	if err := tx.Commit().Error; err != nil {

@@ -329,6 +329,8 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	// set domain to .twreporter.org
 	// so each hostname of [www|support|tsai-tracker].twreporter.org will be applied
 
+	activatedString := matchUser.Activated.Format(time.RFC3339)
+	c.SetCookie("activated", activatedString, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
 	c.SetCookie("id_token", token, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
