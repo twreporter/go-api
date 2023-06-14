@@ -3,6 +3,8 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -19,7 +21,42 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		return toResponse(err)
 	}
 
-	return http.StatusOK, gin.H{"status": "ok", "record": user}, nil
+	roles := make([]gin.H, len(user.Roles))
+	for i, role := range user.Roles {
+		roles[i] = gin.H{
+			"id":      role.ID, // does frontend need ID?
+			"name":    role.Name,
+			"name_en": role.NameEn,
+		}
+	}
+
+	var activated *time.Time
+	if user.Activated.Valid && !user.Activated.Time.IsZero() {
+		activated = &user.Activated.Time
+	}
+
+	mailGroups := make([]string, 0)
+	for _, group := range user.MailGroups {
+		for key, value := range globals.Conf.Mailchimp.InterestIDs {
+			if value == group.MailgroupID {
+				mailGroups = append(mailGroups, key)
+				break
+			}
+		}
+	}
+	mailGroupsStr := strings.Join(mailGroups, ",")
+
+	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
+		"first_name":        user.FirstName.String,
+		"last_name":         user.LastName.String,
+		"email":             user.Email.String,
+		"registration_date": user.RegistrationDate.Time,
+		"activated":         activated,
+		"roles":             roles,
+		"read_preference":   user.ReadPreference,
+		"maillist":          mailGroupsStr,
+	},
+	}, nil
 }
 
 // SetUser given userID and POST body, this func will try to create record in the related table,

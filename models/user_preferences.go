@@ -9,7 +9,7 @@ type UserPreference struct {
 	Maillist       []string `json:"maillist"`
 }
 
-type UsersMailGroup struct {
+type UsersMailgroups struct {
 	UserID      int
 	MailgroupID string
 	CreatedAt   time.Time

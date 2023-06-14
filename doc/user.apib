@@ -1,13 +1,27 @@
 ## Data Structures
 
 ### UserData
-+ data (object, required) - The user object
-    + user_id: 123 (string) - The unique identifier of the user
-    + email: example@email.com (string) - The email address of the user
-    + name: Full Name (string) - The full name of the user
-    + activated: true (boolean) - The activated status of the user (e.g. true / false)
-    + read_preference (array) - Subscribed topics
-    + maillist (array) - Subscribed mail list
++ user_id: 123 (string) - The unique identifier of the user
++ email: example@email.com (string) - The email address of the user
++ fisrt_name: First Name (string) - The first name of the user
++ last_name: Last Name (string) - The last name of the user
++ roles (array)
+    + (object)
+        + id: 1 (string) - The unique identifier of the role.
+        + name: 探索者 (string) - The name of the role in the local language.
+        + name_en: explorer (string) - The name of the role in English.
+    + (object)
+        + id: 2 (string) - The unique identifier of the role.
+        + name: 行動者 (string) - The name of the role in the local language.
+        + name_en: action taker (string) - The name of the role in English.
+    + (object)
+        + id: 3 (string) - The unique identifier of the role.
+        + name: 開創者 (string) - The name of the role in the local language.
+        + name_en: trailblazer (string) - The name of the role in English.
++ registration_date: `2018-01-24T22:16:48Z` (string) - The registration date of the user
++ activated: `2023-06-01T01:23:45Z` (string) - The activated status of the user. If the user is not activated, the value is null.
++ read_preference (array) - Subscribed topics
++ maillist (array) - Subscribed mail list
 
 # Group User Service
 Twreporter User service api
@@ -33,7 +47,7 @@ Get user related data (e.g. preferences, activation status, subscribed topics)
 
     + Attributes
         + status: success (string, required) - The status of the API request (e.g. "success", "error")
-        + data(UserData)
+        + data(UserData, required)
 
 + Response 400
 

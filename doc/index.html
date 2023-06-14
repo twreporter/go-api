@@ -3102,14 +3102,31 @@ The email contains the following attributes</p>
 </dd></dl></div><div class="title"><strong>Request</strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Cookie</span>: <span class="hljs-string">id_token=&lt;id_token&gt;</span><br><span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Bearer &lt;jwt&gt;</span></code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>200</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-      "<span class="hljs-attribute">user_id</span>": <span class="hljs-value"><span class="hljs-string">"123"</span></span>,
-      "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"example@email.com"</span></span>,
-      "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"Full Name"</span></span>,
-      "<span class="hljs-attribute">activated</span>": <span class="hljs-value"><span class="hljs-literal">true</span></span>,
-      "<span class="hljs-attribute">read_preference</span>": <span class="hljs-value">[]</span>,
-      "<span class="hljs-attribute">maillist</span>": <span class="hljs-value">[]
-    </span>}
+    "<span class="hljs-attribute">user_id</span>": <span class="hljs-value"><span class="hljs-string">"123"</span></span>,
+    "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"example@email.com"</span></span>,
+    "<span class="hljs-attribute">fisrt_name</span>": <span class="hljs-value"><span class="hljs-string">"First Name"</span></span>,
+    "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"Last Name"</span></span>,
+    "<span class="hljs-attribute">roles</span>": <span class="hljs-value">[
+      {
+        "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"1"</span></span>,
+        "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"探索者"</span></span>,
+        "<span class="hljs-attribute">name_en</span>": <span class="hljs-value"><span class="hljs-string">"explorer"</span>
+      </span>},
+      {
+        "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"2"</span></span>,
+        "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"行動者"</span></span>,
+        "<span class="hljs-attribute">name_en</span>": <span class="hljs-value"><span class="hljs-string">"action taker"</span>
+      </span>},
+      {
+        "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"3"</span></span>,
+        "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"開創者"</span></span>,
+        "<span class="hljs-attribute">name_en</span>": <span class="hljs-value"><span class="hljs-string">"trailblazer"</span>
+      </span>}
+    ]</span>,
+    "<span class="hljs-attribute">registration_date</span>": <span class="hljs-value"><span class="hljs-string">"2018-01-24T22:16:48Z"</span></span>,
+    "<span class="hljs-attribute">activated</span>": <span class="hljs-value"><span class="hljs-string">"2023-06-01T01:23:45Z"</span></span>,
+    "<span class="hljs-attribute">read_preference</span>": <span class="hljs-value">[]</span>,
+    "<span class="hljs-attribute">maillist</span>": <span class="hljs-value">[]
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -3122,42 +3139,45 @@ The email contains the following attributes</p>
     "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
       "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
-        "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
-          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
-          "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
-            "<span class="hljs-attribute">user_id</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
-              "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The unique identifier of the user"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
-              "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The email address of the user"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">name</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
-              "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The full name of the user"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">activated</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span></span>,
-              "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The activated status of the user (e.g. true / false)"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">read_preference</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Subscribed topics"</span>
-            </span>}</span>,
-            "<span class="hljs-attribute">maillist</span>": <span class="hljs-value">{
-              "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Subscribed mail list"</span>
-            </span>}
-          </span>}</span>,
-          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The user object"</span>
+        "<span class="hljs-attribute">user_id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The unique identifier of the user"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">email</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The email address of the user"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">fisrt_name</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The first name of the user"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">last_name</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The last name of the user"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">roles</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">registration_date</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The registration date of the user"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">activated</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"The activated status of the user. If the user is not activated, the value is null."</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">read_preference</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Subscribed topics"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">maillist</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Subscribed mail list"</span>
         </span>}
-      </span>}</span>,
-      "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
-        <span class="hljs-string">"data"</span>
-      ]
+      </span>}
     </span>}
   </span>}</span>,
   "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
-    <span class="hljs-string">"status"</span>
+    <span class="hljs-string">"status"</span>,
+    <span class="hljs-string">"data"</span>
   ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>400</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"fail"</span></span>,
@@ -21742,7 +21762,7 @@ The email contains the following attributes</p>
     <span class="hljs-string">"status"</span>,
     <span class="hljs-string">"message"</span>
   ]
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 23 May 2023</p><script>/* eslint-env browser */
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 14 Jun 2023</p><script>/* eslint-env browser */
 /* eslint quotes: [2, "single"] */
 'use strict';
 
