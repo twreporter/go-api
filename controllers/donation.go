@@ -641,27 +641,20 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	}
 	go publishToNeticrm(ms)
 
-	// Update the user's activated time to now concurrently
-	matchedUser, err := mc.Storage.GetUserByEmail(reqBody.Cardholder.Email)
-	if nil != err {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
-	}
-
-	// Create a channel to receive user update errors
-	userUpdateChan := make(chan error)
-	defer close(userUpdateChan)
-
 	// Concurrently update the user's activated time
-	go func(userID uint) {
-		matchedUser.Activated = null.TimeFrom(time.Now())
-		err := mc.Storage.UpdateUser(matchedUser)
-		userUpdateChan <- err
-	}(matchedUser.ID)
+	go func(email string) {
+		matchedUser, err := mc.Storage.GetUserByEmail(email)
+		if nil != err {
+			log.Errorf("Error retrieving user data: %v", err)
+			return
+		}
 
-	// Wait for the user update to complete
-	if err := <-userUpdateChan; err != nil {
-		log.Errorf("Error updating user activated time: %v", err)
-	}
+		matchedUser.Activated = null.TimeFrom(time.Now())
+		err = mc.Storage.UpdateUser(matchedUser)
+		if nil != err {
+			log.Errorf("Error updating user activated time: %v", err)
+		}
+	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
