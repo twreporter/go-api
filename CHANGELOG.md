@@ -1,5 +1,40 @@
 ## Unreleased
 
+### 7.2.4-rc.3
+
+### Notable Changes
+
+- migration
+  - Add migration for user table activated column
+- api/user
+  - New function for setting user's preferences and maillist related
+  - Add activated field to getUser API
+  - Fix first/last name for user
+  - Add goroutine for activated update
+- doc
+  - Add new User section
+- tests
+  - Fix tests
+- typo
+  - Fix typo in test
+  - Fix typo for setUser route
+
+### Commits
+
+- [[`da6cbfe`](https://github.com/twreporter/go-api/commit/da6cbfe)] - Merge pull request #552 from howar31/feat-getuser
+- [[`c18209a`](https://github.com/twreporter/go-api/commit/c18209a)] - fix: reviews
+- [[`2b1f789`](https://github.com/twreporter/go-api/commit/2b1f789)] - Merge branch 'master' into feat-getuser
+- [[`3285298`](https://github.com/twreporter/go-api/commit/3285298)] - feat: add maillist and read_preference to getUser
+- [[`65e9165`](https://github.com/twreporter/go-api/commit/65e9165)] - fix: first/last name for user; add goroutine for activated update
+- [[`ca1de82`](https://github.com/twreporter/go-api/commit/ca1de82)] - Merge pull request #551 from howar31/fix-setuserRoute
+- [[`283fa53`](https://github.com/twreporter/go-api/commit/283fa53)] - fix: tests
+- [[`627656a`](https://github.com/twreporter/go-api/commit/627656a)] - feat: add activated to related flow
+- [[`8216cd1`](https://github.com/twreporter/go-api/commit/8216cd1)] - feat: add activated to getUser
+- [[`4c51786`](https://github.com/twreporter/go-api/commit/4c51786)] - feat: Add migration for user table activated column
+- [[`4873ba3`](https://github.com/twreporter/go-api/commit/4873ba3)] - feat: implement GetUser API
+- [[`b4792b1`](https://github.com/twreporter/go-api/commit/b4792b1)] - fix: typo in test
+- [[`8ac57a6`](https://github.com/twreporter/go-api/commit/8ac57a6)] - fix: typo for setUser route
+
 ### 7.2.4-rc.2
 
 ### Notable Changes
