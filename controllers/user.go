@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,17 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		activated = &user.Activated.Time
 	}
 
+	mailGroups := make([]string, 0)
+	for _, group := range user.MailGroups {
+		for key, value := range globals.Conf.Mailchimp.InterestIDs {
+			if value == group.MailgroupID {
+				mailGroups = append(mailGroups, key)
+				break
+			}
+		}
+	}
+	mailGroupsStr := strings.Join(mailGroups, ",")
+
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
 		"first_name":        user.FirstName.String,
 		"last_name":         user.LastName.String,
@@ -41,6 +53,8 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		"registration_date": user.RegistrationDate.Time,
 		"activated":         activated,
 		"roles":             roles,
+		"read_preference":   user.ReadPreference,
+		"maillist":          mailGroupsStr,
 	},
 	}, nil
 }
