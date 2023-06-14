@@ -161,7 +161,7 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 		c.AbortWithStatus(http.StatusNotFound)
 	})
 
-	v2Group.POST("/user/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SetUser))
+	v2Group.POST("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SetUser))
 	v2Group.GET("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetUser))
 
 	// =============================
