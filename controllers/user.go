@@ -35,6 +35,8 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
+		"first_name":        user.FirstName.String,
+		"last_name":         user.LastName.String,
 		"email":             user.Email.String,
 		"registration_date": user.RegistrationDate.Time,
 		"activated":         activated,
