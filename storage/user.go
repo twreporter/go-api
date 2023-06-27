@@ -134,7 +134,7 @@ func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user model
 	}
 
 	// Call AssignRoleToUser to assign role to user
-	err = gs.AssignRoleToUser(user, constants.RoleExplorer)
+	err = gs.AssignRoleToUser(user, constants.RoleIdExplorer)
 	if err != nil {
 		return user, errors.WithStack(err)
 	}
@@ -156,7 +156,7 @@ func (gs *GormStorage) InsertUserByReporterAccount(raModel models.ReporterAccoun
 	}
 
 	// Call AssignRoleToUser to assign role to user
-	err = gs.AssignRoleToUser(user, constants.RoleExplorer)
+	err = gs.AssignRoleToUser(user, constants.RoleIdExplorer)
 	if err != nil {
 		return user, errors.WithStack(err)
 	}
