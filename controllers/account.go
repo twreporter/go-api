@@ -23,10 +23,11 @@ const idTokenExpiration = 60 * 60 * 24 * 30 * 6
 var defaultRedirectPage = "https://www.twreporter.org/"
 var defaultPath = "/"
 
-func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath string) (int, gin.H, error) {
+func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath string, isCheckActivate bool) (int, gin.H, error) {
 	// SignInBody is to store POST body
 	type SignInBody struct {
 		Email            string `json:"email" form:"email" binding:"required"`
+		OnBoarding       string `json:"onboarding" form:"onboarding"`
 		Destination      string `json:"destination" form:"destination"`
 		ErrorRedirection string `json:"errorRedirection" form:"errorRedirection"`
 	}
@@ -39,6 +40,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 	var ra models.ReporterAccount
 	var statusCode int
 	var signIn SignInBody
+	var destination string
 
 	switch globals.Conf.Environment {
 	case "development":
@@ -55,6 +57,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 	if err = c.Bind(&signIn); err != nil {
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": SignInBody{
 			Email:            "email is required",
+			OnBoarding:       "onboaring url is optional",
 			Destination:      "destination is optional",
 			ErrorRedirection: "errorRedirection is optional",
 		}}, nil
@@ -124,6 +127,21 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 		statusCode = http.StatusCreated
 	}
 
+	// redirect to onboarding page if user is not activated
+	destination = signIn.Destination
+	matchedUser, err = mc.Storage.GetUserByEmail(email)
+	if err != nil {
+		fmt.Printf("cannot get user by email %s, use destination directly", email)
+	} else {
+		isActivate := matchedUser.Activated.Valid
+		if (isCheckActivate && !isActivate) {
+			destination = fmt.Sprintf("%s?destination=%s",
+				signIn.OnBoarding,
+				url.QueryEscape(signIn.Destination),
+			)
+		}
+	}
+
 	// send activation email
 	err = postMailServiceEndpoint(activationReqBody{
 		Email: email,
@@ -133,7 +151,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 			globals.Conf.App.Port,
 			url.QueryEscape(email),
 			url.QueryEscape(activeToken),
-			url.QueryEscape(signIn.Destination),
+			url.QueryEscape(destination),
 			url.QueryEscape(signIn.ErrorRedirection),
 		),
 	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, sendMailRoutePath))
@@ -144,6 +162,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 
 	return statusCode, gin.H{"status": "success", "data": SignInBody{
 		Email:            email,
+		OnBoarding:       signIn.OnBoarding,
 		Destination:      signIn.Destination,
 		ErrorRedirection: signIn.ErrorRedirection,
 	}}, nil
@@ -151,12 +170,12 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 
 // SignInV2 - send email containing sign-in information to the client
 func (mc *MembershipController) SignInV2(c *gin.Context) (int, gin.H, error) {
-	return mc.AuthByEmail(c, globals.SendActivationRoutePath)
+	return mc.AuthByEmail(c, globals.SendActivationRoutePath, true)
 }
 
 // AuthenticateV2 - send email containing authenticate information to the client
 func (mc *MembershipController) AuthenticateV2(c *gin.Context) (int, gin.H, error) {
-	return mc.AuthByEmail(c, globals.SendAuthenticationRoutePath)
+	return mc.AuthByEmail(c, globals.SendAuthenticationRoutePath, false)
 }
 
 // ActivateV2 - validate the reporter account
