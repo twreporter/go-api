@@ -40,6 +40,7 @@ type MembershipStorage interface {
 	CreateMaillistOfUser(string, []string) error
 	UpdateReadPreferenceOfUser(string, []string) error
 	UpdateUser(models.User) error
+	AssignRoleToUser(models.User, int) error
 
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)
