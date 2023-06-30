@@ -27,6 +27,7 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 			"id":      role.ID, // does frontend need ID?
 			"name":    role.Name,
 			"name_en": role.NameEn,
+			"key":     role.Key,
 		}
 	}
 
@@ -44,17 +45,21 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 			}
 		}
 	}
-	mailGroupsStr := strings.Join(mailGroups, ",")
+	readPreferenceArr := make([]string, 0)
+	if user.ReadPreference.Valid {
+		readPreferenceArr = strings.Split(user.ReadPreference.String, ",")
+	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
+		"user_id":           userID,
 		"first_name":        user.FirstName.String,
 		"last_name":         user.LastName.String,
 		"email":             user.Email.String,
 		"registration_date": user.RegistrationDate.Time,
 		"activated":         activated,
 		"roles":             roles,
-		"read_preference":   user.ReadPreference,
-		"maillist":          mailGroupsStr,
+		"read_preference":   readPreferenceArr,
+		"maillist":          mailGroups,
 	},
 	}, nil
 }
@@ -70,12 +75,13 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 	}
 
 	// Convert maillist values using the mapping array
-	for i, maillist := range preferences.Maillist {
+	maillists := make([]string, 0)
+	for _, maillist := range preferences.Maillist {
 		convertedMaillist, exists := globals.Conf.Mailchimp.InterestIDs[maillist]
 		if !exists {
 			return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, errors.New("Invalid maillist value")
 		}
-		preferences.Maillist[i] = convertedMaillist
+		maillists = append(maillists, convertedMaillist)
 	}
 
 	// Call UpdateReadPreferenceOfUser to save the preferences.ReadPreference to DB
@@ -84,7 +90,7 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 	}
 
 	// Call CreateMaillistOfUser to save the preferences.Maillist to DB
-	if err = mc.Storage.CreateMaillistOfUser(userID, preferences.Maillist); err != nil {
+	if err = mc.Storage.CreateMaillistOfUser(userID, maillists); err != nil {
 		return toResponse(err)
 	}
 
