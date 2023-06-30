@@ -1,5 +1,21 @@
 ## Unreleased
 
+### 7.2.4-rc.4
+
+### Notable Changes
+
+- migration
+  - Add migration for role table key column
+- api/user
+  - Change getUser's response preferences and maillist from string to array
+- doc
+  - Add role key column
+
+### Commits
+
+- [[`c33ff42`](https://github.com/twreporter/go-api/commit/c33ff42)] - Merge pull request #555 from liruchen32/fix/fix-user-api-response
+
+
 ### 7.2.4-rc.3
 
 ### Notable Changes
