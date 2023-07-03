@@ -48,6 +48,7 @@ type Role struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	NameEn    string    `json:"name_en"`
+	Key       string    `json:"key"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
