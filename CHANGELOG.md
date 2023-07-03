@@ -1,5 +1,20 @@
 ## Unreleased
 
+### 7.2.4-rc.5
+
+### Notable Changes
+
+- api/auth, api/oauth
+  - redirect to onboarding url if user deactivated after signin
+- doc
+  - add `onboarding` parameter for auth & oauth api
+
+### Commits
+
+- [[`a6906021cc`](https://github.com/twreporter/go-api/commit/a6906021cc)] - **fix**: add updated `index.html` (Aylie Chou)
+- [[`65a0d7eee9`](https://github.com/twreporter/go-api/commit/65a0d7eee9)] - **fix**: add onboarding url on oauth destination (Aylie Chou)
+- [[`28e98c6e97`](https://github.com/twreporter/go-api/commit/28e98c6e97)] - **fix**: redirect to onboarding url if user deactivated (Aylie Chou)
+
 ### 7.2.4-rc.4
 
 ### Notable Changes
@@ -14,7 +29,6 @@
 ### Commits
 
 - [[`c33ff42`](https://github.com/twreporter/go-api/commit/c33ff42)] - Merge pull request #555 from liruchen32/fix/fix-user-api-response
-
 
 ### 7.2.4-rc.3
 

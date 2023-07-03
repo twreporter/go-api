@@ -1,6 +1,6 @@
 # Group Oauth Service
 
-## Google oauth request [/v2/auth/google{?destination}]
+## Google oauth request [/v2/auth/google{?destination,onboarding}]
 Redirect a user request to google oauth server
 
 ### Redirect google request [GET]
@@ -24,7 +24,7 @@ Process user information from google and grants identity token
             
             Set-Cookie: id_token=<cookie value>; Domain=twreporter.org; Max-Age=15552000; HttpOnly; Secure
 
-## Facebook oauth request [/v2/auth/facebook{?destination}]
+## Facebook oauth request [/v2/auth/facebook{?destination,onboarding}]
 Redirect a user request to facebook oauth server 
 
 ### Redirect facebook request [GET]
