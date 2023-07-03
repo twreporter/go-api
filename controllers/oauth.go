@@ -86,6 +86,12 @@ func beginAuth(c *gin.Context, conf *oauth2.Config) {
 	session := sessions.Default(c)
 	session.Set("state", state)
 	session.Set("destination", destination)
+
+	// set onboading if exist
+	if onBoarding := c.Query("onboarding"); onBoarding != "" {
+		session.Set("onboarding", onBoarding)
+	}
+
 	err = session.Save()
 	if err != nil {
 		err = errors.WithStack(err)
@@ -300,6 +306,17 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 		err = errors.Wrap(err, "oauth fails due to database operation error:")
 		c.Redirect(http.StatusTemporaryRedirect, destination)
 		return
+	}
+
+	// redirect to onboarding page if user is not activated
+	isActivate := matchUser.Activated.Valid
+	onBoarding := session.Get("onboarding")
+	if (!isActivate && onBoarding != nil) {
+		fmt.Println("add onboarding")
+		destination = fmt.Sprintf("%s?destination=%s",
+			onBoarding.(string),
+			url.QueryEscape(destination),
+		)
 	}
 
 	if token, err = utils.RetrieveV2IDToken(matchUser.ID, matchUser.Email.ValueOrZero(), matchUser.FirstName.ValueOrZero(), matchUser.LastName.ValueOrZero(), idTokenExpiration); err != nil {
