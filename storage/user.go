@@ -249,7 +249,7 @@ func (gs *GormStorage) AssignRoleToUser(user models.User, roleKey string) error 
 	// Check if the role exists
 	var role models.Role
 	if err := gs.db.First(&role, "key = ?", roleKey).Error; err != nil {
-		return errors.Wrap(err, fmt.Sprintf("failed to find role with Key: %d", roleKey))
+		return errors.Wrap(err, fmt.Sprintf("failed to find role with Key: %s", roleKey))
 	}
 
 	// Remove all existing roles from the user
