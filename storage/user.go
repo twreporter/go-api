@@ -134,7 +134,7 @@ func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user model
 	}
 
 	// Call AssignRoleToUser to assign role to user
-	err = gs.AssignRoleToUser(user, constants.RoleIdExplorer)
+	err = gs.AssignRoleToUser(user, constants.RoleExplorer)
 	if err != nil {
 		return user, errors.WithStack(err)
 	}
@@ -156,7 +156,7 @@ func (gs *GormStorage) InsertUserByReporterAccount(raModel models.ReporterAccoun
 	}
 
 	// Call AssignRoleToUser to assign role to user
-	err = gs.AssignRoleToUser(user, constants.RoleIdExplorer)
+	err = gs.AssignRoleToUser(user, constants.RoleExplorer)
 	if err != nil {
 		return user, errors.WithStack(err)
 	}
@@ -245,11 +245,11 @@ func (gs *GormStorage) UpdateReadPreferenceOfUser(userID string, readPreference 
 }
 
 // AssignRoleToUser assigns a role to a user, removing all existing roles
-func (gs *GormStorage) AssignRoleToUser(user models.User, roleID int) error {
+func (gs *GormStorage) AssignRoleToUser(user models.User, roleKey string) error {
 	// Check if the role exists
 	var role models.Role
-	if err := gs.db.First(&role, "id = ?", roleID).Error; err != nil {
-		return errors.Wrap(err, fmt.Sprintf("failed to find role with ID: %d", roleID))
+	if err := gs.db.First(&role, "key = ?", roleKey).Error; err != nil {
+		return errors.Wrap(err, fmt.Sprintf("failed to find role with Key: %d", roleKey))
 	}
 
 	// Remove all existing roles from the user

@@ -657,11 +657,11 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		}
 
 		// Call AssignRoleToUser to assign role to user
-		var role int
+		var role string
 		if reqBody.Amount >= constants.RoleTrailblazerAmount && reqBody.Currency == "TWD" {
-			role = constants.RoleIdTrailblazer
+			role = constants.RoleTrailblazer
 		} else {
-			role = constants.RoleIdActionTaker
+			role = constants.RoleActionTaker
 		}
 		err = mc.Storage.AssignRoleToUser(matchedUser, role)
 		if err != nil {
@@ -777,7 +777,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		}
 
 		// Call AssignRoleToUser to assign role to user
-		err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleIdActionTaker)
+		err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
 		if err != nil {
 			log.Errorf("Error updating user role: %v", err)
 		}
