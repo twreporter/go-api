@@ -28,6 +28,7 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
 
+	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
@@ -654,6 +655,18 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		if nil != err {
 			log.Errorf("Error updating user activated time: %v", err)
 		}
+
+		// Call AssignRoleToUser to assign role to user
+		var role string
+		if reqBody.Amount >= constants.RoleTrailblazerAmount && reqBody.Currency == "TWD" {
+			role = constants.RoleTrailblazer
+		} else {
+			role = constants.RoleActionTaker
+		}
+		err = mc.Storage.AssignRoleToUser(matchedUser, role)
+		if err != nil {
+			log.Errorf("Error updating user role: %v", err)
+		}
 	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
@@ -749,15 +762,26 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	}
 	go publishToNeticrm(ms)
 
-	// Update the user's activated time to now
-	matchedUser, err := mc.Storage.GetUserByEmail(reqBody.Cardholder.Email)
-	if nil != err {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
-	}
-	matchedUser.Activated = null.TimeFrom(time.Now())
-	if err = mc.Storage.UpdateUser(matchedUser); nil != err {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
-	}
+	// Concurrently update the user's activated time
+	go func(email string) {
+		matchedUser, err := mc.Storage.GetUserByEmail(reqBody.Cardholder.Email)
+		if nil != err {
+			log.Errorf("Error retrieving user data: %v", err)
+			return
+		}
+
+		matchedUser.Activated = null.TimeFrom(time.Now())
+		err = mc.Storage.UpdateUser(matchedUser)
+		if nil != err {
+			log.Errorf("Error updating user activated time: %v", err)
+		}
+
+		// Call AssignRoleToUser to assign role to user
+		err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
+		if err != nil {
+			log.Errorf("Error updating user role: %v", err)
+		}
+	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }

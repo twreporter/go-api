@@ -26,4 +26,11 @@ const (
 	PrivilegeMember = 10
 	// PrivilegeAdmin ...
 	PrivilegeAdmin = 50
+
+	/* Role */
+	RoleExplorer    = "explorer"
+	RoleActionTaker = "action_taker"
+	RoleTrailblazer = "trailblazer"
+
+	RoleTrailblazerAmount = 500
 )
