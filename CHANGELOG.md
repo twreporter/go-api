@@ -1,5 +1,17 @@
 ## Unreleased
 
+### 7.2.4-rc.7
+
+### Notable Changes
+
+- fix
+  - Mysql query
+
+### Commits
+
+- [[`6cac8d8`](https://github.com/twreporter/go-api/commit/6cac8d8)] - Merge pull request #563 from howar31/master 
+- [[`2c9f53d`](https://github.com/twreporter/go-api/commit/2c9f53d)] - fix: Fix role replacement query
+
 ### 7.2.4-rc.6
 
 ### Notable Changes
