@@ -252,12 +252,10 @@ func (gs *GormStorage) AssignRoleToUser(user models.User, roleKey string) error 
 		return errors.Wrap(err, fmt.Sprintf("failed to find role with Key: %s", roleKey))
 	}
 
-	// Remove all existing roles from the user
+	// Replace existing roles with the new role
 	association := gs.db.Model(&user).Association("Roles")
-	association.Clear()
+	association.Replace(&role)
 
-	// Assign the new role to the user
-	association.Append(&role)
 	if association.Error != nil {
 		return errors.Wrap(association.Error, "failed to assign role to user")
 	}
