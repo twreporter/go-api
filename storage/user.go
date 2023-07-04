@@ -248,7 +248,7 @@ func (gs *GormStorage) UpdateReadPreferenceOfUser(userID string, readPreference 
 func (gs *GormStorage) AssignRoleToUser(user models.User, roleKey string) error {
 	// Check if the role exists
 	var role models.Role
-	if err := gs.db.First(&role, "key = ?", roleKey).Error; err != nil {
+	if err := gs.db.Where("`key` = ?", roleKey).First(&role).Error; err != nil {
 		return errors.Wrap(err, fmt.Sprintf("failed to find role with Key: %s", roleKey))
 	}
 
