@@ -1,5 +1,26 @@
 ## Unreleased
 
+### 7.2.4-rc.6
+
+### Notable Changes
+
+- role
+  - Add donation role flows
+  - Add role assign function
+  - Change role related operation from ID to Key
+- fix
+  - Replace Clear and Append with Replace
+  - Fix typo
+
+### Commits
+
+- [[`27389bf`](https://github.com/twreporter/go-api/commit/27389bf)] - Merge pull request #556 from howar31/master
+- [[`8d417cf`](https://github.com/twreporter/go-api/commit/8d417cf)] - fix: replace Clear and Append with Replace
+- [[`991f4bf`](https://github.com/twreporter/go-api/commit/991f4bf)] - fix: typo
+- [[`bfd17fd`](https://github.com/twreporter/go-api/commit/bfd17fd)] - fix: Change role related operation from ID to Key
+- [[`6b0d7cf`](https://github.com/twreporter/go-api/commit/6b0d7cf)] - feat: Add donation role flows
+- [[`6c26368`](https://github.com/twreporter/go-api/commit/6c26368)] - feat: Add role assign function
+
 ### 7.2.4-rc.5
 
 ### Notable Changes
