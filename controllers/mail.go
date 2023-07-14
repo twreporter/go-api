@@ -174,7 +174,6 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 }
 
 func (contrl *MailController) SendRoleExplorerMail(c *gin.Context) (int, gin.H, error) {
-	const taipeiLocationName = "Asia/Taipei"
 	const subject = "歡迎您成為探索者，與《報導者》一起看見世界上正在發生的重要的事"
 	var err error
 	var mailBody string
@@ -208,7 +207,6 @@ func (contrl *MailController) SendRoleExplorerMail(c *gin.Context) (int, gin.H, 
 }
 
 func (contrl *MailController) SendRoleActiontakerMail(c *gin.Context) (int, gin.H, error) {
-	const taipeiLocationName = "Asia/Taipei"
 	const subject = "歡迎成為「行動者」，這些是我們為你提供的服務"
 	var err error
 	var mailBody string
@@ -242,7 +240,6 @@ func (contrl *MailController) SendRoleActiontakerMail(c *gin.Context) (int, gin.
 }
 
 func (contrl *MailController) SendRoleTrailblazerMail(c *gin.Context) (int, gin.H, error) {
-	const taipeiLocationName = "Asia/Taipei"
 	const subject = "歡迎成為「開創者」，這些是我們為你提供的服務"
 	var err error
 	var mailBody string
@@ -276,8 +273,7 @@ func (contrl *MailController) SendRoleTrailblazerMail(c *gin.Context) (int, gin.
 }
 
 func (contrl *MailController) SendRoleDowngradeMail(c *gin.Context) (int, gin.H, error) {
-	const taipeiLocationName = "Asia/Taipei"
-	const subject = ""
+	const subject = "方案身分異動通知"
 	var err error
 	var mailBody string
 	var out bytes.Buffer
