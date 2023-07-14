@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
@@ -124,6 +125,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 			}
 		}
 
+		go mc.sendAssignRoleMail(constants.RoleExplorer, email)
 		statusCode = http.StatusCreated
 	}
 
