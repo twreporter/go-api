@@ -173,8 +173,7 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	return http.StatusNoContent, gin.H{}, nil
 }
 
-func (contrl *MailController) SendRoleExplorerMail(c *gin.Context) (int, gin.H, error) {
-	const subject = "歡迎您成為探索者，與《報導者》一起看見世界上正在發生的重要的事"
+func (contrl *MailController) sendRoleMail(c *gin.Context, subject, templateName string) (int, gin.H, error) {
 	var err error
 	var mailBody string
 	var out bytes.Buffer
@@ -192,7 +191,7 @@ func (contrl *MailController) SendRoleExplorerMail(c *gin.Context) (int, gin.H, 
 		fmt.Sprintf("%d", time.Now().Year()),
 	}
 
-	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "role-explorer.tmpl", templateData); err != nil {
+	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, templateName, templateData); err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create assign role mail body"}, errors.WithStack(err)
 	}
 
@@ -200,109 +199,30 @@ func (contrl *MailController) SendRoleExplorerMail(c *gin.Context) (int, gin.H, 
 
 	// send email through mail service
 	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send role explorer mail to %s", reqBody.Email)}, err
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send role mail to %s", reqBody.Email)}, err
 	}
 
 	return http.StatusNoContent, gin.H{}, nil
+}
+
+func (contrl *MailController) SendRoleExplorerMail(c *gin.Context) (int, gin.H, error) {
+	const subject = "歡迎您成為探索者，與《報導者》一起看見世界上正在發生的重要的事"
+	return contrl.sendRoleMail(c, subject, "role-explorer.tmpl")
 }
 
 func (contrl *MailController) SendRoleActiontakerMail(c *gin.Context) (int, gin.H, error) {
 	const subject = "歡迎成為「行動者」，這些是我們為你提供的服務"
-	var err error
-	var mailBody string
-	var out bytes.Buffer
-	var reqBody assignRoleReqBody
-
-	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
-	}
-
-	var templateData = struct {
-		Subject     string
-		CurrentYear string
-	}{
-		subject,
-		fmt.Sprintf("%d", time.Now().Year()),
-	}
-
-	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "role-actiontaker.tmpl", templateData); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create assign role mail body"}, errors.WithStack(err)
-	}
-
-	mailBody = out.String()
-
-	// send email through mail service
-	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send role actiontaker mail to %s", reqBody.Email)}, err
-	}
-
-	return http.StatusNoContent, gin.H{}, nil
+	return contrl.sendRoleMail(c, subject, "role-actiontaker.tmpl")
 }
 
 func (contrl *MailController) SendRoleTrailblazerMail(c *gin.Context) (int, gin.H, error) {
 	const subject = "歡迎成為「開創者」，這些是我們為你提供的服務"
-	var err error
-	var mailBody string
-	var out bytes.Buffer
-	var reqBody assignRoleReqBody
-
-	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
-	}
-
-	var templateData = struct {
-		Subject     string
-		CurrentYear string
-	}{
-		subject,
-		fmt.Sprintf("%d", time.Now().Year()),
-	}
-
-	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "role-trailblazer.tmpl", templateData); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create assign role mail body"}, errors.WithStack(err)
-	}
-
-	mailBody = out.String()
-
-	// send email through mail service
-	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send role trailblazer mail to %s", reqBody.Email)}, err
-	}
-
-	return http.StatusNoContent, gin.H{}, nil
+	return contrl.sendRoleMail(c, subject, "role-trailblazer.tmpl")
 }
 
 func (contrl *MailController) SendRoleDowngradeMail(c *gin.Context) (int, gin.H, error) {
 	const subject = "方案身分異動通知"
-	var err error
-	var mailBody string
-	var out bytes.Buffer
-	var reqBody assignRoleReqBody
-
-	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
-		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
-	}
-
-	var templateData = struct {
-		Subject     string
-		CurrentYear string
-	}{
-		subject,
-		fmt.Sprintf("%d", time.Now().Year()),
-	}
-
-	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "role-downgrade.tmpl", templateData); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create assign role mail body"}, errors.WithStack(err)
-	}
-
-	mailBody = out.String()
-
-	// send email through mail service
-	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send role downgrade mail to %s", reqBody.Email)}, err
-	}
-
-	return http.StatusNoContent, gin.H{}, nil
+	return contrl.sendRoleMail(c, subject, "role-downgrade.tmpl")
 }
 
 func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
