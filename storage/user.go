@@ -262,3 +262,31 @@ func (gs *GormStorage) AssignRoleToUser(user models.User, roleKey string) error 
 
 	return nil
 }
+
+// Evaluate given user's role by the periodic donation records
+func (gs *GormStorage) IsTrailblazer(email string) (bool, error) {
+	var result struct {
+		Sum int
+	}
+
+	query := gs.db.Model(&models.User{}).
+		Joins("JOIN periodic_donations p ON users.id = p.user_id").
+		Joins("JOIN pay_by_card_token_donations pd ON p.id = pd.periodic_id").
+		Where("pd.status = ?", "paid").
+		Where("p.status = ?", "paid").
+		Where("users.email = ?", email).
+		Group("users.id").
+		Select("SUM(pd.amount) as sum").
+		Scan(&result)
+
+	if query.Error != nil {
+		return false, errors.Wrap(query.Error, "failed to check IsTrailblazer")
+	}
+
+	log.WithFields(log.Fields{
+		"user email": email,
+		"sum":        result.Sum,
+	}).Debug("Checking IsTrailblazer")
+
+	return result.Sum >= 500, nil
+}
