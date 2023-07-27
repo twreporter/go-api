@@ -272,9 +272,7 @@ func (gs *GormStorage) IsTrailblazer(email string) (bool, error) {
 	query := gs.db.Model(&models.User{}).
 		Joins("JOIN periodic_donations p ON users.id = p.user_id").
 		Joins("JOIN pay_by_card_token_donations pd ON p.id = pd.periodic_id").
-		Where("pd.status = ?", "paid").
-		Where("p.status = ?", "paid").
-		Where("pd.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 2 MONTH) AND NOW()").
+		Where("p.last_success_at BETWEEN DATE_SUB(NOW(), INTERVAL 2 MONTH) AND NOW()").
 		Where("users.email = ?", email).
 		Group("users.id").
 		Select("SUM(pd.amount) as sum").
