@@ -124,8 +124,9 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
 			}
 		}
-
-		go mc.sendAssignRoleMail(constants.RoleExplorer, email)
+		if matchedUser.Activated.Valid && !matchedUser.Activated.Time.IsZero() {
+			go mc.sendAssignRoleMail(constants.RoleExplorer, email)
+		}
 		statusCode = http.StatusCreated
 	}
 
