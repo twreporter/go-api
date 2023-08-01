@@ -699,12 +699,15 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		} else {
 			role = constants.RoleActionTaker
 		}
+		roleCheck, _ := mc.Storage.HasRole(matchedUser, role)
 		err = mc.Storage.AssignRoleToUser(matchedUser, role)
 		if err != nil {
 			log.Errorf("Error updating user role: %v", err)
 		}
 
-		go mc.sendAssignRoleMail(role, email)
+		if !roleCheck {
+			go mc.sendAssignRoleMail(role, email)
+		}
 	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
@@ -815,12 +818,15 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		}
 
 		// Call AssignRoleToUser to assign role to user
+		roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
 		err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
 		if err != nil {
 			log.Errorf("Error updating user role: %v", err)
 		}
 
-		go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
+		if !roleCheck {
+			go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
+		}
 	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil

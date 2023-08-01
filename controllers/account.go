@@ -107,6 +107,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 
 		// try to find record by email in users table
 		matchedUser, err = mc.Storage.GetUserByEmail(email)
+		roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleExplorer)
 		// the user record is not existed
 		if err != nil {
 			// create records both in reporter_accounts and users table
@@ -124,7 +125,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
 			}
 		}
-		if matchedUser.Activated.Valid && !matchedUser.Activated.Time.IsZero() {
+		if matchedUser.Activated.Valid && !matchedUser.Activated.Time.IsZero() && !roleCheck {
 			go mc.sendAssignRoleMail(constants.RoleExplorer, email)
 		}
 		statusCode = http.StatusCreated
@@ -137,7 +138,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 		fmt.Printf("cannot get user by email %s, use destination directly", email)
 	} else {
 		isActivate := matchedUser.Activated.Valid
-		if (isCheckActivate && !isActivate) {
+		if isCheckActivate && !isActivate {
 			destination = fmt.Sprintf("%s?destination=%s",
 				signIn.OnBoarding,
 				url.QueryEscape(signIn.Destination),
