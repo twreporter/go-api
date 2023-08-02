@@ -107,11 +107,16 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 
 		// try to find record by email in users table
 		matchedUser, err = mc.Storage.GetUserByEmail(email)
-		roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleExplorer)
+		var roleCheck bool
+		var roleCheckErr error
 		// the user record is not existed
 		if err != nil {
 			// create records both in reporter_accounts and users table
-			_, err = mc.Storage.InsertUserByReporterAccount(ra)
+			user, err := mc.Storage.InsertUserByReporterAccount(ra)
+			roleCheck, roleCheckErr = mc.Storage.HasRole(user, constants.RoleExplorer)
+			if roleCheckErr != nil {
+				log.Println("Error checking role:", roleCheckErr)
+			}
 			if err != nil {
 				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
 			}
@@ -120,6 +125,10 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 			// create a record in reporter_accounts table
 			// and connect these two records
 			ra.UserID = matchedUser.ID
+			roleCheck, roleCheckErr = mc.Storage.HasRole(matchedUser, constants.RoleExplorer)
+			if roleCheckErr != nil {
+				log.Println("Error checking role:", roleCheckErr)
+			}
 			err = mc.Storage.InsertReporterAccount(ra)
 			if err != nil {
 				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
