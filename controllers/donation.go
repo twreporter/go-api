@@ -818,14 +818,17 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		}
 
 		// Call AssignRoleToUser to assign role to user
-		roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
-		err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
-		if err != nil {
-			log.Errorf("Error updating user role: %v", err)
-		}
+		IsTrailblazer, _ := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
+		if IsTrailblazer {
+			roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
+			err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
+			if err != nil {
+				log.Errorf("Error updating user role: %v", err)
+			}
 
-		if !roleCheck {
-			go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
+			if !roleCheck {
+				go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
+			}
 		}
 	}(reqBody.Cardholder.Email)
 
