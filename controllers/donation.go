@@ -819,7 +819,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 
 		// Call AssignRoleToUser to assign role to user
 		IsTrailblazer, _ := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
-		if IsTrailblazer {
+		if !IsTrailblazer {
 			roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
 			err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
 			if err != nil {
