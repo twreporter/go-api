@@ -694,7 +694,11 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 
 		// Call AssignRoleToUser to assign role to user
 		var role string
-		if reqBody.Amount >= constants.RoleTrailblazerAmount && reqBody.Currency == "TWD" {
+		isTrailblazer, err := mc.Storage.IsTrailblazer(email)
+		if err != nil {
+			log.Errorf("Error checking user donations: %v", err)
+		}
+		if isTrailblazer {
 			role = constants.RoleTrailblazer
 		} else {
 			role = constants.RoleActionTaker
