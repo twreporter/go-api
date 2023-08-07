@@ -549,6 +549,42 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 
 }
 
+func (mc *MembershipController) sendAssignRoleMail(roleKey string, email string) {
+	var mailPath string
+
+	reqBody := assignRoleReqBody{
+		RoleKey: roleKey,
+		Email:   email,
+	}
+
+	switch roleKey {
+	case constants.RoleExplorer:
+		mailPath = globals.SendRoleExplorerRoutePath
+	case constants.RoleActionTaker:
+		mailPath = globals.SendRoleActiontakerRoutePath
+	case constants.RoleTrailblazer:
+		mailPath = globals.SendRoleTrailblazerRoutePath
+	default:
+		err := errors.New(fmt.Sprintf("invalid roleKey while sendAssignRoleMail: %s", roleKey))
+
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", err)
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+	}
+
+	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, mailPath)); err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("fail to send assign role mail: (%s) %s", roleKey, email))
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", err)
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+	}
+
+}
+
 // Handler for an authenticated user to create a periodic donation
 func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
 	// Validate client request
@@ -667,9 +703,14 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		} else {
 			role = constants.RoleActionTaker
 		}
+		roleCheck, _ := mc.Storage.HasRole(matchedUser, role)
 		err = mc.Storage.AssignRoleToUser(matchedUser, role)
 		if err != nil {
 			log.Errorf("Error updating user role: %v", err)
+		}
+
+		if !roleCheck {
+			go mc.sendAssignRoleMail(role, email)
 		}
 	}(reqBody.Cardholder.Email)
 
@@ -781,9 +822,17 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		}
 
 		// Call AssignRoleToUser to assign role to user
-		err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
-		if err != nil {
-			log.Errorf("Error updating user role: %v", err)
+		IsTrailblazer, _ := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
+		if !IsTrailblazer {
+			roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
+			err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
+			if err != nil {
+				log.Errorf("Error updating user role: %v", err)
+			}
+
+			if !roleCheck {
+				go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
+			}
 		}
 	}(reqBody.Cardholder.Email)
 
