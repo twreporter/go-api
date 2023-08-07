@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
@@ -106,10 +107,16 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 
 		// try to find record by email in users table
 		matchedUser, err = mc.Storage.GetUserByEmail(email)
+		var roleCheck bool
+		var roleCheckErr error
 		// the user record is not existed
 		if err != nil {
 			// create records both in reporter_accounts and users table
-			_, err = mc.Storage.InsertUserByReporterAccount(ra)
+			user, err := mc.Storage.InsertUserByReporterAccount(ra)
+			roleCheck, roleCheckErr = mc.Storage.HasRole(user, constants.RoleExplorer)
+			if roleCheckErr != nil {
+				log.Println("Error checking role:", roleCheckErr)
+			}
 			if err != nil {
 				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
 			}
@@ -118,12 +125,18 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 			// create a record in reporter_accounts table
 			// and connect these two records
 			ra.UserID = matchedUser.ID
+			roleCheck, roleCheckErr = mc.Storage.HasRole(matchedUser, constants.RoleExplorer)
+			if roleCheckErr != nil {
+				log.Println("Error checking role:", roleCheckErr)
+			}
 			err = mc.Storage.InsertReporterAccount(ra)
 			if err != nil {
 				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
 			}
 		}
-
+		if matchedUser.Activated.Valid && !matchedUser.Activated.Time.IsZero() && !roleCheck {
+			go mc.sendAssignRoleMail(constants.RoleExplorer, email)
+		}
 		statusCode = http.StatusCreated
 	}
 
@@ -134,7 +147,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 		fmt.Printf("cannot get user by email %s, use destination directly", email)
 	} else {
 		isActivate := matchedUser.Activated.Valid
-		if (isCheckActivate && !isActivate) {
+		if isCheckActivate && !isActivate {
 			destination = fmt.Sprintf("%s?destination=%s",
 				signIn.OnBoarding,
 				url.QueryEscape(signIn.Destination),

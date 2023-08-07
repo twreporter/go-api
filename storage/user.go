@@ -262,3 +262,79 @@ func (gs *GormStorage) AssignRoleToUser(user models.User, roleKey string) error 
 
 	return nil
 }
+
+// GetRole retrieves the role of a user from the database based on the user's ID or unique identifier.
+func (gs *GormStorage) GetRole(user models.User) (models.Role, error) {
+	// Initialize an empty role variable to store the fetched role.
+	var role models.Role
+
+	// Get the associated roles for the user.
+	association := gs.db.Model(&user).Association("Roles")
+
+	if association.Error != nil {
+		return role, errors.Wrap(association.Error, fmt.Sprintf("failed to get roles for user with email: %s", user.Email.String))
+	}
+
+	// Check if the user has any roles.
+	if association.Count() == 0 {
+		return role, errors.New(fmt.Sprintf("user with email: %s does not have any roles", user.Email.String))
+	}
+
+	// Get the first role associated with the user.
+	if err := gs.db.Model(&user).Association("Roles").Find(&role).Error; err != nil {
+		return role, errors.Wrap(err, fmt.Sprintf("failed to find role for user with email: %s", user.Email.String))
+	}
+
+	return role, nil
+}
+
+// HasRole checks if a specific role exists for a user based on the user's ID and the role key.
+func (gs *GormStorage) HasRole(user models.User, roleKey string) (bool, error) {
+	// Check if the role exists.
+	var role models.Role
+	if err := gs.db.Where("`key` = ?", roleKey).First(&role).Error; err != nil {
+		return false, errors.Wrap(err, fmt.Sprintf("failed to find role with Key: %s", roleKey))
+	}
+
+	// Fetch all the roles associated with the user.
+	var roles []models.Role
+	if err := gs.db.Model(&user).Association("Roles").Find(&roles).Error; err != nil {
+		return false, errors.Wrap(err, fmt.Sprintf("failed to get roles for user with email: %s", user.Email.String))
+	}
+
+	// Check if the role with the given key exists in the retrieved roles.
+	for _, r := range roles {
+		if r.Key == roleKey {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// Evaluate given user's role by the periodic donation records
+func (gs *GormStorage) IsTrailblazer(email string) (bool, error) {
+	var result struct {
+		Sum int
+	}
+
+	query := gs.db.Model(&models.User{}).
+		Joins("JOIN periodic_donations p ON users.id = p.user_id").
+		Joins("JOIN pay_by_card_token_donations pd ON p.id = pd.periodic_id").
+		Where("p.last_success_at BETWEEN DATE_SUB(NOW(), INTERVAL 2 MONTH) AND NOW()").
+		Where("users.email = ?", email).
+		Group("users.id").
+		Select("SUM(pd.amount) as sum").
+		Scan(&result)
+
+	if query.Error != nil {
+		return false, errors.Wrap(query.Error, "failed to check IsTrailblazer")
+	}
+
+	log.WithFields(log.Fields{
+		"user email": email,
+		"sum":        result.Sum,
+	}).Debug("Checking IsTrailblazer")
+
+	return result.Sum >= 500, nil
+}
