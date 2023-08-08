@@ -138,6 +138,10 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendActivation))
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendAuthenticationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendAuthentication))
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendSuccessDonationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendDonationSuccessMail))
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendRoleExplorerRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendRoleExplorerMail))
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendRoleActiontakerRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendRoleActiontakerMail))
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendRoleTrailblazerRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendRoleTrailblazerMail))
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendRoleDowngradeRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendRoleDowngradeMail))
 
 	v2Group := engine.Group("/v2")
 	ncV2 := cf.GetNewsV2Controller()

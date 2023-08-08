@@ -1,5 +1,38 @@
 ## Unreleased
 
+### 7.2.4-rc.8
+
+### Notable Changes
+
+- fix
+  - Typo in code
+  - Trailblazer donate downgrade bug
+  - Fine-tuned roleCheck logic
+  - Added role check before sending role change email
+  - Sending explorer email only when user is activated
+  - Refactored sendRoleMail and updated trailblazer email handling
+  - Updated variables for better code clarity
+  - Changed role condition regarding periodic donations in the trailblazerCheck feature
+  - Added a 2 months condition to the trailblazer check
+- feat
+  - Added role assign related emails
+  - Updated trailblazer check to accommodate multiple periodic donations
+
+### Commits
+
+- [[`ece2bc9`](https://github.com/twreporter/go-api/commit/ece2bc9)] - fix: typo
+- [[`ddadb1e`](https://github.com/twreporter/go-api/commit/ddadb1e)] - fix: trailblazer donate downgrade bug
+- [[`79f93b4`](https://github.com/twreporter/go-api/commit/79f93b4)] - fix: fine-tune roleCheck logic
+- [[`62a07b0`](https://github.com/twreporter/go-api/commit/62a07b0)] - fix: Add role check before sending role change mail
+- [[`9afb442`](https://github.com/twreporter/go-api/commit/9afb442)] - fix: sending explorer email only when user is activated
+- [[`7c351a4`](https://github.com/twreporter/go-api/commit/7c351a4)] - fix: refactor sendRoleMail and update trailblazer mail
+- [[`12e3837`](https://github.com/twreporter/go-api/commit/12e3837)] - fix: variables
+- [[`2875321`](https://github.com/twreporter/go-api/commit/2875321)] - feat: Add role assign related mails
+- [[`9098bbd`](https://github.com/twreporter/go-api/commit/9098bbd)] - fix: change role condition about periodic_donations
+- [[`0212acc`](https://github.com/twreporter/go-api/commit/0212acc)] - feat: Update trailblazer check for multiple periodic donations
+- [[`9a22964`](https://github.com/twreporter/go-api/commit/9a22964)] - fix: Add 2 months condition to trailblazer check
+
+
 ### 7.2.4-rc.7
 
 ### Notable Changes

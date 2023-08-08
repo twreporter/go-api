@@ -23,6 +23,10 @@ const (
 	SendActivationRoutePath      = "mail/send_activation"
 	SendAuthenticationRoutePath  = "mail/send_authentication"
 	SendSuccessDonationRoutePath = "mail/send_success_donation"
+	SendRoleExplorerRoutePath    = "mail/send_role_explorer"
+	SendRoleActiontakerRoutePath = "mail/send_role_actiontaker"
+	SendRoleTrailblazerRoutePath = "mail/send_role_trailblazer"
+	SendRoleDowngradeRoutePath   = "mail/send_role_downgrade"
 
 	// controller name
 	MembershipController = "membership_controller"
