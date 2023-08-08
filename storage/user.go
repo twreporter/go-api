@@ -334,7 +334,7 @@ func (gs *GormStorage) IsTrailblazer(email string) (bool, error) {
 	log.WithFields(log.Fields{
 		"user email": email,
 		"sum":        result.Sum,
-	}).Debug("Checking IsTrailblazer")
+	}).Info("Checking IsTrailblazer")
 
 	return result.Sum >= 500, nil
 }
