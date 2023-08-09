@@ -1,5 +1,21 @@
 ## Unreleased
 
+### 7.2.4-rc.11
+
+### Notable Changes
+
+- fix
+  - Role activation and checks
+  - Role-related email handling
+  - Unused string removal from templates
+
+### Commits
+
+- [[`0ca38e6`](https://github.com/twreporter/go-api/commit/0ca38e6)] - fix: only role check if not activated
+- [[`fbffc83`](https://github.com/twreporter/go-api/commit/fbffc83)] - fix: only role check if not activated
+- [[`fd2f6d8`](https://github.com/twreporter/go-api/commit/fd2f6d8)] - fix: move role mail from signin to setUser
+- [[`2c2444e`](https://github.com/twreporter/go-api/commit/2c2444e)] - fix: remove unused string from template
+
 ### 7.2.4-rc.10
 
 ### Notable Changes
