@@ -102,10 +102,10 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 			"user.Activated.Valid":         user.Activated.Valid,
 			"user.Activated.Time.IsZero()": user.Activated.Time.IsZero(),
 			"roleCheck":                    roleCheck,
-			"sendAssignRoleMail":           !user.Activated.Valid && user.Activated.Time.IsZero() && !roleCheck,
+			"sendAssignRoleMail":           !user.Activated.Valid && user.Activated.Time.IsZero() && roleCheck,
 		}).Info("SetUser Activated Role check")
 
-		if !roleCheck {
+		if roleCheck {
 			go mc.sendAssignRoleMail(constants.RoleExplorer, user.Email.String)
 		}
 	}
