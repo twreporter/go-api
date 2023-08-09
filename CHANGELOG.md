@@ -1,5 +1,18 @@
 ## Unreleased
 
+### 7.2.4-rc.9
+
+### Notable Changes
+
+- fix
+  - Role assign mail templates loader
+  - Add detail logs
+
+### Commits
+
+- [[`9e94c34`](https://github.com/twreporter/go-api/commit/9e94c34)] - fix: add detail logs
+- [[`c62abc8`](https://github.com/twreporter/go-api/commit/c62abc8)] - fix: role assign mail templates loader
+
 ### 7.2.4-rc.8
 
 ### Notable Changes
@@ -31,7 +44,6 @@
 - [[`9098bbd`](https://github.com/twreporter/go-api/commit/9098bbd)] - fix: change role condition about periodic_donations
 - [[`0212acc`](https://github.com/twreporter/go-api/commit/0212acc)] - feat: Update trailblazer check for multiple periodic donations
 - [[`9a22964`](https://github.com/twreporter/go-api/commit/9a22964)] - fix: Add 2 months condition to trailblazer check
-
 
 ### 7.2.4-rc.7
 
