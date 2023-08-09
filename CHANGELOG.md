@@ -1,5 +1,16 @@
 ## Unreleased
 
+### 7.2.4-rc.10
+
+### Notable Changes
+
+- fix
+  - Change IsTrailblazer SQL condition
+
+### Commits
+
+- [[`22ed4f5`](https://github.com/twreporter/go-api/commit/22ed4f5)] - fix: change IsTrailblazer SQL condition
+
 ### 7.2.4-rc.9
 
 ### Notable Changes
