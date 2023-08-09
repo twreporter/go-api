@@ -103,8 +103,10 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 		"sendAssignRoleMail":           !user.Activated.Valid && user.Activated.Time.IsZero() && !roleCheck,
 	}).Info("SetUser Activated Role check")
 
-	if (!user.Activated.Valid || user.Activated.Time.IsZero()) && !roleCheck {
-		go mc.sendAssignRoleMail(constants.RoleExplorer, user.Email.String)
+	if !user.Activated.Valid || user.Activated.Time.IsZero() {
+		if !roleCheck {
+			go mc.sendAssignRoleMail(constants.RoleExplorer, user.Email.String)
+		}
 	}
 
 	// Call UpdateReadPreferenceOfUser to save the preferences.ReadPreference to DB
