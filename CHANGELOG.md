@@ -1,5 +1,20 @@
 ## Unreleased
 
+### 7.2.4-rc.12
+
+### Notable Changes
+
+- fix
+  - Typo in code comments
+  - Removal of roleCheck in setUser function
+  - Sending Explorer role mail only if the user is an Explorer
+
+### Commits
+
+- [[`f4e3f74`](https://github.com/twreporter/go-api/commit/f4e3f74)] - fix: typo
+- [[`61a527c`](https://github.com/twreporter/go-api/commit/61a527c)] - fix: remove roleCheck in setUser
+- [[`4293783`](https://github.com/twreporter/go-api/commit/4293783)] - fix: only send Explorer role mail if is Explorer
+
 ### 7.2.4-rc.11
 
 ### Notable Changes
