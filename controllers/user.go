@@ -91,23 +91,13 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 	if err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "user does not exist"}, err
 	}
-
+	log.WithFields(log.Fields{
+		"user.Activated.Valid":         user.Activated.Valid,
+		"user.Activated.Time.IsZero()": user.Activated.Time.IsZero(),
+		"sendAssignRoleMail":           !user.Activated.Valid || user.Activated.Time.IsZero(),
+	}).Info("SetUser Activated Role check")
 	if !user.Activated.Valid || user.Activated.Time.IsZero() {
-		roleCheck, roleCheckErr := mc.Storage.HasRole(user, constants.RoleExplorer)
-		if roleCheckErr != nil {
-			log.Println("Error checking role:", roleCheckErr)
-		}
-
-		log.WithFields(log.Fields{
-			"user.Activated.Valid":         user.Activated.Valid,
-			"user.Activated.Time.IsZero()": user.Activated.Time.IsZero(),
-			"roleCheck":                    roleCheck,
-			"sendAssignRoleMail":           !user.Activated.Valid && user.Activated.Time.IsZero() && !roleCheck,
-		}).Info("SetUser Activated Role check")
-
-		if !roleCheck {
-			go mc.sendAssignRoleMail(constants.RoleExplorer, user.Email.String)
-		}
+		go mc.sendAssignRoleMail(constants.RoleExplorer, user.Email.String)
 	}
 
 	// Call UpdateReadPreferenceOfUser to save the preferences.ReadPreference to DB
