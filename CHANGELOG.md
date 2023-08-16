@@ -1,5 +1,16 @@
 ## Unreleased
 
+### 7.2.4-rc.13
+
+### Notable Changes
+
+- fix
+  - Replacement keyword issue
+
+### Commits
+
+- [[`7ddc215`](https://github.com/twreporter/go-api/commit/7ddc215)] - fix: Replacement keyword issue
+
 ### 7.2.4-rc.12
 
 ### Notable Changes
