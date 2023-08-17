@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
+	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/services"
 	"github.com/twreporter/go-api/utils"
 )
@@ -197,9 +198,14 @@ func (contrl *MailController) sendRoleMail(c *gin.Context, subject, templateName
 
 	mailBody = out.String()
 
-	// send email through mail service
-	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send role mail to %s", reqBody.Email)}, err
+	if globals.Conf.Features.EnableRolemail {
+		// If Features.EnableRolemail is true, send email through mail service
+		if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send role mail to %s", reqBody.Email)}, err
+		}
+	} else {
+		// If Features.EnableRolemail is false, print a log only
+		fmt.Printf("Mail not sent due to feature toggle (Features.EnableRolemail) is (%v): [%s] %s\n", globals.Conf.Features.EnableRolemail, reqBody.Email, subject)
 	}
 
 	return http.StatusNoContent, gin.H{}, nil

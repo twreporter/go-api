@@ -86,6 +86,8 @@ mailchimp:
         behind_the_scenes: 219df4131b # 採訪幕後故事
         operational_journal: ca9d491549 # 報導者營運手記
         event_updates: 0345c43d67 # 活動資訊與最新動態
+features:
+    enable_rolemail: false
 `)
 
 type ConfYaml struct {
@@ -101,6 +103,7 @@ type ConfYaml struct {
 	News        NewsConfig       `yaml:"news"`
 	Neticrm     NeticrmPubConfig `yaml:"neticrm"`
 	Mailchimp   MailchimpConfig  `yaml:"mailchimp"`
+	Features    FeaturesConfig   `yaml:"features"`
 }
 
 type CorsConfig struct {
@@ -212,6 +215,10 @@ type MailchimpConfig struct {
 	InterestIDs map[string]string `yaml:"interest_ids"`
 }
 
+type FeaturesConfig struct {
+	EnableRolemail bool `yaml:"enable_rolemail"`
+}
+
 func init() {
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()        // read in environment variables that match
@@ -301,6 +308,9 @@ func buildConf() ConfYaml {
 
 	// Mailchimp
 	conf.Mailchimp.InterestIDs = viper.GetStringMapString("mailchimp.interest_ids")
+
+	// Feature Toggles
+	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
 
 	return conf
 }
