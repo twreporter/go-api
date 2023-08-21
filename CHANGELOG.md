@@ -1,5 +1,20 @@
 ## Unreleased
 
+### 7.2.4-rc.14
+
+### Notable Changes
+
+- fix
+  - Refine role mail feature toggle
+  
+- feat
+  - Add feature toggle for sending role mail
+
+### Commits
+
+- [[`ee666d4`](https://github.com/twreporter/go-api/commit/ee666d4)] - fix: Refine role mail feature toggle
+- [[`11248b2`](https://github.com/twreporter/go-api/commit/11248b2)] - feat: Add feature toggle for sending role mail
+
 ### 7.2.4-rc.13
 
 ### Notable Changes
