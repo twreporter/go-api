@@ -184,22 +184,22 @@ func (contrl *MailController) sendRoleMail(c *gin.Context, subject, templateName
 		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
 	}
 
-	var templateData = struct {
-		Subject     string
-		CurrentYear string
-	}{
-		subject,
-		fmt.Sprintf("%d", time.Now().Year()),
-	}
-
-	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, templateName, templateData); err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create assign role mail body"}, errors.WithStack(err)
-	}
-
-	mailBody = out.String()
-
 	if globals.Conf.Features.EnableRolemail {
 		// If Features.EnableRolemail is true, send email through mail service
+		var templateData = struct {
+			Subject     string
+			CurrentYear string
+		}{
+			subject,
+			fmt.Sprintf("%d", time.Now().Year()),
+		}
+
+		if err = contrl.HTMLTemplate.ExecuteTemplate(&out, templateName, templateData); err != nil {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create assign role mail body"}, errors.WithStack(err)
+		}
+
+		mailBody = out.String()
+
 		if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
 			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send role mail to %s", reqBody.Email)}, err
 		}
