@@ -1,5 +1,17 @@
 ## Unreleased
 
+### 7.2.4-rc.15
+
+### Notable Changes
+
+- fix
+  - add onboarding route & set cookie after onboarding
+
+### Commits
+
+- [[`e50029497b`](https://github.com/nodejs/node/commit/e50029497b)] - **fix**: add user id verification for `onboarding` route (Aylie Chou)
+- [[`2c9a797d28`](https://github.com/nodejs/node/commit/2c9a797d28)] - **fix**: add onboarding route & set cookie after onboarding (Aylie Chou)
+
 ### 7.2.4-rc.14
 
 ### Notable Changes

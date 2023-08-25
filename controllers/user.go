@@ -8,8 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 )
@@ -84,20 +82,6 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 			return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, errors.New("Invalid maillist value")
 		}
 		maillists = append(maillists, convertedMaillist)
-	}
-
-	// send explorer role email for first time user
-	user, err := mc.Storage.GetUserByID(fmt.Sprint(userID))
-	if err != nil {
-		return http.StatusInternalServerError, gin.H{"status": "error", "message": "user does not exist"}, err
-	}
-	log.WithFields(log.Fields{
-		"user.Activated.Valid":         user.Activated.Valid,
-		"user.Activated.Time.IsZero()": user.Activated.Time.IsZero(),
-		"sendAssignRoleMail":           !user.Activated.Valid || user.Activated.Time.IsZero(),
-	}).Info("SetUser Activated Role check")
-	if !user.Activated.Valid || user.Activated.Time.IsZero() {
-		go mc.sendAssignRoleMail(constants.RoleExplorer, user.Email.String)
 	}
 
 	// Call UpdateReadPreferenceOfUser to save the preferences.ReadPreference to DB
