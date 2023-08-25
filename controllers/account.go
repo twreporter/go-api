@@ -16,6 +16,7 @@ import (
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/utils"
+	"github.com/twreporter/go-api/configs/constants"
 )
 
 const idTokenExpiration = 60 * 60 * 24 * 30 * 6
@@ -329,4 +330,55 @@ func (mc *MembershipController) TokenInvalidate(c *gin.Context) {
 
 	c.SetCookie(cookieName, "", invalidateExp, defaultPath, defaultDomain, u.Scheme == "https", true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
+}
+
+// Onboarding set user preference & activated
+func (mc *MembershipController) Onboarding(c *gin.Context) (int, gin.H, error) {
+	destination := c.Query("destination")
+	u, _ := url.Parse(destination)
+	userID := c.Param("userID")
+
+	var preferences models.UserPreference
+	err := c.BindJSON(&preferences)
+	if err != nil {
+		fmt.Println("Error decoding JSON:", err)
+		return toResponse(err)
+	}
+
+	// Convert maillist values using the mapping array
+	maillists := make([]string, 0)
+	for _, maillist := range preferences.Maillist {
+		convertedMaillist, exists := globals.Conf.Mailchimp.InterestIDs[maillist]
+		if !exists {
+			return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, errors.New("Invalid maillist value")
+		}
+		maillists = append(maillists, convertedMaillist)
+	}
+
+	// Call UpdateReadPreferenceOfUser to save the preferences.ReadPreference to DB
+	if err = mc.Storage.UpdateReadPreferenceOfUser(userID, preferences.ReadPreference); err != nil {
+		return toResponse(err)
+	}
+
+	// Call CreateMaillistOfUser to save the preferences.Maillist to DB
+	if err = mc.Storage.CreateMaillistOfUser(userID, maillists); err != nil {
+		return toResponse(err)
+	}
+
+	user, _ := mc.Storage.GetUserByID(fmt.Sprint(userID))
+	go mc.sendAssignRoleMail(constants.RoleExplorer, user.Email.String)
+
+	if user.Activated.Valid && !user.Activated.Time.IsZero() {
+		activatedString := user.Activated.Time.Format(time.RFC3339)
+		activatedExpiration := idTokenExpiration
+		defaultDomain := globals.Conf.App.Domain
+		// Determine cookie property
+		secure := false
+		if "https" == u.Scheme {
+			secure = true
+		}
+
+		c.SetCookie("activated", activatedString, activatedExpiration, defaultPath, defaultDomain, secure, true)
+	}
+	return http.StatusCreated, gin.H{"status": "ok", "record": preferences}, nil
 }
