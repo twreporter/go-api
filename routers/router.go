@@ -199,6 +199,6 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v2AuthGroup.GET("/activate", middlewares.SetCacheControl("no-store"), mc.ActivateV2)
 	v2AuthGroup.POST("/token", middlewares.ValidateAuthentication(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.TokenDispatch))
 	v2AuthGroup.GET("/logout", mc.TokenInvalidate)
-	v2Group.POST("/onboarding/:userID", middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.Onboarding))
+	v2Group.POST("/onboarding/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.Onboarding))
 	return
 }
