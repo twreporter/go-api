@@ -2,7 +2,7 @@
 
 ## Released
 
-### 7.2.4
+### 7.3.0 (Current)
 
 ### Notable Changes
 
@@ -137,7 +137,7 @@
 - [[`b6c58d9`](https://github.com/twreporter/go-api/commit/b6c58d9)] - migrations: use current timestamp for updated_at and created_at (Lucien Lu)
 - [[`40ca155`](https://github.com/twreporter/go-api/commit/40ca155)] - migrations: migrations for users_roles table (Lucien Lu)
 
-### 7.2.3 (Current)
+### 7.2.3
 
 ### Notable Changes
 
@@ -300,7 +300,7 @@
 
 ## Released
 
-### 7.0.2 (Current), 2021-10-13
+### 7.0.2, 2021-10-13
 
 #### Notable Changes
 
@@ -464,7 +464,7 @@
 - [[e837034](https://github.com/twreporter/go-api/commit/e83703416b9af31d40cbca3a8d987b9f6e8f4595)] - doc: update the CHANGELOG(Ching-Yang, Tseng)
 - [[8c3a164](https://github.com/twreporter/go-api/commit/8c3a164785e9d920992e6525cd2fd47bf172489c)] - api/news: fix video bson document decoder(Ching-Yang, Tseng)
 
-### 6.1.0 (Current), 2020-08-28
+### 6.1.0, 2020-08-28
 
 #### Notable Changes
 
