@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"context"
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -22,12 +22,13 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
+	"github.com/twreporter/go-mod-lib/pkg/slack"
 	f "github.com/twreporter/logformatter"
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
-	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
-	"github.com/twreporter/go-mod-lib/pkg/slack"
 
+	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
@@ -115,17 +116,17 @@ var linePayMethods = []string{
 
 type (
 	clientReq struct {
-		Amount       uint                 `json:"amount" binding:"required"`
-		Cardholder   models.Cardholder    `json:"donor" binding:"required,dive"`
-		Receipt      models.Receipt       `json:"receipt" binding:"required,dive"`
-		Currency     string               `json:"currency"`
-		Details      string               `json:"details"`
-		Frequency    string               `json:"frequency"`
-		MerchantID   string               `json:"merchant_id"`
-		PayMethod    string               `json:"pay_method"`
-		Prime        string               `json:"prime" binding:"required"`
-		UserID       uint                 `json:"user_id" binding:"required"`
-		MaxPaidTimes uint                 `json:"max_paid_times"`
+		Amount       uint              `json:"amount" binding:"required"`
+		Cardholder   models.Cardholder `json:"donor" binding:"required,dive"`
+		Receipt      models.Receipt    `json:"receipt" binding:"required,dive"`
+		Currency     string            `json:"currency"`
+		Details      string            `json:"details"`
+		Frequency    string            `json:"frequency"`
+		MerchantID   string            `json:"merchant_id"`
+		PayMethod    string            `json:"pay_method"`
+		Prime        string            `json:"prime" binding:"required"`
+		UserID       uint              `json:"user_id" binding:"required"`
+		MaxPaidTimes uint              `json:"max_paid_times"`
 	}
 
 	clientResp struct {
@@ -213,14 +214,14 @@ type (
 	payType int
 
 	patchBody struct {
-		Donor            models.Cardholder    `json:"donor"`
-		Receipt          models.Receipt       `json:"receipt"`
-		Notes            string               `json:"notes"`
-		SendReceipt      string               `json:"send_receipt"`
-		ToFeedback       bool                 `json:"to_feedback"`
-		UserID           uint                 `json:"user_id" binding:"required"`
-		IsAnonymous      bool                 `json:"is_anonymous"`
-		AutoTaxDeduction bool                 `json:"auto_tax_deduction"`
+		Donor            models.Cardholder `json:"donor"`
+		Receipt          models.Receipt    `json:"receipt"`
+		Notes            string            `json:"notes"`
+		SendReceipt      string            `json:"send_receipt"`
+		ToFeedback       bool              `json:"to_feedback"`
+		UserID           uint              `json:"user_id" binding:"required"`
+		IsAnonymous      bool              `json:"is_anonymous"`
+		AutoTaxDeduction bool              `json:"auto_tax_deduction"`
 	}
 
 	queryFilterTime struct {
@@ -548,6 +549,42 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 
 }
 
+func (mc *MembershipController) sendAssignRoleMail(roleKey string, email string) {
+	var mailPath string
+
+	reqBody := assignRoleReqBody{
+		RoleKey: roleKey,
+		Email:   email,
+	}
+
+	switch roleKey {
+	case constants.RoleExplorer:
+		mailPath = globals.SendRoleExplorerRoutePath
+	case constants.RoleActionTaker:
+		mailPath = globals.SendRoleActiontakerRoutePath
+	case constants.RoleTrailblazer:
+		mailPath = globals.SendRoleTrailblazerRoutePath
+	default:
+		err := errors.New(fmt.Sprintf("invalid roleKey while sendAssignRoleMail: %s", roleKey))
+
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", err)
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+	}
+
+	if err := postMailServiceEndpoint(reqBody, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, mailPath)); err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("fail to send assign role mail: (%s) %s", roleKey, email))
+		if globals.Conf.Environment == "development" {
+			log.Errorf("%+v", err)
+		} else {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+	}
+
+}
+
 // Handler for an authenticated user to create a periodic donation
 func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (int, gin.H, error) {
 	// Validate client request
@@ -629,17 +666,53 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	// publish to cloud pub/sub
 	ms := []*cloudpub.Message{
 		&cloudpub.Message{
-			ID: periodicDonation.ID,
+			ID:          periodicDonation.ID,
 			OrderNumber: periodicDonation.OrderNumber,
-			Type: globals.PeriodicDonationType,
+			Type:        globals.PeriodicDonationType,
 		},
 		&cloudpub.Message{
-			ID: tokenDonation.ID,
+			ID:          tokenDonation.ID,
 			OrderNumber: tokenDonation.OrderNumber,
-			Type: globals.TokenDonationType,
+			Type:        globals.TokenDonationType,
 		},
 	}
 	go publishToNeticrm(ms)
+
+	// Concurrently update the user's activated time
+	go func(email string) {
+		matchedUser, err := mc.Storage.GetUserByEmail(email)
+		if nil != err {
+			log.Errorf("Error retrieving user data: %v", err)
+			return
+		}
+
+		matchedUser.Activated = null.TimeFrom(time.Now())
+		err = mc.Storage.UpdateUser(matchedUser)
+		if nil != err {
+			log.Errorf("Error updating user activated time: %v", err)
+		}
+
+		// Call AssignRoleToUser to assign role to user
+		var role string
+		isTrailblazer, err := mc.Storage.IsTrailblazer(email)
+		if err != nil {
+			log.Errorf("Error checking user donations: %v", err)
+		}
+		if isTrailblazer {
+			role = constants.RoleTrailblazer
+		} else {
+			role = constants.RoleActionTaker
+		}
+		roleCheck, _ := mc.Storage.HasRole(matchedUser, role)
+		err = mc.Storage.AssignRoleToUser(matchedUser, role)
+		if err != nil {
+			log.Errorf("Error updating user role: %v", err)
+		}
+
+		if !roleCheck {
+			go mc.sendAssignRoleMail(role, email)
+		}
+	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -727,12 +800,44 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// publish to cloud pub/sub
 	ms := []*cloudpub.Message{
 		&cloudpub.Message{
-			ID: primeDonation.ID,
+			ID:          primeDonation.ID,
 			OrderNumber: primeDonation.OrderNumber,
-			Type: globals.PrimeDonationType,
+			Type:        globals.PrimeDonationType,
 		},
 	}
 	go publishToNeticrm(ms)
+
+	// Concurrently update the user's activated time
+	go func(email string) {
+		matchedUser, err := mc.Storage.GetUserByEmail(reqBody.Cardholder.Email)
+		if nil != err {
+			log.Errorf("Error retrieving user data: %v", err)
+			return
+		}
+
+		matchedUser.Activated = null.TimeFrom(time.Now())
+		err = mc.Storage.UpdateUser(matchedUser)
+		if nil != err {
+			log.Errorf("Error updating user activated time: %v", err)
+		}
+
+		// Call AssignRoleToUser to assign role to user
+		HasTrailblazer, err := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
+		if err != nil {
+			log.Errorf("Error checking user roles: %v", err)
+		}
+		if !HasTrailblazer {
+			roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
+			err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
+			if err != nil {
+				log.Errorf("Error updating user role: %v", err)
+			}
+
+			if !roleCheck {
+				go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
+			}
+		}
+	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -800,7 +905,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	ms := []*cloudpub.Message{
 		&cloudpub.Message{
 			OrderNumber: orderNumber,
-			Type: donationType,
+			Type:        donationType,
 		},
 	}
 	go publishToNeticrm(ms)
@@ -808,7 +913,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 	return http.StatusNoContent, gin.H{}, nil
 }
 
-func BuildUserFromCardholder(c *models.Cardholder) (*models.User) {
+func BuildUserFromCardholder(c *models.Cardholder) *models.User {
 	u := new(models.User)
 	u.FirstName = c.FirstName
 	u.LastName = c.LastName
@@ -833,7 +938,7 @@ func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder,
 	u := BuildUserFromCardholder(c)
 
 	if err, _ := mc.Storage.UpdateByConditions(map[string]interface{}{
-		"id":      userID,
+		"id": userID,
 	}, u); err != nil {
 		err = errors.Wrap(err, fmt.Sprintf("fail to update user %d by cardholder", userID))
 
@@ -848,7 +953,7 @@ func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder,
 	// publish to cloud pub/sub
 	ms := []*cloudpub.Message{
 		&cloudpub.Message{
-			ID: userID,
+			ID:   userID,
 			Type: globals.UserType,
 		},
 	}
@@ -1014,7 +1119,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		ms := []*cloudpub.Message{
 			&cloudpub.Message{
 				OrderNumber: callbackPayload.OrderNumber,
-				Type: globals.PrimeDonationType,
+				Type:        globals.PrimeDonationType,
 			},
 		}
 		go publishToNeticrm(ms)

@@ -37,6 +37,13 @@ type MembershipStorage interface {
 	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
 	UpdateOAuthData(models.OAuthAccount) (models.OAuthAccount, error)
 	UpdateReporterAccount(models.ReporterAccount) error
+	CreateMaillistOfUser(string, []string) error
+	UpdateReadPreferenceOfUser(string, []string) error
+	UpdateUser(models.User) error
+	AssignRoleToUser(models.User, string) error
+	GetRole(models.User) (models.Role, error)
+	HasRole(user models.User, roleKey string) (bool, error)
+	IsTrailblazer(email string) (bool, error)
 
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)

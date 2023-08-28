@@ -2,8 +2,13 @@
 
 ### SigninRequest
 + email: user@example.com (required)
++ onboarding: https://accounts-twreporter.org/onboarding
 + destination: https://www.twreporter.org
 + errorRedirection: https://www.twreporter.org
+
+### SigninResponse
++ data (object, required) - The user data
+    + email: example@email.com (string) - The user email
 
 # Group Membership Service
 Twreporter Membership service api
@@ -21,12 +26,12 @@ Validate the logining user and send the activation email
     + Attributes
         + status: success (required)
         + data (SigninRequest, required)
-        
+
 + Response 201 (application/json)
-    
+
     + Attributes
         + status: success (required)
-        + data (SigninRequest, required) 
+        + data (SigninRequest, required)
 
 + Response 400
 
@@ -56,12 +61,12 @@ Validate the logining user and send the authentication email
     + Attributes
         + status: success (required)
         + data (SigninRequest, required)
-        
+
 + Response 201 (application/json)
-    
+
     + Attributes
         + status: success (required)
-        + data (SigninRequest, required) 
+        + data (SigninRequest, required)
 
 + Response 400
 
@@ -87,11 +92,11 @@ Send identity token if valid user sigins
     + destination: https://www.twreporter.org (optional)
 
 + Response 302
-    
+
     + Headers
-            
+
             Set-Cookie: id_token=<cookie value>; Domain=twreporter.org; Max-Age=15552000; HttpOnly; Secure
- 
+
 ## Token [/v2/token]
 Authenticate user request and grant access token to the corresponding domain
 
@@ -99,25 +104,25 @@ Authenticate user request and grant access token to the corresponding domain
 + Request
 
     + Headers
-            
+
             Cookie: id_token=<cookie value>
 
 + Response 200
-    
+
     + Attributes
         + status: success (required)
         + data
             + jwt: access_token (required)
 
 + Response 401
-    
+
     + Attributes
         + status: fail (required)
         + data
             + `req.Headers.Cookie.id_token`: id_token is invalid
 
 + Response 500
- 
+
     + Attributes
         + status: error (required)
         + message: cannot get user data
@@ -131,3 +136,59 @@ Invalidate the identity token set on the root domain
 
 + Response 302
 
+## 6-digit OTP Logins [/v3/signin]
+Validate the logining user and send the signin email with 6-digit code
+
+### SignInV3 [POST]
+
++ Request with Body (application/json)
+
+    + Attributes
+        + email (string, required) - The email of the user
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (string, required)
+        + data(SigninResponse)
+
++ Response 400
+
+    + Attributes
+        + status: fail (required)
+        + message: Bad Request - The request body is missing required parameters or contains invalid data
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Internal Server Error - An error occurred while processing the request
+
+## 6-digit OTP Logins [/v3/activate]
+Verify the logining user with email and 6-digit code
+
+### ActivateV3 [POST]
+
++ Request with Body (application/json)
+
+    + Attributes
+        + email (string, required) - The email of the user
+        + code (string, required) - The 6-digit code in the signin mail
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (string, required)
+        + data(SigninResponse)
+
++ Response 400
+
+    + Attributes
+        + status: fail (required)
+        + message: Bad Request - The request body is missing required parameters or contains invalid data
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Internal Server Error - An error occurred while processing the request

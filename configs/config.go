@@ -80,6 +80,14 @@ neticrm:
     project_id: "" # gcp project id
     pub_topic: "" # pub/sub topic
     slack_webhook: "" # slack notify webhook
+mailchimp:
+    interest_ids:
+        featured: 2f1c91a75a # 報導者精選
+        behind_the_scenes: 219df4131b # 採訪幕後故事
+        operational_journal: ca9d491549 # 報導者營運手記
+        event_updates: 0345c43d67 # 活動資訊與最新動態
+features:
+    enable_rolemail: false
 `)
 
 type ConfYaml struct {
@@ -94,6 +102,8 @@ type ConfYaml struct {
 	Encrypt     EncryptConfig    `yaml:"encrypt"`
 	News        NewsConfig       `yaml:"news"`
 	Neticrm     NeticrmPubConfig `yaml:"neticrm"`
+	Mailchimp   MailchimpConfig  `yaml:"mailchimp"`
+	Features    FeaturesConfig   `yaml:"features"`
 }
 
 type CorsConfig struct {
@@ -196,9 +206,17 @@ type NewsConfig struct {
 }
 
 type NeticrmPubConfig struct {
-	ProjectID      string        `yaml:"project_id"`
-	Topic          string        `yaml:"pub_topic"`
-	SlackWebhook   string        `yaml:"slack_webhook"`
+	ProjectID    string `yaml:"project_id"`
+	Topic        string `yaml:"pub_topic"`
+	SlackWebhook string `yaml:"slack_webhook"`
+}
+
+type MailchimpConfig struct {
+	InterestIDs map[string]string `yaml:"interest_ids"`
+}
+
+type FeaturesConfig struct {
+	EnableRolemail bool `yaml:"enable_rolemail"`
 }
 
 func init() {
@@ -283,9 +301,17 @@ func buildConf() ConfYaml {
 	conf.News.IndexPageTimeout = viper.GetDuration("news.index_page_timeout")
 	conf.News.AuthorPageTimeout = viper.GetDuration("news.author_page_timeout")
 
+	// Neticrm
 	conf.Neticrm.ProjectID = viper.GetString("neticrm.project_id")
 	conf.Neticrm.Topic = viper.GetString("neticrm.pub_topic")
 	conf.Neticrm.SlackWebhook = viper.GetString("neticrm.slack_webhook")
+
+	// Mailchimp
+	conf.Mailchimp.InterestIDs = viper.GetStringMapString("mailchimp.interest_ids")
+
+	// Feature Toggles
+	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
+
 	return conf
 }
 

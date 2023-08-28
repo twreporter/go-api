@@ -86,6 +86,12 @@ func beginAuth(c *gin.Context, conf *oauth2.Config) {
 	session := sessions.Default(c)
 	session.Set("state", state)
 	session.Set("destination", destination)
+
+	// set onboading if exist
+	if onBoarding := c.Query("onboarding"); onBoarding != "" {
+		session.Set("onboarding", onBoarding)
+	}
+
 	err = session.Save()
 	if err != nil {
 		err = errors.WithStack(err)
@@ -302,6 +308,17 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 		return
 	}
 
+	// redirect to onboarding page if user is not activated
+	isActivate := matchUser.Activated.Valid
+	onBoarding := session.Get("onboarding")
+	if (!isActivate && onBoarding != nil) {
+		fmt.Println("add onboarding")
+		destination = fmt.Sprintf("%s?destination=%s",
+			onBoarding.(string),
+			url.QueryEscape(destination),
+		)
+	}
+
 	if token, err = utils.RetrieveV2IDToken(matchUser.ID, matchUser.Email.ValueOrZero(), matchUser.FirstName.ValueOrZero(), matchUser.LastName.ValueOrZero(), idTokenExpiration); err != nil {
 		err = errors.Wrap(err, "oauth fails due to generate JWT error:")
 		c.Redirect(http.StatusTemporaryRedirect, destination)
@@ -329,6 +346,12 @@ func (o *OAuth) Authenticate(c *gin.Context) {
 	// set domain to .twreporter.org
 	// so each hostname of [www|support|tsai-tracker].twreporter.org will be applied
 
+	var activatedString string
+	if matchUser.Activated.Valid && !matchUser.Activated.Time.IsZero() {
+		activatedString = matchUser.Activated.Time.Format(time.RFC3339)
+	}
+
+	c.SetCookie("activated", activatedString, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
 	c.SetCookie("id_token", token, maxAge, "/", "."+globals.Conf.App.Domain, secure, true)
 	c.Redirect(http.StatusTemporaryRedirect, destination)
 }
