@@ -1,118 +1,84 @@
 ## Unreleased
 
-### 7.2.4-rc.15
+## Released
+
+### 7.3.0 (Current)
 
 ### Notable Changes
 
-- fix
-  - add onboarding route & set cookie after onboarding
+- Fixes
+  - Add onboarding route & set cookie after onboarding
+  - Refine role mail feature toggle
+  - Replacement keyword issue
+  - Typo in code comments
+  - Removal of roleCheck in setUser function
+  - Sending Explorer role mail only if the user is an Explorer
+  - Change IsTrailblazer SQL condition
+  - Role assign mail templates loader
+  - Typo in code
+  - Trailblazer donate downgrade bug
+  - Fine-tuned roleCheck logic
+  - Added role check before sending role change email
+  - Sending explorer email only when the user is activated
+  - Refactored sendRoleMail and updated trailblazer email handling
+  - Updated variables for better code clarity
+  - Changed role condition regarding periodic donations in the trailblazerCheck feature
+  - Added a 2 months condition to the trailblazer check
+  - Mysql query
+  - Replace Clear and Append with Replace
+  - Fix typo in test
+  - Fix typo for setUser route
+
+- Features
+  - Add feature toggle for sending role mail
+  - Added role assign related emails
+  - Updated trailblazer check to accommodate multiple periodic donations
+  - Add donation role flows
+  - Add role assign function
+  - Change role related operation from ID to Key
+  - Redirect to onboarding URL if the user is deactivated after signing in
+  - Add `onboarding` parameter for auth & OAuth API
+
+- Documentation
+  - Add role key column
+  - Add new User section
+
+- Migrations
+  - Add migration for role table key column
+  - Add migration for user table activated column
+  - Add migration for job queue
+  - Create roles and users_roles table [#540](https://github.com/twreporter/go-api/pull/540)
+
+- API/User
+  - Change getUser's response preferences and maillist from string to array
+  - New function for setting user's preferences and maillist related
+  - Add activated field to getUser API
+  - Fix first/last name for the user
+  - Add goroutine for activated update
+
+- Tests
+  - Fix tests
+
+- Typos
+  - Fix typo
 
 ### Commits
 
 - [[`e50029497b`](https://github.com/nodejs/node/commit/e50029497b)] - **fix**: add user id verification for `onboarding` route (Aylie Chou)
 - [[`2c9a797d28`](https://github.com/nodejs/node/commit/2c9a797d28)] - **fix**: add onboarding route & set cookie after onboarding (Aylie Chou)
-
-### 7.2.4-rc.14
-
-### Notable Changes
-
-- fix
-  - Refine role mail feature toggle
-  
-- feat
-  - Add feature toggle for sending role mail
-
-### Commits
-
 - [[`ee666d4`](https://github.com/twreporter/go-api/commit/ee666d4)] - fix: Refine role mail feature toggle
 - [[`11248b2`](https://github.com/twreporter/go-api/commit/11248b2)] - feat: Add feature toggle for sending role mail
-
-### 7.2.4-rc.13
-
-### Notable Changes
-
-- fix
-  - Replacement keyword issue
-
-### Commits
-
 - [[`7ddc215`](https://github.com/twreporter/go-api/commit/7ddc215)] - fix: Replacement keyword issue
-
-### 7.2.4-rc.12
-
-### Notable Changes
-
-- fix
-  - Typo in code comments
-  - Removal of roleCheck in setUser function
-  - Sending Explorer role mail only if the user is an Explorer
-
-### Commits
-
 - [[`f4e3f74`](https://github.com/twreporter/go-api/commit/f4e3f74)] - fix: typo
 - [[`61a527c`](https://github.com/twreporter/go-api/commit/61a527c)] - fix: remove roleCheck in setUser
 - [[`4293783`](https://github.com/twreporter/go-api/commit/4293783)] - fix: only send Explorer role mail if is Explorer
-
-### 7.2.4-rc.11
-
-### Notable Changes
-
-- fix
-  - Role activation and checks
-  - Role-related email handling
-  - Unused string removal from templates
-
-### Commits
-
 - [[`0ca38e6`](https://github.com/twreporter/go-api/commit/0ca38e6)] - fix: only role check if not activated
 - [[`fbffc83`](https://github.com/twreporter/go-api/commit/fbffc83)] - fix: only role check if not activated
 - [[`fd2f6d8`](https://github.com/twreporter/go-api/commit/fd2f6d8)] - fix: move role mail from signin to setUser
 - [[`2c2444e`](https://github.com/twreporter/go-api/commit/2c2444e)] - fix: remove unused string from template
-
-### 7.2.4-rc.10
-
-### Notable Changes
-
-- fix
-  - Change IsTrailblazer SQL condition
-
-### Commits
-
-- [[`22ed4f5`](https://github.com/twreporter/go-api/commit/22ed4f5)] - fix: change IsTrailblazer SQL condition
-
-### 7.2.4-rc.9
-
-### Notable Changes
-
-- fix
-  - Role assign mail templates loader
-  - Add detail logs
-
-### Commits
-
+- [[`22ed4f5`](https://github.com/twreporter/go-api/commit/22ed4f5)] - fix: Change IsTrailblazer SQL condition
 - [[`9e94c34`](https://github.com/twreporter/go-api/commit/9e94c34)] - fix: add detail logs
 - [[`c62abc8`](https://github.com/twreporter/go-api/commit/c62abc8)] - fix: role assign mail templates loader
-
-### 7.2.4-rc.8
-
-### Notable Changes
-
-- fix
-  - Typo in code
-  - Trailblazer donate downgrade bug
-  - Fine-tuned roleCheck logic
-  - Added role check before sending role change email
-  - Sending explorer email only when user is activated
-  - Refactored sendRoleMail and updated trailblazer email handling
-  - Updated variables for better code clarity
-  - Changed role condition regarding periodic donations in the trailblazerCheck feature
-  - Added a 2 months condition to the trailblazer check
-- feat
-  - Added role assign related emails
-  - Updated trailblazer check to accommodate multiple periodic donations
-
-### Commits
-
 - [[`ece2bc9`](https://github.com/twreporter/go-api/commit/ece2bc9)] - fix: typo
 - [[`ddadb1e`](https://github.com/twreporter/go-api/commit/ddadb1e)] - fix: trailblazer donate downgrade bug
 - [[`79f93b4`](https://github.com/twreporter/go-api/commit/79f93b4)] - fix: fine-tune roleCheck logic
@@ -124,91 +90,18 @@
 - [[`9098bbd`](https://github.com/twreporter/go-api/commit/9098bbd)] - fix: change role condition about periodic_donations
 - [[`0212acc`](https://github.com/twreporter/go-api/commit/0212acc)] - feat: Update trailblazer check for multiple periodic donations
 - [[`9a22964`](https://github.com/twreporter/go-api/commit/9a22964)] - fix: Add 2 months condition to trailblazer check
-
-### 7.2.4-rc.7
-
-### Notable Changes
-
-- fix
-  - Mysql query
-
-### Commits
-
 - [[`6cac8d8`](https://github.com/twreporter/go-api/commit/6cac8d8)] - Merge pull request #563 from howar31/master 
 - [[`2c9f53d`](https://github.com/twreporter/go-api/commit/2c9f53d)] - fix: Fix role replacement query
-
-### 7.2.4-rc.6
-
-### Notable Changes
-
-- role
-  - Add donation role flows
-  - Add role assign function
-  - Change role related operation from ID to Key
-- fix
-  - Replace Clear and Append with Replace
-  - Fix typo
-
-### Commits
-
 - [[`27389bf`](https://github.com/twreporter/go-api/commit/27389bf)] - Merge pull request #556 from howar31/master
 - [[`8d417cf`](https://github.com/twreporter/go-api/commit/8d417cf)] - fix: replace Clear and Append with Replace
 - [[`991f4bf`](https://github.com/twreporter/go-api/commit/991f4bf)] - fix: typo
 - [[`bfd17fd`](https://github.com/twreporter/go-api/commit/bfd17fd)] - fix: Change role related operation from ID to Key
 - [[`6b0d7cf`](https://github.com/twreporter/go-api/commit/6b0d7cf)] - feat: Add donation role flows
 - [[`6c26368`](https://github.com/twreporter/go-api/commit/6c26368)] - feat: Add role assign function
-
-### 7.2.4-rc.5
-
-### Notable Changes
-
-- api/auth, api/oauth
-  - redirect to onboarding url if user deactivated after signin
-- doc
-  - add `onboarding` parameter for auth & oauth api
-
-### Commits
-
 - [[`a6906021cc`](https://github.com/twreporter/go-api/commit/a6906021cc)] - **fix**: add updated `index.html` (Aylie Chou)
 - [[`65a0d7eee9`](https://github.com/twreporter/go-api/commit/65a0d7eee9)] - **fix**: add onboarding url on oauth destination (Aylie Chou)
 - [[`28e98c6e97`](https://github.com/twreporter/go-api/commit/28e98c6e97)] - **fix**: redirect to onboarding url if user deactivated (Aylie Chou)
-
-### 7.2.4-rc.4
-
-### Notable Changes
-
-- migration
-  - Add migration for role table key column
-- api/user
-  - Change getUser's response preferences and maillist from string to array
-- doc
-  - Add role key column
-
-### Commits
-
 - [[`c33ff42`](https://github.com/twreporter/go-api/commit/c33ff42)] - Merge pull request #555 from liruchen32/fix/fix-user-api-response
-
-### 7.2.4-rc.3
-
-### Notable Changes
-
-- migration
-  - Add migration for user table activated column
-- api/user
-  - New function for setting user's preferences and maillist related
-  - Add activated field to getUser API
-  - Fix first/last name for user
-  - Add goroutine for activated update
-- doc
-  - Add new User section
-- tests
-  - Fix tests
-- typo
-  - Fix typo in test
-  - Fix typo for setUser route
-
-### Commits
-
 - [[`da6cbfe`](https://github.com/twreporter/go-api/commit/da6cbfe)] - Merge pull request #552 from howar31/feat-getuser
 - [[`c18209a`](https://github.com/twreporter/go-api/commit/c18209a)] - fix: reviews
 - [[`2b1f789`](https://github.com/twreporter/go-api/commit/2b1f789)] - Merge branch 'master' into feat-getuser
@@ -222,20 +115,6 @@
 - [[`4873ba3`](https://github.com/twreporter/go-api/commit/4873ba3)] - feat: implement GetUser API
 - [[`b4792b1`](https://github.com/twreporter/go-api/commit/b4792b1)] - fix: typo in test
 - [[`8ac57a6`](https://github.com/twreporter/go-api/commit/8ac57a6)] - fix: typo for setUser route
-
-### 7.2.4-rc.2
-
-### Notable Changes
-
-- migration
-  - Add migration for job queue
-- api/user
-  - New function for setting user's preferences and maillist related
-- doc
-  - Add new User section
-
-### Commits
-
 - [[`60ae353`](https://github.com/twreporter/go-api/commit/60ae353)] - feat: Add Mailgroup, SetUser related functions
 - [[`77d708b`](https://github.com/twreporter/go-api/commit/77d708b)] - Merge branch 'twreporter:master' into master
 - [[`26f0957`](https://github.com/twreporter/go-api/commit/26f0957)] - fix: refactor naming for read preference
@@ -254,31 +133,11 @@
 - [[`13b5c70`](https://github.com/twreporter/go-api/commit/13b5c70)] - fix: reviews, seperate to user.apib
 - [[`61f668a`](https://github.com/twreporter/go-api/commit/61f668a)] - fix: reveal read_preferences
 - [[`c8c52d1`](https://github.com/twreporter/go-api/commit/c8c52d1)] - fix: resolve migration sequence
-
-### 7.2.4-rc.1
-
-### Notable Changes
-
-- migrations
-  - create roles and users_roles table [#540](https://github.com/twreporter/go-api/pull/540)
-
-### Commits
-
 - [[`2198d0a`](https://github.com/twreporter/go-api/commit/2198d0a)] - migrations: migrations for roles table (Lucien Lu)
 - [[`b6c58d9`](https://github.com/twreporter/go-api/commit/b6c58d9)] - migrations: use current timestamp for updated_at and created_at (Lucien Lu)
 - [[`40ca155`](https://github.com/twreporter/go-api/commit/40ca155)] - migrations: migrations for users_roles table (Lucien Lu)
 
-### 7.2.4-rc.0
-
-### Notable Changes
-
-- bump version to trigger CI/CD for applying new k8s config
-
-### Commits
-
-## Released
-
-### 7.2.3 (Current)
+### 7.2.3
 
 ### Notable Changes
 
@@ -441,7 +300,7 @@
 
 ## Released
 
-### 7.0.2 (Current), 2021-10-13
+### 7.0.2, 2021-10-13
 
 #### Notable Changes
 
@@ -605,7 +464,7 @@
 - [[e837034](https://github.com/twreporter/go-api/commit/e83703416b9af31d40cbca3a8d987b9f6e8f4595)] - doc: update the CHANGELOG(Ching-Yang, Tseng)
 - [[8c3a164](https://github.com/twreporter/go-api/commit/8c3a164785e9d920992e6525cd2fd47bf172489c)] - api/news: fix video bson document decoder(Ching-Yang, Tseng)
 
-### 6.1.0 (Current), 2020-08-28
+### 6.1.0, 2020-08-28
 
 #### Notable Changes
 
