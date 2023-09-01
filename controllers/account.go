@@ -192,7 +192,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	errorRedirection := c.Query("error_redirection")
 
 	_, err := url.Parse(errorRedirection)
-	if nil != err {
+	if nil != err || errorRedirection == '' {
 		errorRedirection = defaultRedirectPage
 	}
 
