@@ -1,6 +1,8 @@
 ## Unreleased
 
-### 7.3.2
+## Released
+
+### 7.3.2 (Current)
 
 ### Notable Changes
 
@@ -10,10 +12,7 @@
 ### Commits
 * \[[`7ae0a04317`](https://github.com/twreporter/go-api/commit/7ae0a04317)] - **fix**: quick fix oAuth authentication failures (nickhsine)
 
-
-## Released
-
-### 7.3.1 (Current)
+### 7.3.1 
 
 ### Notable Changes
 
