@@ -85,7 +85,6 @@ mailchimp:
         featured: 2f1c91a75a # 報導者精選
         behind_the_scenes: 219df4131b # 採訪幕後故事
         operational_journal: ca9d491549 # 報導者營運手記
-        event_updates: 0345c43d67 # 活動資訊與最新動態
 features:
     enable_rolemail: false
 `)
@@ -307,7 +306,10 @@ func buildConf() ConfYaml {
 	conf.Neticrm.SlackWebhook = viper.GetString("neticrm.slack_webhook")
 
 	// Mailchimp
-	conf.Mailchimp.InterestIDs = viper.GetStringMapString("mailchimp.interest_ids")
+	conf.Mailchimp.InterestIDs = make(map[string]string)
+	conf.Mailchimp.InterestIDs["featured"] = viper.GetString("mailchimp.interest_ids.featured")
+	conf.Mailchimp.InterestIDs["behind_the_scenes"] = viper.GetString("mailchimp.interest_ids.behind_the_scenes")
+	conf.Mailchimp.InterestIDs["operational_journal"] = viper.GetString("mailchimp.interest_ids.operational_journal")
 
 	// Feature Toggles
 	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
