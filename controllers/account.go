@@ -220,15 +220,10 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	}
 
 	// check expire time
-	//if ra.ActExpTime.Sub(time.Now()) < time.Duration(0) {
-	//  err = errors.New("ActivateToken is expired")
-	//  return
-	//}
-
-	if ra.ActExpTime < time.Now() {
-		err = errors.New("ActivateToken is expired")
-		return
-	}
+  if ra.ActExpTime.Sub(time.Now()) < time.Duration(0) {
+    err = errors.New("ActivateToken is expired")
+    return
+  }
 
 	// validate token
 	if ra.ActivateToken != token {
