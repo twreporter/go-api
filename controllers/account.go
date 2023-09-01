@@ -12,11 +12,11 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/utils"
-	"github.com/twreporter/go-api/configs/constants"
 )
 
 const idTokenExpiration = 60 * 60 * 24 * 30 * 6
@@ -192,7 +192,7 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	errorRedirection := c.Query("error_redirection")
 
 	_, err := url.Parse(errorRedirection)
-	if nil != err || errorRedirection == '' {
+	if nil != err || errorRedirection == "" {
 		errorRedirection = defaultRedirectPage
 	}
 
@@ -220,10 +220,10 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	}
 
 	// check expire time
-  if ra.ActExpTime.Sub(time.Now()) < time.Duration(0) {
-    err = errors.New("ActivateToken is expired")
-    return
-  }
+	if ra.ActExpTime.Sub(time.Now()) < time.Duration(0) {
+		err = errors.New("ActivateToken is expired")
+		return
+	}
 
 	// validate token
 	if ra.ActivateToken != token {
