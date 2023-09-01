@@ -1,8 +1,39 @@
 ## Unreleased
 
+### 7.3.2
+
+### Notable Changes
+
+- Fixes
+  - "oauth fails due to database operation error:: Error 1406: Data too long for column 'picture' at row 1" error.
+
+### Commits
+* \[[`7ae0a04317`](https://github.com/twreporter/go-api/commit/7ae0a04317)] - **fix**: quick fix oAuth authentication failures (nickhsine)
+
+
 ## Released
 
-### 7.3.0 (Current)
+### 7.3.1 (Current)
+
+### Notable Changes
+
+- fix
+  - Typo and style
+  - Set defaultRedirectPage if errorRedirection not provided
+  - Mailchimp interest id environment
+  - Code does not run
+  - Quick solve authentication failure
+
+### Commits
+
+- [[`fb91a28`](https://github.com/twreporter/go-api/commit/fb91a28)] - fix: Typo and style
+- [[`3bf8a8f`](https://github.com/twreporter/go-api/commit/3bf8a8f)] - Merge branch 'twreporter:master' into master
+- [[`cc7fad6`](https://github.com/twreporter/go-api/commit/cc7fad6)] - fix: Set defaultRedirectPage if errorRedirection not provided
+- [[`9f2adb2`](https://github.com/twreporter/go-api/commit/9f2adb2)] - fix: Mailchimp interest id env
+- [[`9a0b4d7`](https://github.com/twreporter/go-api/commit/9a0b4d7)] - fix: Code does not run
+- [[`264eea7`](https://github.com/twreporter/go-api/commit/264eea7)] - fix: Quick solve authentication failure
+
+### 7.3.0
 
 ### Notable Changes
 
