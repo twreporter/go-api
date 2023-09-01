@@ -220,7 +220,12 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	}
 
 	// check expire time
-	if ra.ActExpTime.Sub(time.Now()) < time.Duration(0) {
+	//if ra.ActExpTime.Sub(time.Now()) < time.Duration(0) {
+	//  err = errors.New("ActivateToken is expired")
+	//  return
+	//}
+
+	if ra.ActExpTime < time.Now() {
 		err = errors.New("ActivateToken is expired")
 		return
 	}
@@ -232,12 +237,12 @@ func (mc *MembershipController) ActivateV2(c *gin.Context) {
 	}
 
 	// set active expire time to now to ensure the same token only being used once
-	ra.ActExpTime = time.Now()
+	// ra.ActExpTime = time.Now()
 
 	// Error occurs during updating the record in reporter_account table
-	if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
-		return
-	}
+	//if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
+	//  return
+	//}
 
 	// Error occurs during querying the record from users table
 	if user, err = mc.Storage.GetUserDataByReporterAccount(ra); err != nil {
