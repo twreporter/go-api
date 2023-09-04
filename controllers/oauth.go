@@ -38,17 +38,17 @@ type facebookOauthInfoRaw struct {
 	AId        null.String `json:"id"`
 	FirstName  null.String `json:"first_name"`
 	LastName   null.String `json:"last_name"`
-	PictureObj struct {
-		Data struct {
-			URL null.String `json:"url"`
-		} `json:"data"`
-	} `json:"picture"`
+	//PictureObj struct {
+	//  Data struct {
+	//    URL null.String `json:"url"`
+	//  } `json:"data"`
+	//} `json:"picture"`
 }
 
 // Picture is used by copier to copy PictureObj.Data.URL field to Picture field
-func (info *facebookOauthInfoRaw) Picture() null.String {
-	return info.PictureObj.Data.URL
-}
+//func (info *facebookOauthInfoRaw) Picture() null.String {
+//  return info.PictureObj.Data.URL
+//}
 
 func (info *facebookOauthInfoRaw) Gender() null.String {
 	return utils.GetGender(info.basicInfo.Gender)
@@ -59,7 +59,7 @@ type googleOauthInfoRaw struct {
 	AId       null.String `json:"sub"`
 	FirstName null.String `json:"given_name"`
 	LastName  null.String `json:"family_name"`
-	Picture   null.String `json:"picture"`
+	// Picture   null.String `json:"picture"`
 }
 
 func (info *googleOauthInfoRaw) Gender() null.String {

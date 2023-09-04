@@ -2,7 +2,17 @@
 
 ## Released
 
-### 7.3.1 (Current)
+### 7.3.2 (Current)
+
+### Notable Changes
+
+- Fixes
+  - "oauth fails due to database operation error:: Error 1406: Data too long for column 'picture' at row 1" error.
+
+### Commits
+* \[[`7ae0a04317`](https://github.com/twreporter/go-api/commit/7ae0a04317)] - **fix**: quick fix oAuth authentication failures (nickhsine)
+
+### 7.3.1 
 
 ### Notable Changes
 
