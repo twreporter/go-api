@@ -1145,7 +1145,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 					go mc.sendAssignRoleMail(constants.RoleActionTaker, email)
 				}
 			}
-		}(updateData.Cardholder.Email)
+		}(mail.Cardholder.Email)
 
 		// publish to cloud pub/sub
 		ms := []*cloudpub.Message{

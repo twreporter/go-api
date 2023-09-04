@@ -1,5 +1,17 @@
 ## Unreleased
 
+### 7.3.4-rc.0
+
+### Notable Changes
+
+- fix
+  - LinePay role mail when success
+
+### Commits
+
+- [[`8286e2b`](https://github.com/your-repo/commit/8286e2b)] - fix: LinePay role mail when success
+
+
 ## Released
 
 ### 7.3.3 (Current)
