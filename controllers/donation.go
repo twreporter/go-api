@@ -795,6 +795,38 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// send success mail asynchronously
 	if primeDonation.Status == statusPaid {
 		go mc.sendDonationThankYouMail(*resp)
+
+		// Concurrently update the user's activated time
+		go func(email string) {
+			matchedUser, err := mc.Storage.GetUserByEmail(reqBody.Cardholder.Email)
+			if nil != err {
+				log.Errorf("Error retrieving user data: %v", err)
+				return
+			}
+
+			matchedUser.Activated = null.TimeFrom(time.Now())
+			err = mc.Storage.UpdateUser(matchedUser)
+			if nil != err {
+				log.Errorf("Error updating user activated time: %v", err)
+			}
+
+			// Call AssignRoleToUser to assign role to user
+			HasTrailblazer, err := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
+			if err != nil {
+				log.Errorf("Error checking user roles: %v", err)
+			}
+			if !HasTrailblazer {
+				roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
+				err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
+				if err != nil {
+					log.Errorf("Error updating user role: %v", err)
+				}
+
+				if !roleCheck {
+					go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
+				}
+			}
+		}(reqBody.Cardholder.Email)
 	}
 
 	// publish to cloud pub/sub
@@ -806,38 +838,6 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		},
 	}
 	go publishToNeticrm(ms)
-
-	// Concurrently update the user's activated time
-	go func(email string) {
-		matchedUser, err := mc.Storage.GetUserByEmail(reqBody.Cardholder.Email)
-		if nil != err {
-			log.Errorf("Error retrieving user data: %v", err)
-			return
-		}
-
-		matchedUser.Activated = null.TimeFrom(time.Now())
-		err = mc.Storage.UpdateUser(matchedUser)
-		if nil != err {
-			log.Errorf("Error updating user activated time: %v", err)
-		}
-
-		// Call AssignRoleToUser to assign role to user
-		HasTrailblazer, err := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
-		if err != nil {
-			log.Errorf("Error checking user roles: %v", err)
-		}
-		if !HasTrailblazer {
-			roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
-			err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
-			if err != nil {
-				log.Errorf("Error updating user role: %v", err)
-			}
-
-			if !roleCheck {
-				go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
-			}
-		}
-	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -1114,6 +1114,38 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		mail.BuildFromPrimeDonationModel(d)
 
 		go mc.sendDonationThankYouMail(*mail)
+
+		// Concurrently update the user's activated time
+		go func(email string) {
+			matchedUser, err := mc.Storage.GetUserByEmail(email)
+			if nil != err {
+				log.Errorf("Error retrieving user data: %v", err)
+				return
+			}
+
+			matchedUser.Activated = null.TimeFrom(time.Now())
+			err = mc.Storage.UpdateUser(matchedUser)
+			if nil != err {
+				log.Errorf("Error updating user activated time: %v", err)
+			}
+
+			// Call AssignRoleToUser to assign role to user
+			HasTrailblazer, err := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
+			if err != nil {
+				log.Errorf("Error checking user roles: %v", err)
+			}
+			if !HasTrailblazer {
+				roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
+				err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
+				if err != nil {
+					log.Errorf("Error updating user role: %v", err)
+				}
+
+				if !roleCheck {
+					go mc.sendAssignRoleMail(constants.RoleActionTaker, email)
+				}
+			}
+		}(updateData.Cardholder.Email)
 
 		// publish to cloud pub/sub
 		ms := []*cloudpub.Message{
