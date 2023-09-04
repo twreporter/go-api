@@ -2,7 +2,29 @@
 
 ## Released
 
-### 7.3.2 (Current)
+### 7.3.4
+
+### Notable Changes
+
+- fix
+  - LinePay role mail when success
+
+### Commits
+
+- [[`8286e2b`](https://github.com/your-repo/commit/8286e2b)] - fix: LinePay role mail when success
+
+### 7.3.3 (Current)
+
+### Notable Changes
+
+- fix
+  - Only send role mail after successful payment
+
+### Commits
+
+- [[`2532f8a`](https://github.com/your-repo/commit/2532f8a)] - fix: Only send role mail after successful payment
+
+### 7.3.2
 
 ### Notable Changes
 
