@@ -540,7 +540,7 @@ func (mc *MembershipController) ActivateV3(c *gin.Context) (int, gin.H, error) {
 	if ra.ActExpTime.Before(time.Now()) {
 		errMsg := "otp code expired"
 		return http.StatusForbidden, gin.H{
-			"status": "fail",
+			"status": "expired",
 			"error":  errMsg,
 			"data": SignInBody{
 				Email: email,
