@@ -20,6 +20,7 @@ const (
 	AccountsSiteStagingOrigin = "https://staging-accounts.twreporter.org"
 
 	// route path
+	SendOtpRoutePath             = "mail/send_otp"
 	SendActivationRoutePath      = "mail/send_activation"
 	SendAuthenticationRoutePath  = "mail/send_authentication"
 	SendSuccessDonationRoutePath = "mail/send_success_donation"

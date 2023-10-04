@@ -1,5 +1,19 @@
 ## Unreleased
 
+### 7.3.5-rc.1
+
+### Notable Changes
+
+- fix
+  - Add expired return to ActivateV3
+- feat
+  - Add OTP login APIs
+
+### Commits
+
+- [[`3a5e611`](https://github.com/twreporter/go-api/commit/3a5e611)] - feat: Add OTP login APIs
+- [[`2118792`](https://github.com/twreporter/go-api/commit/2118792)] - fix: Add expired return to ActivateV3
+
 ### 7.3.5-rc.0
 
 ### Notable Changes
