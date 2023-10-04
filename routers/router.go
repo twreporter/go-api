@@ -135,6 +135,7 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	// =============================
 	mailContrl := cf.GetMailController()
 	mailMiddleware := middlewares.GetMailServiceMiddleware()
+	v1Group.POST(fmt.Sprintf("/%s", globals.SendOtpRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendOtp))
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendActivationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendActivation))
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendAuthenticationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendAuthentication))
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendSuccessDonationRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendDonationSuccessMail))
@@ -200,5 +201,14 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v2AuthGroup.POST("/token", middlewares.ValidateAuthentication(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.TokenDispatch))
 	v2AuthGroup.GET("/logout", mc.TokenInvalidate)
 	v2Group.POST("/onboarding/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.Onboarding))
+
+	// =============================
+	// v3 oauth endpoints
+	// =============================
+	v3Group := engine.Group("/v3")
+	v3AuthGroup := v3Group.Group("/auth")
+
+	v3AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SignInV3))
+	v3AuthGroup.POST("/activate", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.ActivateV3))
 	return
 }
