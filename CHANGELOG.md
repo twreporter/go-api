@@ -1,5 +1,16 @@
 ## Unreleased
 
+### 7.3.5-rc.0
+
+### Notable Changes
+
+- fix
+  - isTrailblazer sql logic
+
+### Commits
+
+- [[`212c985`](https://github.com/twreporter/go-api/commit/212c985)] - fix: isTrailblazer sql logic
+
 ## Released
 
 ### 7.3.4
@@ -11,7 +22,7 @@
 
 ### Commits
 
-- [[`8286e2b`](https://github.com/your-repo/commit/8286e2b)] - fix: LinePay role mail when success
+- [[`8286e2b`](https://github.com/twreporter/go-api/commit/8286e2b)] - fix: LinePay role mail when success
 
 ### 7.3.3 (Current)
 
@@ -22,7 +33,7 @@
 
 ### Commits
 
-- [[`2532f8a`](https://github.com/your-repo/commit/2532f8a)] - fix: Only send role mail after successful payment
+- [[`2532f8a`](https://github.com/twreporter/go-api/commit/2532f8a)] - fix: Only send role mail after successful payment
 
 ### 7.3.2
 
