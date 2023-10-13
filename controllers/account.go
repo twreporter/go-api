@@ -89,6 +89,7 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 		// Calculate the time difference between ActExpTime and now
 		timeDifference := ra.ActExpTime.Sub(time.Now())
 
+		// the activate token would not change in 5 minutes (15 - 5 = 10 mins)
 		if timeDifference > 10*time.Minute {
 			// Reuse the existing activeToken if it's not expired
 			activeToken = ra.ActivateToken
