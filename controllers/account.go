@@ -83,13 +83,24 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 
 	// get reporter account by email from reporter_account table
 	ra, err = mc.Storage.GetReporterAccountData(email)
+
 	// account is already signed in before
 	if err == nil {
-		// update active token and token expire time
-		ra.ActivateToken = activeToken
-		ra.ActExpTime = time.Now().Add(time.Duration(15) * time.Minute)
-		if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
-			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Updating DB occurs error"}, err
+		// Calculate the time difference between ActExpTime and now
+		timeDifference := ra.ActExpTime.Sub(time.Now())
+
+		// the activate token would not change in 5 minutes (15 - 5 = 10 mins)
+		if timeDifference > 10*time.Minute {
+			// Reuse the existing activeToken if it's not expired
+			activeToken = ra.ActivateToken
+			statusCode = http.StatusOK
+		} else {
+			// update active token and token expire time
+			ra.ActivateToken = activeToken
+			ra.ActExpTime = time.Now().Add(time.Duration(15) * time.Minute)
+			if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
+				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Updating DB occurs error"}, err
+			}
 		}
 
 		statusCode = http.StatusOK
