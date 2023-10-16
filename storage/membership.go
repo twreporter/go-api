@@ -41,7 +41,7 @@ type MembershipStorage interface {
 	UpdateReadPreferenceOfUser(string, []string) error
 	UpdateUser(models.User) error
 	AssignRoleToUser(models.User, string) error
-	GetRole(models.User) (models.Role, error)
+	GetRoles(models.User) ([]models.Role, error)
 	HasRole(user models.User, roleKey string) (bool, error)
 	IsTrailblazer(email string) (bool, error)
 
