@@ -1,5 +1,23 @@
 ## Unreleased
 
+### 7.3.5-rc.2
+
+### Notable Changes
+
+- api/user
+  - support mutiple roles
+- migration
+  - add `users.source`, `roles.weight`, `users_roles.expired_at` column
+- doc/user
+  - add description of user role logic
+
+### Commits
+
+- [[`86fc18ac7e`](https://github.com/twreporter/go-api/commit/86fc18ac7e)] - **chore**: update doc html (Aylie Chou)
+- [[`9b31bd6cbc`](https://github.com/twreporter/go-api/commit/9b31bd6cbc)] - **chore**: update user api doc (Aylie Chou)
+- [[`65235d26e6`](https://github.com/twreporter/go-api/commit/65235d26e6)] - **chore**: add migration files (Aylie Chou)
+- [[`a804f43f46`](https://github.com/twreporter/go-api/commit/a804f43f46)] - **feat**: support multiple roles (Aylie Chou)
+
 ### 7.3.5-rc.1
 
 ### Notable Changes
