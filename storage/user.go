@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/guregu/null.v3"
+	"github.com/jinzhu/gorm"
 
 	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/models"
@@ -18,7 +19,11 @@ func (gs *GormStorage) GetUserByID(userID string) (models.User, error) {
 	user := models.User{}
 
 	// SELECT * FROM users WHERE ID = $userID and join roles and user_mailgroups tables
-	err := gs.db.Preload("Roles").Preload("MailGroups").First(&user, "id = ?", userID).Error
+	//   roles association: fileter out expired_at < current, and get max(weight) records
+	err := gs.db.Preload("Roles", func(db *gorm.DB) *gorm.DB {
+		fileterExpired := "users_roles.expired_at IS NULL OR users_roles.expired_at > CURDATE()"
+		return db.Where(fileterExpired).Order("weight desc").Limit(1)
+	}).Preload("MailGroups").First(&user, "id = ?", userID).Error
 	if err != nil {
 		return user, errors.Wrap(err, fmt.Sprintf("get user(id: %s) error", userID))
 	}
@@ -254,7 +259,7 @@ func (gs *GormStorage) AssignRoleToUser(user models.User, roleKey string) error 
 
 	// Replace existing roles with the new role
 	association := gs.db.Model(&user).Association("Roles")
-	association.Replace(&role)
+	association.Append(&role)
 
 	if association.Error != nil {
 		return errors.Wrap(association.Error, "failed to assign role to user")
@@ -264,12 +269,13 @@ func (gs *GormStorage) AssignRoleToUser(user models.User, roleKey string) error 
 }
 
 // GetRole retrieves the role of a user from the database based on the user's ID or unique identifier.
-func (gs *GormStorage) GetRole(user models.User) (models.Role, error) {
+func (gs *GormStorage) GetRoles(user models.User) ([]models.Role, error) {
 	// Initialize an empty role variable to store the fetched role.
-	var role models.Role
+	var role []models.Role
 
 	// Get the associated roles for the user.
-	association := gs.db.Model(&user).Association("Roles")
+	fileterExpired := "users_roles.expired_at IS NULL OR users_roles.expired_at > CURDATE()"
+	association := gs.db.Where(fileterExpired).Order("weight desc").Model(&user).Association("Roles")
 
 	if association.Error != nil {
 		return role, errors.Wrap(association.Error, fmt.Sprintf("failed to get roles for user with email: %s", user.Email.String))
@@ -281,7 +287,7 @@ func (gs *GormStorage) GetRole(user models.User) (models.Role, error) {
 	}
 
 	// Get the first role associated with the user.
-	if err := gs.db.Model(&user).Association("Roles").Find(&role).Error; err != nil {
+	if err := association.Find(&role).Error; err != nil {
 		return role, errors.Wrap(err, fmt.Sprintf("failed to find role for user with email: %s", user.Email.String))
 	}
 
@@ -298,7 +304,8 @@ func (gs *GormStorage) HasRole(user models.User, roleKey string) (bool, error) {
 
 	// Fetch all the roles associated with the user.
 	var roles []models.Role
-	if err := gs.db.Model(&user).Association("Roles").Find(&roles).Error; err != nil {
+	fileterExpired := "users_roles.expired_at IS NULL OR users_roles.expired_at > CURDATE()"
+	if err := gs.db.Where(fileterExpired).Model(&user).Association("Roles").Find(&roles).Error; err != nil {
 		return false, errors.Wrap(err, fmt.Sprintf("failed to get roles for user with email: %s", user.Email.String))
 	}
 
