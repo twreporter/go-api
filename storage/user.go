@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/guregu/null.v3"
@@ -18,7 +19,10 @@ func (gs *GormStorage) GetUserByID(userID string) (models.User, error) {
 	user := models.User{}
 
 	// SELECT * FROM users WHERE ID = $userID and join roles and user_mailgroups tables
-	err := gs.db.Preload("Roles").Preload("MailGroups").First(&user, "id = ?", userID).Error
+	err := gs.db.Preload("Roles", func(db *gorm.DB) *gorm.DB {
+		return db.Order("users_roles.updated_at DESC")
+	}).Preload("MailGroups").First(&user, "id = ?", userID).Error
+
 	if err != nil {
 		return user, errors.Wrap(err, fmt.Sprintf("get user(id: %s) error", userID))
 	}
