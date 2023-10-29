@@ -41,6 +41,7 @@ type User struct {
 	WordsForTwreporter null.String       `gorm:"size:255" json:"words_for_twreporter"`
 	Roles              []Role            `gorm:"many2many:users_roles" json:"roles"`
 	Activated          null.Time         `json:"activated"`
+	Source             null.String       `gorm:"type:SET('ntch')" json:"source"`
 }
 
 // Role represents a user role
@@ -51,6 +52,7 @@ type Role struct {
 	Key       string    `json:"key"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Weight    int       `json:"weight"`
 }
 
 // OAuthAccount ...
