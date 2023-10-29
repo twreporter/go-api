@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/guregu/null.v3"
-	"github.com/jinzhu/gorm"
 
 	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/models"
