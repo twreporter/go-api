@@ -1,6 +1,6 @@
-## Unreleased
+## Released
 
-### 7.3.5-rc.3
+### 7.3.5
 
 ### Notable Changes
 
@@ -10,6 +10,13 @@
   - add `users.source`, `roles.weight`, `users_roles.expired_at` column
 - doc/user
   - add description of user role logic
+- api/auth
+  - send same activeToken in 5 min for signin
+- fix
+  - Add expired return to ActivateV3
+  - isTrailblazer sql logic
+- feat
+  - Add OTP login APIs
 
 ### Commits
 
@@ -18,45 +25,11 @@
 - [[`9b31bd6cbc`](https://github.com/twreporter/go-api/commit/9b31bd6cbc)] - **chore**: update user api doc (Aylie Chou)
 - [[`65235d26e6`](https://github.com/twreporter/go-api/commit/65235d26e6)] - **chore**: add migration files (Aylie Chou)
 - [[`a804f43f46`](https://github.com/twreporter/go-api/commit/a804f43f46)] - **feat**: support multiple roles (Aylie Chou)
-
-### 7.3.5-rc.2
-
-### Notable Changes
-
-- api/auth
-  - send same activeToken in 5 min for signin
-
-### Commits
-
 - [[`208d1449e0`](https://github.com/twreporter/go-api/commit/208d1449e0)] - **fix**: add comment (Howar31)
 - [[`81b0202499`](https://github.com/twreporter/go-api/commit/81b0202499)] - **feat**: send same activeToken in 5 min for signin (Howar31)
-
-### 7.3.5-rc.1
-
-### Notable Changes
-
-- fix
-  - Add expired return to ActivateV3
-- feat
-  - Add OTP login APIs
-
-### Commits
-
-- [[`3a5e611`](https://github.com/twreporter/go-api/commit/3a5e611)] - feat: Add OTP login APIs
-- [[`2118792`](https://github.com/twreporter/go-api/commit/2118792)] - fix: Add expired return to ActivateV3
-
-### 7.3.5-rc.0
-
-### Notable Changes
-
-- fix
-  - isTrailblazer sql logic
-
-### Commits
-
-- [[`212c985`](https://github.com/twreporter/go-api/commit/212c985)] - fix: isTrailblazer sql logic
-
-## Released
+- [[`3a5e611`](https://github.com/twreporter/go-api/commit/3a5e611)] - **feat**: Add OTP login APIs
+- [[`2118792`](https://github.com/twreporter/go-api/commit/2118792)] - **fix**: Add expired return to ActivateV3
+- [[`212c985`](https://github.com/twreporter/go-api/commit/212c985)] - **fix**: isTrailblazer sql logic
 
 ### 7.3.4
 
