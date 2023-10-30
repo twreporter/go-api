@@ -24,6 +24,11 @@ type activationReqBody struct {
 	ActivateLink string `json:"activate_link" binding:"required"`
 }
 
+type otpReqBody struct {
+	Email   string `json:"email" binding:"required"`
+	OtpCode string `json:"otp_code" binding:"required"`
+}
+
 type donationSuccessReqBody struct {
 	Amount            uint     `json:"amount" binding:"required"`
 	Currency          string   `json:"currency"`
@@ -86,6 +91,39 @@ func (contrl *MailController) SendActivation(c *gin.Context) (int, gin.H, error)
 
 	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send activate mail to %s", reqBody.Email)}, err
+	}
+
+	return http.StatusNoContent, gin.H{}, nil
+}
+
+// SendOtp retrieves email and OTP code from rqeuest body,
+// and invoke MailService to send otp mail
+func (contrl *MailController) SendOtp(c *gin.Context) (int, gin.H, error) {
+	var err error
+	var mailBody string
+	var out bytes.Buffer
+	var reqBody otpReqBody
+
+	if failData, err := bindRequestJSONBody(c, &reqBody); err != nil {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": failData}, nil
+	}
+
+	var subject = "報導者帳號驗證碼：" + reqBody.OtpCode
+
+	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "signin-otp.tmpl", struct {
+		Email string
+		Otp   string
+	}{
+		reqBody.Email,
+		reqBody.OtpCode,
+	}); err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create otp mail body"}, errors.WithStack(err)
+	}
+
+	mailBody = out.String()
+
+	if err = contrl.MailService.Send(reqBody.Email, subject, mailBody); err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("can not send otp mail to %s", reqBody.Email)}, err
 	}
 
 	return http.StatusNoContent, gin.H{}, nil

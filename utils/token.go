@@ -40,8 +40,10 @@ type IDTokenJWTClaims struct {
 }
 
 type AccessTokenJWTClaims struct {
-	UserID uint   `json:"user_id"`
-	Email  string `json:"email"`
+	UserID    uint                     `json:"user_id"`
+	Email     string                   `json:"email"`
+	Roles     []map[string]interface{} `json:"roles"`
+	Activated *time.Time               `json:"activated"`
 	jwt.StandardClaims
 }
 
@@ -92,10 +94,12 @@ func RetrieveV2IDToken(userID uint, email, firstName, lastName string, expiratio
 	return genToken(claims, globals.Conf.App.JwtSecret)
 }
 
-func RetrieveV2AccessToken(userID uint, email string, expiration int) (string, error) {
+func RetrieveV2AccessToken(userID uint, email string, roles []map[string]interface{}, activated *time.Time, expiration int) (string, error) {
 	claims := AccessTokenJWTClaims{
 		userID,
 		email,
+		roles,
+		activated,
 		jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiration)).Unix(),

@@ -1,17 +1,46 @@
-## Unreleased
+## Released
 
-### 7.3.5-rc.0
+### 7.3.5
+
+### Notable Changes
+
+- api/user
+  - support mutiple roles
+- migration
+  - add `users.source`, `roles.weight`, `users_roles.expired_at` column
+- doc/user
+  - add description of user role logic
+- api/auth
+  - send same activeToken in 5 min for signin
+- fix
+  - Add expired return to ActivateV3
+  - isTrailblazer sql logic
+- feat
+  - Add OTP login APIs
+
+### Commits
+
+- [[`ead8276121`](https://github.com/twreporter/go-api/ead8276121)] - **fix**: CHANGELOG.md wording (Aylie Chou)
+- [[`86fc18ac7e`](https://github.com/twreporter/go-api/commit/86fc18ac7e)] - **chore**: update doc html (Aylie Chou)
+- [[`9b31bd6cbc`](https://github.com/twreporter/go-api/commit/9b31bd6cbc)] - **chore**: update user api doc (Aylie Chou)
+- [[`65235d26e6`](https://github.com/twreporter/go-api/commit/65235d26e6)] - **chore**: add migration files (Aylie Chou)
+- [[`a804f43f46`](https://github.com/twreporter/go-api/commit/a804f43f46)] - **feat**: support multiple roles (Aylie Chou)
+- [[`208d1449e0`](https://github.com/twreporter/go-api/commit/208d1449e0)] - **fix**: add comment (Howar31)
+- [[`81b0202499`](https://github.com/twreporter/go-api/commit/81b0202499)] - **feat**: send same activeToken in 5 min for signin (Howar31)
+- [[`3a5e611`](https://github.com/twreporter/go-api/commit/3a5e611)] - **feat**: Add OTP login APIs
+- [[`2118792`](https://github.com/twreporter/go-api/commit/2118792)] - **fix**: Add expired return to ActivateV3
+- [[`212c985`](https://github.com/twreporter/go-api/commit/212c985)] - **fix**: isTrailblazer sql logic
+
+### 7.3.4
 
 ### Notable Changes
 
 - fix
-  - isTrailblazer sql logic
+  - LinePay role mail when success
 
 ### Commits
 
-- [[`212c985`](https://github.com/twreporter/go-api/commit/212c985)] - fix: isTrailblazer sql logic
-
-## Released
+- [[`8286e2b`](https://github.com/twreporter/go-api/commit/8286e2b)] - fix: LinePay role mail when success
 
 ### 7.3.4
 

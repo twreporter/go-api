@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/mail"
 	"net/url"
@@ -82,13 +83,24 @@ func (mc *MembershipController) AuthByEmail(c *gin.Context, sendMailRoutePath st
 
 	// get reporter account by email from reporter_account table
 	ra, err = mc.Storage.GetReporterAccountData(email)
+
 	// account is already signed in before
 	if err == nil {
-		// update active token and token expire time
-		ra.ActivateToken = activeToken
-		ra.ActExpTime = time.Now().Add(time.Duration(15) * time.Minute)
-		if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
-			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Updating DB occurs error"}, err
+		// Calculate the time difference between ActExpTime and now
+		timeDifference := ra.ActExpTime.Sub(time.Now())
+
+		// the activate token would not change in 5 minutes (15 - 5 = 10 mins)
+		if timeDifference > 10*time.Minute {
+			// Reuse the existing activeToken if it's not expired
+			activeToken = ra.ActivateToken
+			statusCode = http.StatusOK
+		} else {
+			// update active token and token expire time
+			ra.ActivateToken = activeToken
+			ra.ActExpTime = time.Now().Add(time.Duration(15) * time.Minute)
+			if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
+				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Updating DB occurs error"}, err
+			}
 		}
 
 		statusCode = http.StatusOK
@@ -297,7 +309,22 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) (int, gin.H, error
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "cannot get user data"}, err
 	}
 
-	accessToken, err = utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), acccessTokenExpiration)
+	roles := make([]map[string]interface{}, len(user.Roles))
+	for i, role := range user.Roles {
+		roles[i] = map[string]interface{}{
+			"id":      role.ID,
+			"name":    role.Name,
+			"name_en": role.NameEn,
+			"key":     role.Key,
+		}
+	}
+
+	var activated *time.Time
+	if user.Activated.Valid && !user.Activated.Time.IsZero() {
+		activated = &user.Activated.Time
+	}
+
+	accessToken, err = utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), roles, activated, acccessTokenExpiration)
 	if err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Error occurs during generating access_token JWT"}, err
 	}
@@ -381,4 +408,217 @@ func (mc *MembershipController) Onboarding(c *gin.Context) (int, gin.H, error) {
 		c.SetCookie("activated", activatedString, activatedExpiration, defaultPath, defaultDomain, secure, true)
 	}
 	return http.StatusCreated, gin.H{"status": "ok", "record": preferences}, nil
+}
+
+// SignInV3 - 6 digit sign in
+func (mc *MembershipController) SignInV3(c *gin.Context) (int, gin.H, error) {
+	return mc.AuthByOtp(c, globals.SendOtpRoutePath, true)
+}
+
+// 6 digit sign in
+func (mc *MembershipController) AuthByOtp(c *gin.Context, sendMailRoutePath string, isCheckActivate bool) (int, gin.H, error) {
+	// SignInBody is to store POST body
+	type SignInBody struct {
+		Email     string `json:"email" form:"email" binding:"required"`
+		ExpiredAt string `json:"expired_at"`
+	}
+
+	var email string
+	var err error
+	var matchedUser models.User
+	var ra models.ReporterAccount
+	var statusCode int
+	var signIn SignInBody
+
+	// extract email from POST body
+	if err = c.Bind(&signIn); err != nil {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": SignInBody{
+			Email: "email is required",
+		}}, nil
+	}
+
+	email = signIn.Email
+
+	// Check if mail address is not malformed
+	_, err = mail.ParseAddress(email)
+	if err != nil {
+		return http.StatusBadRequest, gin.H{"status": "fail", "data": SignInBody{
+			Email: "email is malformed",
+		}}, nil
+	}
+
+	// Generate a 6-digit OTP code
+	otpCode := generateOTPCode()
+
+	// get reporter account by email from reporter_account table
+	ra, err = mc.Storage.GetReporterAccountData(email)
+	// account is already signed in before
+	if err == nil {
+		// update active token and token expire time
+		ra.ActivateToken = otpCode
+		ra.ActExpTime = time.Now().Add(time.Duration(15) * time.Minute)
+		if err = mc.Storage.UpdateReporterAccount(ra); err != nil {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": "Updating DB occurs error"}, err
+		}
+
+		statusCode = http.StatusOK
+	} else {
+		// account is not signed in before
+		if !storage.IsNotFound(err) {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": fmt.Sprintf("internal server error. %s", err.Error())}, err
+		}
+
+		ra = models.ReporterAccount{
+			Email:         email,
+			ActivateToken: otpCode,
+			// expire time is 15 minute
+			ActExpTime: time.Now().Add(time.Duration(15) * time.Minute),
+		}
+
+		// try to find record by email in users table
+		matchedUser, err = mc.Storage.GetUserByEmail(email)
+		// the user record is not existed
+		if err != nil {
+			// create records both in reporter_accounts and users table
+			_, err := mc.Storage.InsertUserByReporterAccount(ra)
+			if err != nil {
+				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
+			}
+		} else {
+			// if user existed,
+			// create a record in reporter_accounts table
+			// and connect these two records
+			ra.UserID = matchedUser.ID
+			err = mc.Storage.InsertReporterAccount(ra)
+			if err != nil {
+				return http.StatusInternalServerError, gin.H{"status": "error", "message": "Inserting new record into DB occurs error"}, nil
+			}
+		}
+		statusCode = http.StatusCreated
+	}
+
+	// Send the OTP code in the email
+	err = postMailServiceEndpoint(otpReqBody{
+		Email:   email,
+		OtpCode: otpCode,
+	}, fmt.Sprintf("http://localhost:%s/v1/%s", globals.LocalhostPort, sendMailRoutePath))
+
+	if err != nil {
+		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Sending OTP email occurs error"}, err
+	}
+
+	return statusCode, gin.H{"status": "success", "data": SignInBody{
+		Email:     email,
+		ExpiredAt: ra.ActExpTime.Format(time.RFC3339),
+	}}, nil
+}
+
+// generateOTPCode generates a random 6-digit OTP code
+func generateOTPCode() string {
+	rand.Seed(time.Now().UnixNano())
+	return fmt.Sprintf("%06d", rand.Intn(1000000))
+}
+
+// ActivateV3 - send email containing authenticate information to the client
+func (mc *MembershipController) ActivateV3(c *gin.Context) (int, gin.H, error) {
+	type SignInBody struct {
+		Email   string `json:"email" form:"email" binding:"required"`
+		OtpCode string `json:"otp_code" binding:"required"`
+	}
+
+	var defaultDomain = globals.Conf.App.Domain
+	var email string
+	var otpCode string
+	var err error
+	var ra models.ReporterAccount
+	var signIn SignInBody
+	var user models.User
+
+	// extract input from POST body
+	if err = c.Bind(&signIn); err != nil {
+		errMsg := "input invalid"
+		return http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  errMsg,
+			"data": SignInBody{
+				Email:   "email is required",
+				OtpCode: "otp code is required",
+			},
+		}, errors.New(errMsg)
+	}
+
+	email = signIn.Email
+	otpCode = signIn.OtpCode
+
+	// get reporter account by email from reporter_account table
+	if ra, err = mc.Storage.GetReporterAccountData(email); err != nil {
+		errMsg := "email not found"
+		return http.StatusNotFound, gin.H{
+			"status": "fail",
+			"error":  errMsg,
+			"data": SignInBody{
+				Email: email,
+			},
+		}, errors.New(errMsg)
+	}
+
+	// check expire time
+	if ra.ActExpTime.Before(time.Now()) {
+		errMsg := "otp code expired"
+		return http.StatusForbidden, gin.H{
+			"status": "expired",
+			"error":  errMsg,
+			"data": SignInBody{
+				Email: email,
+			},
+		}, errors.New(errMsg)
+	}
+
+	// validate token
+	if ra.ActivateToken != otpCode {
+		errMsg := "otp code invalid"
+		return http.StatusForbidden, gin.H{
+			"status": "fail",
+			"error":  errMsg,
+			"data": SignInBody{
+				Email: email,
+			},
+		}, errors.New(errMsg)
+	}
+
+	if user, err = mc.Storage.GetUserDataByReporterAccount(ra); err != nil {
+		errMsg := "Error occurs during querying the record from users table"
+		return http.StatusInternalServerError, gin.H{
+			"status": "fail",
+			"error":  errMsg,
+			"data": SignInBody{
+				Email: email,
+			},
+		}, errors.New(errMsg)
+	}
+
+	// Create id token for jwt endpoint retrival
+	idToken, err := utils.RetrieveV2IDToken(user.ID, user.Email.ValueOrZero(), user.FirstName.ValueOrZero(), user.LastName.ValueOrZero(), idTokenExpiration)
+	if nil != err {
+		idToken = "twreporter-id-token"
+	}
+
+	// Setup Set-Cookie header in response header
+	// Determine cookie property
+	secure := true
+
+	var activatedString string
+	if user.Activated.Valid && !user.Activated.Time.IsZero() {
+		activatedString = user.Activated.Time.Format(time.RFC3339)
+	}
+
+	c.SetCookie("activated", activatedString, idTokenExpiration, defaultPath, defaultDomain, secure, true)
+	c.SetCookie("id_token", idToken, idTokenExpiration, defaultPath, defaultDomain, secure, true)
+
+	return http.StatusOK, gin.H{
+		"status": "success",
+		"data": SignInBody{
+			Email: email,
+		},
+	}, nil
 }
