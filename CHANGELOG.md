@@ -42,6 +42,17 @@
 
 - [[`8286e2b`](https://github.com/twreporter/go-api/commit/8286e2b)] - fix: LinePay role mail when success
 
+### 7.3.4
+
+### Notable Changes
+
+- fix
+  - LinePay role mail when success
+
+### Commits
+
+- [[`8286e2b`](https://github.com/twreporter/go-api/commit/8286e2b)] - fix: LinePay role mail when success
+
 ### 7.3.3 (Current)
 
 ### Notable Changes
