@@ -309,7 +309,22 @@ func (mc *MembershipController) TokenDispatch(c *gin.Context) (int, gin.H, error
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "cannot get user data"}, err
 	}
 
-	accessToken, err = utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), acccessTokenExpiration)
+	roles := make([]map[string]interface{}, len(user.Roles))
+	for i, role := range user.Roles {
+		roles[i] = map[string]interface{}{
+			"id":      role.ID,
+			"name":    role.Name,
+			"name_en": role.NameEn,
+			"key":     role.Key,
+		}
+	}
+
+	var activated *time.Time
+	if user.Activated.Valid && !user.Activated.Time.IsZero() {
+		activated = &user.Activated.Time
+	}
+
+	accessToken, err = utils.RetrieveV2AccessToken(user.ID, user.Email.ValueOrZero(), roles, activated, acccessTokenExpiration)
 	if err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "Error occurs during generating access_token JWT"}, err
 	}
