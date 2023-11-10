@@ -15,8 +15,11 @@
 - fix
   - Add expired return to ActivateV3
   - isTrailblazer sql logic
+  - removed redeclared imported package name
+  - sort roles of user by updated_at desc
 - feat
   - Add OTP login APIs
+  - Add roles, activated to JWT access token
 
 ### Commits
 
@@ -30,6 +33,9 @@
 - [[`3a5e611`](https://github.com/twreporter/go-api/commit/3a5e611)] - **feat**: Add OTP login APIs
 - [[`2118792`](https://github.com/twreporter/go-api/commit/2118792)] - **fix**: Add expired return to ActivateV3
 - [[`212c985`](https://github.com/twreporter/go-api/commit/212c985)] - **fix**: isTrailblazer sql logic
+- [[`5b4329f`](https://github.com/twreporter/go-api/commit/5b4329f)] - **feat**: Add roles, activated to JWT access token
+- [[`a5f0bcf`](https://github.com/twreporter/go-api/commit/a5f0bcf)] - **fix**: removed redeclared imported package name
+- [[`393839c`](https://github.com/twreporter/go-api/commit/393839c)] - **fix**: sort roles of user by updated_at desc
 
 ### 7.3.4
 
