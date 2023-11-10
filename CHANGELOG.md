@@ -1,3 +1,16 @@
+## Unreleased
+
+### 7.3.6-rc.0
+
+### Notable Changes
+
+- fix
+  - typo in trailblazer template
+
+### Commits
+
+- [[`8b1a04b`](https://github.com/twreporter/go-api/8b1a04b)] - **fix**: typo in trailblazer template
+
 ## Released
 
 ### 7.3.5
