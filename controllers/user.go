@@ -60,6 +60,8 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		"roles":             roles,
 		"read_preference":   readPreferenceArr,
 		"maillist":          mailGroups,
+		"read_posts_count":  user.ReadPostsCount,
+		"read_posts_sec":    user.ReadPostsSec,
 	},
 	}, nil
 }

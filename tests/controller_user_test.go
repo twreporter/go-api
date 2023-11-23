@@ -5,11 +5,51 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"io/ioutil"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/storage"
+	"gopkg.in/guregu/null.v3"
 )
+
+type (
+  userData struct {
+	ID             uint     `json:"id"`
+	ReadPostsCount null.Int `json:"read_posts_count"`
+	ReadPostsSec   null.Int `json:"read_posts_sec"`
+  }
+
+  responseBodyUser struct {
+	Status string   `json:"status"`
+	Data   userData `json:"data"`
+  }
+)
+
+func TestGetUser_Success(t *testing.T) {
+	var resBody responseBodyUser
+	// Mocking user
+	var user models.User = getUser(Globs.Defaults.Account)
+	jwt := generateIDToken(user)
+	as := storage.NewGormStorage(Globs.GormDB)
+	if err := as.UpdateUser(models.User{
+		ID:             user.ID,
+		ReadPostsCount: null.NewInt(19, true),
+		ReadPostsSec:   null.NewInt(3360, true),
+	}); nil != err {
+		fmt.Println(err.Error())
+	}
+	updatedUser := getUser(Globs.Defaults.Account)
+
+	// Send request to test GetUser function
+	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v2/users/%d", user.ID), "", "", fmt.Sprintf("Bearer %v", jwt))
+	fmt.Print(response.Body)
+	resBodyInBytes, _ := ioutil.ReadAll(response.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, updatedUser.ReadPostsCount, resBody.Data.ReadPostsCount)
+}
 
 func TestSetUser_Success(t *testing.T) {
 	// Mocking user
