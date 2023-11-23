@@ -1,5 +1,7 @@
 -- add new columns
 ALTER TABLE `users` ADD `agree_data_collection` tinyint(1) DEFAULT 1;
+ALTER TABLE `users` ADD `read_posts_count` int(10) unsigned DEFAULT NULL;
+ALTER TABLE `users` ADD `read_posts_sec` int(10) unsigned DEFAULT NULL;
 
 -- add new tables
 CREATE TABLE IF NOT EXISTS `users_posts_reading_count` (
