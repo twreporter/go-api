@@ -42,11 +42,9 @@ type User struct {
 	Roles               []Role            `gorm:"many2many:users_roles" json:"roles"`
 	Activated           null.Time         `json:"activated"`
 	Source              null.String       `gorm:"type:SET('ntch')" json:"source"`
-	AgreeDataCollection null.Bool         `gorm:"type:tinyint(1);default:1" json:"agree_data_collection"`
-	ReadPostsCount      null.Int          `gorm:"type:int(10);unsigned" json:"read_posts_count"`
-	ReadPostsSec        null.Int          `gorm:"type:int(10);unsigned" json:"read_posts_sec"`
-	PostsCounts         []UsersPostsCount `gorm:"one2many:users_posts_reading_count;"`
-	PostsTimes          []UsersPostsTime  `gorm:"one2many:users_posts_reading_time;"`
+	AgreeDataCollection bool              `gorm:"type:tinyint(1);default:1" json:"agree_data_collection"`
+	ReadPostsCount      int               `gorm:"type:int(10);unsigned" json:"read_posts_count"`
+	ReadPostsSec        int               `gorm:"type:int(10);unsigned" json:"read_posts_sec"`
 }
 
 // Role represents a user role
