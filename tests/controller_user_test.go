@@ -11,14 +11,14 @@ import (
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
-	"gopkg.in/guregu/null.v3"
 )
 
 type (
   userData struct {
-	ID             uint     `json:"id"`
-	ReadPostsCount null.Int `json:"read_posts_count"`
-	ReadPostsSec   null.Int `json:"read_posts_sec"`
+	ID                  uint `json:"id"`
+	AgreeDataCollection bool `json:"agree_data_collection"`
+	ReadPostsCount      int  `json:"read_posts_count"`
+	ReadPostsSec        int  `json:"read_posts_sec"`
   }
 
   responseBodyUser struct {
@@ -34,9 +34,10 @@ func TestGetUser_Success(t *testing.T) {
 	jwt := generateIDToken(user)
 	as := storage.NewGormStorage(Globs.GormDB)
 	if err := as.UpdateUser(models.User{
-		ID:             user.ID,
-		ReadPostsCount: null.NewInt(19, true),
-		ReadPostsSec:   null.NewInt(3360, true),
+		ID:                  user.ID,
+		AgreeDataCollection: true,
+		ReadPostsCount:      19,
+		ReadPostsSec:        3360,
 	}); nil != err {
 		fmt.Println(err.Error())
 	}
@@ -48,7 +49,9 @@ func TestGetUser_Success(t *testing.T) {
 	resBodyInBytes, _ := ioutil.ReadAll(response.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
 	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, updatedUser.AgreeDataCollection, resBody.Data.AgreeDataCollection)
 	assert.Equal(t, updatedUser.ReadPostsCount, resBody.Data.ReadPostsCount)
+	assert.Equal(t, updatedUser.ReadPostsSec, resBody.Data.ReadPostsSec)
 }
 
 func TestSetUser_Success(t *testing.T) {
