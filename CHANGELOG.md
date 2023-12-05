@@ -1,19 +1,45 @@
+## Unrelease
+
+### 7.4.0-rc.0
+
+#### Notable Changes
+
+- api/user
+  - add `/v2/user/:userID/analytics` endpoint
+- model/users_posts
+  - add reading post analytics related model
+- migration
+  - add reading post analytics related tables & columns
+- doc
+  - add `/v2/user/:userID/analytics` endpoint doc
+  - add new add reponse data in GET `/v2/user/:userID` endpoint
+- test
+  - add `SetUserAnalytics` test cases
+  - add `GetUser` test case
+
+#### Commits
+
+- [[`e9874cd312`](https://github.com/twreporter/go-api/commit/e9874cd312)] - **feat**: add `/v2/user/:id/analytics` route (Aylie Chou)
+- [[`93642bbea6`](https://github.com/twreporter/go-api/commit/93642bbea6)] - **feat**: add `read_posts_cout` & `read_posts_sec` in GetUser response (Aylie Chou)
+- [[`61545bdcab`](https://github.com/twreporter/go-api/commit/61545bdcab)] - **fix**: update migration 15 (Aylie Chou)
+- [[`4ec6418be4`](https://github.com/twreporter/go-api/commit/4ec6418be4)] - **feat**: add new tables/column migration files (Aylie Chou)
+
 ## Released
 
-### 7.3.6
+### 7.3.6 (Current)
 
-### Notable Changes
+#### Notable Changes
 
 - fix
   - typo in trailblazer template
 
-### Commits
+#### Commits
 
 - [[`8b1a04b`](https://github.com/twreporter/go-api/8b1a04b)] - **fix**: typo in trailblazer template
 
 ### 7.3.5
 
-### Notable Changes
+#### Notable Changes
 
 - api/user
   - support mutiple roles
@@ -32,7 +58,7 @@
   - Add OTP login APIs
   - Add roles, activated to JWT access token
 
-### Commits
+#### Commits
 
 - [[`ead8276121`](https://github.com/twreporter/go-api/ead8276121)] - **fix**: CHANGELOG.md wording (Aylie Chou)
 - [[`86fc18ac7e`](https://github.com/twreporter/go-api/commit/86fc18ac7e)] - **chore**: update doc html (Aylie Chou)
@@ -50,39 +76,39 @@
 
 ### 7.3.4
 
-### Notable Changes
+#### Notable Changes
 
 - fix
   - LinePay role mail when success
 
-### Commits
+#### Commits
 
 - [[`8286e2b`](https://github.com/twreporter/go-api/commit/8286e2b)] - fix: LinePay role mail when success
 
-### 7.3.3 (Current)
+### 7.3.3
 
-### Notable Changes
+#### Notable Changes
 
 - fix
   - Only send role mail after successful payment
 
-### Commits
+#### Commits
 
 - [[`2532f8a`](https://github.com/twreporter/go-api/commit/2532f8a)] - fix: Only send role mail after successful payment
 
 ### 7.3.2
 
-### Notable Changes
+#### Notable Changes
 
 - Fixes
   - "oauth fails due to database operation error:: Error 1406: Data too long for column 'picture' at row 1" error.
 
-### Commits
+#### Commits
 * \[[`7ae0a04317`](https://github.com/twreporter/go-api/commit/7ae0a04317)] - **fix**: quick fix oAuth authentication failures (nickhsine)
 
 ### 7.3.1 
 
-### Notable Changes
+#### Notable Changes
 
 - fix
   - Typo and style
@@ -91,7 +117,7 @@
   - Code does not run
   - Quick solve authentication failure
 
-### Commits
+#### Commits
 
 - [[`fb91a28`](https://github.com/twreporter/go-api/commit/fb91a28)] - fix: Typo and style
 - [[`3bf8a8f`](https://github.com/twreporter/go-api/commit/3bf8a8f)] - Merge branch 'twreporter:master' into master
@@ -102,7 +128,7 @@
 
 ### 7.3.0
 
-### Notable Changes
+#### Notable Changes
 
 - Fixes
   - Add onboarding route & set cookie after onboarding
@@ -160,7 +186,7 @@
 - Typos
   - Fix typo
 
-### Commits
+#### Commits
 
 - [[`e50029497b`](https://github.com/nodejs/node/commit/e50029497b)] - **fix**: add user id verification for `onboarding` route (Aylie Chou)
 - [[`2c9a797d28`](https://github.com/nodejs/node/commit/2c9a797d28)] - **fix**: add onboarding route & set cookie after onboarding (Aylie Chou)
@@ -237,18 +263,18 @@
 
 ### 7.2.3
 
-### Notable Changes
+#### Notable Changes
 
 - api/posts
   - fix post without category_set should not return 404
 
-### Commits
+#### Commits
 
 - [[`ebc9c88e2a`](https://github.com/twreporter/go-api/commit/ebc9c88e2a)] - **fix**: /posts endpoint return 404 if post.caetgory\_set is empty (Aylie Chou)
 
 ### 7.2.2
 
-### Notable Changes
+#### Notable Changes
 
 - api/donation
   - publish data to neticrm on endpoint /line-notify
@@ -259,7 +285,7 @@
   - fix changelog typo
   - revert #510
 
-### Commits
+#### Commits
 
 - [[`873056179f`](https://github.com/twreporter/go-api/commit/873056179f)] - **fix**: CHANGELOG repo name typo (Aylie Chou)
 * [[`237abe1ae3`](https://github.com/twreporter/go-api/commit/237abe1ae3)] - **fix**: typo (Aylie Chou)
@@ -282,7 +308,7 @@
 
 ### 7.2.1
 
-### Notable Changes
+#### Notable Changes
 
 - circleci
   - use gke-gcloud-auth-plugin
@@ -290,7 +316,7 @@
 - api/doc
   - update api docs for new info structure
 
-### Commits
+#### Commits
 
 - [[`0105fa91d9`](https://github.com/twreporter/go-api/commit/0105fa91d9)] - **fix**: use twreporter-gcp context for gcp related credential (Aylie Chou)
 - [[`0d6dba4f20`](https://github.com/twreporter/go-api/commit/0d6dba4f20)] - **fix**: use gke-gcloud-auth-plugin (Aylie Chou)
@@ -302,7 +328,7 @@
 
 ### 7.2.0
 
-### Notable Changes
+#### Notable Changes
 
 - api/donation
   - add slack notify when publish to cloud pub/sub fail
@@ -312,7 +338,7 @@
 - api/bookmark
   - add `added\_at` in GetBookmarksOfAUser response
 
-### Commits
+#### Commits
 
 - [[`63389f7753`](https://github.com/twreporter/go-api/commit/63389f7753)] - **fix**: add `added\_at` in GetBookmarksOfAUser response (Aylie Chou)
 - [[`6a8c3d6311`](https://github.com/twreporter/go-api/commit/6a8c3d6311)] - **fix**: fix test case & donation model declaration (Aylie Chou)
@@ -322,22 +348,22 @@
 
 ### 7.1.3
 
-### Notable Changes
+#### Notable Changes
 - .circleci
   - add pubsub credencials
 
-### Commits
+#### Commits
 
-* [[`b201454e52`](https://github.com/twreporter/go-api/commit/b201454e52)] - **fix**: set env GOOGLE\_APPLICATION\_CREDENTIALS to pubsub\_credentials path (Aylie Chou)
-* [[`a96f92e69b`](https://github.com/twreporter/go-api/commit/a96f92e69b)] - **fix**: add pubsub credentials (Aylie Chou)
+- [[`b201454e52`](https://github.com/twreporter/go-api/commit/b201454e52)] - **fix**: set env GOOGLE\_APPLICATION\_CREDENTIALS to pubsub\_credentials path (Aylie Chou)
+- [[`a96f92e69b`](https://github.com/twreporter/go-api/commit/a96f92e69b)] - **fix**: add pubsub credentials (Aylie Chou)
 
 ### 7.1.2
 
-### Notable Changes
+#### Notable Changes
 - api/donation
   - publish donation/user update data to cloud pub/sub
 
-### Commits
+#### Commits
 
 * [[`3b83dbf8bd`](https://github.com/twreporter/go-api/commit/3b83dbf8bd)] - **fix**: update go-mod-lib vresion & publish to pub.sub topic when user update (Aylie Chou)
 * [[`778e281c69`](https://github.com/twreporter/go-api/commit/778e281c69)] - **fix**: publish to cloud pub/sub topic when user update (Aylie Chou)
@@ -346,7 +372,7 @@
 
 ### 7.1.1
 
-### Notable Changes
+#### Notable Changes
 - model/donation
   - upsert fields for donation redesign [#463](https://github.com/twreporter/go-api/pull/463)
 - api/donation
@@ -357,7 +383,7 @@
 - api/mail
   - update success donation email content [#470](https://github.com/twreporter/go-api/pull/470)
 
-### Commits
+#### Commits
 * [[`b1cd841d9c`](https://github.com/twreporter/go-api/commit/b1cd841d9c)] - api/mail: update success donation email content (#470) (Tai-Jiun Fang)
 * [[`43d852583b`](https://github.com/twreporter/go-api/commit/43d852583b)] - **fix**: fix sprintf type (Aylie Chou)
 * [[`4d9571758d`](https://github.com/twreporter/go-api/commit/4d9571758d)] - **fix**: print out err in UpdateUserDataByCarholder func (Aylie Chou)
