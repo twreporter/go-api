@@ -25,6 +25,15 @@
 + activated: `2023-06-01T01:23:45Z` (string) - The activated status of the user. If the user is not activated, the value is null.
 + read_preference (array) - Subscribed topics
 + maillist (array) - Subscribed mail list
++ agree_data_collection: true (bool) - True if user agree analytics data collection
++ read_posts_count: 19 (int) - Total count of user reading posts
++ read_posts_sec: 3360 (int) - Total time of user reading posts; digit is second.
+
+### UserAnalytics
++ user_id: 123 (string) - The unique identifier of the user
++ post_id: 3844e928 (string) - The unique identifier of the post
++ read_posts_count: 19 (int) - Total count of user reading posts
++ read_posts_sec: 3360 (int) - Total time of user reading posts; digit is second.
 
 # Group User Service
 Twreporter User service api
@@ -110,6 +119,58 @@ Set user related data (e.g. preferences, subscribed topics and mail list subscri
 
     + Attributes
         + status: success (string, required)
+
++ Response 400
+
+    + Attributes
+        + status: fail (required)
+        + message: Bad Request - The request body is missing required parameters or contains invalid data
+
++ Response 401
+
+    + Attributes
+        + status: error (required)
+        + message: Unauthorized - The access token is invalid or has expired
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Internal Server Error - An error occurred while processing the request
+
+## User Analytics [/v2/users/{id}/analytics]
+
+### Update user analytics [POST]
+
+Add user analytics data
+
++ Parameters
+    + id: 123 (string) - The unique identifier of the user
+
++ Request with Body
+
+    + Headers
+
+            Content-Type: application/json
+            Cookie: id_token=<id_token>
+            Authorization: Bearer <jwt>
+
+    + Attributes
+        + post_id (string) - The post id of recording user reading analytics data
+	+ read_posts_count (bool) - True if user read this post
+	+ read_posts_sec (int) - Time user spend reading this post
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (string, required)
+        + data(UserAnalytics, required)
+
++ Response 201 (application/json)
+
+    + Attributes
+        + status: success (string, required)
+        + data(UserAnalytics, required)
 
 + Response 400
 

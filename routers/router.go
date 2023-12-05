@@ -144,6 +144,9 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendRoleTrailblazerRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendRoleTrailblazerMail))
 	v1Group.POST(fmt.Sprintf("/%s", globals.SendRoleDowngradeRoutePath), mailMiddleware.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mailContrl.SendRoleDowngradeMail))
 
+	// =============================
+	// v2 news endpoints
+	// =============================
 	v2Group := engine.Group("/v2")
 	ncV2 := cf.GetNewsV2Controller()
 	v2Group.GET("/posts", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetPosts)
@@ -165,9 +168,6 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 		}
 		c.AbortWithStatus(http.StatusNotFound)
 	})
-
-	v2Group.POST("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SetUser))
-	v2Group.GET("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetUser))
 
 	// =============================
 	// v2 oauth endpoints
@@ -201,9 +201,14 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v2AuthGroup.POST("/token", middlewares.ValidateAuthentication(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.TokenDispatch))
 	v2AuthGroup.GET("/logout", mc.TokenInvalidate)
 	v2Group.POST("/onboarding/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.Onboarding))
+	v2Group.POST("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SetUser))
+	v2Group.GET("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetUser))
+
+	// reading post
+	v2Group.POST("/users/:userID/analytics", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SetUserAnalytics))
 
 	// =============================
-	// v3 oauth endpoints
+	// v3 membership service endpoints
 	// =============================
 	v3Group := engine.Group("/v3")
 	v3AuthGroup := v3Group.Group("/auth")

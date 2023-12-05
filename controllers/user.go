@@ -51,15 +51,18 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
-		"user_id":           userID,
-		"first_name":        user.FirstName.String,
-		"last_name":         user.LastName.String,
-		"email":             user.Email.String,
-		"registration_date": user.RegistrationDate.Time,
-		"activated":         activated,
-		"roles":             roles,
-		"read_preference":   readPreferenceArr,
-		"maillist":          mailGroups,
+		"user_id":               userID,
+		"first_name":            user.FirstName.String,
+		"last_name":             user.LastName.String,
+		"email":                 user.Email.String,
+		"registration_date":     user.RegistrationDate.Time,
+		"activated":             activated,
+		"roles":                 roles,
+		"read_preference":       readPreferenceArr,
+		"maillist":              mailGroups,
+		"agree_data_collection": user.AgreeDataCollection,
+		"read_posts_count":      user.ReadPostsCount,
+		"read_posts_sec":        user.ReadPostsSec,
 	},
 	}, nil
 }
