@@ -36,6 +36,9 @@ func (mc *MembershipController) SetUserAnalytics(c *gin.Context) (int, gin.H, er
 	if req.PostID.Valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "message": "post_id is required"}, nil
 	}
+	if req.ReadPostsSec.Valid && req.ReadPostsSec.Int64 < 0 {
+		return http.StatusBadRequest, gin.H{"status": "fail", "message": "read_posts_sec cannot be negative"}, nil
+	}
 	resp.UserID = userID
 	resp.PostID = req.PostID.String
 
