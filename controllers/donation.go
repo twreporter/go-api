@@ -50,6 +50,7 @@ const (
 	statusInvalid = "invalid"
 
 	tapPayRespStatusSuccess = 0
+	tapPayRespStatusCardError = 10003
 
 	defaultPeriodicPayMethod = "credit_card"
 
@@ -633,16 +634,22 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	tapPayResp, err = serveHttp(tapPayReq.PartnerKey, tapPayReqJson)
 
 	if nil != err {
-		if tapPayRespStatusSuccess != tapPayResp.Status {
-			// If tappay error occurs, update the transaction status to 'fail' and mark the periodic donation as 'invalid'.
-			td := models.PayByCardTokenDonation{}
-			tapPayResp.AppendRespOnTokenDonation(&td, statusFail)
+		if tapPayRespStatusSuccess == tapPayResp.Status {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
+		}
 
-			pd := models.PeriodicDonation{}
-			pd.Status = statusInvalid
-			pd.CardInfo = tapPayResp.CardInfo
+		// If tappay error occurs, update the transaction status to 'fail' and mark the periodic donation as 'invalid'.
+		td := models.PayByCardTokenDonation{}
+		tapPayResp.AppendRespOnTokenDonation(&td, statusFail)
 
-			mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, pd, td)
+		pd := models.PeriodicDonation{}
+		pd.Status = statusInvalid
+		pd.CardInfo = tapPayResp.CardInfo
+
+		mc.Storage.UpdatePeriodicAndCardTokenDonationInTRX(periodicDonation.ID, pd, td)
+
+		if tapPayRespStatusCardError == tapPayResp.Status {
+			return http.StatusBadRequest, gin.H{"status": "error", "message": err.Error()}, err
 		}
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}
@@ -758,14 +765,19 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	tapPayResp, err = serveHttp(tapPayReq.PartnerKey, tapPayReqJson)
 
 	if nil != err {
-		if tapPayRespStatusSuccess != tapPayResp.Status {
-			// If tappay error occurs, update the transaction status to 'fail'
-			d := models.PayByPrimeDonation{}
-			tapPayResp.AppendRespOnPrimeDonation(&d, statusFail)
+		if tapPayRespStatusSuccess == tapPayResp.Status {
+			return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
+		}
+		// If tappay error occurs, update the transaction status to 'fail'
+		d := models.PayByPrimeDonation{}
+		tapPayResp.AppendRespOnPrimeDonation(&d, statusFail)
 
-			mc.Storage.UpdateByConditions(map[string]interface{}{
-				"id": primeDonation.ID,
-			}, d)
+		mc.Storage.UpdateByConditions(map[string]interface{}{
+			"id": primeDonation.ID,
+		}, d)
+
+		if tapPayRespStatusCardError == tapPayResp.Status {
+			return http.StatusBadRequest, gin.H{"status": "error", "message": err.Error()}, err
 		}
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}
