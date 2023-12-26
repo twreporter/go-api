@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.4.0-rc.2
+
+#### Notable Changes
+
+- api/donation
+  - return 400 when card error (tappay return code 10003) instead of 500
+
+#### Commits
+
+- [[`7870da0dd2`](https://github.com/twreporter/go-api/commit/7870da0dd2)] - **fix**: return 400 when card error (10003) (Aylie Chou)
+
 ### 7.4.0-rc.1
 
 #### Notable Changes
