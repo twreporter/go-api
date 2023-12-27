@@ -51,7 +51,13 @@
 
 ## Released
 
-### 7.3.6 (Current)
+### 7.3.7 (Current)
+
+#### Commits
+
+* [[`36bd9591bb`](https://github.com/twreporter/go-api/commit/36bd9591bb)] - **fix**: wrong email subcription url in success-donation.tmpl (nickhsine)
+
+### 7.3.6
 
 #### Notable Changes
 
@@ -60,7 +66,7 @@
 
 #### Commits
 
-- [[`8b1a04b`](https://github.com/twreporter/go-api/8b1a04b)] - **fix**: typo in trailblazer template
+- [[`8b1a04b`](https://github.com/twreporter/go-api/commit/8b1a04b)] - **fix**: typo in trailblazer template
 
 ### 7.3.5
 
@@ -85,7 +91,7 @@
 
 #### Commits
 
-- [[`ead8276121`](https://github.com/twreporter/go-api/ead8276121)] - **fix**: CHANGELOG.md wording (Aylie Chou)
+- [[`ead8276121`](https://github.com/twreporter/go-api/commit/ead8276121)] - **fix**: CHANGELOG.md wording (Aylie Chou)
 - [[`86fc18ac7e`](https://github.com/twreporter/go-api/commit/86fc18ac7e)] - **chore**: update doc html (Aylie Chou)
 - [[`9b31bd6cbc`](https://github.com/twreporter/go-api/commit/9b31bd6cbc)] - **chore**: update user api doc (Aylie Chou)
 - [[`65235d26e6`](https://github.com/twreporter/go-api/commit/65235d26e6)] - **chore**: add migration files (Aylie Chou)
