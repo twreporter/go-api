@@ -1,5 +1,19 @@
 ## Unrelease
 
+### 7.4.0-rc.3
+
+#### Notable Changes
+
+- api/index_page
+  - use news.Opinion.Key for review section
+
+#### Commits
+
+- [[`3c5486dc4d`](
+  https://github.com/twreporter/go-api/commit/3c5486dc4d)] - **fix**: use new category_set key for review section (Lucien)
+- [[`4a345bb1ab`](
+  https://github.com/twreporter/go-api/commit/4a345bb1ab)] - **fix**: remove unused code(Lucien)
+
 ### 7.4.0-rc.2
 
 #### Notable Changes
