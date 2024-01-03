@@ -89,6 +89,7 @@ type (
 const (
 	testCreditCardPrime = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
 	testLinePrime       = "ln_test_utigjeyfutj5867uyjhuty47rythfjru485768tigjfheufhtu5i6ojk"
+	tesErrorCardPrime   = "522d4162eb8cabd35ad52c24b3b6e378e818c566a9cfa89754bc644b6cac47d9"
 
 	testCreditCardMerchant = "GlobalTesting_CTBC"
 	testLineMerchant       = "GlobalTesting_LINEPAY"
@@ -340,6 +341,20 @@ func testDonationCreateClientError(t *testing.T, path string, userID uint, frequ
 				},
 				PayMethod: creditCardPayMethod,
 				Prime:     methodToPrime[payMethod],
+				UserID:    userID,
+			},
+			reqHeader:  header,
+			resultCode: http.StatusBadRequest,
+		},
+		{
+			name: "StatusCode=StatusBadRequest, error card prime",
+			reqBody: &requestBody{
+				Amount: 0,
+				Cardholder: models.Cardholder{
+					Email: "developer@twreporter.org",
+				},
+				PayMethod: creditCardPayMethod,
+				Prime:     tesErrorCardPrime,
 				UserID:    userID,
 			},
 			reqHeader:  header,

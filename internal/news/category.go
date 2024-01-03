@@ -12,6 +12,5 @@ var (
 	CultureAndArt           = Category{"57175d923970a5e46ff854db", "culture_and_art"}
 	International           = Category{"5743d35a940ee41000e81f4a", "international"}
 	LivingAndMedicalCare    = Category{"59783ad89092de0d00b41691", "living_and_medical_care"}
-	Review                  = Category{"573177cb8c0c261000b3f6d2", "review"}
 	Photography             = Category{"574d028748fa171000c45d48", "photography"}
 )
