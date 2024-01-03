@@ -1,55 +1,22 @@
 ## Unrelease
 
-### 7.4.0-rc.3
+## Released
+
+### 7.4.0 (Current)
 
 #### Notable Changes
 
 - api/index_page
   - use news.Opinion.Key for review section
-
-#### Commits
-
-- [[`3c5486dc4d`](
-  https://github.com/twreporter/go-api/commit/3c5486dc4d)] - **fix**: use new category_set key for review section (Lucien)
-- [[`4a345bb1ab`](
-  https://github.com/twreporter/go-api/commit/4a345bb1ab)] - **fix**: remove unused code(Lucien)
-
-### 7.4.0-rc.2
-
-#### Notable Changes
-
 - api/donation
   - return 400 when card error (tappay return code 10003) instead of 500
-
-#### Commits
-
-- [[`7870da0dd2`](https://github.com/twreporter/go-api/commit/7870da0dd2)] - **fix**: return 400 when card error (10003) (Aylie Chou)
-
-### 7.4.0-rc.1
-
-#### Notable Changes
-
-- api/user
-  - add parameter validation for `read_posts_sec`
-- doc/user
-  - fix user.apib & update index.html
-
-#### Commits
-
-- [[`5de2f26548`](https://github.com/twreporter/go-api/commit/5de2f26548)] - **fix**: add parameter validation for `read_posts_sec` (Aylie Chou)
-* [[`f1bcf7d2d3`](https://github.com/twreporter/go-api/commit/f1bcf7d2d3)] - **fix**: parameter type in api doc (Aylie Chou)
-
-### 7.4.0-rc.0
-
-#### Notable Changes
-
 - api/user
   - add `/v2/user/:userID/analytics` endpoint
 - model/users_posts
   - add reading post analytics related model
 - migration
   - add reading post analytics related tables & columns
-- doc
+- doc/user
   - add `/v2/user/:userID/analytics` endpoint doc
   - add new add reponse data in GET `/v2/user/:userID` endpoint
 - test
@@ -58,14 +25,19 @@
 
 #### Commits
 
+- [[`3c5486dc4d`](
+  https://github.com/twreporter/go-api/commit/3c5486dc4d)] - **fix**: use new category_set key for review section (Lucien)
+- [[`4a345bb1ab`](
+  https://github.com/twreporter/go-api/commit/4a345bb1ab)] - **fix**: remove unused code(Lucien)
+- [[`7870da0dd2`](https://github.com/twreporter/go-api/commit/7870da0dd2)] - **fix**: return 400 when card error (10003) (Aylie Chou)
+- [[`5de2f26548`](https://github.com/twreporter/go-api/commit/5de2f26548)] - **fix**: add parameter validation for `read_posts_sec` (Aylie Chou)
+- [[`f1bcf7d2d3`](https://github.com/twreporter/go-api/commit/f1bcf7d2d3)] - **fix**: parameter type in api doc (Aylie Chou)
 - [[`e9874cd312`](https://github.com/twreporter/go-api/commit/e9874cd312)] - **feat**: add `/v2/user/:id/analytics` route (Aylie Chou)
 - [[`93642bbea6`](https://github.com/twreporter/go-api/commit/93642bbea6)] - **feat**: add `read_posts_cout` & `read_posts_sec` in GetUser response (Aylie Chou)
 - [[`61545bdcab`](https://github.com/twreporter/go-api/commit/61545bdcab)] - **fix**: update migration 15 (Aylie Chou)
 - [[`4ec6418be4`](https://github.com/twreporter/go-api/commit/4ec6418be4)] - **feat**: add new tables/column migration files (Aylie Chou)
 
-## Released
-
-### 7.3.7 (Current)
+### 7.3.7
 
 #### Commits
 
