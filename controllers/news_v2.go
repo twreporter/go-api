@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	f "github.com/twreporter/logformatter"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
 )
@@ -68,7 +69,7 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 	if authUserID != nil {
 		authUserIdString := fmt.Sprintf("%v", authUserID)
 		if _, err := nc.SqlStorage.GetBookmarksOfPosts(ctx, authUserIdString, posts); err != nil {
-			//log error
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 		}
 	}
 

@@ -12,6 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
+	f "github.com/twreporter/logformatter"
 )
 
 type fetchResult struct {
@@ -37,21 +39,42 @@ func NewNewsV2SqlStorage(db *gorm.DB) *gormStorage {
 
 func (gs *gormStorage) GetBookmarksOfPosts(ctx context.Context, userID string, posts []news.MetaOfPost) ([]news.MetaOfPost, error) {
 	if userID == "" {
-		// log error
+		log.Error("userID is required")
 		return posts, nil
 	}
-	for index, post := range posts {
-		var bookmark []models.Bookmark
-
-		err := gs.db.Raw("SELECT `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND `bookmarks`.slug = ? AND ((`users_bookmarks`.`user_id` IN (?)))", post.Slug, userID).Scan(&bookmark).Error
-		if err != nil {
-			// log error
+	select {
+	case <-ctx.Done():
+		return nil, errors.WithStack(ctx.Err())
+	case result, ok := <-gs.GetBookmarksOfPostsTask(ctx, userID, posts):
+		switch {
+		case !ok:
+			return nil, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, result.Error
 		}
-		if len(bookmark) > 0 {
-			posts[index].BookmarkID = strconv.Itoa(int(bookmark[0].ID))
-		}
+		posts = result.Content.([]news.MetaOfPost)
 	}
+
 	return posts, nil
+}
+
+func (gs *gormStorage) GetBookmarksOfPostsTask(ctx context.Context, userID string, posts []news.MetaOfPost) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, userID string, posts []news.MetaOfPost) {
+		for index, post := range posts {
+			var bookmark []models.Bookmark
+
+			err := gs.db.Raw("SELECT `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND `bookmarks`.slug = ? AND ((`users_bookmarks`.`user_id` IN (?)))", post.Slug, userID).Scan(&bookmark).Error
+			if err != nil {
+				log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+			}
+			if len(bookmark) > 0 {
+				posts[index].BookmarkID = strconv.Itoa(int(bookmark[0].ID))
+			}
+		}
+		result <- fetchResult{Content: posts}
+	}(ctx, userID, posts)
+	return result
 }
 
 func (m *mongoStorage) GetFullPosts(ctx context.Context, q *news.Query) ([]news.Post, error) {
