@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `users_posts_reading_historys` (
+CREATE TABLE IF NOT EXISTS `users_posts_reading_footprints` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
