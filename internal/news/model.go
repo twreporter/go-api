@@ -56,6 +56,7 @@ type MetaOfPost struct {
 	IsExternal           bool               `bson:"is_external" json:"is_external"`
 	Tags                 []Tag              `bson:"tags" json:"tags,omitempty"`
 	Full                 bool               `bson:"-" json:"full"`
+	BookmarkID           string             `json:"bookmarkId"`
 }
 
 type Post struct {

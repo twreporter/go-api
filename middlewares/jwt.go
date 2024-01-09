@@ -36,6 +36,22 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	},
 })
 
+func PassAuthUserID() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Request.Header["Authorization"] == nil {
+			return
+		}
+		if err := jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
+			return
+		}
+		userProperty := c.Request.Context().Value(authUserProperty)
+		claims := userProperty.(*jwt.Token).Claims.(jwt.MapClaims)
+		// Set user_id with key "auth-user-id" in context to avoid hierarchy access
+		newRequest := c.Request.WithContext(context.WithValue(c.Request.Context(), globals.AuthUserIDProperty, claims["user_id"]))
+		*c.Request = *newRequest
+	}
+}
+
 // ValidateAuthorization checks the jwt token in the Authorization header is valid or not
 func ValidateAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {

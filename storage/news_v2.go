@@ -2,13 +2,16 @@ package storage
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
+	"github.com/twreporter/go-api/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/jinzhu/gorm"
 )
 
 type fetchResult struct {
@@ -20,8 +23,35 @@ type mongoStorage struct {
 	*mongo.Client
 }
 
+type gormStorage struct {
+	db *gorm.DB
+}
+
 func NewMongoV2Storage(client *mongo.Client) *mongoStorage {
 	return &mongoStorage{client}
+}
+
+func NewNewsV2SqlStorage(db *gorm.DB) *gormStorage {
+	return &gormStorage{db}
+}
+
+func (gs *gormStorage) GetBookmarksOfPosts(ctx context.Context, userID string, posts []news.MetaOfPost) ([]news.MetaOfPost, error) {
+	if userID == "" {
+		// log error
+		return posts, nil
+	}
+	for index, post := range posts {
+		var bookmark []models.Bookmark
+
+		err := gs.db.Raw("SELECT `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND `bookmarks`.slug = ? AND ((`users_bookmarks`.`user_id` IN (?)))", post.Slug, userID).Scan(&bookmark).Error
+		if err != nil {
+			// log error
+		}
+		if len(bookmark) > 0 {
+			posts[index].BookmarkID = strconv.Itoa(int(bookmark[0].ID))
+		}
+	}
+	return posts, nil
 }
 
 func (m *mongoStorage) GetFullPosts(ctx context.Context, q *news.Query) ([]news.Post, error) {

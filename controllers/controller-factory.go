@@ -45,7 +45,7 @@ func (cf *ControllerFactory) GetMembershipController() *MembershipController {
 }
 
 func (cf *ControllerFactory) GetNewsV2Controller() *newsV2Controller {
-	return NewNewsV2Controller(storage.NewMongoV2Storage(cf.mongoClient), cf.indexClient)
+	return NewNewsV2Controller(storage.NewMongoV2Storage(cf.mongoClient), cf.indexClient, storage.NewNewsV2SqlStorage(cf.gormDB))
 }
 
 // GetMailController returns *MailController struct

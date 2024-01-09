@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sort"
 	"sync"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -29,13 +30,18 @@ type newsV2Storage interface {
 	CheckCategorySetValid(context.Context, *news.Query) (bool, error)
 }
 
-func NewNewsV2Controller(s newsV2Storage, client news.AlgoliaSearcher) *newsV2Controller {
-	return &newsV2Controller{s, client}
+type newsV2SqlStorage interface {
+	GetBookmarksOfPosts(context.Context, string, []news.MetaOfPost) ([]news.MetaOfPost, error)
+}
+
+func NewNewsV2Controller(s newsV2Storage, client news.AlgoliaSearcher, sqls newsV2SqlStorage) *newsV2Controller {
+	return &newsV2Controller{s, client, sqls}
 }
 
 type newsV2Controller struct {
 	Storage     newsV2Storage
 	indexClient news.AlgoliaSearcher
+	SqlStorage  newsV2SqlStorage
 }
 
 func (nc *newsV2Controller) GetPosts(c *gin.Context) {
@@ -56,6 +62,14 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 
 	if err != nil {
 		return
+	}
+
+	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
+	if authUserID != nil {
+		authUserIdString := fmt.Sprintf("%v", authUserID)
+		if _, err := nc.SqlStorage.GetBookmarksOfPosts(ctx, authUserIdString, posts); err != nil {
+			//log error
+		}
 	}
 
 	total, err := nc.Storage.GetPostCount(ctx, q)
