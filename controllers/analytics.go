@@ -6,7 +6,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/guregu/null.v3"
+	"github.com/twreporter/go-api/storage"
 )
+
+func NewAnalyticsController(gs storage.AnalyticsGormStorage, ms storage.AnalyticsMongoStorage) *AnalyticsController {
+	return &AnalyticsController{gs, ms}
+}
+
+type AnalyticsController struct {
+	gs storage.AnalyticsGormStorage
+	ms storage.AnalyticsMongoStorage
+}
 
 type (
 	reqBody struct {
@@ -22,7 +32,7 @@ type (
 	}
 )
 
-func (mc *MembershipController) SetUserAnalytics(c *gin.Context) (int, gin.H, error) {
+func (ac *AnalyticsController) SetUserAnalytics(c *gin.Context) (int, gin.H, error) {
 	var req reqBody
 	var resp respBody
 	var isExisted bool
@@ -43,7 +53,7 @@ func (mc *MembershipController) SetUserAnalytics(c *gin.Context) (int, gin.H, er
 	resp.PostID = req.PostID.String
 
 	if null.Bool.ValueOrZero(req.ReadPostsCount) == true {
-		isExisted, err = mc.Storage.UpdateUserReadingPostCount(userID, req.PostID.String)
+		isExisted, err = ac.gs.UpdateUserReadingPostCount(userID, req.PostID.String)
 		if err != nil {
 			return toResponse(err)
 		}
@@ -52,7 +62,7 @@ func (mc *MembershipController) SetUserAnalytics(c *gin.Context) (int, gin.H, er
 
 	if null.Int.IsZero(req.ReadPostsSec) == false {
 		// update read post time
-		err = mc.Storage.UpdateUserReadingPostTime(userID, req.PostID.String, int(req.ReadPostsSec.Int64))
+		err = ac.gs.UpdateUserReadingPostTime(userID, req.PostID.String, int(req.ReadPostsSec.Int64))
 		if err != nil {
 			return toResponse(err)
 		}
@@ -64,4 +74,12 @@ func (mc *MembershipController) SetUserAnalytics(c *gin.Context) (int, gin.H, er
 		return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 	}
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
+}
+
+func (ac *AnalyticsController) GetUserAnalyticsReadingFootprint(c *gin.Context) (int, gin.H, error) {
+	return http.StatusOK, gin.H{"status": "success", "data": nil}, nil
+}
+
+func (ac *AnalyticsController) SetUserAnalyticsReadingFootprint(c *gin.Context) (int, gin.H, error) {
+	return http.StatusOK, gin.H{"status": "success", "data": nil}, nil
 }

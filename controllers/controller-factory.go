@@ -44,6 +44,13 @@ func (cf *ControllerFactory) GetMembershipController() *MembershipController {
 	return NewMembershipController(gs)
 }
 
+// GetAnalyticsController returns *AnalyticsController struct
+func (cf *ControllerFactory) GetAnalyticsController() *AnalyticsController {
+	gs := storage.NewAnalyticsGormStorage(cf.gormDB)
+	ms := storage.NewAnalyticsMongoStorage(cf.mongoClient)
+	return NewAnalyticsController(gs, ms)
+}
+
 func (cf *ControllerFactory) GetNewsV2Controller() *newsV2Controller {
 	return NewNewsV2Controller(storage.NewMongoV2Storage(cf.mongoClient), cf.indexClient, storage.NewNewsV2SqlStorage(cf.gormDB))
 }
