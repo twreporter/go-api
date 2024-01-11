@@ -22,3 +22,12 @@ type UsersPostsReadingTime struct {
 	DeletedAt  *time.Time
 	Seconds    int
 }
+
+// UsersPostsReadingFootprint: users and reading posts footprint are one-to-many table
+type UsersPostsReadingFootprint struct {
+	UserID     int
+	PostID     string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	DeletedAt  *time.Time
+}
