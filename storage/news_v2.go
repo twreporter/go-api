@@ -61,17 +61,29 @@ func (gs *gormStorage) GetBookmarksOfPosts(ctx context.Context, userID string, p
 func (gs *gormStorage) GetBookmarksOfPostsTask(ctx context.Context, userID string, posts []news.MetaOfPost) <-chan fetchResult {
 	result := make(chan fetchResult)
 	go func(ctx context.Context, userID string, posts []news.MetaOfPost) {
+		slugs := make([]string, len(posts))
 		for index, post := range posts {
-			var bookmark []models.Bookmark
-
-			err := gs.db.Raw("SELECT `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND `bookmarks`.slug = ? AND ((`users_bookmarks`.`user_id` IN (?)))", post.Slug, userID).Scan(&bookmark).Error
-			if err != nil {
-				log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
-			}
-			if len(bookmark) > 0 {
-				posts[index].BookmarkID = strconv.Itoa(int(bookmark[0].ID))
-			}
+			slugs[index] = post.Slug
 		}
+
+		var bookmarks []models.Bookmark
+		err := gs.db.Raw("SELECT `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND ((`bookmarks`.slug IN (?))) AND `users_bookmarks`.`user_id` = ?", slugs, userID).Scan(&bookmarks).Error
+		if err != nil {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+
+		slugBookmarkMap := map[string]string{}
+		for _, bookmark := range bookmarks {
+			slugBookmarkMap[bookmark.Slug] = strconv.Itoa(int(bookmark.ID))
+		}
+
+		for index, post := range posts {
+			if slugBookmarkMap[post.Slug] == "" {
+				continue
+			}
+			posts[index].BookmarkID = slugBookmarkMap[post.Slug]
+		}
+
 		result <- fetchResult{Content: posts}
 	}(ctx, userID, posts)
 	return result
