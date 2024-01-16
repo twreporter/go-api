@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"strconv"
 	"context"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/globals"
@@ -124,11 +126,18 @@ func (gs *gormDB) UpdateUserReadingFootprint(userID string, postID string) (bool
 	}
 	// Directly return if record exist
 	if count != 0 {
-		tx.Rollback()
+		// update `updated_at` column
+		if err := tx.Model(&models.UsersPostsReadingFootprint{}).Where("user_id = ? AND post_id = ?", userID, postID).Update(models.UsersPostsReadingFootprint{ UpdatedAt: time.Now()}).Error; err != nil {
+			log.Debug("update reading footprint updated_at column, user_id:", userID, "post_id", postID)
+		}
+		if err := tx.Commit().Error; err != nil {
+			tx.Rollback()
+			return false, errors.Wrap(err, "failed to commit transaction")
+		}
 		return true, nil
 	}
 
-	// Add the user read post record
+	// Add the user read post footprint
 	userIdInt, err := strconv.Atoi(userID)
 	if err != nil {
 		tx.Rollback()

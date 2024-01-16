@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS `users_posts_reading_footprints` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `user_id` int(10) unsigned NOT NULL,
   `post_id` varchar(50) NOT NULL,
