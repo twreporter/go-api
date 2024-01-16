@@ -2,13 +2,18 @@ package storage
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
+	"github.com/twreporter/go-api/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
+	f "github.com/twreporter/logformatter"
 )
 
 type fetchResult struct {
@@ -20,8 +25,69 @@ type mongoStorage struct {
 	*mongo.Client
 }
 
+type gormStorage struct {
+	db *gorm.DB
+}
+
 func NewMongoV2Storage(client *mongo.Client) *mongoStorage {
 	return &mongoStorage{client}
+}
+
+func NewNewsV2SqlStorage(db *gorm.DB) *gormStorage {
+	return &gormStorage{db}
+}
+
+func (gs *gormStorage) GetBookmarksOfPosts(ctx context.Context, userID string, posts []news.MetaOfPost) ([]news.MetaOfPost, error) {
+	if userID == "" {
+		log.Error("userID is required")
+		return posts, nil
+	}
+	select {
+	case <-ctx.Done():
+		return nil, errors.WithStack(ctx.Err())
+	case result, ok := <-gs.GetBookmarksOfPostsTask(ctx, userID, posts):
+		switch {
+		case !ok:
+			return nil, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, result.Error
+		}
+		posts = result.Content.([]news.MetaOfPost)
+	}
+
+	return posts, nil
+}
+
+func (gs *gormStorage) GetBookmarksOfPostsTask(ctx context.Context, userID string, posts []news.MetaOfPost) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, userID string, posts []news.MetaOfPost) {
+		slugs := make([]string, len(posts))
+		for index, post := range posts {
+			slugs[index] = post.Slug
+		}
+
+		var bookmarks []models.Bookmark
+		err := gs.db.Where("id IN (?)", gs.db.Table("users_bookmarks").Select("bookmark_id").Where("user_id = ?", userID).QueryExpr()).Where("slug IN (?)", slugs).Where("deleted_at IS NULL").Find(&bookmarks).Error
+
+		if err != nil {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+
+		slugBookmarkMap := map[string]string{}
+		for _, bookmark := range bookmarks {
+			slugBookmarkMap[bookmark.Slug] = strconv.Itoa(int(bookmark.ID))
+		}
+
+		for index, post := range posts {
+			if slugBookmarkMap[post.Slug] == "" {
+				continue
+			}
+			posts[index].BookmarkID = slugBookmarkMap[post.Slug]
+		}
+
+		result <- fetchResult{Content: posts}
+	}(ctx, userID, posts)
+	return result
 }
 
 func (m *mongoStorage) GetFullPosts(ctx context.Context, q *news.Query) ([]news.Post, error) {
