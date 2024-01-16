@@ -172,3 +172,15 @@ type Video struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id"`
 	Title     string             `json:"title"`
 }
+
+type MetaOfFootprint struct {
+        ID                   primitive.ObjectID `bson:"_id" json:"id"`
+        Slug                 string             `bson:"slug" json:"slug"`
+	HeroImage            *Image             `bson:"heroImage" json:"hero_image,omitempty"`
+        Description          string             `bson:"description" json:"description"`
+        Title                string             `bson:"title" json:"title"`
+        Subtitle             string             `bson:"subtitle" json:"subtitle"`
+        CategorySet          []category_set     `bson:"category_set" json:"category_set,omitempty"`
+        PublishedDate        time.Time          `bson:"publishedDate" json:"published_date"`
+        IsExternal           bool               `bson:"is_external" json:"is_external"`
+}

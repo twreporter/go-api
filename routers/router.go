@@ -204,8 +204,14 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v2Group.POST("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SetUser))
 	v2Group.GET("/users/:userID", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetUser))
 
+	// =============================
+	// user analytics service endpoints
+	// =============================
+	ac := cf.GetAnalyticsController()
 	// reading post
-	v2Group.POST("/users/:userID/analytics", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SetUserAnalytics))
+	v2Group.POST("/users/:userID/analytics", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(ac.SetUserAnalytics))
+	v2Group.GET("/users/:userID/analytics/reading-footprint", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(ac.GetUserAnalyticsReadingFootprint))
+	v2Group.POST("/users/:userID/analytics/reading-footprint", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(ac.SetUserAnalyticsReadingFootprint))
 
 	// =============================
 	// v3 membership service endpoints
