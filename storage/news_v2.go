@@ -67,7 +67,8 @@ func (gs *gormStorage) GetBookmarksOfPostsTask(ctx context.Context, userID strin
 		}
 
 		var bookmarks []models.Bookmark
-		err := gs.db.Raw("SELECT `bookmarks`.* FROM `bookmarks` INNER JOIN `users_bookmarks` ON `users_bookmarks`.`bookmark_id` = `bookmarks`.`id` WHERE `bookmarks`.deleted_at IS NULL AND ((`bookmarks`.slug IN (?))) AND `users_bookmarks`.`user_id` = ?", slugs, userID).Scan(&bookmarks).Error
+		err := gs.db.Where("id IN (?)", gs.db.Table("users_bookmarks").Select("bookmark_id").Where("user_id = ?", userID).QueryExpr()).Where("slug IN (?)", slugs).Where("deleted_at IS NULL").Find(&bookmarks).Error
+
 		if err != nil {
 			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 		}
