@@ -1,5 +1,39 @@
 ## Unrelease
 
+### 7.5.0-rc.0
+
+#### Notable Changes
+
+- api/posts
+  - add `bookmarkId` data in GET /v2/posts response if user is authed
+- api/analytics
+  - add POST /v2/users/:id/analytics/reading-footprint endpoint
+  - add GET /v2/users/:id/analytics/reading-footprint endpoint
+- model/users_post
+  - add UsersReadingFootprint model
+- doc/user
+  - add api doc for /v2/users/:id/analytics/reading-footprint endpoint
+- test
+  - add testcases for GetUserAnalyticsReadingFootprint & SetUserAnalyticsReadingFootprint
+- migration
+  - add migration file for user reading footprint
+
+#### Commits
+
+- [[`bc619b6323`](https://github.com/twreporter/go-api/commit/bc619b6323)] - **fix**: update `updated_at` if footprint record existed (Aylie Chou)
+- [[`00b1911204`](https://github.com/twreporter/go-api/commit/00b1911204)] - **chore**: add test cases for Set/Get reading footprint (Aylie Chou)
+- [[`7a586f6405`](https://github.com/twreporter/go-api/commit/7a586f6405)] - **feat**: add api doc of `reading-footprint` endpoint (Aylie Chou)
+- [[`5ef940563d`](https://github.com/twreporter/go-api/commit/5ef940563d)] - **feat**: add controller & storage for `reading-footprint` endpoint (Aylie Chou)
+- [[`b29a8a0c37`](https://github.com/twreporter/go-api/commit/b29a8a0c37)] - **fix**: adjust new added table name in migrations files (Aylie Chou)
+- [[`2daee47d30`](https://github.com/twreporter/go-api/commit/2daee47d30)] - **fix**: separate analytics storage & controller from membership (Aylie Chou)
+- [[`398e9380d4`](https://github.com/twreporter/go-api/commit/398e9380d4)] - **feat**: add migration file for user reading history (Aylie Chou)
+- [[`f114650cca`](https://github.com/twreporter/go-api/commit/f114650cca)] - **fix**: use gorm method to query data (Aylie Chou)
+- [[`15a97b2751`](https://github.com/twreporter/go-api/commit/15a97b2751)] - **fix**: use `in` statement fot batching query (Aylie Chou)
+- [[`7e9002ec3f`](https://github.com/twreporter/go-api/commit/7e9002ec3f)] - **fix**: add `bookmarkId` in newsV2c tests (Aylie Chou)
+- [[`1cc4c6a848`](https://github.com/twreporter/go-api/commit/1cc4c6a848)] - **fix**: add `bookmarkId` in /posts api doc (Aylie Chou)
+- [[`1bfa77e9fc`](https://github.com/twreporter/go-api/commit/1bfa77e9fc)] - **fix**: add log & use context for goroutine (Aylie Chou)
+- [[`313b8e6ae4`](https://github.com/twreporter/go-api/commit/313b8e6ae4)] - **feat**: add `bookmarkId` in /posts if user is authed (Aylie Chou)
+
 ## Released
 
 ### 7.4.0 (Current)
