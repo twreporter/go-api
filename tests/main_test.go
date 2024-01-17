@@ -25,6 +25,7 @@ import (
 	"github.com/twreporter/go-api/routers"
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/utils"
+	"github.com/twreporter/go-api/internal/news"
 	mongodriver "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -88,6 +89,17 @@ func getUser(email string) (user models.User) {
 	as := storage.NewGormStorage(Globs.GormDB)
 	user, _ = as.GetUserByEmail(email)
 	return
+}
+
+// future work: migrate to news.Post for general use
+func createPost(post news.MetaOfFootprint) (error) {
+	db := testMongoClient
+
+	_, err := db.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColPosts).InsertOne(context.Background(), post)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func serveHTTP(method, path, body, contentType, authorization string) (resp *httptest.ResponseRecorder) {

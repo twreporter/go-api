@@ -35,6 +35,18 @@
 + read_posts_count: 19 (number) - Total count of user reading posts
 + read_posts_sec: 3360 (number) - Total time of user reading posts; digit is second.
 
+### UserReadingFootprint
++ id: 5edf118c3e631f0600198935 (required)
++ slug: `a-slug-of-the-post` (required)
++ hero_image  (image, required)
++ title: post title (required)
++ subtitle: post subtitle (required)
++ description: post description (required)
++ category_set (array[category_set], fixed-type, required)
++ published_date: `2020-06-8T16:00:00Z` (required)
++ is_external: false (boolean, required)
+
+
 # Group User Service
 Twreporter User service api
 
@@ -189,3 +201,84 @@ Add user analytics data
     + Attributes
         + status: error (required)
         + message: Internal Server Error - An error occurred while processing the request
+
+## User Analytics Of Reading Footprint [/v2/users/{id}/analytics/reading-footprint]
+
+### Update user reading footprint [POST]
+
+Add user reading footprint data
+
++ Parameters
+    + id: 123 (string) - The unique identifier of the user
+
++ Request with Body
+
+    + Headers
+
+            Content-Type: application/json
+            Cookie: id_token=<id_token>
+            Authorization: Bearer <jwt>
+
+    + Attributes
+        + post_id (string, required) - The post id of recording user reading footprint
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (string, required)
+
++ Response 201 (application/json)
+
+    + Attributes
+        + status: success (string, required)
+
++ Response 400
+
+    + Attributes
+        + status: fail (required)
+        + message: Bad Request - The request body is missing required parameters or contains invalid data
+
++ Response 401
+
+    + Attributes
+        + status: error (required)
+        + message: Unauthorized - The access token is invalid or has expired
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Internal Server Error - An error occurred while processing the request
+
+## User Analytics Of Reading Footprint [/v2/users/{id}/analytics/reading-footprint{?limit,offset}]
+
+### Get user reading footprint [GET]
+
+Add user reading footprint data
+
++ Parameters
+    + id: 123 (string) - The unique identifier of the user
+    + offset: `0` (integer, optional) - The number of posts to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of posts to return
+        + Default: `10`
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (required)
+        + data
+            + meta (meta, fixed-type, required)
+            + records (array[UserReadingFootprint], fixed-type, required)
+
++ Response 500 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error. (required)
+
++ Response 504 (application/json)
+
+    + Attributes
+        + status: error (required)
+        + message: Query upstream server timeout. (required)

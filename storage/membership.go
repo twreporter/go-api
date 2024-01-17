@@ -45,10 +45,6 @@ type MembershipStorage interface {
 	HasRole(user models.User, roleKey string) (bool, error)
 	IsTrailblazer(email string) (bool, error)
 
-	/** User analytics **/
-	UpdateUserReadingPostCount(string, string) (bool, error)
-	UpdateUserReadingPostTime(string, string, int) (error)
-
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)
 	GetABookmarkByID(string) (models.Bookmark, error)

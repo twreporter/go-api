@@ -39,6 +39,7 @@ type testPost struct {
 	Writers       []primitive.ObjectID
 	Category      string
 	SubCategory   string
+	BookmarkID    string
 }
 
 func TestGetPostsByAuthors_AuthorIsAnEngineer(t *testing.T) {
@@ -346,7 +347,8 @@ func metaOfPostResponse(p testPost) string {
 	"published_date": "%s",
 	"is_external": false,
 	"tags": %s,
-	"full": false
+	"full": false,
+	"bookmarkId": ""
 	}
 `,
 		p.ID.Hex(),
