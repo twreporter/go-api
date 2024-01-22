@@ -1,0 +1,1 @@
+ALTER TABLE `bookmarks` MODIFY `slug` varchar(100);
