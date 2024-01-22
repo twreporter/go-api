@@ -161,7 +161,7 @@ func (gs *gormDB) GetFootprintsOfAUser(userID string, limit int, offset int) ([]
 	var total int
 	var footprints []models.UsersPostsReadingFootprint
 
-	statement := gs.db.Model(&models.UsersPostsReadingFootprint{}).Where("user_id = ?", userID)
+	statement := gs.db.Model(&models.UsersPostsReadingFootprint{}).Where("user_id = ? AND updated_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)", userID)
 	if err = statement.Limit(limit).Offset(offset).Order("updated_at desc").Find(&footprints).Error; err != nil {
 		return nil, 0, err
 	}
