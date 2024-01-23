@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.0-rc.2
+
+#### Notable Changes
+
+- migration
+  - upgrade `bookmarks` slug size
+
+#### Commits
+
+- [[`ee8d38f395`](https://github.com/twreporter/go-api/commit/ee8d38f395)] - **fix**: upgrade bookmarks slug size (Lucien)
+
 ### 7.5.0-rc.1
 
 #### Notable Changes
