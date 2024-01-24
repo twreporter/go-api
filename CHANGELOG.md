@@ -1,5 +1,27 @@
 ## Unrelease
 
+### 7.5.0-rc.2
+
+#### Notable Changes
+
+- migration
+  - upgrade `bookmarks` slug size
+
+#### Commits
+
+- [[`ee8d38f395`](https://github.com/twreporter/go-api/commit/ee8d38f395)] - **fix**: upgrade bookmarks slug size (Lucien)
+
+### 7.5.0-rc.1
+
+#### Notable Changes
+
+- api/analytics
+  - get current 6 month footprints only
+
+#### Commits
+
+- [[`baeb94047b`](https://github.com/twreporter/go-api/commit/baeb94047b)] - **fix**: get current 6 month footprints only (Aylie Chou)
+
 ### 7.5.0-rc.0
 
 #### Notable Changes
