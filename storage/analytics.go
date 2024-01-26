@@ -17,11 +17,12 @@ import (
 	"github.com/twreporter/go-api/internal/news"
 )
 
+
 type AnalyticsGormStorage interface {
 	UpdateUserReadingPostCount(string, string) (bool, error)
 	UpdateUserReadingPostTime(string, string, int) (error)
 	UpdateUserReadingFootprint(string, string) (bool, error)
-	GetFootprintsOfAUser(string, int, int) ([]models.UsersPostsReadingFootprint, int, error)
+	GetFootprintsOfAUser(string, int, int) ([]respFootprint, int, error)
 }
 
 type AnalyticsMongoStorage interface {
@@ -34,6 +35,11 @@ type mongoDB struct {
 
 type gormDB struct {
 	db *gorm.DB
+}
+
+type respFootprint struct {
+	PostID     string `json:"post_id"`
+	BookmarkID string `json:"bookmark_id"`
 }
 
 func NewAnalyticsGormStorage(db *gorm.DB) *gormDB {
@@ -156,12 +162,12 @@ func (gs *gormDB) UpdateUserReadingFootprint(userID string, postID string) (bool
 	return false, nil
 }
 
-func (gs *gormDB) GetFootprintsOfAUser(userID string, limit int, offset int) ([]models.UsersPostsReadingFootprint, int, error) {
+func (gs *gormDB) GetFootprintsOfAUser(userID string, limit int, offset int) ([]respFootprint, int, error) {
 	var err error
 	var total int
-	var footprints []models.UsersPostsReadingFootprint
+	var footprints []respFootprint
 
-	statement := gs.db.Model(&models.UsersPostsReadingFootprint{}).Where("user_id = ? AND updated_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)", userID)
+	statement := gs.db.Table("users_posts_reading_footprints").Select("users_posts_reading_footprints.`post_id`, users_bookmarks.`bookmark_id`").Joins("LEFT JOIN users_bookmarks ON users_posts_reading_footprints.`post_id`=users_bookmarks.`post_id` AND users_posts_reading_footprints.`user_id`=users_bookmarks.`user_id`").Where("users_posts_reading_footprints.`user_id` = ? AND users_posts_reading_footprints.`updated_at` >= DATE_SUB(NOW(), INTERVAL 6 MONTH)", userID)
 	if err = statement.Limit(limit).Offset(offset).Order("updated_at desc").Find(&footprints).Error; err != nil {
 		return nil, 0, err
 	}

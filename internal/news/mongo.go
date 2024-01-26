@@ -572,16 +572,22 @@ func BuildBioMarkdownOnlyStatement() bson.D {
 	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".md"}}}}
 }
 
-// BuildFilterIDs return statement for filtering id list
-func BuildFilterIDs(ids []string) []bson.D {
-	objectIDs := make([]primitive.ObjectID, len(ids))
-	for index, id := range ids {
-		objectID, err := primitive.ObjectIDFromHex(id)
+func ConverStringsToObjectIDs(strs []string) ([]primitive.ObjectID) {
+	objectIDs := make([]primitive.ObjectID, len(strs))
+	for index, str := range strs {
+		objectID, err := primitive.ObjectIDFromHex(str)
 		if err != nil {
 			continue
 		}
 		objectIDs[index] = objectID
 	}
+
+	return objectIDs
+}
+
+// BuildFilterIDs return statement for filtering id list
+func BuildFilterIDs(ids []string) []bson.D {
+	objectIDs := ConverStringsToObjectIDs(ids)
 
 	var stages []bson.D
 	element := bson.D{{"_id", bson.D{{"$in", objectIDs}}}}

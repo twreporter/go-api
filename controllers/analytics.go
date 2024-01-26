@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/twreporter/go-api/storage"
 	"github.com/twreporter/go-api/models"
+	"github.com/twreporter/go-api/internal/news"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func NewAnalyticsController(gs storage.AnalyticsGormStorage, ms storage.AnalyticsMongoStorage) *AnalyticsController {
@@ -100,15 +102,25 @@ func (ac *AnalyticsController) GetUserAnalyticsReadingFootprint(c *gin.Context) 
 
 	// fetch posts meta from mongo db
 	postIds := make([]string, len(footprints))
-	for index := range footprints {
-		postIds[index] = footprints[index].PostID
+	bookmarkMap := make(map[primitive.ObjectID]string)
+	for index, footprint := range footprints {
+		postIds[index] = footprint.PostID
+		objectID, err := primitive.ObjectIDFromHex(footprint.PostID)
+		if err != nil {
+			continue;
+		}
+		bookmarkMap[objectID] = footprint.BookmarkID
 	}
-	posts, err2 := ac.ms.GetPostsOfIDs(context.Background(), postIds)
-	if err2 != nil {
+	var posts []news.MetaOfFootprint
+	posts, err = ac.ms.GetPostsOfIDs(context.Background(), postIds)
+	if err != nil {
 		return toResponse(err)
 	}
 
-	// combine post meta into footprints response
+	// add bookmarks in posts
+	for index, post := range posts {
+		posts[index].BookmarkID = bookmarkMap[post.ID]
+	}
 
 	return http.StatusOK, gin.H{"status": "ok", "records": posts, "meta": models.MetaOfResponse{
 		Total:  total,
