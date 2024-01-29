@@ -1,28 +1,8 @@
 ## Unrelease
 
-### 7.5.0-rc.2
+## Released
 
-#### Notable Changes
-
-- migration
-  - upgrade `bookmarks` slug size
-
-#### Commits
-
-- [[`ee8d38f395`](https://github.com/twreporter/go-api/commit/ee8d38f395)] - **fix**: upgrade bookmarks slug size (Lucien)
-
-### 7.5.0-rc.1
-
-#### Notable Changes
-
-- api/analytics
-  - get current 6 month footprints only
-
-#### Commits
-
-- [[`baeb94047b`](https://github.com/twreporter/go-api/commit/baeb94047b)] - **fix**: get current 6 month footprints only (Aylie Chou)
-
-### 7.5.0-rc.0
+### 7.5.0 (Current)
 
 #### Notable Changes
 
@@ -39,9 +19,12 @@
   - add testcases for GetUserAnalyticsReadingFootprint & SetUserAnalyticsReadingFootprint
 - migration
   - add migration file for user reading footprint
+  - upgrade `bookmarks` slug size
 
 #### Commits
 
+- [[`ee8d38f395`](https://github.com/twreporter/go-api/commit/ee8d38f395)] - **fix**: upgrade bookmarks slug size (Lucien)
+- [[`baeb94047b`](https://github.com/twreporter/go-api/commit/baeb94047b)] - **fix**: get current 6 month footprints only (Aylie Chou)
 - [[`bc619b6323`](https://github.com/twreporter/go-api/commit/bc619b6323)] - **fix**: update `updated_at` if footprint record existed (Aylie Chou)
 - [[`00b1911204`](https://github.com/twreporter/go-api/commit/00b1911204)] - **chore**: add test cases for Set/Get reading footprint (Aylie Chou)
 - [[`7a586f6405`](https://github.com/twreporter/go-api/commit/7a586f6405)] - **feat**: add api doc of `reading-footprint` endpoint (Aylie Chou)
@@ -56,9 +39,7 @@
 - [[`1bfa77e9fc`](https://github.com/twreporter/go-api/commit/1bfa77e9fc)] - **fix**: add log & use context for goroutine (Aylie Chou)
 - [[`313b8e6ae4`](https://github.com/twreporter/go-api/commit/313b8e6ae4)] - **feat**: add `bookmarkId` in /posts if user is authed (Aylie Chou)
 
-## Released
-
-### 7.4.0 (Current)
+### 7.4.0
 
 #### Notable Changes
 
