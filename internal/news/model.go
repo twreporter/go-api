@@ -177,11 +177,12 @@ type MetaOfFootprint struct {
 	ID                   primitive.ObjectID `bson:"_id" json:"id"`
 	Slug                 string             `bson:"slug" json:"slug"`
 	HeroImage            *Image             `bson:"heroImage" json:"hero_image,omitempty"`
-	Description          string             `bson:"og_description" json:"description"`
+	OgDescription        string             `bson:"og_description" json:"og_description"`
 	Title                string             `bson:"title" json:"title"`
 	Subtitle             string             `bson:"subtitle" json:"subtitle"`
 	CategorySet          []category_set     `bson:"category_set" json:"category_set,omitempty"`
 	PublishedDate        time.Time          `bson:"publishedDate" json:"published_date"`
 	IsExternal           bool               `bson:"is_external" json:"is_external"`
 	BookmarkID           string             `json:"bookmark_id"`
+	UpdatedAt            time.Time          `json:"footprint_updated_at"`
 }

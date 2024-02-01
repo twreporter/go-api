@@ -595,3 +595,18 @@ func BuildFilterIDs(ids []string) []bson.D {
 
 	return stages
 }
+
+// BuildPreserveOrderByID return statement for ordering result
+func BuildPreserveOrderByID(order []primitive.ObjectID) []bson.D {
+	var stages []bson.D
+	stages = append(stages, bson.D{
+		{mongo.StageAddFields, bson.D{
+			{"_order", bson.D{
+				{"$indexOfArray", bson.A{order, "$_id" }},
+			}},
+		}},
+	})
+	stages = append(stages, mongo.BuildDocument(mongo.StageSort, bson.D{{"_order", 1}}))
+
+	return stages
+}

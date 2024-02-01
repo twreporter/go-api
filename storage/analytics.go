@@ -40,6 +40,7 @@ type gormDB struct {
 type respFootprint struct {
 	PostID     string `json:"post_id"`
 	BookmarkID string `json:"bookmark_id"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 func NewAnalyticsGormStorage(db *gorm.DB) *gormDB {
@@ -167,7 +168,7 @@ func (gs *gormDB) GetFootprintsOfAUser(userID string, limit int, offset int) ([]
 	var total int
 	var footprints []respFootprint
 
-	statement := gs.db.Table("users_posts_reading_footprints").Select("users_posts_reading_footprints.`post_id`, users_bookmarks.`bookmark_id`").Joins("LEFT JOIN users_bookmarks ON users_posts_reading_footprints.`post_id`=users_bookmarks.`post_id` AND users_posts_reading_footprints.`user_id`=users_bookmarks.`user_id`").Where("users_posts_reading_footprints.`user_id` = ? AND users_posts_reading_footprints.`updated_at` >= DATE_SUB(NOW(), INTERVAL 6 MONTH)", userID)
+	statement := gs.db.Table("users_posts_reading_footprints").Select("users_posts_reading_footprints.`post_id`, users_bookmarks.`bookmark_id`, users_posts_reading_footprints.`updated_at`").Joins("LEFT JOIN users_bookmarks ON users_posts_reading_footprints.`post_id`=users_bookmarks.`post_id` AND users_posts_reading_footprints.`user_id`=users_bookmarks.`user_id`").Where("users_posts_reading_footprints.`user_id` = ? AND users_posts_reading_footprints.`updated_at` >= DATE_SUB(NOW(), INTERVAL 6 MONTH)", userID)
 	if err = statement.Limit(limit).Offset(offset).Order("updated_at desc").Find(&footprints).Error; err != nil {
 		return nil, 0, err
 	}
@@ -183,11 +184,13 @@ func (ms *mongoDB) GetPostsOfIDs(ctx context.Context, postIDs []string) ([]news.
 	if len(postIDs) == 0 {
 		return posts, nil
 	}
+	postObjectIDs := news.ConverStringsToObjectIDs(postIDs)
 
 	// build _id filter
 	stages := news.BuildFilterIDs(postIDs)
 	// build lookup(join) stages according to required fields
 	stages = append(stages, news.BuildLookupStatements(news.LookupMetaOfFootprint)...)
+	stages = append(stages, news.BuildPreserveOrderByID(postObjectIDs)...)
 
 	select {
 	case <-ctx.Done():

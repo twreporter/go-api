@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"context"
+	"time"
 
 	"gopkg.in/guregu/null.v3"
 	"github.com/gin-gonic/gin"
@@ -101,15 +102,19 @@ func (ac *AnalyticsController) GetUserAnalyticsReadingFootprint(c *gin.Context) 
 	}
 
 	// fetch posts meta from mongo db
+	type footprintMeta struct {
+		bookmarkID string
+		updatedAt  time.Time
+	}
 	postIds := make([]string, len(footprints))
-	bookmarkMap := make(map[primitive.ObjectID]string)
+	bookmarkMap := make(map[primitive.ObjectID]footprintMeta)
 	for index, footprint := range footprints {
 		postIds[index] = footprint.PostID
 		objectID, err := primitive.ObjectIDFromHex(footprint.PostID)
 		if err != nil {
 			continue;
 		}
-		bookmarkMap[objectID] = footprint.BookmarkID
+		bookmarkMap[objectID] = footprintMeta{bookmarkID:footprint.BookmarkID, updatedAt:footprint.UpdatedAt}
 	}
 	var posts []news.MetaOfFootprint
 	posts, err = ac.ms.GetPostsOfIDs(context.Background(), postIds)
@@ -119,7 +124,8 @@ func (ac *AnalyticsController) GetUserAnalyticsReadingFootprint(c *gin.Context) 
 
 	// add bookmarks in posts
 	for index, post := range posts {
-		posts[index].BookmarkID = bookmarkMap[post.ID]
+		posts[index].BookmarkID = bookmarkMap[post.ID].bookmarkID
+		posts[index].UpdatedAt = bookmarkMap[post.ID].updatedAt
 	}
 
 	return http.StatusOK, gin.H{"status": "ok", "records": posts, "meta": models.MetaOfResponse{
