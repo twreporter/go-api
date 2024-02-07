@@ -572,20 +572,41 @@ func BuildBioMarkdownOnlyStatement() bson.D {
 	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".md"}}}}
 }
 
-// BuildFilterIDs return statement for filtering id list
-func BuildFilterIDs(ids []string) []bson.D {
-	objectIDs := make([]primitive.ObjectID, len(ids))
-	for index, id := range ids {
-		objectID, err := primitive.ObjectIDFromHex(id)
+func ConverStringsToObjectIDs(strs []string) ([]primitive.ObjectID) {
+	objectIDs := make([]primitive.ObjectID, len(strs))
+	for index, str := range strs {
+		objectID, err := primitive.ObjectIDFromHex(str)
 		if err != nil {
 			continue
 		}
 		objectIDs[index] = objectID
 	}
 
+	return objectIDs
+}
+
+// BuildFilterIDs return statement for filtering id list
+func BuildFilterIDs(ids []string) []bson.D {
+	objectIDs := ConverStringsToObjectIDs(ids)
+
 	var stages []bson.D
 	element := bson.D{{"_id", bson.D{{"$in", objectIDs}}}}
 	stages = append(stages, mongo.BuildDocument(mongo.StageMatch, element))
+
+	return stages
+}
+
+// BuildPreserveOrderByID return statement for ordering result
+func BuildPreserveOrderByID(order []primitive.ObjectID) []bson.D {
+	var stages []bson.D
+	stages = append(stages, bson.D{
+		{mongo.StageAddFields, bson.D{
+			{"_order", bson.D{
+				{"$indexOfArray", bson.A{order, "$_id" }},
+			}},
+		}},
+	})
+	stages = append(stages, mongo.BuildDocument(mongo.StageSort, bson.D{{"_order", 1}}))
 
 	return stages
 }

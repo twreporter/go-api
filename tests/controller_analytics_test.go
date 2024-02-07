@@ -157,6 +157,7 @@ func TestGetReadingFootprint_Success(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, 1, len(resBody.Records))
 	assert.Equal(t, mockPostObjectID, resBody.Records[0].ID)
+	assert.NotEmpty(t, resBody.Records[0].UpdatedAt)
 }
 
 func TestGetUserReadingFootprint_InvalidUserID(t *testing.T) {
