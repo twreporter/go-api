@@ -1,5 +1,28 @@
 ## Unrelease
 
+### 7.5.1-rc.0
+
+#### Notable Changes
+
+- api/analytics
+  - add `bookmark_id` & `updated_at` in meta of footprint
+  - use `og_description` column for footprints
+  - get footprints response should order by updated_at desc
+- model/MetaOfFootprints
+  - use `og_description` column for footprints
+- model/bookmarks, model/users_bookmarks
+  - add `post_id`
+- migration
+  - add migration of users_bookmarks & bookmarks table
+
+#### Commits
+
+- [[`b95ebf5766`](https://github.com/twreporter/go-api/commit/b95ebf5766)] - **feat**: add `post_id` in users_bookmarks & bookmarks (Aylie Chou)
+- [[`e56197b333`](https://github.com/twreporter/go-api/commit/e56197b333)] - **fix**: get footprints response should order by updated_at desc (Aylie Chou)
+- [[`2406ca581a`](https://github.com/twreporter/go-api/commit/2406ca581a)] - **fix**: use `og_description` column (Aylie Chou)
+- [[`8b96dc6df9`](https://github.com/twreporter/go-api/commit/8b96dc6df9)] - **feat**: add bookmark_id in meta of footprint (Aylie Chou)
+- [[`ba38052a08`](https://github.com/twreporter/go-api/commit/ba38052a08)] - **fix**: add migration of users_bookmarks (Aylie Chou)
+
 ## Released
 
 ### 7.5.0 (Current)
