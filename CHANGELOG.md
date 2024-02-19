@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.1-rc.1
+
+#### Notable Changes
+
+- api/posts
+  - disable `/posts` cache when toggle with bookmark
+
+#### Commits
+
+- [[`ecd2a5c218`](https://github.com/twreporter/go-api/commit/ecd2a5c218)] - **fix**: disable `/posts` cache when toggle with bookmark (Aylie Chou)
+
 ### 7.5.1-rc.0
 
 #### Notable Changes
