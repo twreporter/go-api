@@ -71,6 +71,8 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 		if _, err := nc.SqlStorage.GetBookmarksOfPosts(ctx, authUserIdString, posts); err != nil {
 			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 		}
+
+		c.Writer.Header().Set("Cache-Control", "no-cache")
 	}
 
 	total, err := nc.Storage.GetPostCount(ctx, q)
