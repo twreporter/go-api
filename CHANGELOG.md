@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.1-rc.2
+
+#### Notable Changes
+
+- Add new migration for ntch role update
+
+#### Commits
+
+- [[`f055821b45`](https://github.com/twreporter/go-api/commit/f055821b45)] - **fix**: change ntch roles (Howard Ou)
+- [[`93016788e5`](https://github.com/twreporter/go-api/commit/93016788e5)] - **fix**: concise migration (Howard Ou)
+
 ### 7.5.1-rc.1
 
 #### Notable Changes
