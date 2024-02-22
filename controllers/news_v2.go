@@ -2,17 +2,17 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"sort"
 	"sync"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	f "github.com/twreporter/logformatter"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
+	f "github.com/twreporter/logformatter"
 )
 
 type newsV2Storage interface {
@@ -336,22 +336,6 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 			Type:  typeTopic,
 			Query: news.NewQuery(news.WithOffset(1), news.WithLimit(4)),
 		},
-	}
-
-	// v1 categories in index page
-	for _, v := range []news.Category{
-		news.HumanRightsAndSociety,
-		news.EnvironmentAndEducation,
-		news.PoliticsAndEconomy,
-		news.CultureAndArt,
-		news.International,
-		news.LivingAndMedicalCare,
-	} {
-		jobs = append(jobs, job{
-			v.Name,
-			typePost,
-			news.NewQuery(news.WithFilterCategoryIDs(v.ID), news.WithLimit(1)),
-		})
 	}
 
 	// v2 categories in index page
