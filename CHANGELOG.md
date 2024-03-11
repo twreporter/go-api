@@ -1,5 +1,19 @@
 ## Unrelease
 
+### 7.5.2-rc.2
+
+#### Notable Changes
+
+- api/index_page
+  - query with category_set instead of categories
+- test
+  - fix news query test case
+
+#### Commits
+
+- [[`e6cd0f433b`](https://github.com/twreporter/go-api/commit/e6cd0f433b)] - **fix**: news query test case (Aylie Chou)
+- [[`59ad9d127b`](https://github.com/twreporter/go-api/commit/59ad9d127b)] - **fix**: query with category_set instead of categories (Aylie Chou)
+
 ### 7.5.2-rc.1
 
 #### Notable Changes
