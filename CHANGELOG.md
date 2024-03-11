@@ -1,5 +1,18 @@
 ## Unrelease
 
+### 7.5.2-rc.1
+
+#### Notable Changes
+
+- feat
+  - remove old categories
+
+#### Commits
+
+- [[`ab8cb4a085`](https://github.com/twreporter/go-api/commit/ab8cb4a085)] - **feat**: remove old category (Lucien)
+- [[`2cf17207f0`](https://github.com/twreporter/go-api/commit/2cf17207f0)] - **feat**: update doc (Lucien)
+- [[`215915e90e`](https://github.com/twreporter/go-api/commit/215915e90e)] - **feat**: remove categories for post test (Lucien)
+
 ### 7.5.2-rc.0
 
 #### Notable Changes

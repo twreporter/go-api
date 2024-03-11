@@ -343,7 +343,6 @@ func metaOfPostResponse(p testPost) string {
 	"og_description": "測試分享描述",
 	"title": "測試標題",
 	"subtitle": "測試副標",
-	"categories": %s,
 	"published_date": "%s",
 	"is_external": false,
 	"tags": %s,
@@ -356,7 +355,6 @@ func metaOfPostResponse(p testPost) string {
 		imageResponse(p.Image),
 		imageResponse(p.Image),
 		imageResponse(p.Image),
-		categoriesResponse(p.Categories...),
 		p.CreatedAt.UTC().Format(time.RFC3339),
 		tagsResponse(p.Tags...))
 }
@@ -422,7 +420,6 @@ func createPostDocument(p testPost) bson.M {
 		"tags":         p.Tags,
 		"style":        "article:v2:default",
 		"copyright":    "Copyrighted",
-		"categories":   p.Categories,
 		"category_set": bson.M{
 			"category":    nil,
 			"subcategory": nil,
