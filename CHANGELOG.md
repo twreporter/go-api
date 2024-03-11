@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.2-rc.0
+
+#### Notable Changes
+
+- api/posts
+  - add `toggleBookmark` to address cache provlem for /v2/posts
+
+#### Commits
+
+- [[`1878912286`](https://github.com/twreporter/go-api/commit/1878912286)] - **fix**: add `toggleBookmark` to address cache provlem for /v2/posts (Aylie Chou)
+
 ## Released
 
 ### 7.5.1 (Current)
