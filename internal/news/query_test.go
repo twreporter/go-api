@@ -69,11 +69,11 @@ func TestParsePostListQuery(t *testing.T) {
 			},
 		},
 		{
-			name: "Given the category_id parameter",
-			url:  "http://example.com/posts?category_id=cid1&category_id=cid2",
+			name: "Given the category_id, subcategory parameter",
+			url:  "http://example.com/posts?category_id=cid1&subcategory_id=cid2",
 			want: &Query{
 				Pagination: query.Pagination{Offset: 0, Limit: 10},
-				Filter:     Filter{Categories: []string{"cid1", "cid2"}, State: "published"},
+				Filter:     Filter{CategorySet: categorySet{Category: "cid1", Subcategory: "cid2"}, State: "published"},
 				Sort:       SortBy{PublishedDate: query.Order{IsAsc: null.BoolFrom(false)}},
 			},
 		},

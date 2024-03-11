@@ -322,13 +322,13 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 			Name: news.ReviewsSection,
 			Type: typePost,
 			Query: news.NewQuery(
-				news.WithFilterCategoryIDs(news.Opinion.Key),
+				news.WithFilterCategorySet(news.Opinion.Key),
 				news.WithLimit(4)),
 		}, {
 			Name: news.PhotoSection,
 			Type: typePost,
 			Query: news.NewQuery(
-				news.WithFilterCategoryIDs(news.Photography.ID),
+				news.WithFilterCategorySet(news.Photography.ID),
 				news.WithLimit(6)),
 		}, {
 			Name:  news.InfographicSection,

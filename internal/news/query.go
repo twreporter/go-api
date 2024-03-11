@@ -20,7 +20,6 @@ type Filter struct {
 	State         string
 	Style         string
 	IsFeatured    null.Bool
-	Categories    []string
 	CategorySet   categorySet
 	Tags          []string
 	IDs           []string
@@ -94,15 +93,6 @@ func WithLimit(limit int) Option {
 	}
 }
 
-// FilterCategoryIDs adds category ids into filter on the query
-func WithFilterCategoryIDs(ids ...string) Option {
-	return func(q *Query) {
-		if len(ids) > 0 {
-			q.Filter.Categories = ids
-		}
-	}
-}
-
 // FilterCategorySet adds category_set into filter on the query
 func WithFilterCategorySet(catAndSub ...string) Option {
 	return func(q *Query) {
@@ -161,7 +151,7 @@ func ParsePostListQuery(c *gin.Context) *Query {
 	q = defaultQuery
 	// Parse filter
 	if len(c.QueryArray(queryCategoryID)) > 0 {
-		q.Filter.Categories = c.QueryArray(queryCategoryID)
+		q.Filter.CategorySet = categorySet{Category: c.Query(queryCategoryID), Subcategory: c.Query(querySubcategoryID)}
 	}
 	if len(c.QueryArray(queryTagID)) > 0 {
 		q.Filter.Tags = c.QueryArray(queryTagID)
@@ -190,12 +180,6 @@ func ParsePostListQuery(c *gin.Context) *Query {
 		case sortByDescending + sortByUpdatedAt:
 			q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(false)}}
 		}
-	}
-
-	if subcategoryID := c.Query(querySubcategoryID); subcategoryID != "" {
-		q.Filter.SubcategoryID = subcategoryID
-		q.Filter.Categories = nil
-		q.Filter.CategorySet = categorySet{Category: c.Query(queryCategoryID), Subcategory: subcategoryID}
 	}
 
 	return &q
