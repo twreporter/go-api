@@ -1,6 +1,6 @@
 ## Unrelease
 
-### 7.5.2-rc.0
+### 7.5.2-rc.1
 
 #### Notable Changes
 
@@ -11,9 +11,18 @@
 
 - [[`ab8cb4a085`](https://github.com/twreporter/go-api/commit/ab8cb4a085)] - **feat**: remove old category (Lucien)
 - [[`2cf17207f0`](https://github.com/twreporter/go-api/commit/2cf17207f0)] - **feat**: update doc (Lucien)
-- [[`215915e90e`](https://github.com/twreporter/go-api/commit/215915e90e)] - **feat**: remove categories for post test
+- [[`215915e90e`](https://github.com/twreporter/go-api/commit/215915e90e)] - **feat**: remove categories for post test (Lucien)
 
- (Lucien)
+### 7.5.2-rc.0
+
+#### Notable Changes
+
+- api/posts
+  - add `toggleBookmark` to address cache provlem for /v2/posts
+
+#### Commits
+
+- [[`1878912286`](https://github.com/twreporter/go-api/commit/1878912286)] - **fix**: add `toggleBookmark` to address cache provlem for /v2/posts (Aylie Chou)
 
 ## Released
 

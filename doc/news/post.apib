@@ -1,6 +1,6 @@
 # Group Posts
 
-## Post List [/v2/posts{?category_id,subcategory_id,tag_id,id,sort,offset,limit}]
+## Post List [/v2/posts{?category_id,subcategory_id,tag_id,id,sort,offset,limit,toggleBookmark}]
 A list contains meta(brief) information of the selected posts.
 
 ## Get a list of posts [GET]
@@ -21,6 +21,7 @@ A list contains meta(brief) information of the selected posts.
         + Default: `0`
     + limit: `10` (integer, optional) - The maximum number of posts to return
         + Default: `10`
+    + toggleBookmark: `1` (integer, optional) - set 1 to fetch bookmark id as well
 
 + Response 200 (application/json)
 
