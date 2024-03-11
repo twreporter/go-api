@@ -5,12 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
-	"sync"
-<<<<<<< HEAD
-=======
-	"fmt"
 	"strconv"
->>>>>>> upstream/master
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
