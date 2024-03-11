@@ -20,7 +20,6 @@ type Filter struct {
 	State         string
 	Style         string
 	IsFeatured    null.Bool
-	Categories    []string
 	CategorySet   categorySet
 	Tags          []string
 	IDs           []string
