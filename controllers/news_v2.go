@@ -6,6 +6,7 @@ import (
 	"sort"
 	"sync"
 	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -65,14 +66,16 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 		return
 	}
 
+	toggleBookmark, _ := strconv.Atoi(c.Query("toggleBookmark"))
+	if toggleBookmark == 1 {
+		c.Writer.Header().Set("Cache-Control", "no-store")
+	}
 	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
-	if authUserID != nil {
+	if authUserID != nil && toggleBookmark == 1 {
 		authUserIdString := fmt.Sprintf("%v", authUserID)
 		if _, err := nc.SqlStorage.GetBookmarksOfPosts(ctx, authUserIdString, posts); err != nil {
 			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 		}
-
-		c.Writer.Header().Set("Cache-Control", "no-cache")
 	}
 
 	total, err := nc.Storage.GetPostCount(ctx, q)

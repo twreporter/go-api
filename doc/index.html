@@ -3699,7 +3699,9 @@ The email contains the following attributes</p>
         "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"post description"</span></span>,
         "<span class="hljs-attribute">category_set (array[category_set], fixed</span>": <span class="hljs-value"><span class="hljs-string">"Hello, world!"</span></span>,
         "<span class="hljs-attribute">published_date</span>": <span class="hljs-value"><span class="hljs-string">"2020-06-8T16:00:00Z"</span></span>,
-        "<span class="hljs-attribute">is_external</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">is_external</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmark_id</span>": <span class="hljs-value"><span class="hljs-string">"119"</span></span>,
+        "<span class="hljs-attribute">footprint_updated_at</span>": <span class="hljs-value"><span class="hljs-string">"2020-06-8T16:00:00Z"</span>
       </span>}
     ]
   </span>}
@@ -3889,6 +3891,12 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">is_external</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmark_id</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">footprint_updated_at</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -3899,7 +3907,8 @@ The email contains the following attributes</p>
               <span class="hljs-string">"subtitle"</span>,
               <span class="hljs-string">"description"</span>,
               <span class="hljs-string">"published_date"</span>,
-              <span class="hljs-string">"is_external"</span>
+              <span class="hljs-string">"is_external"</span>,
+              <span class="hljs-string">"footprint_updated_at"</span>
             ]
           </span>}
         </span>}
@@ -4651,7 +4660,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]
   </span>}
@@ -5141,6 +5151,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -5208,13 +5221,14 @@ The email contains the following attributes</p>
     <span class="hljs-string">"message"</span>
   ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section><section id="posts" class="resource-group"><h2 class="group-heading">Posts <a href="#posts" class="permalink">&para;</a></h2><div id="posts-post-list" class="resource"><h3 class="resource-heading">Post List <a href="#posts-post-list" class="permalink">&nbsp;&para;</a></h3><p>A list contains meta(brief) information of the selected posts.</p>
-<div id="posts-post-list-get" class="action get"><h4 class="action-heading"><div class="name">Get a list of posts</div><a href="#posts-post-list-get" class="method get">GET</a><code class="uri">/v2/posts{?category_id,subcategory_id,tag_id,id,sort,offset,limit}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/posts?<span class="hljs-attribute">category_id=</span><span class="hljs-literal">5edf118c3e631f0600198935</span>&<span class="hljs-attribute">subcategory_id=</span><span class="hljs-literal">5edf118c3e631f0600198935</span>&<span class="hljs-attribute">tag_id=</span><span class="hljs-literal">5edf118c3e631f0600198935</span>&<span class="hljs-attribute">id=</span><span class="hljs-literal">5edf118c3e631f0600198935</span>&<span class="hljs-attribute">sort=</span><span class="hljs-literal">-published_date</span>&<span class="hljs-attribute">offset=</span><span class="hljs-literal">0</span>&<span class="hljs-attribute">limit=</span><span class="hljs-literal">10</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>category_id</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5edf118c3e631f0600198935</span></span><p>Search for posts of the categories referenced by the category_id</p>
+<div id="posts-post-list-get" class="action get"><h4 class="action-heading"><div class="name">Get a list of posts</div><a href="#posts-post-list-get" class="method get">GET</a><code class="uri">/v2/posts{?category_id,subcategory_id,tag_id,id,sort,offset,limit,toggleBookmark}</code></h4><h4>Example URI</h4><div class="definition"><span class="method get">GET</span>&nbsp;<span class="uri"><span class="hostname">https://go-api.twreporter.org</span>/v2/posts?<span class="hljs-attribute">category_id=</span><span class="hljs-literal">5edf118c3e631f0600198935</span>&<span class="hljs-attribute">subcategory_id=</span><span class="hljs-literal">5edf118c3e631f0600198935</span>&<span class="hljs-attribute">tag_id=</span><span class="hljs-literal">5edf118c3e631f0600198935</span>&<span class="hljs-attribute">id=</span><span class="hljs-literal">5edf118c3e631f0600198935</span>&<span class="hljs-attribute">sort=</span><span class="hljs-literal">-published_date</span>&<span class="hljs-attribute">offset=</span><span class="hljs-literal">0</span>&<span class="hljs-attribute">limit=</span><span class="hljs-literal">10</span>&<span class="hljs-attribute">toggleBookmark=</span><span class="hljs-literal">1</span></span></div><div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>category_id</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5edf118c3e631f0600198935</span></span><p>Search for posts of the categories referenced by the category_id</p>
 </dd><dt>subcategory_id</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5edf118c3e631f0600198935</span></span><p>Search for posts of the subcategories referenced by the sucategory_id</p>
 </dd><dt>tag_id</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5edf118c3e631f0600198935</span></span><p>Search for posts with the tags referenced by the tag ids</p>
 </dd><dt>id</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>5edf118c3e631f0600198935</span></span><p>Search for posts with the referenced ids</p>
 </dd><dt>sort</dt><dd><code>string</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-info default"><strong>Default:&nbsp;</strong><span>-published_date</span></span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>-published_date</span></span><p>which field to sort by</p>
 <p class="choices"><strong>Choices:&nbsp;</strong><code>published_date</code> <code>-published_date</code> <code>updated_at</code> <code>-updated_at</code> </p></dd><dt>offset</dt><dd><code>integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-info default"><strong>Default:&nbsp;</strong><span>0</span></span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>0</span></span><p>The number of posts to skip</p>
 </dd><dt>limit</dt><dd><code>integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-info default"><strong>Default:&nbsp;</strong><span>10</span></span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>10</span></span><p>The maximum number of posts to return</p>
+</dd><dt>toggleBookmark</dt><dd><code>integer</code>&nbsp;<span>(optional)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>1</span></span><p>set 1 to fetch bookmark id as well</p>
 </dd></dl></div><div class="title"><strong>Response&nbsp;&nbsp;<code>200</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"success"</span></span>,
   "<span class="hljs-attribute">data</span>": <span class="hljs-value">{
@@ -5343,7 +5357,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]
   </span>}
@@ -5833,6 +5848,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -6042,7 +6060,8 @@ The email contains the following attributes</p>
         "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
       </span>}
     ]</span>,
-    "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+    "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+    "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
   </span>}
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -6505,6 +6524,9 @@ The email contains the following attributes</p>
         </span>}</span>,
         "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}
       </span>}</span>,
       "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -6714,6 +6736,7 @@ The email contains the following attributes</p>
         "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
       </span>}
     ]</span>,
+    "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span></span>,
     "<span class="hljs-attribute">brief</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">api_data</span>": <span class="hljs-value">[
         {
@@ -7246,6 +7269,9 @@ The email contains the following attributes</p>
               <span class="hljs-string">"name"</span>
             ]
           </span>}
+        </span>}</span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
         </span>}</span>,
         "<span class="hljs-attribute">brief</span>": <span class="hljs-value">{
           "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -9647,7 +9673,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">editor_picks_section</span>": <span class="hljs-value">[
@@ -9770,7 +9797,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">latest_topic_section</span>": <span class="hljs-value">[
@@ -10003,7 +10031,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">topics_section</span>": <span class="hljs-value">[
@@ -10236,7 +10265,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">infographics_section</span>": <span class="hljs-value">[
@@ -10359,7 +10389,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">human_rights_and_society</span>": <span class="hljs-value">[
@@ -10482,7 +10513,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">environment_and_education</span>": <span class="hljs-value">[
@@ -10605,7 +10637,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">politics_and_economy</span>": <span class="hljs-value">[
@@ -10728,7 +10761,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">culture_and_art</span>": <span class="hljs-value">[
@@ -10851,7 +10885,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">international</span>": <span class="hljs-value">[
@@ -10974,7 +11009,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">living_and_medical_care</span>": <span class="hljs-value">[
@@ -11097,7 +11133,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">world</span>": <span class="hljs-value">[
@@ -11220,7 +11257,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">humanrights</span>": <span class="hljs-value">[
@@ -11343,7 +11381,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">politics_and_society</span>": <span class="hljs-value">[
@@ -11466,7 +11505,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">health</span>": <span class="hljs-value">[
@@ -11589,7 +11629,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">environment</span>": <span class="hljs-value">[
@@ -11712,7 +11753,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">econ</span>": <span class="hljs-value">[
@@ -11835,7 +11877,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">culture</span>": <span class="hljs-value">[
@@ -11958,7 +12001,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]</span>,
     "<span class="hljs-attribute">education</span>": <span class="hljs-value">[
@@ -12081,7 +12125,8 @@ The email contains the following attributes</p>
             "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"tag name"</span>
           </span>}
         ]</span>,
-        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+        "<span class="hljs-attribute">full</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value"><span class="hljs-string">"119"</span>
       </span>}
     ]
   </span>}
@@ -12551,6 +12596,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -13028,6 +13076,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -13935,6 +13986,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -14842,6 +14896,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -15319,6 +15376,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -15796,6 +15856,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -16273,6 +16336,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -16750,6 +16816,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -17227,6 +17296,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -17704,6 +17776,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -18181,6 +18256,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -18658,6 +18736,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -19135,6 +19216,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -19612,6 +19696,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -20089,6 +20176,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -20566,6 +20656,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -21043,6 +21136,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -21520,6 +21616,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -21997,6 +22096,9 @@ The email contains the following attributes</p>
               </span>}</span>,
               "<span class="hljs-attribute">full</span>": <span class="hljs-value">{
                 "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"boolean"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">bookmarkId</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
               </span>}
             </span>}</span>,
             "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
@@ -22374,7 +22476,7 @@ The email contains the following attributes</p>
     <span class="hljs-string">"status"</span>,
     <span class="hljs-string">"message"</span>
   ]
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 12 Jan 2024</p><script>/* eslint-env browser */
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></section></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 26 Feb 2024</p><script>/* eslint-env browser */
 /* eslint quotes: [2, "single"] */
 'use strict';
 
