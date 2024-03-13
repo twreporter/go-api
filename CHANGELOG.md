@@ -1,46 +1,30 @@
 ## Unrelease
 
-### 7.5.2-rc.2
+## Released
+
+### 7.5.2 (Current)
 
 #### Notable Changes
 
 - api/index_page
   - query with category_set instead of categories
+- api/posts
+  - add `toggleBookmark` to address cache provlem for /v2/posts
 - test
   - fix news query test case
+- chore
+  - remove old categories
 
 #### Commits
 
 - [[`e6cd0f433b`](https://github.com/twreporter/go-api/commit/e6cd0f433b)] - **fix**: news query test case (Aylie Chou)
 - [[`59ad9d127b`](https://github.com/twreporter/go-api/commit/59ad9d127b)] - **fix**: query with category_set instead of categories (Aylie Chou)
-
-### 7.5.2-rc.1
-
-#### Notable Changes
-
-- feat
-  - remove old categories
-
-#### Commits
-
 - [[`ab8cb4a085`](https://github.com/twreporter/go-api/commit/ab8cb4a085)] - **feat**: remove old category (Lucien)
 - [[`2cf17207f0`](https://github.com/twreporter/go-api/commit/2cf17207f0)] - **feat**: update doc (Lucien)
 - [[`215915e90e`](https://github.com/twreporter/go-api/commit/215915e90e)] - **feat**: remove categories for post test (Lucien)
-
-### 7.5.2-rc.0
-
-#### Notable Changes
-
-- api/posts
-  - add `toggleBookmark` to address cache provlem for /v2/posts
-
-#### Commits
-
 - [[`1878912286`](https://github.com/twreporter/go-api/commit/1878912286)] - **fix**: add `toggleBookmark` to address cache provlem for /v2/posts (Aylie Chou)
 
-## Released
-
-### 7.5.1 (Current)
+### 7.5.1
 
 #### Notable Changes
 
