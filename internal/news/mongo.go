@@ -90,7 +90,6 @@ type mongoFilter struct {
 	State       string               `mongo:"state"`
 	Style       string               `mongo:"style"`
 	IsFeatured  null.Bool            `mongo:"isFeatured"`
-	Categories  []primitive.ObjectID `mongo:"categories"`
 	Tags        []primitive.ObjectID `mongo:"tags"`
 	IDs         []primitive.ObjectID `mongo:"_id"`
 	Name        primitive.Regex      `mongo:"name"`
@@ -225,7 +224,6 @@ func fromFilter(f Filter) mongoFilter {
 		State:       f.State,
 		Style:       f.Style,
 		IsFeatured:  f.IsFeatured,
-		Categories:  hexToObjectIDs(f.Categories),
 		Tags:        hexToObjectIDs(f.Tags),
 		IDs:         hexToObjectIDs(f.IDs),
 		Name:        primitive.Regex{Pattern: f.Name},
@@ -315,7 +313,6 @@ const (
 	fieldLeadingVideo         = "leading_video"
 	fieldTheme                = "theme"
 	fieldCategory             = "category"
-	fieldCategories           = "categories"
 	fieldCategorySet          = "category_set"
 	fieldTags                 = "tags"
 	fieldLatestOrder          = "latest_order"
@@ -335,7 +332,6 @@ type lookupInfo struct {
 
 var (
 	LookupFullPost = map[string]lookupInfo{
-		fieldCategories:           {Collection: ColPostCategories},
 		fieldDesigners:            {Collection: ColContacts},
 		fieldEngineers:            {Collection: ColContacts},
 		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
@@ -349,7 +345,6 @@ var (
 	}
 
 	LookupMetaOfPost = map[string]lookupInfo{
-		fieldCategories:           {Collection: ColPostCategories},
 		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
 		fieldLeadingImagePortrait: {Collection: ColImages, ToUnwind: true},
 		fieldTags:                 {Collection: ColTags},
