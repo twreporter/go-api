@@ -74,6 +74,26 @@ func TestSetUserAnalytics_EmptyPostID(t *testing.T) {
 
 }
 
+func TestSetUserAnalytics_InvalidReadingTime(t *testing.T) {
+	// Mocking user
+	var user models.User = getUser(Globs.Defaults.Account)
+	jwt := generateIDToken(user)
+
+	// Mocking request body
+	analytics := reqBody{
+		PostID: null.NewString(mockPostID, true),
+		ReadPostsCount: null.NewBool(true, true),
+		ReadPostsSec: null.NewInt(86401, true),
+	}
+	payload, _ := json.Marshal(analytics)
+
+	// Send request to test SetUserAnalytics function
+	response := serveHTTP(http.MethodPost, fmt.Sprintf("/v2/users/%d/analytics", user.ID), string(payload), "application/json", fmt.Sprintf("Bearer %v", jwt))
+
+	assert.Equal(t, http.StatusBadRequest, response.Code)
+
+}
+
 func TestSetUserAnalytics_InvalidUserID(t *testing.T) {
 	// Mocking user
 	var user models.User = getUser(Globs.Defaults.Account)
