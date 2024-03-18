@@ -972,10 +972,27 @@ func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder,
 	go publishToNeticrm(ms)
 }
 
-// TODO
 // GetDonationsOfAUser returns the donations list of a user
 func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H, error) {
-	return 0, gin.H{}, nil
+	// parameter validation
+	userID := c.Param("userID")
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	offset, _ := strconv.Atoi(c.Query("offset"))
+
+	if limit == 0 {
+		limit = 10
+	}
+
+	donations, total, err := mc.Storage.GetDonationsOfAUser(userID, limit, offset)
+	if err != nil {
+		return toResponse(err)
+	}
+
+	return http.StatusOK, gin.H{"status": "ok", "records": donations, "meta": models.MetaOfResponse{
+		Total:  total,
+		Offset: offset,
+		Limit:  limit,
+	}}, nil
 }
 
 // GetADonationOfAUser returns a donation of a user

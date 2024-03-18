@@ -106,7 +106,7 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v1Group.PATCH("/donations/prime/orders/:order", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PrimeDonationType)
 	}))
-	// v1Group.GET("/users/:userID/donations", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))
+	v1Group.GET("/users/:userID/donations", middlewares.ValidateAuthorization(), middlewares.ValidateUserID(), ginResponseWrapper(mc.GetDonationsOfAUser))
 	// one-time donation including credit_card, line pay, apple pay, google pay and samsung pay
 	v1Group.GET("/donations/prime/orders/:order", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.PrimeDonationType)
