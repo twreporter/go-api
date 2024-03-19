@@ -126,6 +126,23 @@ func (g *GormStorage) GetDonationsOfAUser(userID string, limit int, offset int) 
 	return donations, totalPrime + totalPeriodic, nil
 }
 
+func (g *GormStorage) GetPaymentsOfAPeriodicDonation(periodicID uint, limit int, offset int) ([]models.Payment, int, error) {
+	var payments []models.Payment
+	var total int
+	var err error
+
+	selectColumns := "created_at, order_number, status, amount"
+	statement := g.db.Table("pay_by_card_token_donations").Select(selectColumns).Where("periodic_id = ?", periodicID)
+	if err = statement.Order("created_at desc").Limit(limit).Offset(offset).Find(&payments).Error; err != nil {
+		return nil, 0, err
+	}
+	if err = statement.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return payments, total, nil
+}
+
 //TODO
 func (g *GormStorage) CreateAPayByOtherMethodDonation(m models.PayByOtherMethodDonation) error {
 	return nil

@@ -972,6 +972,44 @@ func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder,
 	go publishToNeticrm(ms)
 }
 
+// GetPaymentsOfAPeriodicDonation returns the payments list of a periodic donation
+func (mc *MembershipController) GetPaymentsOfAPeriodicDonation(c *gin.Context) (int, gin.H, error) {
+	// parameter validation
+	orderNumber := c.Param("order")
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	offset, _ := strconv.Atoi(c.Query("offset"))
+
+	if limit == 0 {
+		limit = 10
+	}
+
+	// check auth validation
+	var err error
+	var d models.PeriodicDonation
+	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
+	err = mc.Storage.GetByConditions(map[string]interface{}{
+		"user_id": authUserID,
+		"order_number": orderNumber,
+	}, &d)
+	if err != nil {
+		return toResponse(err)
+	}
+
+	// get payments (card token donations)
+	var payments []models.Payment
+	var total int
+	payments, total, err = mc.Storage.GetPaymentsOfAPeriodicDonation(d.ID, limit, offset)
+	if err != nil {
+		return toResponse(err)
+	}
+
+	return http.StatusOK, gin.H{"status": "ok", "records": payments, "meta": models.MetaOfResponse{
+		Total:  total,
+		Offset: offset,
+		Limit:  limit,
+	}}, nil
+}
+
 // GetDonationsOfAUser returns the donations list of a user
 func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H, error) {
 	// parameter validation

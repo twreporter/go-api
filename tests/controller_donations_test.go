@@ -52,6 +52,15 @@ type (
 			Limit  int `json:"limit"`
 		}
 	}
+	responseBodyForPaymentList struct {
+		Status string `json:"status"`
+		Records []models.Payment `json:"records"`
+		Meta    struct {
+			Total  int `json:"total"`
+			Offset int `json:"offset"`
+			Limit  int `json:"limit"`
+		}
+	}
 	requestBody struct {
 		Amount     uint              `json:"amount"`
 		Cardholder models.Cardholder `json:"donor"`
@@ -1818,13 +1827,13 @@ func ValidateRecordRequest(t *testing.T, body io.ReadCloser) bool {
 func TestGetDonationsOfAUser_Success(t *testing.T) {
 	var resBody responseBodyForList
 
-	// Mock user
+	// Mocking user
 	donorEmail := "get-donations-donor@twreporter.org"
 	user := createUser(donorEmail)
 	defer func() { deleteUser(user) }()
 	authorization, _ := helperSetupAuth(user)
 
-	// Mock donation
+	// Mocking donation
 	primeResp := createDefaultPrimeDonationRecord(user, creditCardPayMethod)
 	// make sure prime donation create before periodic donation since result would order by created_at
 	time.Sleep(500*time.Millisecond)
@@ -1834,8 +1843,6 @@ func TestGetDonationsOfAUser_Success(t *testing.T) {
 	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v1/users/%d/donations", user.ID), "", "", authorization)
 	resBodyInBytes, _ := ioutil.ReadAll(response.Result().Body)
 	json.Unmarshal(resBodyInBytes, &resBody)
-	fmt.Printf("#1: %d, %s\n", resBody.Records[0].ID, resBody.Records[0].Type)
-	fmt.Printf("#2: %d, %s\n", resBody.Records[1].ID, resBody.Records[1].Type)
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, 2, resBody.Meta.Total)
 	assert.Equal(t, 10, resBody.Meta.Limit)
@@ -1846,7 +1853,7 @@ func TestGetDonationsOfAUser_Success(t *testing.T) {
 }
 
 func TestGetDonationsOfAUser_InvalidUserID(t *testing.T) {
-	// Mock user
+	// Mocking user
 	donorEmail := "get-donations-donor@twreporter.org"
 	user := createUser(donorEmail)
 	defer func() { deleteUser(user) }()
@@ -1858,12 +1865,62 @@ func TestGetDonationsOfAUser_InvalidUserID(t *testing.T) {
 }
 
 func TestGetDonationsOfAUser_NoAuthorizationHeader(t *testing.T) {
-	// Mock user
+	// Mocking user
 	donorEmail := "get-donations-donor@twreporter.org"
 	user := createUser(donorEmail)
 	defer func() { deleteUser(user) }()
 
 	// Send request to test GetDonationsOfAUser function
 	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v1/users/%d/donations", user.ID), "", "", "")
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+}
+
+func TestGetPaymentsOfAPeriodicDonation_Success(t *testing.T) {
+	var resBody responseBodyForPaymentList
+
+	// Mocking user
+	donorEmail := "get-payments-donor@twreporter.org"
+	user := createUser(donorEmail)
+	defer func() { deleteUser(user) }()
+	authorization, cookie := helperSetupAuth(user)
+
+	// Mocking donation
+	periodicResp := createDefaultPeriodicDonationRecord(user, monthlyFrequency)
+
+	// Send request to test GetDonationsOfAUser function
+	response := serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/periodic-donations/orders/%s/payments", periodicResp.Data.OrderNumber), "", "", authorization, cookie)
+	resBodyInBytes, _ := ioutil.ReadAll(response.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, 2, resBody.Meta.Total)
+	assert.Equal(t, 10, resBody.Meta.Limit)
+	assert.Equal(t, 0, resBody.Meta.Offset)
+	assert.Equal(t, 2, len(resBody.Records))
+	assert.Equal(t, periodicResp.Data.Amount, resBody.Records[0].Amount)
+	assert.Equal(t, periodicResp.Data.Amount, resBody.Records[1].Amount)
+}
+
+func TestGetPaymentsOfAPeriodicDonation_AuthFail(t *testing.T) {
+	var response *httptest.ResponseRecorder
+
+	// Mocking user
+	donorEmail := "get-donations-donor@twreporter.org"
+	user := createUser(donorEmail)
+	defer func() { deleteUser(user) }()
+	authorization, cookie := helperSetupAuth(user)
+
+	// Mocking donation
+	periodicResp := createDefaultPeriodicDonationRecord(user, monthlyFrequency)
+
+	// Test invalid order number
+	response = serveHTTPWithCookies(http.MethodGet, "/v1/periodic-donations/orders/-1/payments", "", "", authorization, cookie)
+	assert.Equal(t, http.StatusNotFound, response.Code)
+
+	// Test no cookie
+	response = serveHTTP(http.MethodGet, fmt.Sprintf("/v1/periodic-donations/orders/%s/payments", periodicResp.Data.OrderNumber), "", "", authorization)
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+
+	// Test no authorization header
+	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/periodic-donations/orders/%s/payments", periodicResp.Data.OrderNumber), "", "", "", cookie)
 	assert.Equal(t, http.StatusUnauthorized, response.Code)
 }

@@ -185,3 +185,10 @@ type GeneralDonation struct {
 	AddressDetail    null.String `gorm:"column:receipt_address_detail" json:"address_detail,omitempty"`
 	AddressZipCode   null.String `gorm:"column:receipt_address_zip_code" json:"address_zip_code,omitempty"`
 }
+
+type Payment struct {
+	CreatedAt        time.Time   `json:"created_at"`
+	OrderNumber      string      `json:"order_number"`
+	Status           string      `json:"status"`
+	Amount           uint        `json:"amount"`
+}

@@ -102,6 +102,8 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	v1Group.GET("/periodic-donations/orders/:order", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.GetADonationOfAUser(c, globals.PeriodicDonationType)
 	}))
+	// get payments of target periodic donations
+	v1Group.GET("/periodic-donations/orders/:order/payments", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.PassAuthUserID(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetPaymentsOfAPeriodicDonation))
 	v1Group.POST("/donations/prime", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.CreateADonationOfAUser))
 	v1Group.PATCH("/donations/prime/orders/:order", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.ValidateUserIDInReqBody(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(func(c *gin.Context) (int, gin.H, error) {
 		return mc.PatchADonationOfAUser(c, globals.PrimeDonationType)
