@@ -24,6 +24,9 @@
 + status: refunded (string, required) - Payment status
 + order_number: twreporter-24031923864 (string, required) - Unique payment order number
 
+# Group User Donation
+User donation resources of go-api for membership
+
 ## Donations of a user [/v1/users/{userID}/donations{?limit,offset}]
 
 ### Get user donations [GET]
@@ -76,7 +79,7 @@ Get user donations with limit & offset
 Get periodic donation payments with limit & offset
 
 + Parameters
-    + orderNumber: twreporter-171049483144563800020 (string) - The unique identifier of the user
+    + orderNumber: `twreporter-171049483144563800020` (string) - The order number of the periodic donation
     + offset: `0` (integer, optional) - The number of posts to skip
         + Default: `0`
     + limit: `10` (integer, optional) - The maximum number of posts to return
