@@ -4,7 +4,7 @@
 + type: periodic (string, required) - Donation type; could be `prime` or `periodic`
 + created_at: `2020-06-8T16:00:00Z` (required)
 + amount: 1500 (number, required) - Donation amount
-+ status: refunded (string, required) - Donation status
++ status: refunded (string, required) - Donation status in [`paying`, `paid`, `fail`, `refunded`, `to_pay`, `to_pay`, `invalid`]
 + order_number: twreporter-24031923864 (string, required) - Unique donation order number
 + pay_method: credit_card (string)
 + bin_code: 424242 (string)
@@ -21,7 +21,7 @@
 ### Payment
 + created_at: `2020-06-8T16:00:00Z` (required)
 + amount: 1500 (number, required) - Payment amount
-+ status: refunded (string, required) - Payment status
++ status: refunded (string, required) - Payment status in [`paying`, `paid`, `fail`, `refunded`]
 + order_number: twreporter-24031923864 (string, required) - Unique payment order number
 
 # Group User Donation
