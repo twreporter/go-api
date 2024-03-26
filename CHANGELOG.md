@@ -1,5 +1,24 @@
 ## Unrelease
 
+### 7.5.3-rc.0
+
+#### Notable Changes
+
+- api/donation
+  - add `/v1/users/:id/donations` endpoint
+  - add `/v1/periodic-donations/orders/:order/payments` endpoint
+- doc/donation
+  - add `user-donation` api doc for new added endpoints
+- test
+  - add test case for new added endpoints
+
+#### Commits
+
+- [[`ace09da3d4`](https://github.com/twreporter/go-api/commit/ace09da3d4)] - **fix**: add options for donation status (Aylie Chou)
+- [[`12e2e0c34d`](https://github.com/twreporter/go-api/commit/12e2e0c34d)] - **fix**: update api doc of user donation apis (Aylie Chou)
+- [[`504b45785a`](https://github.com/twreporter/go-api/commit/504b45785a)] - **feat**: add `/v1/periodic-donations/orders/:order/payments` endpoint & doc & test (Aylie Chou)
+- [[`779c8ef6fd`](https://github.com/twreporter/go-api/commit/779c8ef6fd)] - **feat**: add `/v1/users/:id/donations` endpoint & doc & test case (Aylie Chou)
+
 ## Released
 
 ### 7.5.2 (Current)
@@ -9,7 +28,7 @@
 - api/index_page
   - query with category_set instead of categories
 - api/posts
-  - add `toggleBookmark` to address cache provlem for /v2/posts
+  - add `toggleBookmark` to address cache problem for `/v2/posts`
 - test
   - fix news query test case
 - chore
