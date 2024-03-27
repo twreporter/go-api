@@ -1,5 +1,19 @@
 ## Unrelease
 
+### 7.5.3-rc.1
+
+#### Notable Changes
+
+- api/analytics
+  - add maximum of reading post seconds in a request
+- test
+  - add test case for reading post second limitation
+
+#### Commits
+
+- [[`21f1b49a95`](https://github.com/twreporter/go-api/commit/21f1b49a95)] - **fix**: change reading post second max due to spec change (Aylie Chou)
+- [[`a3c667e4bc`](https://github.com/twreporter/go-api/commit/a3c667e4bc)] - **fix**: add maximum of reading post seconds in a request & corresponding test case (Aylie Chou)
+
 ### 7.5.3-rc.0
 
 #### Notable Changes
