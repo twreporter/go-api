@@ -83,7 +83,7 @@ func TestSetUserAnalytics_InvalidReadingTime(t *testing.T) {
 	analytics := reqBody{
 		PostID: null.NewString(mockPostID, true),
 		ReadPostsCount: null.NewBool(true, true),
-		ReadPostsSec: null.NewInt(86401, true),
+		ReadPostsSec: null.NewInt(7201, true),
 	}
 	payload, _ := json.Marshal(analytics)
 
