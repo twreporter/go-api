@@ -46,6 +46,7 @@ func (ac *AnalyticsController) SetUserAnalytics(c *gin.Context) (int, gin.H, err
 	var resp respBody
 	var isExisted bool
 	var err error
+	const twoHour = 7200 // seconds
 	userID := c.Param("userID")
 	if err = c.BindJSON(&req); err != nil {
 		fmt.Println("Error decoding JSON:", err)
@@ -54,6 +55,9 @@ func (ac *AnalyticsController) SetUserAnalytics(c *gin.Context) (int, gin.H, err
 
 	if req.PostID.Valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "message": "post_id is required"}, nil
+	}
+	if req.ReadPostsSec.Valid && req.ReadPostsSec.Int64 > twoHour {
+		return http.StatusBadRequest, gin.H{"status": "fail", "message": "read_posts_sec cannot exceed 1 day"}, nil
 	}
 	if req.ReadPostsSec.Valid && req.ReadPostsSec.Int64 < 0 {
 		return http.StatusBadRequest, gin.H{"status": "fail", "message": "read_posts_sec cannot be negative"}, nil
