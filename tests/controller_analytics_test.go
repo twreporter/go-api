@@ -22,6 +22,16 @@ type (
 		ReadPostsCount null.Bool   `json:"read_posts_count"`
 		ReadPostsSec   null.Int    `json:"read_posts_sec"`
 	}
+	readPostsData struct {
+		UserID         string    `json:"user_id"`
+		PostID         string    `json:"post_id"`
+		ReadPostsCount null.Bool `json:"read_posts_count"`
+		ReadPostsSec   null.Int  `json:"read_posts_sec"`
+	}
+	resBody struct {
+		Status string        `json:"status"`
+		Data   readPostsData `json:"data"`
+	}
 	reqBodyFootprint struct {
 		PostID         null.String `json:"post_id"`
 	}
@@ -55,6 +65,29 @@ func TestSetUserAnalytics_Success(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, response.Code)
 }
 
+func TestSetUserAnalytics_ReadingTimeExceedMaximum(t *testing.T) {
+	// Mocking user
+	var user models.User = getUser(Globs.Defaults.Account)
+	jwt := generateIDToken(user)
+
+	// Mocking request body
+	analytics := reqBody{
+		PostID: null.NewString(mockPostID, true),
+		ReadPostsSec: null.NewInt(7201, true),
+	}
+	payload, _ := json.Marshal(analytics)
+
+	var resBody resBody
+	// Send request to test SetUserAnalytics function
+	response := serveHTTP(http.MethodPost, fmt.Sprintf("/v2/users/%d/analytics", user.ID), string(payload), "application/json", fmt.Sprintf("Bearer %v", jwt))
+	resBodyInBytes, _ := ioutil.ReadAll(response.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+
+	expectedReadPostSec := null.NewInt(7200, true)
+	assert.Equal(t, http.StatusCreated, response.Code)
+	assert.Equal(t, expectedReadPostSec, resBody.Data.ReadPostsSec)
+}
+
 func TestSetUserAnalytics_EmptyPostID(t *testing.T) {
 	// Mocking user
 	var user models.User = getUser(Globs.Defaults.Account)
@@ -71,27 +104,6 @@ func TestSetUserAnalytics_EmptyPostID(t *testing.T) {
 	response := serveHTTP(http.MethodPost, fmt.Sprintf("/v2/users/%d/analytics", user.ID), string(payload), "application/json", fmt.Sprintf("Bearer %v", jwt))
 
 	assert.Equal(t, http.StatusBadRequest, response.Code)
-
-}
-
-func TestSetUserAnalytics_InvalidReadingTime(t *testing.T) {
-	// Mocking user
-	var user models.User = getUser(Globs.Defaults.Account)
-	jwt := generateIDToken(user)
-
-	// Mocking request body
-	analytics := reqBody{
-		PostID: null.NewString(mockPostID, true),
-		ReadPostsCount: null.NewBool(true, true),
-		ReadPostsSec: null.NewInt(7201, true),
-	}
-	payload, _ := json.Marshal(analytics)
-
-	// Send request to test SetUserAnalytics function
-	response := serveHTTP(http.MethodPost, fmt.Sprintf("/v2/users/%d/analytics", user.ID), string(payload), "application/json", fmt.Sprintf("Bearer %v", jwt))
-
-	assert.Equal(t, http.StatusBadRequest, response.Code)
-
 }
 
 func TestSetUserAnalytics_InvalidUserID(t *testing.T) {

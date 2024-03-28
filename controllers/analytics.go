@@ -13,6 +13,7 @@ import (
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/internal/news"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	log "github.com/sirupsen/logrus"
 )
 
 func NewAnalyticsController(gs storage.AnalyticsGormStorage, ms storage.AnalyticsMongoStorage) *AnalyticsController {
@@ -56,11 +57,15 @@ func (ac *AnalyticsController) SetUserAnalytics(c *gin.Context) (int, gin.H, err
 	if req.PostID.Valid == false {
 		return http.StatusBadRequest, gin.H{"status": "fail", "message": "post_id is required"}, nil
 	}
-	if req.ReadPostsSec.Valid && req.ReadPostsSec.Int64 > twoHour {
-		return http.StatusBadRequest, gin.H{"status": "fail", "message": "read_posts_sec cannot exceed 1 day"}, nil
-	}
 	if req.ReadPostsSec.Valid && req.ReadPostsSec.Int64 < 0 {
 		return http.StatusBadRequest, gin.H{"status": "fail", "message": "read_posts_sec cannot be negative"}, nil
+	}
+
+	readPostsSec := req.ReadPostsSec
+	// read_post_sec maximum: 7200 seconds
+	if readPostsSec.Valid && readPostsSec.Int64 > twoHour {
+		log.Infof("read_posts_sec exceed two hour. seconds: %d, user: %s", req.ReadPostsSec.Int64, userID)
+		readPostsSec = null.NewInt(twoHour, true)
 	}
 	resp.UserID = userID
 	resp.PostID = req.PostID.String
@@ -73,14 +78,14 @@ func (ac *AnalyticsController) SetUserAnalytics(c *gin.Context) (int, gin.H, err
 		resp.ReadPostsCount = null.NewBool(true, true)
 	}
 
-	if null.Int.IsZero(req.ReadPostsSec) == false {
+	if null.Int.IsZero(readPostsSec) == false {
 		// update read post time
-		err = ac.gs.UpdateUserReadingPostTime(userID, req.PostID.String, int(req.ReadPostsSec.Int64))
+		err = ac.gs.UpdateUserReadingPostTime(userID, req.PostID.String, int(readPostsSec.Int64))
 		if err != nil {
 			return toResponse(err)
 		}
 		isExisted = false
-		resp.ReadPostsSec = req.ReadPostsSec
+		resp.ReadPostsSec = readPostsSec
 	}
 
 	if isExisted {
