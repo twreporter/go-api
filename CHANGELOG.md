@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.3-rc.2
+
+#### Notable Changes
+
+- api/analytics
+  - set exceed read posts seconds to 7200
+
+#### Commits
+
+- [[`fbc445b779`](https://github.com/twreporter/go-api/commit/fbc445b779)] - **fix**: set exceed read posts seconds to 7200 (Aylie Chou)
+
 ### 7.5.3-rc.1
 
 #### Notable Changes
