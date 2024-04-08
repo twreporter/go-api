@@ -1,0 +1,124 @@
+## Data Structures
+
+### Donation
++ type: periodic (string, required) - Donation type; could be `prime` or `periodic`
++ created_at: `2020-06-8T16:00:00Z` (required)
++ amount: 1500 (number, required) - Donation amount
++ status: refunded (string, required) - Donation status in [`paying`, `paid`, `fail`, `refunded`, `to_pay`, `to_pay`, `invalid`]
++ order_number: twreporter-24031923864 (string, required) - Unique donation order number
++ pay_method: credit_card (string)
++ bin_code: 424242 (string)
++ last_name: Lin (string)
++ first_name: IHan (string)
++ send_receipt: no_receipt (string, required)
++ receipt_header: Lin IHan (string)
++ address_country: Taiwan (string)
++ address_state: Taipei (string)
++ address_city: Da-an (string)
++ address_detail: NTU dorm #2 (string)
++ address_zip_code: 11055 (string)
+
+### Payment
++ created_at: `2020-06-8T16:00:00Z` (required)
++ amount: 1500 (number, required) - Payment amount
++ status: refunded (string, required) - Payment status in [`paying`, `paid`, `fail`, `refunded`]
++ order_number: twreporter-24031923864 (string, required) - Unique payment order number
+
+# Group User Donation
+User donation resources of go-api for membership
+
+## Donations of a user [/v1/users/{userID}/donations{?limit,offset}]
+
+### Get user donations [GET]
+
+Get user donations with limit & offset
+
++ Parameters
+    + userID: 123 (string) - The unique identifier of the user
+    + offset: `0` (integer, optional) - The number of posts to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of posts to return
+        + Default: `10`
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (string, required) - The status of the API request (e.g. "success", "error")
+        + meta (meta, fixed-type, required)
+        + records (array[Donation], fixed-type, required)
+
++ Response 401
+
+    + Attributes
+        + status: error (required)
+        + message: Unauthorized - The access token is invalid or has expired
+
++ Response 403
+
+    + Attributes
+        + status: error (required)
+        + message: Forbbiden - The request is not permitted to reach the resource
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error.
+
+## Payments of a periodic donation [/v1/periodic-donations/orders/{orderNumber}/payments{?limit,offset}]
+
+### Get payments list of periodic donation [GET]
+
+Get periodic donation payments with limit & offset
+
++ Parameters
+    + orderNumber: `twreporter-171049483144563800020` (string) - The order number of the periodic donation
+    + offset: `0` (integer, optional) - The number of posts to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of posts to return
+        + Default: `10`
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Authorization: Bearer <jwt>
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (string, required) - The status of the API request (e.g. "success", "error")
+        + meta (meta, fixed-type, required)
+        + records (array[Payment], fixed-type, required)
+
++ Response 401
+
+    + Attributes
+        + status: error (required)
+        + message: Unauthorized - The access token is invalid or has expired
+
++ Response 403
+
+    + Attributes
+        + status: error (required)
+        + message: Forbbiden - The request is not permitted to reach the resource
+
++ Response 404
+
+    + Attributes
+        + status: error (required)
+        + message: Not Found - The order number not found or user id not match
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error.
