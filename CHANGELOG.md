@@ -1,52 +1,33 @@
 ## Unrelease
 
-### 7.5.3-rc.2
+## Released
 
-#### Notable Changes
-
-- api/analytics
-  - set exceed read posts seconds to 7200
-
-#### Commits
-
-- [[`fbc445b779`](https://github.com/twreporter/go-api/commit/fbc445b779)] - **fix**: set exceed read posts seconds to 7200 (Aylie Chou)
-
-### 7.5.3-rc.1
-
-#### Notable Changes
-
-- api/analytics
-  - add maximum of reading post seconds in a request
-- test
-  - add test case for reading post second limitation
-
-#### Commits
-
-- [[`21f1b49a95`](https://github.com/twreporter/go-api/commit/21f1b49a95)] - **fix**: change reading post second max due to spec change (Aylie Chou)
-- [[`a3c667e4bc`](https://github.com/twreporter/go-api/commit/a3c667e4bc)] - **fix**: add maximum of reading post seconds in a request & corresponding test case (Aylie Chou)
-
-### 7.5.3-rc.0
+### 7.5.3 (Current)
 
 #### Notable Changes
 
 - api/donation
   - add `/v1/users/:id/donations` endpoint
   - add `/v1/periodic-donations/orders/:order/payments` endpoint
+- api/analytics
+  - add maximum of reading post seconds in a request
 - doc/donation
   - add `user-donation` api doc for new added endpoints
 - test
-  - add test case for new added endpoints
+  - add test case for new added donation endpoints
+  - add test case for reading post second limitation
 
 #### Commits
 
+- [[`fbc445b779`](https://github.com/twreporter/go-api/commit/fbc445b779)] - **fix**: set exceed read posts seconds to 7200 (Aylie Chou)
+- [[`21f1b49a95`](https://github.com/twreporter/go-api/commit/21f1b49a95)] - **fix**: change reading post second max due to spec change (Aylie Chou)
+- [[`a3c667e4bc`](https://github.com/twreporter/go-api/commit/a3c667e4bc)] - **fix**: add maximum of reading post seconds in a request & corresponding test case (Aylie Chou)
 - [[`ace09da3d4`](https://github.com/twreporter/go-api/commit/ace09da3d4)] - **fix**: add options for donation status (Aylie Chou)
 - [[`12e2e0c34d`](https://github.com/twreporter/go-api/commit/12e2e0c34d)] - **fix**: update api doc of user donation apis (Aylie Chou)
 - [[`504b45785a`](https://github.com/twreporter/go-api/commit/504b45785a)] - **feat**: add `/v1/periodic-donations/orders/:order/payments` endpoint & doc & test (Aylie Chou)
 - [[`779c8ef6fd`](https://github.com/twreporter/go-api/commit/779c8ef6fd)] - **feat**: add `/v1/users/:id/donations` endpoint & doc & test case (Aylie Chou)
 
-## Released
-
-### 7.5.2 (Current)
+### 7.5.2
 
 #### Notable Changes
 
