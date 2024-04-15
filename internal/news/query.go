@@ -32,6 +32,7 @@ type Filter struct {
 type SortBy struct {
 	PublishedDate query.Order
 	UpdatedAt     query.Order
+	Order         query.Order
 }
 
 const (
@@ -134,10 +135,24 @@ func WithFilterIDs(ids ...string) Option {
 	}
 }
 
+// WithFilterNull reset filter on the query
+func WithFilterNull() Option {
+	return func(q *Query) {
+		q.Filter = Filter{}
+	}
+}
+
 // SortUpdatedAt updates the query to sort by updatedAt field
 func WithSortUpdatedAt(isAsc bool) Option {
 	return func(q *Query) {
 		q.Sort = SortBy{UpdatedAt: query.Order{IsAsc: null.BoolFrom(isAsc)}}
+	}
+}
+
+// WithSortOrder updates the query to sort by order field
+func WithSortOrder(isAsc bool) Option {
+	return func(q *Query) {
+		q.Sort = SortBy{Order: query.Order{IsAsc: null.NewBool(isAsc, true)}}
 	}
 }
 

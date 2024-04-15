@@ -250,6 +250,7 @@ func hexToObjectIDs(hs []string) []primitive.ObjectID {
 type mongoSort struct {
 	PublishedDate query.Order `mongo:"publishedDate"`
 	UpdatedAt     query.Order `mongo:"updatedAt"`
+	Order         query.Order `mongo:"order"`
 }
 
 func (ms mongoSort) BuildStage() []bson.D {
@@ -266,7 +267,7 @@ func (ms mongoSort) BuildStage() []bson.D {
 		switch fieldV.Interface().(type) {
 		case query.Order:
 			v := fieldV.Interface().(query.Order)
-			if !v.IsAsc.IsZero() {
+			if v.IsAsc.Valid {
 				if v.IsAsc.Bool {
 					sortBy = append(sortBy, mongo.BuildElement(tag, mongo.OrderAsc))
 				} else {
@@ -288,6 +289,7 @@ func fromSort(s SortBy) mongoSort {
 	return mongoSort{
 		PublishedDate: s.PublishedDate,
 		UpdatedAt:     s.UpdatedAt,
+		Order:         s.Order,
 	}
 }
 
@@ -300,6 +302,7 @@ const (
 	ColTags           = "tags"
 	ColPosts          = "posts"
 	ColTopics         = "topics"
+	ColReviews        = "reviews"
 
 	// TODO: rename fields to writer
 	fieldWriters              = "writters"
@@ -323,6 +326,7 @@ const (
 	fieldState            = "state"
 	fieldThumbnail        = "image"
 	fieldBio              = "bio"
+	fieldPost             = "post"
 )
 
 type lookupInfo struct {
@@ -377,6 +381,10 @@ var (
 		fieldHeroImage:            {Collection: ColImages, ToUnwind: true},
 		fieldCategorySet:          {},
 	}
+
+	LookupReview = map[string]lookupInfo{
+		fieldPost: {},
+	}
 )
 
 func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
@@ -385,6 +393,8 @@ func BuildLookupStatements(m map[string]lookupInfo) []bson.D {
 		if field == fieldCategorySet {
 			// join category_set data
 			stages = append(stages, mongo.BuildCategorySetStage()...)
+		} else if field == fieldPost {
+			stages = append(stages, mongo.BuildReviewLookupStatements()...)
 		} else {
 			if shouldPreserveOrder(field) {
 				stages = append(stages, buildPreserveLookupOrderStatement(field, info)...)

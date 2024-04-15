@@ -22,6 +22,7 @@ type newsV2Storage interface {
 	GetFullTopics(context.Context, *news.Query) ([]news.Topic, error)
 	GetMetaOfTopics(context.Context, *news.Query) ([]news.MetaOfTopic, error)
 	GetAuthors(context.Context, *news.Query) ([]news.Author, error)
+	GetPostReviewData(context.Context, *news.Query) ([]news.Review, error)
 
 	GetTags(context.Context, *news.Query) ([]news.Tag, error)
 
@@ -533,4 +534,25 @@ func (nc *newsV2Controller) GetPostsByAuthor(c *gin.Context) {
 		"offset": q.Offset,
 		"limit":  q.Limit,
 	}}})
+}
+
+func (nc *newsV2Controller) GetPostReviews(c *gin.Context) {
+	var err error
+
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.ReviewPageTimeout)
+	defer cancel()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	q := news.NewQuery(news.WithFilterNull(), news.WithSortOrder(true), news.WithLimit(8))
+	reviews, err := nc.Storage.GetPostReviewData(ctx, q)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": reviews})
 }
