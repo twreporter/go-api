@@ -76,6 +76,7 @@ news:
     topic_page_timeout: 5s
     index_page_timeout: 5s
     author_page_timeout: 5s
+    review_page_timeout: 5s
 neticrm:
     project_id: "" # gcp project id
     pub_topic: "" # pub/sub topic
@@ -202,6 +203,7 @@ type NewsConfig struct {
 	TopicPageTimeout  time.Duration `yaml:"topic_page_timeout"`
 	IndexPageTimeout  time.Duration `yaml:"index_page_timeout"`
 	AuthorPageTimeout time.Duration `yaml:"author_page_timeout"`
+	ReviewPageTimeout time.Duration `yaml:"review_page_timeout"`
 }
 
 type NeticrmPubConfig struct {
@@ -299,6 +301,7 @@ func buildConf() ConfYaml {
 	conf.News.TopicPageTimeout = viper.GetDuration("news.topic_page_timeout")
 	conf.News.IndexPageTimeout = viper.GetDuration("news.index_page_timeout")
 	conf.News.AuthorPageTimeout = viper.GetDuration("news.author_page_timeout")
+	conf.News.ReviewPageTimeout = viper.GetDuration("news.review_page_timeout")
 
 	// Neticrm
 	conf.Neticrm.ProjectID = viper.GetString("neticrm.project_id")
