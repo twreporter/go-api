@@ -1,5 +1,25 @@
 ## Unrelease
 
+### 7.5.4-rc.0
+
+#### Notable Changes
+
+- api/donation
+  - add `/v1/users/:id/donations` endpoint
+  - add `/v1/periodic-donations/orders/:order/payments` endpoint
+- api/analytics
+  - add maximum of reading post seconds in a request
+- doc/donation
+  - add `user-donation` api doc for new added endpoints
+- test
+  - add test case for new added donation endpoints
+  - add test case for reading post second limitation
+
+#### Commits
+
+- [[`93a7bb544a`](https://github.com/twreporter/go-api/commit/93a7bb544a)] - **feat**: update doc html (Lucien)
+- [[`a145978c13`](https://github.com/twreporter/go-api/commit/a145978c13)] - **feat**: add more card info (Lucien)
+
 ## Released
 
 ### 7.5.3 (Current)
