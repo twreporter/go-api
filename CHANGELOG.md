@@ -1,19 +1,30 @@
 ## Unrelease
 
+### 7.5.4-rc.1
+
+#### Notable Changes
+
+- api/news
+  - add `/v2/post_reviews` endpoint
+- doc/news
+  - add doc for new added news endpoint
+- test
+  - add test cases for new added news endpoint
+
+#### Commits
+
+- [[`a412ed4989`](https://github.com/twreporter/go-api/commit/a412ed4989)] - **fix**: add test case for `/v2/post_reviews` endpoint (Aylie Chou)
+- [[`31b76863a3`](https://github.com/twreporter/go-api/commit/31b76863a3)] - **fix**: add doc for `post_reviews` endpoint (Aylie Chou)
+- [[`c00d5bc56c`](https://github.com/twreporter/go-api/commit/c00d5bc56c)] - **feat**: add `/v2/news/post_reviews` endpoint (Aylie Chou)
+
 ### 7.5.4-rc.0
 
 #### Notable Changes
 
 - api/donation
-  - add `/v1/users/:id/donations` endpoint
-  - add `/v1/periodic-donations/orders/:order/payments` endpoint
-- api/analytics
-  - add maximum of reading post seconds in a request
+  - add `card_info_type` & `card_info_last_four` in get user donations response
 - doc/donation
-  - add `user-donation` api doc for new added endpoints
-- test
-  - add test case for new added donation endpoints
-  - add test case for reading post second limitation
+  - update `user-donation` api doc for new added response data
 
 #### Commits
 
