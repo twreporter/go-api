@@ -110,3 +110,46 @@ func BuildCategorySetStage() []bson.D {
 
 	return result
 }
+
+func BuildReviewLookupStatements() []bson.D {
+	var stages []bson.D
+
+	// lookup posts
+	stages = append(stages, bson.D{{
+		Key: StageLookup, Value: bson.D{
+			{Key: MetaFrom, Value: "posts"},
+			{Key: MetaLocalField, Value: "post_id"},
+			{Key: MetaForeignField, Value: "_id"},
+			{Key: MetaAs, Value: "post"},
+		},
+	}})
+
+	// lookup images
+	stages = append(stages, bson.D{{
+		Key: StageLookup, Value: bson.D{
+			{Key: MetaFrom, Value: "images"},
+			{Key: MetaLocalField, Value: "post.og_image"},
+			{Key: MetaForeignField, Value: "_id"},
+			{Key: MetaAs, Value: "og_image"},
+		},
+	}})
+
+	// unwind images
+	stages = append(stages, BuildUnwindStage("og_image"))
+	stages = append(stages, BuildUnwindStage("post"))
+
+	// project fields
+	stages = append(stages, bson.D{{
+		Key: StageProject, Value: bson.D{
+			{Key: "order", Value: 1},
+			{Key: "og_image", Value: 1},
+			{Key: "post_id", Value: "$post._id"},
+			{Key: "slug", Value: "$post.slug"},
+			{Key: "title", Value: "$post.title"},
+			{Key: "og_description", Value: "$post.og_description"},
+			{Key: "reviewWord", Value: "$post.reviewWord"},
+		},
+	}})
+
+	return stages
+}

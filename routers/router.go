@@ -153,6 +153,7 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 	ncV2 := cf.GetNewsV2Controller()
 	v2Group.GET("/posts", middlewares.PassAuthUserID(), middlewares.SetCacheControl("public,max-age=900"), ncV2.GetPosts)
 	v2Group.GET("/posts/:slug", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetAPost)
+	v2Group.GET("/post_reviews", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-cache"), ncV2.GetPostReviews)
 
 	v2Group.GET("/tags", middlewares.SetCacheControl("public,max-age=900"), ncV2.GetTags)
 

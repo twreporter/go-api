@@ -1,5 +1,36 @@
 ## Unrelease
 
+### 7.5.4-rc.1
+
+#### Notable Changes
+
+- api/news
+  - add `/v2/post_reviews` endpoint
+- doc/news
+  - add doc for new added news endpoint
+- test
+  - add test cases for new added news endpoint
+
+#### Commits
+
+- [[`a412ed4989`](https://github.com/twreporter/go-api/commit/a412ed4989)] - **fix**: add test case for `/v2/post_reviews` endpoint (Aylie Chou)
+- [[`31b76863a3`](https://github.com/twreporter/go-api/commit/31b76863a3)] - **fix**: add doc for `post_reviews` endpoint (Aylie Chou)
+- [[`c00d5bc56c`](https://github.com/twreporter/go-api/commit/c00d5bc56c)] - **feat**: add `/v2/news/post_reviews` endpoint (Aylie Chou)
+
+### 7.5.4-rc.0
+
+#### Notable Changes
+
+- api/donation
+  - add `card_info_type` & `card_info_last_four` in get user donations response
+- doc/donation
+  - update `user-donation` api doc for new added response data
+
+#### Commits
+
+- [[`93a7bb544a`](https://github.com/twreporter/go-api/commit/93a7bb544a)] - **feat**: update doc html (Lucien)
+- [[`a145978c13`](https://github.com/twreporter/go-api/commit/a145978c13)] - **feat**: add more card info (Lucien)
+
 ## Released
 
 ### 7.5.3 (Current)
