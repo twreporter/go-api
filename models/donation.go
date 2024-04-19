@@ -178,6 +178,7 @@ type GeneralDonation struct {
 	BinCode          null.String `gorm:"column:card_info_bin_code" json:"bin_code,omitempty"`
 	CardLastFour     null.String `gorm:"column:card_info_last_four" json:"card_last_four, omitempty"`
 	CardType         null.String `gorm:"column:card_info_type" json:"card_type, omitempty"`
+	IsAnonymous      null.Bool  `gorm:"type:tinyint(1);default:0" json:"is_anonymous"`
 	FirstName        null.String `gorm:"column:cardholder_first_name" json:"first_name,omitempty"`
 	LastName         null.String `gorm:"column:cardholder_last_name" json:"last_name,omitempty"`
 	Header           null.String `gorm:"column:receipt_header" json:"receipt_header,omitempty"`
