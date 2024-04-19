@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.4-rc.2
+
+#### Notable Changes
+
+- api/auth
+  - clear `activated` cookie when logout
+
+#### Commits
+
+- [[`b74b39d43b`](https://github.com/twreporter/go-api/commit/b74b39d43b)] - **fix**: clear `activated` cookie when logout (Aylie Chou)
+
 ### 7.5.4-rc.1
 
 #### Notable Changes
