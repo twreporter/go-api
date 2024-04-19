@@ -1,5 +1,30 @@
 ## Unrelease
 
+### 7.5.4-rc.3
+
+#### Notable Changes
+
+- api/donation
+  - add `is_anonymous` in get user donations response
+- doc/donation
+  - update `user-donation` api doc for new added response data
+
+#### Commits
+
+- [[`a1b2663a3e`](https://github.com/twreporter/go-api/commit/a1b2663a3e)] - **fix**: format (Lucien)
+- [[`39c5e03c2c`](https://github.com/twreporter/go-api/commit/39c5e03c2c)] - **feat**: add is anonymous for donation response (Lucien)
+
+### 7.5.4-rc.2
+
+#### Notable Changes
+
+- api/auth
+  - clear `activated` cookie when logout
+
+#### Commits
+
+- [[`b74b39d43b`](https://github.com/twreporter/go-api/commit/b74b39d43b)] - **fix**: clear `activated` cookie when logout (Aylie Chou)
+
 ### 7.5.4-rc.1
 
 #### Notable Changes
