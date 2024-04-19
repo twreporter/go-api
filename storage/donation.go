@@ -102,7 +102,7 @@ func (g *GormStorage) GetDonationsOfAUser(userID string, limit int, offset int) 
 	var err error
 
 	// build query statement
-	defaultColumns := "id, amount, order_number, created_at, send_receipt, status, pay_method, cardholder_first_name, cardholder_last_name, receipt_header, receipt_address_country, receipt_address_state, receipt_address_city, receipt_address_detail, receipt_address_zip_code, card_info_bin_code, card_info_last_four, card_info_type"
+	defaultColumns := "id, amount, order_number, created_at, send_receipt, status, pay_method, cardholder_first_name, cardholder_last_name, receipt_header, receipt_address_country, receipt_address_state, receipt_address_city, receipt_address_detail, receipt_address_zip_code, card_info_bin_code, card_info_last_four, card_info_type, is_anonymous"
 	selectColumnsPrime := fmt.Sprintf("%s, %s", defaultColumns, "'prime' as type")
 	queryPrime := g.db.Table("pay_by_prime_donations").Select(selectColumnsPrime).Where("user_id = ?", userID).QueryExpr()
 	selectColumnsPeriodic := fmt.Sprintf("%s, %s", defaultColumns, "'periodic' as type")
