@@ -1,36 +1,20 @@
 ## Unrelease
 
-### 7.5.4-rc.3
+## Released
 
-#### Notable Changes
-
-- api/donation
-  - add `is_anonymous` in get user donations response
-- doc/donation
-  - update `user-donation` api doc for new added response data
-
-#### Commits
-
-- [[`a1b2663a3e`](https://github.com/twreporter/go-api/commit/a1b2663a3e)] - **fix**: format (Lucien)
-- [[`39c5e03c2c`](https://github.com/twreporter/go-api/commit/39c5e03c2c)] - **feat**: add is anonymous for donation response (Lucien)
-
-### 7.5.4-rc.2
+### 7.5.4 (Current)
 
 #### Notable Changes
 
 - api/auth
   - clear `activated` cookie when logout
-
-#### Commits
-
-- [[`b74b39d43b`](https://github.com/twreporter/go-api/commit/b74b39d43b)] - **fix**: clear `activated` cookie when logout (Aylie Chou)
-
-### 7.5.4-rc.1
-
-#### Notable Changes
-
+- api/donation
+  - add `is_anonymous` in get user donations response
+  - add `card_info_type` & `card_info_last_four` in get user donations response
 - api/news
   - add `/v2/post_reviews` endpoint
+- doc/donation
+  - update `user-donation` api doc for new added response data
 - doc/news
   - add doc for new added news endpoint
 - test
@@ -38,27 +22,16 @@
 
 #### Commits
 
+- [[`a1b2663a3e`](https://github.com/twreporter/go-api/commit/a1b2663a3e)] - **fix**: format (Lucien)
+- [[`39c5e03c2c`](https://github.com/twreporter/go-api/commit/39c5e03c2c)] - **feat**: add is anonymous for donation response (Lucien)
+- [[`b74b39d43b`](https://github.com/twreporter/go-api/commit/b74b39d43b)] - **fix**: clear `activated` cookie when logout (Aylie Chou)
 - [[`a412ed4989`](https://github.com/twreporter/go-api/commit/a412ed4989)] - **fix**: add test case for `/v2/post_reviews` endpoint (Aylie Chou)
 - [[`31b76863a3`](https://github.com/twreporter/go-api/commit/31b76863a3)] - **fix**: add doc for `post_reviews` endpoint (Aylie Chou)
 - [[`c00d5bc56c`](https://github.com/twreporter/go-api/commit/c00d5bc56c)] - **feat**: add `/v2/news/post_reviews` endpoint (Aylie Chou)
-
-### 7.5.4-rc.0
-
-#### Notable Changes
-
-- api/donation
-  - add `card_info_type` & `card_info_last_four` in get user donations response
-- doc/donation
-  - update `user-donation` api doc for new added response data
-
-#### Commits
-
 - [[`93a7bb544a`](https://github.com/twreporter/go-api/commit/93a7bb544a)] - **feat**: update doc html (Lucien)
 - [[`a145978c13`](https://github.com/twreporter/go-api/commit/a145978c13)] - **feat**: add more card info (Lucien)
 
-## Released
-
-### 7.5.3 (Current)
+### 7.5.3
 
 #### Notable Changes
 
