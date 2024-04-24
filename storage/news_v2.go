@@ -533,3 +533,59 @@ func (m *mongoStorage) getTags(ctx context.Context, stages []bson.D) <-chan fetc
 	}(ctx, stages)
 	return result
 }
+
+func (m *mongoStorage) GetPostReviewData(ctx context.Context, q *news.Query) ([]news.Review, error) {
+	var reviews []news.Review
+
+	mq := news.NewMongoQuery(q)
+
+	// build aggregate stages from query
+	stages := news.BuildQueryStatements(mq)
+	// build lookup(join) stages according to required fields
+	stages = append(stages, news.BuildLookupStatements(news.LookupReview)...)
+
+	select {
+	case <-ctx.Done():
+		return nil, errors.WithStack(ctx.Err())
+	case result, ok := <-m.getReviews(ctx, stages):
+		switch {
+		case !ok:
+			return nil, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, result.Error
+		}
+		reviews = result.Content.([]news.Review)
+	}
+
+	return reviews, nil
+}
+
+func (m *mongoStorage) getReviews(ctx context.Context, stages []bson.D) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, stages []bson.D) {
+		defer close(result)
+		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColReviews).Aggregate(ctx, stages)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		defer cursor.Close(ctx)
+
+		var reviews []news.Review
+		for cursor.Next(ctx) {
+			var review news.Review
+			err := cursor.Decode(&review)
+			if err != nil {
+				result <- fetchResult{Error: errors.WithStack(err)}
+				return
+			}
+			reviews = append(reviews, review)
+		}
+		if err := cursor.Err(); err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		result <- fetchResult{Content: reviews}
+	}(ctx, stages)
+	return result
+}

@@ -179,3 +179,13 @@ type MetaOfFootprint struct {
 	BookmarkID           string             `json:"bookmark_id"`
 	UpdatedAt            time.Time          `json:"footprint_updated_at"`
 }
+
+type Review struct {
+	Order                int                `bson:"order" json:"order"`
+	PostID               primitive.ObjectID `bson:"post_id" json:"post_id"`
+	Slug                 string             `bson:"slug" json:"slug"`
+	Title                string             `bson:"title" json:"title"`
+	OgDescription        string             `bson:"og_description" json:"og_description"`
+	OgImage              *Image             `bson:"og_image" json:"og_image,omitempty"`
+	ReviewWord           string             `bson:"reviewWord" json:"reviewWord"`
+}

@@ -7,17 +7,14 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"io/ioutil"
+	"encoding/json"
 
 	"github.com/twreporter/go-api/internal/news"
-
 	"github.com/stretchr/testify/assert"
-
 	"go.mongodb.org/mongo-driver/mongo"
-
 	"github.com/twreporter/go-api/globals"
-
 	"go.mongodb.org/mongo-driver/bson"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -40,6 +37,18 @@ type testPost struct {
 	Category      string
 	SubCategory   string
 	BookmarkID    string
+	ReviewWord    string
+}
+
+type testReview struct {
+	ID     primitive.ObjectID
+	PostID primitive.ObjectID
+	Order  int
+}
+
+type responseBodyForReview struct {
+	Status string        `json:"status"`
+	Data   []news.Review `json:"data"`
 }
 
 func TestGetPostsByAuthors_AuthorIsAnEngineer(t *testing.T) {
@@ -288,6 +297,87 @@ func TestGetPostsByAuthors_AuthorIsAWriter(t *testing.T) {
 	assert.JSONEq(t, postListResponse(metaOfPostResponse(posts["王小明的文章"])), response.Body.String())
 }
 
+func TestGetPostReviews_Success(t *testing.T) {
+	var resBody responseBodyForReview
+
+	db, cleanup := setupMongoGoDriverTestDB()
+	defer cleanup()
+	defer func() { db.Drop(context.Background()) }()
+
+	// setup post records
+	posts := map[string]testPost{
+		"mock1": {
+			ID:          primitive.NewObjectID(),
+			Slug:        "test-slug-1",
+			Image:       primitive.NewObjectID(),
+			ReviewWord:  "test review word 1",
+		},
+		"mock2": {
+			ID:         primitive.NewObjectID(),
+			Slug:       "test-slug-2",
+			Image:      primitive.NewObjectID(),
+			ReviewWord:  "test review word 2",
+		},
+	}
+	for _, post := range posts {
+		migratePostRecord(db, post)
+	}
+
+	// setup post review record
+	reviews := map[string]testReview{
+		"mock1": {
+			ID:     primitive.NewObjectID(),
+			Order:  1,
+			PostID: posts["mock1"].ID,
+		},
+		"mock2": {
+			ID:     primitive.NewObjectID(),
+			Order:  2,
+			PostID: posts["mock2"].ID,
+		},
+	}
+	for _, review := range reviews {
+		migratePostReviewRecord(db, review)
+	}
+
+	// Mocking user
+	mockEmail := "get-post-review@twreporter.org"
+	user := createUser(mockEmail)
+	defer func() { deleteUser(user) }()
+	authorization, cookie := helperSetupAuth(user)
+
+	// Send request to test GetPostReviews function
+	response := serveHTTPWithCookies(http.MethodGet, "/v2/post_reviews", "", "", authorization, cookie)
+	resBodyInBytes, _ := ioutil.ReadAll(response.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, 2, len(resBody.Data))
+	assert.Equal(t, reviews["mock1"].PostID, resBody.Data[0].PostID)
+	assert.Equal(t, reviews["mock1"].Order, resBody.Data[0].Order)
+	assert.Equal(t, posts["mock1"].Slug, resBody.Data[0].Slug)
+	assert.Equal(t, posts["mock1"].ReviewWord, resBody.Data[0].ReviewWord)
+	assert.Equal(t, reviews["mock2"].PostID, resBody.Data[1].PostID)
+	assert.Equal(t, reviews["mock2"].Order, resBody.Data[1].Order)
+	assert.Equal(t, posts["mock2"].Slug, resBody.Data[1].Slug)
+	assert.Equal(t, posts["mock2"].ReviewWord, resBody.Data[1].ReviewWord)
+}
+
+func TestGetPostReviews_AuthFail(t *testing.T) {
+	// Mocking user
+	mockEmail := "get-post-review@twreporter.org"
+	user := createUser(mockEmail)
+	defer func() { deleteUser(user) }()
+	authorization, cookie := helperSetupAuth(user)
+
+	// Test no authorization header
+	response := serveHTTPWithCookies(http.MethodGet, "/v2/post_reviews", "", "", "", cookie)
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+
+	// Test no cookie
+	response = serveHTTP(http.MethodGet, "/v2/post_reviews", "", "", authorization)
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+}
+
 // setupMongoGoDriverTestDB overwrites the global mongo DB temporarily
 // for testing news-v2 endpoints with mongo-go-driver
 // it can be removed once the news v1 endpoints deprecated.
@@ -328,6 +418,10 @@ func migratePostRecord(db *mongo.Database, post testPost) {
 	}
 	db.Collection(news.ColPosts).InsertOne(context.Background(), createPostDocument(post))
 
+}
+
+func migratePostReviewRecord(db *mongo.Database, review testReview) {
+	db.Collection(news.ColReviews).InsertOne(context.Background(), createReviewDocument(review))
 }
 
 func metaOfPostResponse(p testPost) string {
@@ -497,6 +591,7 @@ func createPostDocument(p testPost) bson.M {
 		"heroImage":              p.Image,
 		"leading_image_portrait": p.Image,
 		"leading_video":          p.Video,
+		"reviewWord":             p.ReviewWord,
 	}
 }
 
@@ -532,5 +627,13 @@ func createCategoryDocument(id primitive.ObjectID) bson.M {
 		"key":       id.Hex(),
 		"sortOrder": 1,
 		"name":      "測試分類",
+	}
+}
+
+func createReviewDocument(r testReview) bson.M {
+	return bson.M{
+		"_id":     r.ID,
+		"post_id": r.PostID,
+		"order":   r.Order,
 	}
 }
