@@ -51,6 +51,7 @@ const (
 
 	tapPayRespStatusSuccess = 0
 	tapPayRespStatusCardError = 10003
+	tapPayRespStatusCardExpired = 2013
 
 	defaultPeriodicPayMethod = "credit_card"
 
@@ -651,6 +652,11 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 		if tapPayRespStatusCardError == tapPayResp.Status {
 			return http.StatusBadRequest, gin.H{"status": "error", "message": err.Error()}, err
 		}
+
+		if tapPayRespStatusCardExpired == tapPayResp.Status {
+			return http.StatusBadRequest, gin.H{"status": "error", "message": err.Error()}, err
+		}
+
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
 	}
 
@@ -777,6 +783,9 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		}, d)
 
 		if tapPayRespStatusCardError == tapPayResp.Status {
+			return http.StatusBadRequest, gin.H{"status": "error", "message": err.Error()}, err
+		}
+		if tapPayRespStatusCardExpired == tapPayResp.Status {
 			return http.StatusBadRequest, gin.H{"status": "error", "message": err.Error()}, err
 		}
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()}, err
