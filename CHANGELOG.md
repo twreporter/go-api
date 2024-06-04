@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.5
+
+#### Notable Changes
+
+- api/donation
+  - return 400 when card expried
+
+#### Commits
+
+- [[`210b4aa872`](https://github.com/twreporter/go-api/commit/210b4aa872)] - **feat**: add error code for card expired (Lucien)
+
 ## Released
 
 ### 7.5.4 (Current)
