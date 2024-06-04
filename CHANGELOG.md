@@ -1,6 +1,6 @@
 ## Unrelease
 
-### 7.5.5-rc.0
+### 7.5.5
 
 #### Notable Changes
 
