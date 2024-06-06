@@ -303,6 +303,7 @@ const (
 	ColPosts          = "posts"
 	ColTopics         = "topics"
 	ColReviews        = "reviews"
+	ColFollowups      = "postfollowups"
 
 	// TODO: rename fields to writer
 	fieldWriters              = "writters"
@@ -327,6 +328,7 @@ const (
 	fieldThumbnail        = "image"
 	fieldBio              = "bio"
 	fieldPost             = "post"
+	fieldFollowups        = "followup"
 )
 
 type lookupInfo struct {
@@ -346,6 +348,7 @@ var (
 		fieldTopics:               {Collection: ColTopics, ToUnwind: true},
 		fieldWriters:              {Collection: ColContacts},
 		fieldCategorySet:          {},
+		fieldFollowups:            {Collection: ColFollowups},
 	}
 
 	LookupMetaOfPost = map[string]lookupInfo{
