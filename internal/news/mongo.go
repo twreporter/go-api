@@ -618,3 +618,7 @@ func BuildPreserveOrderByID(order []primitive.ObjectID) []bson.D {
 
 	return stages
 }
+
+func BuildLookupFollowup(offset int, limit int) []bson.D {
+	return mongo.BuildFollowupLookupStatements(offset, limit)
+}

@@ -194,6 +194,12 @@ type Review struct {
 type Followup struct {
 	Date                 time.Time          `bson:"date" json:"date"`
 	Title                string             `bson:"title" json:"title"`
-	Summay               string             `bson:"summary" json:"summay"`
+	Summary              string             `bson:"summary" json:"summary"`
 	Content              *ContentBody       `bson:"content,omitempty" json:"content,omitempty"`
+}
+
+type FollowupForMember struct {
+	PostID               primitive.ObjectID `bson:"post_id" json:"post_id"`
+	PostSlug             string             `bson:"post_slug" json:"post_slug"`
+	Followup                                `bson:",inline"`
 }
