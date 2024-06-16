@@ -34,6 +34,7 @@ type testPost struct {
 	Designers     []primitive.ObjectID
 	Photographers []primitive.ObjectID
 	Writers       []primitive.ObjectID
+	Followups     []primitive.ObjectID
 	Category      string
 	SubCategory   string
 	BookmarkID    string
@@ -49,6 +50,17 @@ type testReview struct {
 type responseBodyForReview struct {
 	Status string        `json:"status"`
 	Data   []news.Review `json:"data"`
+}
+
+type testFollowup struct {
+	ID     primitive.ObjectID
+	Title  string
+	Date   time.Time
+}
+
+type responseBodyForFollowup struct {
+	Status string                   `json:"status"`
+	Data   []news.FollowupForMember `json:"data"`
 }
 
 func TestGetPostsByAuthors_AuthorIsAnEngineer(t *testing.T) {
@@ -393,6 +405,63 @@ func setupMongoGoDriverTestDB() (*mongo.Database, func()) {
 	return db, cleanup
 }
 
+func TestGetPostFollowups_Success(t *testing.T) {
+	var resBody responseBodyForFollowup
+
+	db, cleanup := setupMongoGoDriverTestDB()
+	defer cleanup()
+	defer func() { db.Drop(context.Background()) }()
+
+	// setup post followup record
+	followups := map[string]testFollowup{
+		"mock1": {
+			ID:     primitive.NewObjectID(),
+			Title:  "test-followup-1",
+			Date:   time.Unix(1612337400, 0),
+		},
+		"mock2": {
+			ID:     primitive.NewObjectID(),
+			Title:  "test-followup-2",
+			Date:   time.Unix(1612337401, 0),
+		},
+	}
+	for _, followup := range followups {
+		migratePostFollowupRecord(db, followup)
+	}
+
+	// setup post records
+	posts := map[string]testPost{
+		"mock1": {
+			ID:          primitive.NewObjectID(),
+			Slug:        "test-slug-1",
+			Followups:   []primitive.ObjectID{followups["mock1"].ID},
+		},
+		"mock2": {
+			ID:         primitive.NewObjectID(),
+			Slug:       "test-slug-2",
+			Followups:   []primitive.ObjectID{followups["mock2"].ID},
+		},
+	}
+	for _, post := range posts {
+		migratePostRecord(db, post)
+	}
+
+	// Send request to test GetPostReviews function
+	response := serveHTTP(http.MethodGet, "/v2/post_followups", "", "", "")
+	resBodyInBytes, _ := ioutil.ReadAll(response.Result().Body)
+	json.Unmarshal(resBodyInBytes, &resBody)
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, 2, len(resBody.Data))
+	assert.Equal(t, followups["mock2"].Title, resBody.Data[0].Title)
+	assert.Equal(t, followups["mock2"].Date, resBody.Data[0].Date)
+	assert.Equal(t, posts["mock2"].ID, resBody.Data[0].PostID)
+	assert.Equal(t, posts["mock2"].Slug, resBody.Data[0].PostSlug)
+	assert.Equal(t, followups["mock1"].Title, resBody.Data[1].Title)
+	assert.Equal(t, followups["mock1"].Date, resBody.Data[1].Date)
+	assert.Equal(t, posts["mock1"].ID, resBody.Data[1].PostID)
+	assert.Equal(t, posts["mock1"].Slug, resBody.Data[1].PostSlug)
+}
+
 func postListResponse(posts ...string) string {
 	return listResponse(len(posts), posts)
 }
@@ -422,6 +491,10 @@ func migratePostRecord(db *mongo.Database, post testPost) {
 
 func migratePostReviewRecord(db *mongo.Database, review testReview) {
 	db.Collection(news.ColReviews).InsertOne(context.Background(), createReviewDocument(review))
+}
+
+func migratePostFollowupRecord(db *mongo.Database, followup testFollowup) {
+	db.Collection(news.ColFollowups).InsertOne(context.Background(), createFollowupDocument(followup))
 }
 
 func metaOfPostResponse(p testPost) string {
@@ -592,6 +665,7 @@ func createPostDocument(p testPost) bson.M {
 		"leading_image_portrait": p.Image,
 		"leading_video":          p.Video,
 		"reviewWord":             p.ReviewWord,
+		"followup":               p.Followups,
 	}
 }
 
@@ -635,5 +709,40 @@ func createReviewDocument(r testReview) bson.M {
 		"_id":     r.ID,
 		"post_id": r.PostID,
 		"order":   r.Order,
+	}
+}
+
+func createFollowupDocument(r testFollowup) bson.M {
+	return bson.M{
+		"_id": r.ID,
+		"title": r.Title,
+		"date": r.Date,
+		"summay": "測試追蹤摘要",
+		"content": bson.M{
+			"apiData": bson.A{
+				bson.M{
+					"styles":    bson.M{},
+					"content":   bson.A{"測試本追蹤"},
+					"alignment": "center",
+					"type":      "unstyled",
+					"id":        "abcde",
+				},
+			},
+			"draft": bson.M{
+				"blocks": bson.A{
+					bson.M{
+						"data":              bson.M{},
+						"entityRanges":      bson.A{},
+						"inlineStyleRanges": bson.A{},
+						"depth":             0,
+						"type":              "unstyled",
+						"text":              "測試本追蹤",
+						"key":               "abcde",
+					},
+				},
+				"entityMap": bson.M{},
+			},
+			"html": "<p>測試本追蹤</p>",
+		},
 	}
 }
