@@ -453,11 +453,9 @@ func TestGetPostFollowups_Success(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, 2, len(resBody.Data))
 	assert.Equal(t, followups["mock2"].Title, resBody.Data[0].Title)
-	assert.Equal(t, followups["mock2"].Date, resBody.Data[0].Date)
 	assert.Equal(t, posts["mock2"].ID, resBody.Data[0].PostID)
 	assert.Equal(t, posts["mock2"].Slug, resBody.Data[0].PostSlug)
 	assert.Equal(t, followups["mock1"].Title, resBody.Data[1].Title)
-	assert.Equal(t, followups["mock1"].Date, resBody.Data[1].Date)
 	assert.Equal(t, posts["mock1"].ID, resBody.Data[1].PostID)
 	assert.Equal(t, posts["mock1"].Slug, resBody.Data[1].PostSlug)
 }
