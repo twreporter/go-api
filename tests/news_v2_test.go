@@ -435,11 +435,13 @@ func TestGetPostFollowups_Success(t *testing.T) {
 			ID:          primitive.NewObjectID(),
 			Slug:        "test-slug-1",
 			Followups:   []primitive.ObjectID{followups["mock1"].ID},
+			State:       "published",
 		},
 		"mock2": {
 			ID:         primitive.NewObjectID(),
 			Slug:       "test-slug-2",
 			Followups:   []primitive.ObjectID{followups["mock2"].ID},
+			State:       "published",
 		},
 	}
 	for _, post := range posts {
