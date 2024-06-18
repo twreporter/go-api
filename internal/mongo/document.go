@@ -168,7 +168,7 @@ func BuildFollowupLookupStatements(offset int, limit int) []bson.D {
 	// match followups
 	stages = append(stages, bson.D{{
 		Key: StageMatch, Value: bson.D{
-			//{Key: "state", Value: "published"},
+			{Key: "state", Value: "published"},
 			{Key: "followup", Value: bson.D{
 				{Key: OpExists, Value: true},
 			}},
