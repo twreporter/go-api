@@ -11,6 +11,9 @@ const (
 	OpGte          = "$gte"
 	OpOr           = "$or"
 	OpReduce       = "$reduce"
+	OpExists       = "$exists"
+	OpNe           = "$ne"
+	OpCount        = "$count"
 
 	OrderAsc  = 1
 	OrderDesc = -1
@@ -29,6 +32,7 @@ const (
 	StageUnwind      = "$unwind"
 	StageReplaceRoot = "$replaceRoot"
 	StageProject     = "$project"
+	StageFacet       = "$facet"
 
 	// Define Meta fields for nested stages (e.g., lookup)
 	MetaAs           = "as"

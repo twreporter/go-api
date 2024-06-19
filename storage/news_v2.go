@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"strconv"
+	"encoding/json"
 
 	"github.com/pkg/errors"
 	"github.com/twreporter/go-api/globals"
@@ -19,6 +20,11 @@ import (
 type fetchResult struct {
 	Content interface{}
 	Error   error
+}
+
+type fetchFollowup struct {
+	Data  []news.FollowupForMember `bson:"data" json:"data"`
+	Total int                      `bson:"total" json:"total"`
 }
 
 type mongoStorage struct {
@@ -586,6 +592,89 @@ func (m *mongoStorage) getReviews(ctx context.Context, stages []bson.D) <-chan f
 			return
 		}
 		result <- fetchResult{Content: reviews}
+	}(ctx, stages)
+	return result
+}
+
+func (m *mongoStorage) GetPostFollowupData(ctx context.Context, offset int, limit int) ([]news.FollowupForMember, int, error) {
+	var res fetchFollowup
+
+	stages := news.BuildLookupFollowup(offset, limit)
+
+	select {
+	case <-ctx.Done():
+		return nil, 0, errors.WithStack(ctx.Err())
+	case result, ok := <-m.getFollowups(ctx, stages):
+		switch {
+		case !ok:
+			return nil, 0, errors.WithStack(ctx.Err())
+		case result.Error != nil:
+			return nil, 0, result.Error
+		}
+		res = result.Content.(fetchFollowup)
+	}
+
+	return res.Data, res.Total, nil
+}
+
+func (data *fetchFollowup) FromBson(bsonData []bson.M) (err error) {
+	// mongo $facet return data struct would be: [{data: [...], total: [count: 3]}}]
+	type followupTotal struct {
+		Count int `bson:"count" json:"count"`
+	}
+	var tmpData struct {	
+		Data  []news.FollowupForMember `bson:"data" json:"data"`
+		Total []followupTotal          `bson:"total" json:"total"`
+	}
+
+	var tmpBytes []byte
+	var rawData map[string]interface{}
+
+	_, tmpBytes, err = bson.MarshalValue(&bsonData)
+	if err != nil {
+		return err
+	}
+	err = bson.Unmarshal(tmpBytes, &rawData)
+	if err != nil {
+		return err
+	}
+	tmpBytes, err = json.Marshal(rawData["0"])
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(tmpBytes, &tmpData)
+	if err != nil {
+		return err
+	}
+	data.Data = tmpData.Data
+	data.Total = tmpData.Total[0].Count
+	return
+}
+
+func (m *mongoStorage) getFollowups(ctx context.Context, stages []bson.D) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, stages []bson.D) {
+		defer close(result)
+		cursor, err := m.Database(globals.Conf.DB.Mongo.DBname).Collection(news.ColPosts).Aggregate(ctx, stages)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		defer cursor.Close(ctx)
+
+		var bsonData []bson.M
+		var data fetchFollowup
+		err = cursor.All(ctx, &bsonData)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		err = data.FromBson(bsonData)
+		if err != nil {
+			result <- fetchResult{Error: errors.WithStack(err)}
+			return
+		}
+		result <- fetchResult{Content: data}
 	}(ctx, stages)
 	return result
 }
