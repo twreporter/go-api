@@ -1,6 +1,28 @@
 ## Unrelease
 
-### 7.5.5
+### 7.5.6-rc.0
+
+#### Notable Changes
+
+- api/news
+  - add `/v2/post_followups` endpoint & test cases
+  - add followups in return data of `/v2/posts/:slug?full=true`
+- api/donation
+  - update role email template
+
+#### Commits
+
+- [[`0f664685f5`](https://github.com/twreporter/go-api/commit/0f664685f5)] - **fix**: `/post_followups` test case (Aylie Chou)
+- [[`e40f6bd3bc`](https://github.com/twreporter/go-api/commit/e40f6bd3bc)] - **fix**: review comments (Aylie Chou)
+- [[`cf4fd75687`](https://github.com/twreporter/go-api/commit/cf4fd75687)] - **fix**: remove `date` assetion before fix loc ne (Aylie Chou)
+- [[`36c00e4f94`](https://github.com/twreporter/go-api/commit/36c00e4f94)] - **fix**: add test case for `/v2/post_followups` (Aylie Chou)
+- [[`1e427c533d`](https://github.com/twreporter/go-api/commit/1e427c533d)] - **feat**: add `/v2/post_followups` endpoint (Aylie Chou)
+- [[`bb416d086c`](https://github.com/twreporter/go-api/commit/bb416d086c)] - **feat**: add `followups` in /v2/posts/:slug?full=true (Aylie Chou)
+- [[`9c49a17932`](https://github.com/twreporter/go-api/commit/9c49a17932)] - **fix**: update role email template (Aylie Chou)
+
+## Released
+
+### 7.5.5 (Current)
 
 #### Notable Changes
 
@@ -11,9 +33,7 @@
 
 - [[`210b4aa872`](https://github.com/twreporter/go-api/commit/210b4aa872)] - **feat**: add error code for card expired (Lucien)
 
-## Released
-
-### 7.5.4 (Current)
+### 7.5.4
 
 #### Notable Changes
 
