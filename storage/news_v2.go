@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"strconv"
-	"encoding/json"
 
 	"github.com/pkg/errors"
 	"github.com/twreporter/go-api/globals"
@@ -617,40 +616,6 @@ func (m *mongoStorage) GetPostFollowupData(ctx context.Context, offset int, limi
 	return res.Data, res.Total, nil
 }
 
-func (data *fetchFollowup) FromBson(bsonData []bson.M) (err error) {
-	// mongo $facet return data struct would be: [{data: [...], total: [count: 3]}}]
-	type followupTotal struct {
-		Count int `bson:"count" json:"count"`
-	}
-	var tmpData struct {	
-		Data  []news.FollowupForMember `bson:"data" json:"data"`
-		Total []followupTotal          `bson:"total" json:"total"`
-	}
-
-	var tmpBytes []byte
-	var rawData map[string]interface{}
-
-	_, tmpBytes, err = bson.MarshalValue(&bsonData)
-	if err != nil {
-		return err
-	}
-	err = bson.Unmarshal(tmpBytes, &rawData)
-	if err != nil {
-		return err
-	}
-	tmpBytes, err = json.Marshal(rawData["0"])
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(tmpBytes, &tmpData)
-	if err != nil {
-		return err
-	}
-	data.Data = tmpData.Data
-	data.Total = tmpData.Total[0].Count
-	return
-}
-
 func (m *mongoStorage) getFollowups(ctx context.Context, stages []bson.D) <-chan fetchResult {
 	result := make(chan fetchResult)
 	go func(ctx context.Context, stages []bson.D) {
@@ -662,17 +627,29 @@ func (m *mongoStorage) getFollowups(ctx context.Context, stages []bson.D) <-chan
 		}
 		defer cursor.Close(ctx)
 
-		var bsonData []bson.M
+		type followupTotal struct {
+			Count int `bson:"count" json:"count"`
+		}
+		var tmpData struct {	
+			Data  []news.FollowupForMember `bson:"data" json:"data"`
+			Total []followupTotal          `bson:"total" json:"total"`
+		}
 		var data fetchFollowup
-		err = cursor.All(ctx, &bsonData)
-		if err != nil {
+		for cursor.Next(ctx) {
+			err := cursor.Decode(&tmpData)
+			if err != nil {
+				result <- fetchResult{Error: errors.WithStack(err)}
+				return
+			}
+		}
+		if err := cursor.Err(); err != nil {
 			result <- fetchResult{Error: errors.WithStack(err)}
 			return
 		}
-		err = data.FromBson(bsonData)
-		if err != nil {
-			result <- fetchResult{Error: errors.WithStack(err)}
-			return
+		data.Data = tmpData.Data
+		data.Total = 0
+		if len(tmpData.Total) != 0 {
+			data.Total = tmpData.Total[0].Count
 		}
 		result <- fetchResult{Content: data}
 	}(ctx, stages)
