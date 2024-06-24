@@ -1,5 +1,20 @@
 ## Unrelease
 
+### 7.5.6-rc.1
+
+#### Notable Changes
+
+- api/news
+  - adjust return data of `/post_followups`
+- test
+  - update test case of `post_followups`
+
+### Commits
+
+- [[`a786b0f555`](https://github.com/twreporter/go-api/commit/a786b0f555)] - **fix**: update test case of `post_followups` (Aylie Chou)
+- [[`34c2596fae`](https://github.com/twreporter/go-api/commit/34c2596fae)] - **fix**: adjust return data of `/post_followups` (Aylie Chou)
+- [[`9bebeaecd9`](https://github.com/twreporter/go-api/commit/9bebeaecd9)] - **fix**: `post_followups` missing `api_data` (Aylie Chou)
+
 ### 7.5.6-rc.0
 
 #### Notable Changes
@@ -9,6 +24,8 @@
   - add followups in return data of `/v2/posts/:slug?full=true`
 - api/donation
   - update role email template
+- test
+  - add test cases of `/post_followups`
 
 #### Commits
 
