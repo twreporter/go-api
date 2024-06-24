@@ -40,6 +40,7 @@ type testPost struct {
 	BookmarkID    string
 	ReviewWord    string
 }
+const testPostTitle = "測試標題"
 
 type testReview struct {
 	ID     primitive.ObjectID
@@ -455,10 +456,10 @@ func TestGetPostFollowups_Success(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, 2, len(resBody.Data))
 	assert.Equal(t, followups["mock2"].Title, resBody.Data[0].Title)
-	assert.Equal(t, posts["mock2"].ID, resBody.Data[0].PostID)
+	assert.Equal(t, testPostTitle, resBody.Data[0].PostTitle)
 	assert.Equal(t, posts["mock2"].Slug, resBody.Data[0].PostSlug)
 	assert.Equal(t, followups["mock1"].Title, resBody.Data[1].Title)
-	assert.Equal(t, posts["mock1"].ID, resBody.Data[1].PostID)
+	assert.Equal(t, testPostTitle, resBody.Data[1].PostTitle)
 	assert.Equal(t, posts["mock1"].Slug, resBody.Data[1].PostSlug)
 }
 
@@ -598,7 +599,7 @@ func createPostDocument(p testPost) bson.M {
 		"writters":      p.Writers,
 		"publishedDate": p.CreatedAt,
 		"state":         p.State,
-		"title":         "測試標題",
+		"title":         testPostTitle,
 		"content": bson.M{
 			"apiData": bson.A{
 				bson.M{
