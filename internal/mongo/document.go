@@ -177,7 +177,7 @@ func BuildFollowupLookupStatements(offset int, limit int) []bson.D {
 	// project neccessary fields
 	stages = append(stages, bson.D{{
 		Key: StageProject, Value: bson.D{
-			{Key: "post_id", Value: "$_id"},
+			{Key: "post_title", Value: "$title"},
 			{Key: "post_slug", Value: "$slug"},
 			{Key: "followup", Value: 1},
 		},
@@ -197,7 +197,7 @@ func BuildFollowupLookupStatements(offset int, limit int) []bson.D {
 	// project fields
 	stages = append(stages, bson.D{{
 		Key: StageProject, Value: bson.D{
-			{Key: "post_id", Value: "$post_id"},
+			{Key: "post_title", Value: "$post_title"},
 			{Key: "post_slug", Value: "$post_slug"},
 			{Key: "title", Value: "$followupObj.title"},
 			{Key: "date", Value: "$followupObj.date"},

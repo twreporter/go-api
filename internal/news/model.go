@@ -199,7 +199,9 @@ type Followup struct {
 }
 
 type FollowupForMember struct {
-	PostID               primitive.ObjectID `bson:"post_id" json:"post_id"`
+	PostTitle            string             `bson:"post_title" json:"post_title"`
 	PostSlug             string             `bson:"post_slug" json:"post_slug"`
-	Followup                                `bson:",inline"`
+	Date                 time.Time          `bson:"date" json:"date"`
+	Title                string             `bson:"title" json:"title"`
+	Summary              string             `bson:"summary" json:"summary"`
 }
