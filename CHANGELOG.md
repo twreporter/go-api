@@ -1,5 +1,18 @@
 ## Unrelease
 
+### 7.5.6-rc.2
+
+#### Notable Changes
+
+- Migrations
+  - Add receipt number column for prime and periodic donation tables
+
+### Commits
+
+- [[`515f808e3f`](https://github.com/twreporter/go-api/commit/515f808e3f)] - **feat**: Add receipt number column for donations (Howard Ou)
+- [[`292a9ceceb`](https://github.com/twreporter/go-api/commit/292a9ceceb)] - **feat**: Add receipt number column for periodic donations (Howard Ou)
+- [[`08fba151f5`](https://github.com/twreporter/go-api/commit/08fba151f5)] - **fix**: receipt_number length and table (Howard Ou)
+
 ### 7.5.6-rc.1
 
 #### Notable Changes
