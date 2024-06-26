@@ -83,10 +83,11 @@ type Post struct {
 		Relateds   []primitive.ObjectID `bson:"relateds" json:"relateds,omitempty"`
 		State      string               `bson:"state" json:"state"`
 	} `bson:"topics" json:"topic,omitempty"`
-	UpdatedAt time.Time `bson:"updatedAt" json:"updated_at"`
+	UpdatedAt              time.Time            `bson:"updatedAt" json:"updated_at"`
 	// TODO: rename the bson field to `writers`
-	Writers       []MetaOfAuthor `bson:"writters" json:"writers,omitempty"`
-	HeroImageSize string         `bson:"heroImageSize" json:"hero_image_size"`
+	Writers                []MetaOfAuthor       `bson:"writters" json:"writers,omitempty"`
+	HeroImageSize          string               `bson:"heroImageSize" json:"hero_image_size"`
+	Followups              []Followup           `bson:"followup" json:"followups,omitempty"`
 }
 
 type MetaOfAuthor struct {
@@ -188,4 +189,19 @@ type Review struct {
 	OgDescription        string             `bson:"og_description" json:"og_description"`
 	OgImage              *Image             `bson:"og_image" json:"og_image,omitempty"`
 	ReviewWord           string             `bson:"reviewWord" json:"reviewWord"`
+}
+
+type Followup struct {
+	Date                 time.Time          `bson:"date" json:"date"`
+	Title                string             `bson:"title" json:"title"`
+	Summary              string             `bson:"summary" json:"summary"`
+	Content              *ContentBody       `bson:"content,omitempty" json:"content,omitempty"`
+}
+
+type FollowupForMember struct {
+	PostTitle            string             `bson:"post_title" json:"post_title"`
+	PostSlug             string             `bson:"post_slug" json:"post_slug"`
+	Date                 time.Time          `bson:"date" json:"date"`
+	Title                string             `bson:"title" json:"title"`
+	Summary              string             `bson:"summary" json:"summary"`
 }

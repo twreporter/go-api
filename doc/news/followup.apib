@@ -1,0 +1,31 @@
+# Group Post Followups
+
+## Followup List [/v2/post_followups{?limit,offset}]
+A list contains information of the post followups.
+
+### Get post followups [GET]
+
++ Parameters
+    + offset: `0` (integer, optional) - The number of followups to skip
+        + Default: `0`
+    + limit: `10` (integer, optional) - The maximum number of followups to return
+        + Default: `10`
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+
++ Response 200 (application/json)
+
+    + Attributes
+        + status: success (string, required) - The status of the API request (e.g. "success", "error")
+        + meta (meta, fixed-type, required)
+        + data (array[followup], fixed-type, required)
+
++ Response 500
+
+    + Attributes
+        + status: error (required)
+        + message: Unexpected error.

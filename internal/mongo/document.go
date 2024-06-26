@@ -56,6 +56,14 @@ func BuildUnwindStage(field string) bson.D {
 	}}}
 }
 
+func BuildSortStage(field string, order int) bson.D {
+	return bson.D{
+		{Key: StageSort, Value: bson.D{
+			{Key: field, Value: order},
+		}},
+	}
+}
+
 func BuildCategorySetStage() []bson.D {
 	var result []bson.D
 
@@ -148,6 +156,67 @@ func BuildReviewLookupStatements() []bson.D {
 			{Key: "title", Value: "$post.title"},
 			{Key: "og_description", Value: "$post.og_description"},
 			{Key: "reviewWord", Value: "$post.reviewWord"},
+		},
+	}})
+
+	return stages
+}
+
+func BuildFollowupLookupStatements(offset int, limit int) []bson.D {
+	var stages []bson.D
+
+	// match followups
+	stages = append(stages, bson.D{{
+		Key: StageMatch, Value: bson.D{
+			{Key: "state", Value: "published"},
+			{Key: "followup", Value: bson.D{
+				{Key: OpExists, Value: true},
+			}},
+		},
+	}})
+	// project neccessary fields
+	stages = append(stages, bson.D{{
+		Key: StageProject, Value: bson.D{
+			{Key: "post_title", Value: "$title"},
+			{Key: "post_slug", Value: "$slug"},
+			{Key: "followup", Value: 1},
+		},
+	}})
+	// unwind folowups
+	stages = append(stages, BuildUnwindStage("followup"))
+	// lookup followup
+	stages = append(stages, bson.D{{
+		Key: StageLookup, Value: bson.D{
+			{Key: MetaFrom, Value: "postfollowups"},
+			{Key: MetaLocalField, Value: "followup"},
+			{Key: MetaForeignField, Value: "_id"},
+			{Key: MetaAs, Value: "followupObj"},
+		}, 
+	}})
+	stages = append(stages, BuildUnwindStage("followupObj"))
+	// project fields
+	stages = append(stages, bson.D{{
+		Key: StageProject, Value: bson.D{
+			{Key: "post_title", Value: "$post_title"},
+			{Key: "post_slug", Value: "$post_slug"},
+			{Key: "title", Value: "$followupObj.title"},
+			{Key: "date", Value: "$followupObj.date"},
+			{Key: "summary", Value: "$followupObj.summary"},
+			{Key: "content", Value: "$followupObj.content"},
+		},
+	}})
+	// add sort
+	stages = append(stages, BuildSortStage("date", OrderDesc))
+	// use $facet for retrieving total & offset+limit data
+	stages = append(stages, bson.D{{
+		Key: StageFacet, Value: bson.D{
+			{Key: "data", Value: bson.A{
+				bson.D{{Key: StageSkip, Value: offset}},
+				bson.D{{Key: StageLimit, Value: limit}},
+			}},
+			{Key: "total", Value: bson.A{
+				bson.D{{Key: OpCount, Value: "count"}},
+			}},
 		},
 	}})
 

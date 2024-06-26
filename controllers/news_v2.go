@@ -14,6 +14,7 @@ import (
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
 	f "github.com/twreporter/logformatter"
+	"github.com/twreporter/go-api/models"
 )
 
 type newsV2Storage interface {
@@ -23,6 +24,7 @@ type newsV2Storage interface {
 	GetMetaOfTopics(context.Context, *news.Query) ([]news.MetaOfTopic, error)
 	GetAuthors(context.Context, *news.Query) ([]news.Author, error)
 	GetPostReviewData(context.Context, *news.Query) ([]news.Review, error)
+	GetPostFollowupData(context.Context, int, int) ([]news.FollowupForMember, int, error)
 
 	GetTags(context.Context, *news.Query) ([]news.Tag, error)
 
@@ -555,4 +557,37 @@ func (nc *newsV2Controller) GetPostReviews(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "success", "data": reviews})
+}
+
+func (nc *newsV2Controller) GetPostFollowups(c *gin.Context) {
+	var err error
+
+	ctx, cancel := context.WithTimeout(c, globals.Conf.News.ReviewPageTimeout)
+	defer cancel()
+
+	defer func() {
+		if err != nil {
+			nc.helperCleanup(c, err)
+		}
+	}()
+
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	offset, _ := strconv.Atoi(c.Query("offset"))
+
+	if limit == 0 {
+		limit = 10
+	}
+
+	var followups []news.FollowupForMember
+	var total int
+	followups, total, err = nc.Storage.GetPostFollowupData(ctx, offset, limit)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": followups, "meta": models.MetaOfResponse{
+		Total:  total,
+		Offset: offset,
+		Limit:  limit,
+	}})
 }
