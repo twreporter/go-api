@@ -13,6 +13,7 @@ type Query struct {
 	Filter Filter
 	Sort   SortBy
 	Full   bool
+	ToggleBookmark bool
 }
 
 type Filter struct {
@@ -52,6 +53,7 @@ const (
 	queryKeywords      = "keywords"
 	queryAuthorID      = "author_id"
 	queryLatestOrder   = "latest_order"
+	queryToggleBookmark = "toggleBookmark"
 )
 
 type Option func(*Query)
@@ -242,6 +244,10 @@ func parseSingleQuery(c *gin.Context) *Query {
 
 	if full, err := strconv.ParseBool(c.Query(queryFull)); err == nil {
 		q.Full = full
+	}
+
+	if toggleBookmark, err := strconv.ParseBool(c.Query(queryToggleBookmark)); err == nil {
+		q.ToggleBookmark = toggleBookmark
 	}
 	return &q
 }
