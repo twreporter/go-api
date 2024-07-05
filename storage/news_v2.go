@@ -4,16 +4,16 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
 	"github.com/twreporter/go-api/models"
+	f "github.com/twreporter/logformatter"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
-	f "github.com/twreporter/logformatter"
 )
 
 type fetchResult struct {
@@ -92,6 +92,53 @@ func (gs *gormStorage) GetBookmarksOfPostsTask(ctx context.Context, userID strin
 
 		result <- fetchResult{Content: posts}
 	}(ctx, userID, posts)
+	return result
+}
+
+func (gs *gormStorage) GetBookmarksForFullPost(ctx context.Context, userID string, post news.Post) (models.Bookmark, error) {
+	if userID == "" {
+		log.Println("userID is required")
+		return models.Bookmark{}, errors.New("userID is required")
+	}
+
+	var targetBookmark models.Bookmark
+
+	select {
+	case <-ctx.Done():
+		return models.Bookmark{}, ctx.Err()
+	case result, ok := <-gs.GetBookmarksForFullPostTask(ctx, userID, post):
+		if !ok {
+			return models.Bookmark{}, errors.New("failed to get bookmark")
+		}
+		if result.Error != nil {
+			return models.Bookmark{}, result.Error
+		}
+
+		targetBookmark, ok = result.Content.(models.Bookmark)
+		if !ok {
+			return models.Bookmark{}, errors.New("type assertion failed")
+		}
+	}
+	
+	return targetBookmark, nil
+}
+
+
+func (gs *gormStorage) GetBookmarksForFullPostTask(ctx context.Context, userID string, post news.Post) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, userID string, post news.Post) {
+
+		slug := post.Slug
+
+		var bookmark models.Bookmark
+		err := gs.db.Where("id IN (?)", gs.db.Table("users_bookmarks").Select("bookmark_id").Where("user_id = ?", userID).QueryExpr()).Where("slug = ?", slug).Where("deleted_at IS NULL").Find(&bookmark).Error
+
+		if err != nil {
+			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
+		}
+
+		result <- fetchResult{Content: bookmark}
+	}(ctx, userID, post)
 	return result
 }
 
