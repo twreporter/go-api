@@ -70,12 +70,11 @@ func (nc *newsV2Controller) GetPosts(c *gin.Context) {
 		return
 	}
 
-	toggleBookmark, _ := strconv.Atoi(c.Query("toggleBookmark"))
-	if toggleBookmark == 1 {
+	if q.ToggleBookmark {
 		c.Writer.Header().Set("Cache-Control", "no-store")
 	}
 	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
-	if authUserID != nil && toggleBookmark == 1 {
+	if authUserID != nil && q.ToggleBookmark {
 		authUserIdString := fmt.Sprintf("%v", authUserID)
 		if _, err := nc.SqlStorage.GetBookmarksOfPosts(ctx, authUserIdString, posts); err != nil {
 			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))

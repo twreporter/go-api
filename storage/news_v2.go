@@ -114,8 +114,7 @@ func (gs *gormStorage) GetBookmarksForFullPost(ctx context.Context, userID strin
 			return models.UsersBookmarks{}, result.Error
 		}
 
-		log.Print(result)
-		targetBookmark = result.Content.(models.UsersBookmarks)
+		targetBookmark, ok = result.Content.(models.UsersBookmarks)
 		if !ok {
 			return models.UsersBookmarks{}, errors.New("type assertion failed")
 		}
@@ -134,11 +133,7 @@ func (gs *gormStorage) GetBookmarksForFullPostTask(ctx context.Context, userID s
 		var UserBookmark models.UsersBookmarks
 		err := gs.db.Where("user_id = ? AND post_id = ?", userID, postID).Find(&UserBookmark).Error
 
-		if err != nil {
-			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
-		}
-
-		result <- fetchResult{Content: UserBookmark}
+		result <- fetchResult{Content: UserBookmark, Error: errors.WithStack(err)}
 	}(ctx, userID, post)
 	return result
 }

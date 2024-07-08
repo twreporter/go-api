@@ -177,6 +177,10 @@ func ParsePostListQuery(c *gin.Context) *Query {
 		q.Filter.IDs = c.QueryArray(queryPostID)
 	}
 
+	if toggleBookmark, err := strconv.ParseBool(c.Query(queryToggleBookmark)); err == nil {
+		q.ToggleBookmark = toggleBookmark
+	}
+
 	// Parse pagination
 	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
 		q.Offset = offset
