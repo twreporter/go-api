@@ -95,28 +95,29 @@ func (gs *gormStorage) GetBookmarksOfPostsTask(ctx context.Context, userID strin
 	return result
 }
 
-func (gs *gormStorage) GetBookmarksForFullPost(ctx context.Context, userID string, post news.Post) (models.Bookmark, error) {
+func (gs *gormStorage) GetBookmarksForFullPost(ctx context.Context, userID string, post news.Post) (models.UsersBookmarks, error) {
 	if userID == "" {
 		log.Println("userID is required")
-		return models.Bookmark{}, errors.New("userID is required")
+		return models.UsersBookmarks{}, errors.New("userID is required")
 	}
 
-	var targetBookmark models.Bookmark
+	var targetBookmark models.UsersBookmarks
 
 	select {
 	case <-ctx.Done():
-		return models.Bookmark{}, ctx.Err()
+		return models.UsersBookmarks{}, ctx.Err()
 	case result, ok := <-gs.GetBookmarksForFullPostTask(ctx, userID, post):
 		if !ok {
-			return models.Bookmark{}, errors.New("failed to get bookmark")
+			return models.UsersBookmarks{}, errors.New("failed to get bookmark")
 		}
 		if result.Error != nil {
-			return models.Bookmark{}, result.Error
+			return models.UsersBookmarks{}, result.Error
 		}
 
-		targetBookmark, ok = result.Content.(models.Bookmark)
+		log.Print(result)
+		targetBookmark = result.Content.(models.UsersBookmarks)
 		if !ok {
-			return models.Bookmark{}, errors.New("type assertion failed")
+			return models.UsersBookmarks{}, errors.New("type assertion failed")
 		}
 	}
 	
@@ -128,16 +129,16 @@ func (gs *gormStorage) GetBookmarksForFullPostTask(ctx context.Context, userID s
 	result := make(chan fetchResult)
 	go func(ctx context.Context, userID string, post news.Post) {
 
-		slug := post.Slug
+		postID := post.ID.Hex()
 
-		var bookmark models.Bookmark
-		err := gs.db.Where("id IN (?)", gs.db.Table("users_bookmarks").Select("bookmark_id").Where("user_id = ?", userID).QueryExpr()).Where("slug = ?", slug).Where("deleted_at IS NULL").Find(&bookmark).Error
+		var UserBookmark models.UsersBookmarks
+		err := gs.db.Where("user_id = ? AND post_id = ?", userID, postID).Find(&UserBookmark).Error
 
 		if err != nil {
 			log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 		}
 
-		result <- fetchResult{Content: bookmark}
+		result <- fetchResult{Content: UserBookmark}
 	}(ctx, userID, post)
 	return result
 }

@@ -37,7 +37,7 @@ type newsV2Storage interface {
 
 type newsV2SqlStorage interface {
 	GetBookmarksOfPosts(context.Context, string, []news.MetaOfPost) ([]news.MetaOfPost, error)
-	GetBookmarksForFullPost(context.Context, string, news.Post) (models.Bookmark, error)
+	GetBookmarksForFullPost(context.Context, string, news.Post) (models.UsersBookmarks, error)
 }
 
 func NewNewsV2Controller(s newsV2Storage, client news.AlgoliaSearcher, sqls newsV2SqlStorage) *newsV2Controller {
@@ -130,11 +130,15 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 			if authUserID != nil && q.ToggleBookmark {
 				c.Writer.Header().Set("Cache-Control", "no-store")
 				authUserIdString := fmt.Sprintf("%v", authUserID)
-				var bookmark models.Bookmark
+				var bookmark models.UsersBookmarks
 				if bookmark, err = nc.SqlStorage.GetBookmarksForFullPost(ctx, authUserIdString, fullPost); err != nil {
 					log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 				} else {
-					fullPost.BookmarkID = fmt.Sprintf("%d", bookmark.ID)
+					if (bookmark.BookmarkID == 0) {
+						fullPost.BookmarkID = ""
+					} else {
+						fullPost.BookmarkID = fmt.Sprintf("%d", bookmark.BookmarkID)
+					}
 				}
 			}
 			post = fullPost
