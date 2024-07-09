@@ -1,5 +1,20 @@
 ## Unrelease
 
+### 7.5.7-rc.0
+
+#### Notable Changes
+
+- api/news
+  - add `toggleBookmark` to query
+  - get `boomark_id` from `users_bookmarks` table
+
+### Commits
+
+- [[`bf1bff98bc`](https://github.com/twreporter/go-api/commit/bf1bff98bc)] - **fix**: fix comments (Lucien)
+- [[`9b2fd61a8a`](https://github.com/twreporter/go-api/commit/9b2fd61a8a)] - **feat**: select bookmark for users_bookmarks table (Lucien)
+- [[`e77c2170f6`](https://github.com/twreporter/go-api/commit/e77c2170f6)] - **feat**: get bookmark if is toggleBookmark (Lucien)
+- [[`3c5253aede`](https://github.com/twreporter/go-api/commit/3c5253aede)] - **feat**: pass auth user id to controller (Lucien)
+- [[`8c4baf4bc0`](https://github.com/twreporter/go-api/commit/8c4baf4bc0)] - **feat**: add toggleBookmark to query (Lucien)
 ## Released
 
 ### 7.5.6 (Current)
