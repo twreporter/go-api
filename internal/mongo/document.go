@@ -171,6 +171,9 @@ func BuildFollowupLookupStatements(offset int, limit int) []bson.D {
 			{Key: "state", Value: "published"},
 			{Key: "followup", Value: bson.D{
 				{Key: OpExists, Value: true},
+				{Key: OpNot, Value: bson.D{
+					{Key: OpSize, Value: 0},
+				}},
 			}},
 		},
 	}})

@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.7-rc.2
+
+#### Notable Changes
+
+- fix
+  - `/post_followups` would return empty data
+
+#### Commits
+
+- [[`2a460538e3`](https://github.com/twreporter/go-api/commit/2a460538e3)] - **fix**: `/post_followups` would return empty data (Aylie Chou)
+
 ### 7.5.7-rc.1
 
 #### Notable Changes
