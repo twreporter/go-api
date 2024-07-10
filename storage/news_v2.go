@@ -127,13 +127,19 @@ func (gs *gormStorage) GetBookmarksForFullPost(ctx context.Context, userID strin
 func (gs *gormStorage) GetBookmarksForFullPostTask(ctx context.Context, userID string, post news.Post) <-chan fetchResult {
 	result := make(chan fetchResult)
 	go func(ctx context.Context, userID string, post news.Post) {
+		defer close(result)
 
 		postID := post.ID.Hex()
 
 		var UserBookmark models.UsersBookmarks
-		err := gs.db.Where("user_id = ? AND post_id = ?", userID, postID).Find(&UserBookmark).Error
+		err := gs.db.Where("user_id = ? AND post_id = ?", userID, postID).First(&UserBookmark).Error
 
-		result <- fetchResult{Content: UserBookmark, Error: errors.WithStack(err)}
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			result <- fetchResult{Content: nil, Error: errors.WithStack(err)}
+			return
+		}
+
+		result <- fetchResult{Content: UserBookmark}
 	}(ctx, userID, post)
 	return result
 }

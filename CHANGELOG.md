@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.7-rc.1
+
+#### Notable Changes
+
+- api/news
+  - use First to find bookmark and dont return err while not found
+
+### Commits
+
+- [[`f2371fb075`](https://github.com/twreporter/go-api/commit/f2371fb075)] - **fix**: use First to find bookmark and dont return err while not found (Lucien)
+
 ### 7.5.7-rc.0
 
 #### Notable Changes
@@ -15,6 +26,7 @@
 - [[`e77c2170f6`](https://github.com/twreporter/go-api/commit/e77c2170f6)] - **feat**: get bookmark if is toggleBookmark (Lucien)
 - [[`3c5253aede`](https://github.com/twreporter/go-api/commit/3c5253aede)] - **feat**: pass auth user id to controller (Lucien)
 - [[`8c4baf4bc0`](https://github.com/twreporter/go-api/commit/8c4baf4bc0)] - **feat**: add toggleBookmark to query (Lucien)
+
 ## Released
 
 ### 7.5.6 (Current)
