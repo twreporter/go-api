@@ -14,6 +14,8 @@ const (
 	OpExists       = "$exists"
 	OpNe           = "$ne"
 	OpCount        = "$count"
+	OpNot          = "$not"
+	OpSize         = "$size"
 
 	OrderAsc  = 1
 	OrderDesc = -1
