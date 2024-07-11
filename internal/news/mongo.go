@@ -563,7 +563,7 @@ func buildPreserveLookupOrderStatement(orderedField string, info lookupInfo) []b
 
 var (
 	// Fields that should be preserved order after lookup stage according to the requirements
-	orderedFields = []string{fieldDesigners, fieldEngineers, fieldPhotographers, fieldWriters}
+	orderedFields = []string{fieldDesigners, fieldEngineers, fieldPhotographers, fieldWriters, fieldFollowups}
 )
 
 func shouldPreserveOrder(field string) bool {
