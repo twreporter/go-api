@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.7-rc.3
+
+#### Notable Changes
+
+- fix
+  - `post.followup` should be order-preserved field
+
+#### Commits
+
+- [[`3ef061b10d`](https://github.com/twreporter/go-api/commit/3ef061b10d)] - **fix**: followup should be preserved field (Aylie Chou)
+
 ### 7.5.7-rc.2
 
 #### Notable Changes
