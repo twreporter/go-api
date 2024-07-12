@@ -577,7 +577,7 @@ func shouldPreserveOrder(field string) bool {
 
 // BuildBioMarkdownOnlyStatement returns statement for rewriting `bio` field with markdown format
 func BuildBioMarkdownOnlyStatement() bson.D {
-	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".md"}}}}
+	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".html"}}}}
 }
 
 func ConverStringsToObjectIDs(strs []string) ([]primitive.ObjectID) {
