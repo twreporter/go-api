@@ -575,8 +575,8 @@ func shouldPreserveOrder(field string) bool {
 	return false
 }
 
-// BuildBioMarkdownOnlyStatement returns statement for rewriting `bio` field with markdown format
-func BuildBioMarkdownOnlyStatement() bson.D {
+// BuildBioHTMLOnlyStatement returns statement for rewriting `bio` field with HTML
+func BuildBioHTMLOnlyStatement() bson.D {
 	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".html"}}}}
 }
 
