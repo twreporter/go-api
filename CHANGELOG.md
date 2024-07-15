@@ -1,5 +1,18 @@
 ## Unrelease
 
+### 7.5.7-rc.4
+
+#### Notable Changes
+
+- feat
+  - return `bio.html` instead of `md` for `GetAuthors`
+
+#### Commits
+
+- [[`88604b5097`](https://github.com/twreporter/go-api/commit/88604b5097)] - **fix**: fix return test data (Lucien)
+- [[`8dc6da21fd`](https://github.com/twreporter/go-api/commit/8dc6da21fd)] - **fix**: rename function (Lucien)
+- [[`fd29e9bc9d`](https://github.com/twreporter/go-api/commit/fd29e9bc9d)] - **feat**: return html instead md (Lucien)
+
 ### 7.5.7-rc.3
 
 #### Notable Changes
