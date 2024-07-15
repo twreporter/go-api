@@ -391,8 +391,8 @@ func (m *mongoStorage) GetAuthors(ctx context.Context, q *news.Query) ([]news.Au
 	stages := news.BuildQueryStatements(mq)
 	// build lookup(join) stages according to required fields
 	stages = append(stages, news.BuildLookupStatements(news.LookupAuthor)...)
-	// rewrite bio field with markdown format only
-	stages = append(stages, news.BuildBioMarkdownOnlyStatement())
+	// rewrite bio field with HTML only
+	stages = append(stages, news.BuildBioHTMLOnlyStatement())
 
 	select {
 	case <-ctx.Done():

@@ -141,7 +141,7 @@ func authorResponse(author testAuthor) string { // use time as the id generation
 	return fmt.Sprintf(`{
 		"id":        "%s",
 		"email":      "test@twreporter.org",
-		"bio":        "test bio",
+		"bio":        "<p>test bio</p>",
 		"name":       "%s",
 		"job_title":  "test job title",
 		"thumbnail":  %s,
