@@ -4,16 +4,16 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/internal/news"
 	"github.com/twreporter/go-api/models"
+	f "github.com/twreporter/logformatter"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
-	f "github.com/twreporter/logformatter"
 )
 
 type fetchResult struct {
@@ -92,6 +92,55 @@ func (gs *gormStorage) GetBookmarksOfPostsTask(ctx context.Context, userID strin
 
 		result <- fetchResult{Content: posts}
 	}(ctx, userID, posts)
+	return result
+}
+
+func (gs *gormStorage) GetBookmarksForFullPost(ctx context.Context, userID string, post news.Post) (models.UsersBookmarks, error) {
+	if userID == "" {
+		log.Println("userID is required")
+		return models.UsersBookmarks{}, errors.New("userID is required")
+	}
+
+	var targetBookmark models.UsersBookmarks
+
+	select {
+	case <-ctx.Done():
+		return models.UsersBookmarks{}, ctx.Err()
+	case result, ok := <-gs.GetBookmarksForFullPostTask(ctx, userID, post):
+		if !ok {
+			return models.UsersBookmarks{}, errors.New("failed to get bookmark")
+		}
+		if result.Error != nil {
+			return models.UsersBookmarks{}, result.Error
+		}
+
+		targetBookmark, ok = result.Content.(models.UsersBookmarks)
+		if !ok {
+			return models.UsersBookmarks{}, errors.New("type assertion failed")
+		}
+	}
+	
+	return targetBookmark, nil
+}
+
+
+func (gs *gormStorage) GetBookmarksForFullPostTask(ctx context.Context, userID string, post news.Post) <-chan fetchResult {
+	result := make(chan fetchResult)
+	go func(ctx context.Context, userID string, post news.Post) {
+		defer close(result)
+
+		postID := post.ID.Hex()
+
+		var UserBookmark models.UsersBookmarks
+		err := gs.db.Where("user_id = ? AND post_id = ?", userID, postID).First(&UserBookmark).Error
+
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			result <- fetchResult{Content: nil, Error: errors.WithStack(err)}
+			return
+		}
+
+		result <- fetchResult{Content: UserBookmark}
+	}(ctx, userID, post)
 	return result
 }
 
@@ -342,8 +391,8 @@ func (m *mongoStorage) GetAuthors(ctx context.Context, q *news.Query) ([]news.Au
 	stages := news.BuildQueryStatements(mq)
 	// build lookup(join) stages according to required fields
 	stages = append(stages, news.BuildLookupStatements(news.LookupAuthor)...)
-	// rewrite bio field with markdown format only
-	stages = append(stages, news.BuildBioMarkdownOnlyStatement())
+	// rewrite bio field with HTML only
+	stages = append(stages, news.BuildBioHTMLOnlyStatement())
 
 	select {
 	case <-ctx.Done():

@@ -563,7 +563,7 @@ func buildPreserveLookupOrderStatement(orderedField string, info lookupInfo) []b
 
 var (
 	// Fields that should be preserved order after lookup stage according to the requirements
-	orderedFields = []string{fieldDesigners, fieldEngineers, fieldPhotographers, fieldWriters}
+	orderedFields = []string{fieldDesigners, fieldEngineers, fieldPhotographers, fieldWriters, fieldFollowups}
 )
 
 func shouldPreserveOrder(field string) bool {
@@ -575,9 +575,9 @@ func shouldPreserveOrder(field string) bool {
 	return false
 }
 
-// BuildBioMarkdownOnlyStatement returns statement for rewriting `bio` field with markdown format
-func BuildBioMarkdownOnlyStatement() bson.D {
-	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".md"}}}}
+// BuildBioHTMLOnlyStatement returns statement for rewriting `bio` field with HTML
+func BuildBioHTMLOnlyStatement() bson.D {
+	return bson.D{{Key: mongo.StageAddFields, Value: bson.D{{Key: fieldBio, Value: "$" + fieldBio + ".html"}}}}
 }
 
 func ConverStringsToObjectIDs(strs []string) ([]primitive.ObjectID) {
