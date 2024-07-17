@@ -1,61 +1,27 @@
 ## Unrelease
 
-### 7.5.7-rc.4
+### 7.5.7 (Current)
 
 #### Notable Changes
 
 - feat
   - return `bio.html` instead of `md` for `GetAuthors`
+- api/news
+  - add `toggleBookmark` to query
+  - get `boomark_id` from `users_bookmarks` table
+  - use First to find bookmark and dont return err while not found
+- fix
+  - `/post_followups` would return empty data
+  - `post.followup` should be order-preserved field
 
-#### Commits
+### Commits
 
 - [[`88604b5097`](https://github.com/twreporter/go-api/commit/88604b5097)] - **fix**: fix return test data (Lucien)
 - [[`8dc6da21fd`](https://github.com/twreporter/go-api/commit/8dc6da21fd)] - **fix**: rename function (Lucien)
 - [[`fd29e9bc9d`](https://github.com/twreporter/go-api/commit/fd29e9bc9d)] - **feat**: return html instead md (Lucien)
-
-### 7.5.7-rc.3
-
-#### Notable Changes
-
-- fix
-  - `post.followup` should be order-preserved field
-
-#### Commits
-
 - [[`3ef061b10d`](https://github.com/twreporter/go-api/commit/3ef061b10d)] - **fix**: followup should be preserved field (Aylie Chou)
-
-### 7.5.7-rc.2
-
-#### Notable Changes
-
-- fix
-  - `/post_followups` would return empty data
-
-#### Commits
-
 - [[`2a460538e3`](https://github.com/twreporter/go-api/commit/2a460538e3)] - **fix**: `/post_followups` would return empty data (Aylie Chou)
-
-### 7.5.7-rc.1
-
-#### Notable Changes
-
-- api/news
-  - use First to find bookmark and dont return err while not found
-
-### Commits
-
 - [[`f2371fb075`](https://github.com/twreporter/go-api/commit/f2371fb075)] - **fix**: use First to find bookmark and dont return err while not found (Lucien)
-
-### 7.5.7-rc.0
-
-#### Notable Changes
-
-- api/news
-  - add `toggleBookmark` to query
-  - get `boomark_id` from `users_bookmarks` table
-
-### Commits
-
 - [[`bf1bff98bc`](https://github.com/twreporter/go-api/commit/bf1bff98bc)] - **fix**: fix comments (Lucien)
 - [[`9b2fd61a8a`](https://github.com/twreporter/go-api/commit/9b2fd61a8a)] - **feat**: select bookmark for users_bookmarks table (Lucien)
 - [[`e77c2170f6`](https://github.com/twreporter/go-api/commit/e77c2170f6)] - **feat**: get bookmark if is toggleBookmark (Lucien)
@@ -64,7 +30,7 @@
 
 ## Released
 
-### 7.5.6 (Current)
+### 7.5.6
 
 #### Notable Changes
 
