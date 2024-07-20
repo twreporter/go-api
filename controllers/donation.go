@@ -817,7 +817,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	if primeDonation.Status == statusPaid {
 		// generate receipt serial number
 		go func(id uint, transactionTime null.Time){
-			receiptNumber, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
+			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
 			if err != nil {
 				log.Errorf("[EMAIL] failed to generate receipt number. primeID: %d", id)
 			}
@@ -1199,7 +1199,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 
 		// generate receipt serial number
 		go func(id uint, transactionTime null.Time){
-			receiptNumber, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
+			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
 			if err != nil {
 				log.Errorf("[EMAIL] failed to generate receipt number. primeID: %d", id)
 			}
