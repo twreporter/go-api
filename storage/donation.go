@@ -3,9 +3,17 @@ package storage
 import (
 	"fmt"
 
+	"gopkg.in/guregu/null.v3"
+
+
 	"github.com/pkg/errors"
+	"github.com/jinzhu/gorm"
 
 	"github.com/twreporter/go-api/models"
+)
+
+const (
+	YYYYMM = "200601"
 )
 
 // CreateAPeriodicDonation creates the draft record along with the first draft tap pay transaction
@@ -146,4 +154,52 @@ func (g *GormStorage) GetPaymentsOfAPeriodicDonation(periodicID uint, limit int,
 //TODO
 func (g *GormStorage) CreateAPayByOtherMethodDonation(m models.PayByOtherMethodDonation) error {
 	return nil
+}
+
+func (g *GormStorage) GenerateReceiptSerialNumber(primeID uint, transactionTime null.Time) (string, error) {
+	var emptyString string
+	needCreateSerial := false
+	// get transaction month
+	if transactionTime.IsZero() == true {
+		return emptyString, errors.New("transaction time should not be nil")
+	}
+	month := transactionTime.Time.Format(YYYYMM)
+
+	// start transaction
+	var serialNumber models.ReceiptSerialNumber
+	tx := g.db.Begin()
+	
+	err := tx.Raw("Select `serial_number` From `receipt_serial_numbers` Where month = ? for update", month).Scan(&serialNumber).Error
+	if nil != err && !gorm.IsRecordNotFoundError(err) {
+		tx.Rollback()
+		return emptyString, errors.Wrap(err, fmt.Sprintf("select receipt serial number failed. month: %s", month))
+	}
+	needCreateSerial = gorm.IsRecordNotFoundError(err)
+
+	// generate receipt number
+	receiptNumber := fmt.Sprintf("A%s-%05d", month, serialNumber.SerialNumber + 1)
+
+	// update receipt number
+	err = tx.Table("pay_by_prime_donations").Where("id = ?", primeID).Update("receipt_number", receiptNumber).Error; if nil != err {
+		tx.Rollback()
+		return emptyString, errors.Wrap(err, fmt.Sprintf("update receipt number failed. primeID: %d, receipt number: %s", primeID, receiptNumber))
+	}
+
+	// update serial number
+	if needCreateSerial {
+		serialNumber.Month = month
+		serialNumber.SerialNumber = 1
+		if err = tx.Create(&serialNumber).Error; nil != err {
+			tx.Rollback()
+			return emptyString, errors.Wrap(err, fmt.Sprintf("create receipt serail number failed. month: %s", month))
+		}
+	} else {
+		err = tx.Model(&serialNumber).Where("month = ?", month).UpdateColumn("serial_number", gorm.Expr("serial_number + ?", 1)).Error; if nil != err {
+			tx.Rollback()
+			return emptyString, errors.Wrap(err, fmt.Sprintf("update serial number failed. month: %s, serial number: %d", month, serialNumber.SerialNumber + 1))
+		}
+	}
+	tx.Commit()
+
+	return receiptNumber, nil
 }

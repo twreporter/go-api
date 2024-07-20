@@ -63,6 +63,7 @@ type MembershipStorage interface {
 	UpdatePeriodicAndCardTokenDonationInTRX(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
 	GetDonationsOfAUser(string, int, int) ([]models.GeneralDonation, int, error)
 	GetPaymentsOfAPeriodicDonation(uint, int, int) ([]models.Payment, int, error)
+	GenerateReceiptSerialNumber(uint, null.Time) (string, error)
 }
 
 // NewGormStorage initializes the storage connected to MySQL database by gorm library
