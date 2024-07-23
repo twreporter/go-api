@@ -198,8 +198,8 @@ type Payment struct {
 }
 
 type ReceiptSerialNumber struct {
-	CreatedAt    time.Time   `json:"created_at"`
+	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
-	Month        string `gorm:"type:varchar(6)" json:"month"`
-	SerialNumber int `gorm:"type:int(10)" json:"serial_number"`
+	YYYYMM       string     `gorm:"type:varchar(6)" json:"YYYYMM"`
+	SerialNumber int        `gorm:"type:int(10)" json:"serial_number"`
 }
