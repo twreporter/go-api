@@ -819,7 +819,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		go func(id uint, transactionTime null.Time){
 			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
 			if err != nil {
-				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", f.FormatStack(err))
+				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
 			}
 		}(primeDonation.ID, primeDonation.TransactionTime)
 
@@ -1201,7 +1201,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		go func(id uint, transactionTime null.Time){
 			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
 			if err != nil {
-				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", f.FormatStack(err))
+				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
 			}
 		}(d.ID, d.TransactionTime)
 
