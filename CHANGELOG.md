@@ -1,5 +1,25 @@
 ## Unrelease
 
+### 7.5.8-rc.0
+
+### Notable Changes
+
+- api/donation
+  - generate receipt serail number for prime
+- migration
+  - add receipt_serail_number talbe schema
+
+### Commits
+
+- [[`9c04392b46`](https://github.com/twreporter/go-api/commit/9c04392b46)] - **fix**: syntax error (Aylie Chou)
+- [[`491deb99bc`](https://github.com/twreporter/go-api/commit/491deb99bc)] - **fix**: log error stack when generate receipt number fail (Aylie Chou)
+- [[`3256430fee`](https://github.com/twreporter/go-api/commit/3256430fee)] - **fix**: use `YYYYMM` instead of `month` in receipt_serial_number (Aylie Chou)
+- [[`33df1ef2e0`](https://github.com/twreporter/go-api/commit/33df1ef2e0)] - **fix**: receiptNumber declared but not use err (Aylie Chou)
+- [[`8f21ac41ec`](https://github.com/twreporter/go-api/commit/8f21ac41ec)] - **feat**: generate receipt serail number for prime (Aylie Chou)
+- [[`9fb0b374f7`](https://github.com/twreporter/go-api/commit/9fb0b374f7)] - **migration**: add receipt_serail_number talbe schema (Aylie Chou)
+
+## Released
+
 ### 7.5.7 (Current)
 
 #### Notable Changes
@@ -27,8 +47,6 @@
 - [[`e77c2170f6`](https://github.com/twreporter/go-api/commit/e77c2170f6)] - **feat**: get bookmark if is toggleBookmark (Lucien)
 - [[`3c5253aede`](https://github.com/twreporter/go-api/commit/3c5253aede)] - **feat**: pass auth user id to controller (Lucien)
 - [[`8c4baf4bc0`](https://github.com/twreporter/go-api/commit/8c4baf4bc0)] - **feat**: add toggleBookmark to query (Lucien)
-
-## Released
 
 ### 7.5.6
 
