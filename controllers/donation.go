@@ -815,6 +815,15 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// only send mail if the transaction completed.
 	// send success mail asynchronously
 	if primeDonation.Status == statusPaid {
+		// generate receipt serial number
+		go func(id uint, transactionTime null.Time){
+			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
+			if err != nil {
+				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
+			}
+		}(primeDonation.ID, primeDonation.TransactionTime)
+
+		// send donation successful email
 		go mc.sendDonationThankYouMail(*resp)
 
 		// Concurrently update the user's activated time
@@ -1187,8 +1196,17 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		mc.Storage.GetByConditions(map[string]interface{}{
 			"order_number": callbackPayload.OrderNumber,
 		}, &d)
-		mail.BuildFromPrimeDonationModel(d)
 
+		// generate receipt serial number
+		go func(id uint, transactionTime null.Time){
+			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
+			if err != nil {
+				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
+			}
+		}(d.ID, d.TransactionTime)
+
+		// send donation successful email
+		mail.BuildFromPrimeDonationModel(d)
 		go mc.sendDonationThankYouMail(*mail)
 
 		// Concurrently update the user's activated time
