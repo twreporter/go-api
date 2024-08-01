@@ -1,6 +1,8 @@
 ## Unrelease
 
-### 7.5.8-rc.0
+## Released
+
+### 7.5.8 (Current)
 
 ### Notable Changes
 
@@ -18,9 +20,7 @@
 - [[`8f21ac41ec`](https://github.com/twreporter/go-api/commit/8f21ac41ec)] - **feat**: generate receipt serail number for prime (Aylie Chou)
 - [[`9fb0b374f7`](https://github.com/twreporter/go-api/commit/9fb0b374f7)] - **migration**: add receipt_serail_number talbe schema (Aylie Chou)
 
-## Released
-
-### 7.5.7 (Current)
+### 7.5.7
 
 #### Notable Changes
 
