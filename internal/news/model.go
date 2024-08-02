@@ -88,6 +88,7 @@ type Post struct {
 	Writers                []MetaOfAuthor       `bson:"writters" json:"writers,omitempty"`
 	HeroImageSize          string               `bson:"heroImageSize" json:"hero_image_size"`
 	Followups              []Followup           `bson:"followup" json:"followups,omitempty"`
+	LeadingEmbedded         *ContentBody         `bson:"leading_embedded,omitempty" json:"leading_embedded,omitempty"`
 }
 
 type MetaOfAuthor struct {
