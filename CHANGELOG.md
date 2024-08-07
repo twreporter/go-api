@@ -1,6 +1,8 @@
 ## Unrelease
 
-### 7.5.9-rc.0
+## Released
+
+### 7.5.9 (Current)
 
 #### Notable Changes
 
@@ -15,9 +17,7 @@
 - [[`fd47be508d`](https://github.com/twreporter/go-api/commit/fd47be508d)] - **feat**: update doc html (Lucien)
 - [[`79a5ddc749`](https://github.com/twreporter/go-api/commit/79a5ddc749)] - **feat**: add LeadingEmbedded field for post (Lucien)
 
-## Released
-
-### 7.5.8 (Current)
+### 7.5.8
 
 ### Notable Changes
 
