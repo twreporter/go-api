@@ -2,20 +2,20 @@ package tests
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
-	"io/ioutil"
-	"encoding/json"
 
-	"github.com/twreporter/go-api/internal/news"
 	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/internal/news"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type testPost struct {
@@ -667,6 +667,17 @@ func createPostDocument(p testPost) bson.M {
 		"leading_video":          p.Video,
 		"reviewWord":             p.ReviewWord,
 		"followup":               p.Followups,
+		"leading_embedded": bson.M{
+			"apiData": bson.A{
+				bson.M{
+					"styles":    bson.M{},
+					"content":   bson.A{"測試本文"},
+					"alignment": "center",
+					"type":      "unstyled",
+					"id":        "abcde",
+				},
+			},
+		},
 	}
 }
 

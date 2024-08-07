@@ -49,13 +49,14 @@ A list contains meta(brief) information of the selected posts.
         + status: error (required)
         + message: Query upstream server timeout. (required)
 
-## Post [/v2/posts/{slug}{?full}]
+## Post [/v2/posts/{slug}{?full,toggleBookmark}]
 A post contains meta(brief) or full information of a post with the slug specified.
 
 + Parameters
     + slug: `a-slug-of-a-post` (required) - Post slug
     + full: `true` (optional) - Whether to retrieve a post with full information
         + Default: `false`
+    + toggleBookmark: `1` (integer, optional) - set 1 to fetch bookmark id as well
 
 ## Get a single post [GET]
 Get a single post with the given slug
@@ -124,6 +125,7 @@ Get a single post with the given slug
 + hero_image_size: normal (required)
 + followups (array[followup])
 + full: true (boolean, required)
++ leading_embedded paragraphs
 
 ## MetaOfPost
 + id: 5edf118c3e631f0600198935 (required)
