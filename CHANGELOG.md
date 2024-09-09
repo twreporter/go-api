@@ -1,5 +1,17 @@
 ## Unrelease
 
+### 7.5.10-rc.0
+
+#### Notable Changes
+
+- fix
+  - update otp mail template
+
+### Commits
+
+- [[`51dd0df834`](https://github.com/twreporter/go-api/commit/51dd0df834)] - **fix**: update reporter icon & remove header (Aylie Chou)
+- [[`6cac43014e`](https://github.com/twreporter/go-api/commit/6cac43014e)] - **fix**: update otp mail template (Aylie Chou)
+
 ## Released
 
 ### 7.5.9 (Current)
