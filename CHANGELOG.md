@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.10-rc.1
+
+#### Notable Changes
+
+- fix
+  - style & wording of otp mail template
+
+#### Commits
+
+- [[`6f9f39a420`](https://github.com/twreporter/go-api/commit/6f9f39a420)] - **fix**: style & wording of otp mail template (Aylie Chou)
+
 ### 7.5.10-rc.0
 
 #### Notable Changes
