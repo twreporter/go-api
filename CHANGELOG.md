@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.10-rc.2
+
+#### Notable Changes
+
+- fix
+  - remove text decoration style in otp mail on chrome
+
+#### Commits
+
+- [[`aa933b83ad`](https://github.com/twreporter/go-api/commit/aa933b83ad)] - **fix**: remove text decoration style in chrome (Aylie Chou)
+
 ### 7.5.10-rc.1
 
 #### Notable Changes
