@@ -110,12 +110,15 @@ func (contrl *MailController) SendOtp(c *gin.Context) (int, gin.H, error) {
 
 	var subject = "報導者帳號驗證碼：" + reqBody.OtpCode
 
+	currentYear := time.Now().Format("2006")
 	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "signin-otp.tmpl", struct {
-		Email string
-		Otp   string
+		Email        string
+		Otp          string
+		CURRENT_YEAR string
 	}{
 		reqBody.Email,
 		reqBody.OtpCode,
+		currentYear,
 	}); err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create otp mail body"}, errors.WithStack(err)
 	}
