@@ -1,42 +1,22 @@
 ## Unrelease
 
-### 7.5.10-rc.2
+## Released
+
+### 7.5.10 (Current)
 
 #### Notable Changes
 
 - fix
-  - remove text decoration style in otp mail on chrome
+  - update otp mail template to new style
 
 #### Commits
 
 - [[`aa933b83ad`](https://github.com/twreporter/go-api/commit/aa933b83ad)] - **fix**: remove text decoration style in chrome (Aylie Chou)
-
-### 7.5.10-rc.1
-
-#### Notable Changes
-
-- fix
-  - style & wording of otp mail template
-
-#### Commits
-
 - [[`6f9f39a420`](https://github.com/twreporter/go-api/commit/6f9f39a420)] - **fix**: style & wording of otp mail template (Aylie Chou)
-
-### 7.5.10-rc.0
-
-#### Notable Changes
-
-- fix
-  - update otp mail template
-
-### Commits
-
 - [[`51dd0df834`](https://github.com/twreporter/go-api/commit/51dd0df834)] - **fix**: update reporter icon & remove header (Aylie Chou)
 - [[`6cac43014e`](https://github.com/twreporter/go-api/commit/6cac43014e)] - **fix**: update otp mail template (Aylie Chou)
 
-## Released
-
-### 7.5.9 (Current)
+### 7.5.9
 
 #### Notable Changes
 
