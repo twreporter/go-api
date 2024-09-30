@@ -88,6 +88,10 @@ mailchimp:
         operational_journal: ca9d491549 # 報導者營運手記
 features:
     enable_rolemail: false
+memberCMS:
+    url: '' # graphQL server url
+    email: '' # headless account email
+    password: '' # headless account password
 `)
 
 type ConfYaml struct {
@@ -104,6 +108,7 @@ type ConfYaml struct {
 	Neticrm     NeticrmPubConfig `yaml:"neticrm"`
 	Mailchimp   MailchimpConfig  `yaml:"mailchimp"`
 	Features    FeaturesConfig   `yaml:"features"`
+	MemberCMS   MemberCMSConfig  `yaml:"memberCMS"`
 }
 
 type CorsConfig struct {
@@ -220,6 +225,12 @@ type FeaturesConfig struct {
 	EnableRolemail bool `yaml:"enable_rolemail"`
 }
 
+type MemberCMSConfig struct {
+	Url      string `yaml:"url"`
+	Email    string `yaml:"email"`
+	Password string `yaml:"password"`
+}
+
 func init() {
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()        // read in environment variables that match
@@ -316,6 +327,11 @@ func buildConf() ConfYaml {
 
 	// Feature Toggles
 	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
+
+	// Member cms config
+	conf.MemberCMS.Url = viper.GetString("memberCMS.url")
+	conf.MemberCMS.Email = viper.GetString("memberCMS.email")
+	conf.MemberCMS.Password = viper.GetString("memberCMS.password")
 
 	return conf
 }

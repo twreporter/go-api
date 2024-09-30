@@ -33,4 +33,7 @@ const (
 	RoleTrailblazer = "trailblazer"
 
 	RoleTrailblazerAmount = 500
+
+	/* Member cms */
+	MemberCMSQueryTimeout = 5000
 )
