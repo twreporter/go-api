@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.11-rc.1
+
+#### Notable Changes
+
+- fix
+  - add `Host` header for IAP issue
+
+#### Commits
+
+- [[`dbe201b428`](https://github.com/twreporter/go-api/commit/dbe201b428)] - **fix**: add `Host` header for IAP issue (Aylie Chou)
+
 ### 7.5.11-rc.0
 
 #### Notable Changes
