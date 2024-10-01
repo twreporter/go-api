@@ -1,5 +1,20 @@
 ## Unrelease
 
+### 7.5.11-rc.0
+
+#### Notable Changes
+
+- feat
+  add graphql client for member cms interface
+- fix
+  - only return last 3 month followups
+
+#### Commits
+
+- [[`f40b71a87d`](https://github.com/twreporter/go-api/commit/f40b71a87d)] - **fix**: test cases (Aylie Chou)
+- [[`53783fa664`](https://github.com/twreporter/go-api/commit/53783fa664)] - **fix**: only return last 3 month followups (Aylie Chou)
+- [[`9a8878a5b9`](https://github.com/twreporter/go-api/commit/9a8878a5b9)] - **feat**: add graphql client for member cms interface (Aylie Chou)
+
 ## Released
 
 ### 7.5.10 (Current)
