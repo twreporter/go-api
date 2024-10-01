@@ -11,15 +11,16 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
+	"github.com/twreporter/go-mod-lib/pkg/slack"
 	f "github.com/twreporter/logformatter"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
-	"github.com/twreporter/go-mod-lib/pkg/slack"
 
 	"github.com/twreporter/go-api/configs"
 	"github.com/twreporter/go-api/controllers"
 	"github.com/twreporter/go-api/globals"
+	"github.com/twreporter/go-api/internal/graphql"
 	"github.com/twreporter/go-api/internal/mongo"
 	"github.com/twreporter/go-api/routers"
 	"github.com/twreporter/go-api/services"
@@ -68,6 +69,11 @@ func main() {
 	opts := options.Client()
 	client, err := mongo.NewClient(ctx, opts.ApplyURI(globals.Conf.DB.Mongo.URL).SetReadPreference(readpref.Nearest()))
 
+	log.Info("Connecting to Member CMS")
+	if err := graphql.NewClient(); err != nil {
+		log.Infof("connecting to member cms failed. err: %+v", err)
+	}
+
 	if err != nil {
 		return
 	}
@@ -78,7 +84,7 @@ func main() {
 	// init cloudpub client
 	pubConfig := &cloudpub.Config{
 		ProjectID: globals.Conf.Neticrm.ProjectID,
-		Topic: globals.Conf.Neticrm.Topic,
+		Topic:     globals.Conf.Neticrm.Topic,
 	}
 	cloudpub.NewPublisher(ctx, pubConfig)
 

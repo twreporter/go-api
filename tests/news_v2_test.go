@@ -40,6 +40,7 @@ type testPost struct {
 	BookmarkID    string
 	ReviewWord    string
 }
+
 const testPostTitle = "測試標題"
 
 type testReview struct {
@@ -54,9 +55,9 @@ type responseBodyForReview struct {
 }
 
 type testFollowup struct {
-	ID     primitive.ObjectID
-	Title  string
-	Date   time.Time
+	ID    primitive.ObjectID
+	Title string
+	Date  time.Time
 }
 
 type responseBodyForFollowup struct {
@@ -320,16 +321,16 @@ func TestGetPostReviews_Success(t *testing.T) {
 	// setup post records
 	posts := map[string]testPost{
 		"mock1": {
-			ID:          primitive.NewObjectID(),
-			Slug:        "test-slug-1",
-			Image:       primitive.NewObjectID(),
-			ReviewWord:  "test review word 1",
+			ID:         primitive.NewObjectID(),
+			Slug:       "test-slug-1",
+			Image:      primitive.NewObjectID(),
+			ReviewWord: "test review word 1",
 		},
 		"mock2": {
 			ID:         primitive.NewObjectID(),
 			Slug:       "test-slug-2",
 			Image:      primitive.NewObjectID(),
-			ReviewWord:  "test review word 2",
+			ReviewWord: "test review word 2",
 		},
 	}
 	for _, post := range posts {
@@ -416,14 +417,14 @@ func TestGetPostFollowups_Success(t *testing.T) {
 	// setup post followup record
 	followups := map[string]testFollowup{
 		"mock1": {
-			ID:     primitive.NewObjectID(),
-			Title:  "test-followup-1",
-			Date:   time.Unix(1612337400, 0),
+			ID:    primitive.NewObjectID(),
+			Title: "test-followup-1",
+			Date:  time.Now().AddDate(0, 0, -2),
 		},
 		"mock2": {
-			ID:     primitive.NewObjectID(),
-			Title:  "test-followup-2",
-			Date:   time.Unix(1612337401, 0),
+			ID:    primitive.NewObjectID(),
+			Title: "test-followup-2",
+			Date:  time.Now(),
 		},
 	}
 	for _, followup := range followups {
@@ -433,16 +434,16 @@ func TestGetPostFollowups_Success(t *testing.T) {
 	// setup post records
 	posts := map[string]testPost{
 		"mock1": {
-			ID:          primitive.NewObjectID(),
-			Slug:        "test-slug-1",
-			Followups:   []primitive.ObjectID{followups["mock1"].ID},
-			State:       "published",
+			ID:        primitive.NewObjectID(),
+			Slug:      "test-slug-1",
+			Followups: []primitive.ObjectID{followups["mock1"].ID},
+			State:     "published",
 		},
 		"mock2": {
-			ID:         primitive.NewObjectID(),
-			Slug:       "test-slug-2",
-			Followups:   []primitive.ObjectID{followups["mock2"].ID},
-			State:       "published",
+			ID:        primitive.NewObjectID(),
+			Slug:      "test-slug-2",
+			Followups: []primitive.ObjectID{followups["mock2"].ID},
+			State:     "published",
 		},
 	}
 	for _, post := range posts {
@@ -726,9 +727,9 @@ func createReviewDocument(r testReview) bson.M {
 
 func createFollowupDocument(r testFollowup) bson.M {
 	return bson.M{
-		"_id": r.ID,
-		"title": r.Title,
-		"date": r.Date,
+		"_id":    r.ID,
+		"title":  r.Title,
+		"date":   r.Date,
 		"summay": "測試追蹤摘要",
 		"content": bson.M{
 			"apiData": bson.A{
