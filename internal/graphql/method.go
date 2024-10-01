@@ -32,6 +32,7 @@ func NewClient() error {
 func Query(req *Request) (interface{}, error) {
 	cookie := getCookie()
 	req.Header.Set("Cookie", cookie)
+	req.Header.Set("Host", globals.Conf.MemberCMS.Host)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*constants.MemberCMSQueryTimeout)
 	defer cancel()
 
@@ -60,6 +61,7 @@ func refreshToken() error {
 	req.Var("email", globals.Conf.MemberCMS.Email)
 	req.Var("password", globals.Conf.MemberCMS.Password)
 	req.Header.Set("Cache-Control", "no-store")
+	req.Header.Set("Host", globals.Conf.MemberCMS.Host)
 
 	if err := client.Run(context.Background(), req, &respData); err != nil {
 		return err
