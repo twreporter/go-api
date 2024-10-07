@@ -126,7 +126,7 @@ func (c *Client) runWithJSON(ctx context.Context, req *Request, resp interface{}
 	r.Header.Set("Accept", "application/json; charset=utf-8")
 	for key, values := range req.Header {
 		for _, value := range values {
-			r.Header.Add(key, value)
+			r.Header.Set(key, value)
 		}
 	}
 	c.logf(">> headers: %v", r.Header)
