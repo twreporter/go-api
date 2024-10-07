@@ -11,8 +11,13 @@ import (
 	"github.com/twreporter/go-api/globals"
 )
 
+type Session struct {
+	token     string
+	expiredAt time.Time
+}
+
 var client *Client
-var sessionToken string
+var session Session
 
 func NewClient() error {
 	url := globals.Conf.MemberCMS.Url
@@ -30,13 +35,17 @@ func NewClient() error {
 }
 
 func Query(req *Request) (interface{}, error) {
+	var respData interface{}
+	if err := getInvalidSession(); err != nil {
+		return respData, err
+	}
+
 	cookie := getCookie()
 	req.Header.Set("Cookie", cookie)
 	req.Header.Set("Host", globals.Conf.MemberCMS.Host)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*constants.MemberCMSQueryTimeout)
 	defer cancel()
 
-	var respData interface{}
 	if err := client.Run(ctx, req, &respData); err != nil {
 		return nil, err
 	}
@@ -70,7 +79,8 @@ func refreshToken() error {
 	if err != nil {
 		return err
 	}
-	sessionToken = token
+	session.token = token
+	session.expiredAt = getExpiration()
 	return nil
 }
 
@@ -93,5 +103,20 @@ func getValueFromField(source interface{}, field string) (string, error) {
 }
 
 func getCookie() string {
-	return fmt.Sprintf("keystonejs-session=%s", sessionToken)
+	return fmt.Sprintf("keystonejs-session=%s", session.token)
+}
+
+// todo: get expiration from authenticate mutation response after member cms update auth api
+func getExpiration() time.Time {
+	return time.Now().Add(time.Second * time.Duration(globals.Conf.MemberCMS.SessionMaxAge))
+}
+
+func getInvalidSession() error {
+	if session.token == "" || session.expiredAt.IsZero() || session.expiredAt.Before(time.Now()) {
+		if err := refreshToken(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

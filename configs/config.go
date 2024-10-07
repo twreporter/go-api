@@ -89,10 +89,11 @@ mailchimp:
 features:
     enable_rolemail: false
 membercms:
-    url: '' # graphQL server url
-    host: '' # graphql server hostname
-    email: '' # headless account email
-    password: '' # headless account password
+    url: "" # graphQL server url
+    host: "" # graphql server hostname
+    email: "" # headless account email
+    password: "" # headless account password
+    session_max_age: 86400 # stateless session expire maxAge (sec)
 `)
 
 type ConfYaml struct {
@@ -227,10 +228,11 @@ type FeaturesConfig struct {
 }
 
 type MemberCMSConfig struct {
-	Url      string `yaml:"url"`
-	Host     string `yaml:"host"`
-	Email    string `yaml:"email"`
-	Password string `yaml:"password"`
+	Url           string `yaml:"url"`
+	Host          string `yaml:"host"`
+	Email         string `yaml:"email"`
+	Password      string `yaml:"password"`
+	SessionMaxAge int64  `yaml:"session_max_age"`
 }
 
 func init() {
@@ -335,6 +337,7 @@ func buildConf() ConfYaml {
 	conf.MemberCMS.Host = viper.GetString("membercms.host")
 	conf.MemberCMS.Email = viper.GetString("membercms.email")
 	conf.MemberCMS.Password = viper.GetString("membercms.password")
+	conf.MemberCMS.SessionMaxAge = viper.GetInt64("membercms.session_max_age")
 
 	return conf
 }
