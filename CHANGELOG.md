@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.11-rc.4
+
+#### Notable Changes
+
+- fix
+  - use `Header.Set` instead of `Header.Add` for testing
+
+#### Commits
+
+- [[`4f8f336700`](https://github.com/twreporter/go-api/commit/4f8f336700)] - **fix**: use `Header.Set` instead of `Header.Add` for testing (Aylie Chou)
+
 ### 7.5.11-rc.3
 
 #### Notable Changes
