@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.11-rc.2
+
+#### Notable Changes
+
+- fix
+  - add `session_max_age` config for member cms
+
+#### Commits
+
+- [[`2eca0feb41`](https://github.com/twreporter/go-api/commit/2eca0feb41)] - **fix**: add `session_max_age` config (Aylie Chou)
+
 ### 7.5.11-rc.1
 
 #### Notable Changes
