@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.5.11-rc.3
+
+#### Notable Changes
+
+- chore
+  - enable graphql debug log on staging
+
+#### Commits
+
+- [[`7c8cd6caaf`](https://github.com/twreporter/go-api/commit/7c8cd6caaf)] - **chore**: enable graphql debug log on staging (Aylie Chou)
+
 ### 7.5.11-rc.2
 
 #### Notable Changes
