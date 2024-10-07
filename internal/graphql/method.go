@@ -20,6 +20,9 @@ var client *Client
 var session Session
 
 func NewClient() error {
+	if !globals.Conf.Features.MemberCMS {
+		return errors.New("disable intergrating with member cms")
+	}
 	url := globals.Conf.MemberCMS.Url
 	if len(url) == 0 {
 		return errors.New("member cms url not set in config.go")
@@ -36,7 +39,11 @@ func NewClient() error {
 
 func Query(req *Request) (interface{}, error) {
 	var respData interface{}
-	if err := getInvalidSession(); err != nil {
+
+	if !globals.Conf.Features.MemberCMS {
+		return respData, errors.New("disable intergrating with member cms")
+	}
+	if err := getValidSession(); err != nil {
 		return respData, err
 	}
 
@@ -111,7 +118,7 @@ func getExpiration() time.Time {
 	return time.Now().Add(time.Second * time.Duration(globals.Conf.MemberCMS.SessionMaxAge))
 }
 
-func getInvalidSession() error {
+func getValidSession() error {
 	if session.token == "" || session.expiredAt.IsZero() || session.expiredAt.Before(time.Now()) {
 		if err := refreshToken(); err != nil {
 			return err
