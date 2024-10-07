@@ -88,6 +88,7 @@ mailchimp:
         operational_journal: ca9d491549 # 報導者營運手記
 features:
     enable_rolemail: false
+    integrate_with_member_cms: false
 membercms:
     url: "" # graphQL server url
     host: "" # graphql server hostname
@@ -225,6 +226,7 @@ type MailchimpConfig struct {
 
 type FeaturesConfig struct {
 	EnableRolemail bool `yaml:"enable_rolemail"`
+	MemberCMS      bool `yaml:"integrate_with_member_cms"`
 }
 
 type MemberCMSConfig struct {
@@ -331,6 +333,7 @@ func buildConf() ConfYaml {
 
 	// Feature Toggles
 	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
+	conf.Features.MemberCMS = viper.GetBool("features.integrate_with_member_cms")
 
 	// Member cms config
 	conf.MemberCMS.Url = viper.GetString("membercms.url")
