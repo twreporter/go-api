@@ -25,7 +25,7 @@ func NewClient() error {
 		return errors.New("member cms url not set in config.go")
 	}
 	client = newClient(url)
-	if globals.Conf.Environment == "development" {
+	if globals.Conf.Environment == "development" || globals.Conf.Environment == "staging" {
 		client.Log = func(s string) { log.Println(s) }
 	}
 	if err := refreshToken(); err != nil {
