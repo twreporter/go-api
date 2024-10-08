@@ -225,5 +225,6 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 
 	v3AuthGroup.POST("/signin", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.SignInV3))
 	v3AuthGroup.POST("/activate", middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.ActivateV3))
+
 	return
 }

@@ -2,7 +2,30 @@
 
 ## Released
 
-### 7.5.10 (Current)
+### 7.5.11 (Current)
+
+#### Notable Changes
+
+- feat
+  - add graphql client for member cms interface with feature toggle
+- fix
+  - only return last 3 month followups
+- chore
+  - enable graphql debug log on staging
+
+#### Commits
+
+- [[`0281231c44`](https://github.com/twreporter/go-api/commit/0281231c44)] - **fix**: add feature toggle for integrating with member cms (Aylie Chou)
+- [[`d4d9af3bdc`](https://github.com/twreporter/go-api/commit/d4d9af3bdc)] - **fix**: remove testing endpoint & controller (Aylie Chou)
+- [[`4f8f336700`](https://github.com/twreporter/go-api/commit/4f8f336700)] - **fix**: use `Header.Set` instead of `Header.Add` for testing (Aylie Chou)
+- [[`7c8cd6caaf`](https://github.com/twreporter/go-api/commit/7c8cd6caaf)] - **chore**: enable graphql debug log on staging (Aylie Chou)
+- [[`2eca0feb41`](https://github.com/twreporter/go-api/commit/2eca0feb41)] - **fix**: add `session_max_age` config (Aylie Chou)
+- [[`dbe201b428`](https://github.com/twreporter/go-api/commit/dbe201b428)] - **fix**: add `Host` header for IAP issue (Aylie Chou)
+- [[`f40b71a87d`](https://github.com/twreporter/go-api/commit/f40b71a87d)] - **fix**: test cases (Aylie Chou)
+- [[`53783fa664`](https://github.com/twreporter/go-api/commit/53783fa664)] - **fix**: only return last 3 month followups (Aylie Chou)
+- [[`9a8878a5b9`](https://github.com/twreporter/go-api/commit/9a8878a5b9)] - **feat**: add graphql client for member cms interface (Aylie Chou)
+
+### 7.5.10
 
 #### Notable Changes
 

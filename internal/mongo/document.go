@@ -2,20 +2,24 @@ package mongo
 
 import (
 	"reflect"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // BuildDocument is a wrapper for constructing a mongo document
 // e.g. {"$sort": {"name": 1}}
-//       <-key->  <- value ->
+//
+//	<-key->  <- value ->
 func BuildDocument(key string, value interface{}) bson.D {
 	return bson.D{{Key: key, Value: value}}
 }
 
 // Build Element is a wrapper for constructing part of an object
 // e.g. {"$sort": {"name":      1    }}
-//                 <-key->  <-value->
+//
+//	<-key->  <-value->
 func BuildElement(key string, value interface{}) bson.E {
 	return bson.E{Key: key, Value: value}
 }
@@ -194,7 +198,7 @@ func BuildFollowupLookupStatements(offset int, limit int) []bson.D {
 			{Key: MetaLocalField, Value: "followup"},
 			{Key: MetaForeignField, Value: "_id"},
 			{Key: MetaAs, Value: "followupObj"},
-		}, 
+		},
 	}})
 	stages = append(stages, BuildUnwindStage("followupObj"))
 	// project fields
@@ -206,6 +210,14 @@ func BuildFollowupLookupStatements(offset int, limit int) []bson.D {
 			{Key: "date", Value: "$followupObj.date"},
 			{Key: "summary", Value: "$followupObj.summary"},
 			{Key: "content", Value: "$followupObj.content"},
+		},
+	}})
+	// match last 3 months followups
+	stages = append(stages, bson.D{{
+		Key: StageMatch, Value: bson.D{
+			{Key: "date", Value: bson.D{
+				{Key: OpGte, Value: primitive.NewDateTimeFromTime(time.Now().AddDate(0, -3, 0))},
+			}},
 		},
 	}})
 	// add sort
