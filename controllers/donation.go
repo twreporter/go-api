@@ -30,6 +30,7 @@ import (
 
 	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/globals"
+	member "github.com/twreporter/go-api/internal/member_cms"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
 )
@@ -49,8 +50,8 @@ const (
 	statusStopped = "stopped"
 	statusInvalid = "invalid"
 
-	tapPayRespStatusSuccess = 0
-	tapPayRespStatusCardError = 10003
+	tapPayRespStatusSuccess     = 0
+	tapPayRespStatusCardError   = 10003
 	tapPayRespStatusCardExpired = 2013
 
 	defaultPeriodicPayMethod = "credit_card"
@@ -816,11 +817,13 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// send success mail asynchronously
 	if primeDonation.Status == statusPaid {
 		// generate receipt serial number
-		go func(id uint, transactionTime null.Time){
-			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
+		go func(id uint, transactionTime null.Time) {
+			receiptNumber, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
 			if err != nil {
 				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
 			}
+			// post member cms to create receipt
+			go member.PostPrimeDonationReceipt(receiptNumber)
 		}(primeDonation.ID, primeDonation.TransactionTime)
 
 		// send donation successful email
@@ -1006,7 +1009,7 @@ func (mc *MembershipController) GetPaymentsOfAPeriodicDonation(c *gin.Context) (
 	var d models.PeriodicDonation
 	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
 	err = mc.Storage.GetByConditions(map[string]interface{}{
-		"user_id": authUserID,
+		"user_id":      authUserID,
 		"order_number": orderNumber,
 	}, &d)
 	if err != nil {
@@ -1198,11 +1201,13 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		}, &d)
 
 		// generate receipt serial number
-		go func(id uint, transactionTime null.Time){
-			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
+		go func(id uint, transactionTime null.Time) {
+			receiptNumber, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
 			if err != nil {
 				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
 			}
+			// post member cms to create receipt
+			go member.PostPrimeDonationReceipt(receiptNumber)
 		}(d.ID, d.TransactionTime)
 
 		// send donation successful email

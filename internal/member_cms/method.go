@@ -1,10 +1,11 @@
-package graphql
+package member_cms
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/twreporter/go-api/configs/constants"
@@ -16,17 +17,29 @@ type Session struct {
 	expiredAt time.Time
 }
 
+const graphqlEndpoint = "/graphql"
+
 var client *Client
 var session Session
+
+func GetApiBaseUrl() (string, error) {
+	url := globals.Conf.MemberCMS.Url
+	if len(url) == 0 {
+		return "", errors.New("member cms url not set in config.go")
+	}
+	return url, nil
+}
 
 func NewClient() error {
 	if !globals.Conf.Features.MemberCMS {
 		return errors.New("disable intergrating with member cms")
 	}
-	url := globals.Conf.MemberCMS.Url
-	if len(url) == 0 {
-		return errors.New("member cms url not set in config.go")
+	url, err := GetApiBaseUrl()
+	if err != nil {
+		return err
 	}
+	url = url + graphqlEndpoint
+
 	client = newClient(url)
 	if globals.Conf.Environment == "development" || globals.Conf.Environment == "staging" {
 		client.Log = func(s string) { log.Println(s) }
@@ -49,7 +62,7 @@ func Query(req *Request) (interface{}, error) {
 
 	cookie := getCookie()
 	req.Header.Set("Cookie", cookie)
-	req.Header.Set("Host", globals.Conf.MemberCMS.Host)
+	req.Host = globals.Conf.MemberCMS.Host
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*constants.MemberCMSQueryTimeout)
 	defer cancel()
 
@@ -57,6 +70,18 @@ func Query(req *Request) (interface{}, error) {
 		return nil, err
 	}
 	return respData, nil
+}
+
+func AppendRequiredHeader(req *http.Request) error {
+	if err := getValidSession(); err != nil {
+		return err
+	}
+
+	cookie := getCookie()
+	req.Header.Set("Cookie", cookie)
+	req.Host = globals.Conf.MemberCMS.Host
+
+	return nil
 }
 
 func refreshToken() error {
@@ -77,7 +102,7 @@ func refreshToken() error {
 	req.Var("email", globals.Conf.MemberCMS.Email)
 	req.Var("password", globals.Conf.MemberCMS.Password)
 	req.Header.Set("Cache-Control", "no-store")
-	req.Header.Set("Host", globals.Conf.MemberCMS.Host)
+	req.Host = globals.Conf.MemberCMS.Host
 
 	if err := client.Run(context.Background(), req, &respData); err != nil {
 		return err

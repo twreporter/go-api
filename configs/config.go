@@ -90,8 +90,8 @@ features:
     enable_rolemail: false
     integrate_with_member_cms: false
 membercms:
-    url: "" # graphQL server url
-    host: "" # graphql server hostname
+    url: "" # member cms api server url
+    host: "" # member cms server hostname
     email: "" # headless account email
     password: "" # headless account password
     session_max_age: 86400 # stateless session expire maxAge (sec)
