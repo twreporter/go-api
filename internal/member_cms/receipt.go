@@ -6,11 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/twreporter/go-api/globals"
 )
 
 const receiptEndpoint = "/receipt"
 
 func GetPrimeDonationReceiptRequest(receiptNumber string) (*http.Request, error) {
+	if !globals.Conf.Features.MemberCMS {
+		return nil, errors.New("disable intergrating with member cms")
+	}
 	if len(receiptNumber) == 0 {
 		return nil, errors.New("receipt numner is required")
 	}
@@ -31,6 +36,9 @@ func GetPrimeDonationReceiptRequest(receiptNumber string) (*http.Request, error)
 }
 
 func PostPrimeDonationReceipt(receiptNumber string, orderNumber string) error {
+	if !globals.Conf.Features.MemberCMS {
+		return errors.New("disable intergrating with member cms")
+	}
 	if len(receiptNumber) == 0 && len(orderNumber) == 0 {
 		return errors.New("one of receipt number or order number should be provided")
 	}
