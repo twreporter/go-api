@@ -1169,8 +1169,13 @@ func (mc *MembershipController) GetPrimeDonationReceipt(c *gin.Context) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		c.JSON(resp.StatusCode, gin.H{"status": "fail", "message": "cannot get receipt from member cms"})
+		return
+	}
+
 	// Set headers to indicate this is a file download
-	filename := "test.pdf"
+	filename := fmt.Sprintf("%s.pdf", d.OrderNumber)
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	c.Header("Content-Type", resp.Header.Get("Content-Type"))
 
