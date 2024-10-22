@@ -36,6 +36,7 @@ type donationSuccessReqBody struct {
 	DonationLink      string   `json:"donation_link" binding:"required"`
 	DonationMethod    string   `json:"donation_method" binding:"required"`
 	DonationType      string   `json:"donation_type" binding:"required"`
+	DonationTypeEn    string   `json:"donation_type_en" binding:"required"`
 	Email             string   `json:"email" binding:"required"`
 	IsAutoPay         bool     `json:"is_auto_pay"`
 	Name              string   `json:"name"`
@@ -194,14 +195,17 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 		DonationDatetime string
 		ClientID         string
 		Subject          string
+		CurrentYear      string
 	}{
 		reqBody,
 		donationDatetime.In(location).Format("2006-01-02 15:04:05 UTC+8"),
 		uuid.New().String(),
 		subject,
+		fmt.Sprintf("%d", time.Now().Year()),
 	}
 
-	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, "success-donation.tmpl", templateData); err != nil {
+	templateName := fmt.Sprintf("success-donation-%s.tmpl", reqBody.DonationTypeEn)
+	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, templateName, templateData); err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create donation success mail body"}, errors.WithStack(err)
 	}
 

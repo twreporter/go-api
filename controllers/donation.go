@@ -517,15 +517,20 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + body.OrderNumber + "?utm_source=supportsuccess&utm_medium=email"
 
 	var donationType string
+	var donationTypeEn string
 	switch body.Frequency {
 	case oneTimeFrequency:
 		donationType = "單筆捐款"
+		donationTypeEn = "prime"
 	case monthlyFrequency:
 		donationType = "定期定額"
+		donationTypeEn = "periodic"
 	case yearlyFrequency:
 		donationType = "定期定額"
+		donationTypeEn = "periodic"
 	default:
 		donationType = "捐款"
+		donationTypeEn = "periodic"
 	}
 
 	reqBody := donationSuccessReqBody{
@@ -533,6 +538,7 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 		Currency:       body.Currency,
 		DonationMethod: payMethodMap[body.PayMethod],
 		DonationType:   donationType,
+		DonationTypeEn: donationTypeEn,
 		DonationLink:   donationLink,
 		Email:          body.Cardholder.Email,
 		Name:           body.Cardholder.Name.ValueOrZero(),
