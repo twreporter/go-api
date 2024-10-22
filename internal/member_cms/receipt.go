@@ -4,14 +4,35 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
 const receiptEndpoint = "/receipt"
 
-func PostPrimeDonationReceipt(receiptNumber string) error {
+func GetPrimeDonationReceiptRequest(receiptNumber string) (*http.Request, error) {
 	if len(receiptNumber) == 0 {
-		return errors.New("order number is required")
+		return nil, errors.New("receipt numner is required")
+	}
+
+	url, err := GetApiBaseUrl()
+	if err != nil {
+		return nil, err
+	}
+	url = fmt.Sprintf("%s%s/%s", url, receiptEndpoint, receiptNumber)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	AppendRequiredHeader(req)
+
+	return req, nil
+}
+
+func PostPrimeDonationReceipt(receiptNumber string, orderNumber string) error {
+	if len(receiptNumber) == 0 && len(orderNumber) == 0 {
+		return errors.New("one of receipt number or order number should be provided")
 	}
 
 	url, err := GetApiBaseUrl()
@@ -20,7 +41,7 @@ func PostPrimeDonationReceipt(receiptNumber string) error {
 	}
 	url = url + receiptEndpoint
 
-	payload := map[string]string{"receipt_number": receiptNumber}
+	payload := map[string]string{"receipt_number": receiptNumber, "order_number": orderNumber}
 	jsonBody, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -34,6 +55,7 @@ func PostPrimeDonationReceipt(receiptNumber string) error {
 	AppendRequiredHeader(req)
 
 	resp, err := http.DefaultClient.Do(req)
+	fmt.Printf("\nresp:\n%+v\n", resp)
 	if err != nil {
 		return err
 	}

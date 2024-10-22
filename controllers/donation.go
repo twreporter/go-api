@@ -823,7 +823,7 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
 			}
 			// post member cms to create receipt
-			go member.PostPrimeDonationReceipt(receiptNumber)
+			go member.PostPrimeDonationReceipt(receiptNumber, "")
 		}(primeDonation.ID, primeDonation.TransactionTime)
 
 		// send donation successful email
@@ -942,6 +942,10 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		},
 	}
 	go publishToNeticrm(ms)
+	if donationType == globals.PrimeDonationType {
+		// post member cms to create receipt
+		go member.PostPrimeDonationReceipt("", orderNumber)
+	}
 
 	return http.StatusNoContent, gin.H{}, nil
 }
@@ -1120,6 +1124,52 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
 
+func (mc *MembershipController) GetPrimeDonationReceipt(c *gin.Context) {
+	orderNumber := c.Query("order")
+	if len(orderNumber) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "order number is required"})
+		return
+	}
+
+	var d models.PayByPrimeDonation
+	err := mc.Storage.GetByConditions(map[string]interface{}{
+		"order_number": orderNumber,
+	}, &d)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+
+	req, err := member.GetPrimeDonationReceiptRequest(d.ReceiptNumber.ValueOrZero())
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Set headers to indicate this is a file download
+	filename := "test.pdf"
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	c.Header("Content-Type", resp.Header.Get("Content-Type"))
+
+	// Stream the file content back to the client
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+}
+
 func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (int, gin.H, error) {
 	var d models.PayByPrimeDonation
 
@@ -1207,7 +1257,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
 			}
 			// post member cms to create receipt
-			go member.PostPrimeDonationReceipt(receiptNumber)
+			go member.PostPrimeDonationReceipt(receiptNumber, "")
 		}(d.ID, d.TransactionTime)
 
 		// send donation successful email
