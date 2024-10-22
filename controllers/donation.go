@@ -1146,6 +1146,13 @@ func (mc *MembershipController) GetPrimeDonationReceipt(c *gin.Context) {
 		c.JSON(status, obj)
 		return
 	}
+	// Compare with the auth-user-id in context extracted from access_token
+	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
+	_userID := uint(d.UserID)
+	if fmt.Sprint(_userID) != fmt.Sprint(authUserID) {
+		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "message": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI)})
+		return
+	}
 
 	req, err := member.GetPrimeDonationReceiptRequest(d.ReceiptNumber.ValueOrZero())
 	if err != nil {
