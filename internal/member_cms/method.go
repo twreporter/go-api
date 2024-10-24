@@ -44,9 +44,10 @@ func NewClient() error {
 	if globals.Conf.Environment == "development" || globals.Conf.Environment == "staging" {
 		client.Log = func(s string) { log.Println(s) }
 	}
-	if err := refreshToken(); err != nil {
-		return err
-	}
+
+	// refresh token concurrently
+	go refreshToken()
+
 	return nil
 }
 
