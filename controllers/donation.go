@@ -30,6 +30,7 @@ import (
 
 	"github.com/twreporter/go-api/configs/constants"
 	"github.com/twreporter/go-api/globals"
+	member "github.com/twreporter/go-api/internal/member_cms"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
 )
@@ -49,8 +50,8 @@ const (
 	statusStopped = "stopped"
 	statusInvalid = "invalid"
 
-	tapPayRespStatusSuccess = 0
-	tapPayRespStatusCardError = 10003
+	tapPayRespStatusSuccess     = 0
+	tapPayRespStatusCardError   = 10003
 	tapPayRespStatusCardExpired = 2013
 
 	defaultPeriodicPayMethod = "credit_card"
@@ -516,15 +517,20 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + body.OrderNumber + "?utm_source=supportsuccess&utm_medium=email"
 
 	var donationType string
+	var donationTypeEn string
 	switch body.Frequency {
 	case oneTimeFrequency:
 		donationType = "單筆捐款"
+		donationTypeEn = "prime"
 	case monthlyFrequency:
 		donationType = "定期定額"
+		donationTypeEn = "periodic"
 	case yearlyFrequency:
 		donationType = "定期定額"
+		donationTypeEn = "periodic"
 	default:
 		donationType = "捐款"
+		donationTypeEn = "periodic"
 	}
 
 	reqBody := donationSuccessReqBody{
@@ -532,6 +538,7 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 		Currency:       body.Currency,
 		DonationMethod: payMethodMap[body.PayMethod],
 		DonationType:   donationType,
+		DonationTypeEn: donationTypeEn,
 		DonationLink:   donationLink,
 		Email:          body.Cardholder.Email,
 		Name:           body.Cardholder.Name.ValueOrZero(),
@@ -816,11 +823,13 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 	// send success mail asynchronously
 	if primeDonation.Status == statusPaid {
 		// generate receipt serial number
-		go func(id uint, transactionTime null.Time){
-			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
+		go func(id uint, transactionTime null.Time) {
+			receiptNumber, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
 			if err != nil {
 				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
 			}
+			// post member cms to create receipt
+			go member.PostPrimeDonationReceipt(receiptNumber, "")
 		}(primeDonation.ID, primeDonation.TransactionTime)
 
 		// send donation successful email
@@ -939,6 +948,10 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		},
 	}
 	go publishToNeticrm(ms)
+	if donationType == globals.PrimeDonationType {
+		// post member cms to create receipt
+		go member.PostPrimeDonationReceipt("", orderNumber)
+	}
 
 	return http.StatusNoContent, gin.H{}, nil
 }
@@ -1006,7 +1019,7 @@ func (mc *MembershipController) GetPaymentsOfAPeriodicDonation(c *gin.Context) (
 	var d models.PeriodicDonation
 	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
 	err = mc.Storage.GetByConditions(map[string]interface{}{
-		"user_id": authUserID,
+		"user_id":      authUserID,
 		"order_number": orderNumber,
 	}, &d)
 	if err != nil {
@@ -1117,6 +1130,64 @@ func (mc *MembershipController) GetADonationOfAUser(c *gin.Context, donationType
 	return http.StatusOK, gin.H{"status": "success", "data": resp}, nil
 }
 
+func (mc *MembershipController) GetPrimeDonationReceipt(c *gin.Context) {
+	orderNumber := c.Query("order")
+	if len(orderNumber) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "order number is required"})
+		return
+	}
+
+	var d models.PayByPrimeDonation
+	err := mc.Storage.GetByConditions(map[string]interface{}{
+		"order_number": orderNumber,
+	}, &d)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+	// Compare with the auth-user-id in context extracted from access_token
+	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
+	_userID := uint(d.UserID)
+	if fmt.Sprint(_userID) != fmt.Sprint(authUserID) {
+		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "message": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI)})
+		return
+	}
+
+	req, err := member.GetPrimeDonationReceiptRequest(d.ReceiptNumber.ValueOrZero())
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		c.JSON(resp.StatusCode, gin.H{"status": "fail", "message": "cannot get receipt from member cms"})
+		return
+	}
+
+	// Set headers to indicate this is a file download
+	filename := fmt.Sprintf("%s.pdf", d.OrderNumber)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	c.Header("Content-Type", resp.Header.Get("Content-Type"))
+
+	// Stream the file content back to the client
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+}
+
 func (mc *MembershipController) GetVerificationInfoOfADonation(c *gin.Context) (int, gin.H, error) {
 	var d models.PayByPrimeDonation
 
@@ -1198,11 +1269,13 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		}, &d)
 
 		// generate receipt serial number
-		go func(id uint, transactionTime null.Time){
-			_, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
+		go func(id uint, transactionTime null.Time) {
+			receiptNumber, err := mc.Storage.GenerateReceiptSerialNumber(id, transactionTime)
 			if err != nil {
 				log.WithField("err", err).Errorf("failed to generate receipt number. primeID: %d, err: %s", id, f.FormatStack(err))
 			}
+			// post member cms to create receipt
+			go member.PostPrimeDonationReceipt(receiptNumber, "")
 		}(d.ID, d.TransactionTime)
 
 		// send donation successful email
