@@ -1,5 +1,23 @@
 ## Unrelease
 
+### 7.6.0-rc.0
+
+#### Notable Changes
+
+- feat
+  - add `/donations/prime/receipt` endpoint
+  - add function to post receipt from member cms
+
+#### Commits
+
+- [[`d7593c2025`](https://github.com/twreporter/go-api/commit/d7593c2025)] - **fix**: refresh token not blocking server initilize (Aylie Chou)
+- [[`96e3f6bcde`](https://github.com/twreporter/go-api/commit/96e3f6bcde)] - **fix**: add error hanlde if member cms api failed (Aylie Chou)
+- [[`5524af6cb9`](https://github.com/twreporter/go-api/commit/5524af6cb9)] - **fix**: add test case for `donation/prime/receipt` (Aylie Chou)
+- [[`3669b25b90`](https://github.com/twreporter/go-api/commit/3669b25b90)] - **fix**: update donation success mail template (Aylie Chou)
+- [[`260dce7e6e`](https://github.com/twreporter/go-api/commit/260dce7e6e)] - **chore**: apply feature toggle on receipt methods (Aylie Chou)
+- [[`5510afbaf2`](https://github.com/twreporter/go-api/commit/5510afbaf2)] - **feat**: add `/donations/prime/receipt` endpoint (Aylie Chou)
+- [[`32bece98c3`](https://github.com/twreporter/go-api/commit/32bece98c3)] - **feat**: add function to post receipt from member cms (Aylie Chou)
+
 ## Released
 
 ### 7.5.11 (Current)
