@@ -44,7 +44,7 @@ type (
 		Data   donationRecord `json:"data"`
 	}
 	responseBodyForList struct {
-		Status string `json:"status"`
+		Status  string                   `json:"status"`
 		Records []models.GeneralDonation `json:"records"`
 		Meta    struct {
 			Total  int `json:"total"`
@@ -53,7 +53,7 @@ type (
 		}
 	}
 	responseBodyForPaymentList struct {
-		Status string `json:"status"`
+		Status  string           `json:"status"`
 		Records []models.Payment `json:"records"`
 		Meta    struct {
 			Total  int `json:"total"`
@@ -96,7 +96,7 @@ type (
 const (
 	testCreditCardPrime = "test_3a2fb2b7e892b914a03c95dd4dd5dc7970c908df67a49527c0a648b2bc9"
 	testLinePrime       = "ln_test_utigjeyfutj5867uyjhuty47rythfjru485768tigjfheufhtu5i6ojk"
-	testErrorCardPrime   = "522d4162eb8cabd35ad52c24b3b6e378e818c566a9cfa89754bc644b6cac47d9"
+	testErrorCardPrime  = "522d4162eb8cabd35ad52c24b3b6e378e818c566a9cfa89754bc644b6cac47d9"
 
 	testCreditCardMerchant = "GlobalTesting_CTBC"
 	testLineMerchant       = "GlobalTesting_LINEPAY"
@@ -1836,7 +1836,7 @@ func TestGetDonationsOfAUser_Success(t *testing.T) {
 	// Mocking donation
 	primeResp := createDefaultPrimeDonationRecord(user, creditCardPayMethod)
 	// make sure prime donation create before periodic donation since result would order by created_at
-	time.Sleep(500*time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	periodicResp := createDefaultPeriodicDonationRecord(user, monthlyFrequency)
 
 	// Send request to test GetDonationsOfAUser function
@@ -1860,7 +1860,7 @@ func TestGetDonationsOfAUser_InvalidUserID(t *testing.T) {
 	authorization, _ := helperSetupAuth(user)
 
 	// Send request to test GetDonationsOfAUser function
-	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v1/users/%d/donations", user.ID + 1), "", "", authorization)
+	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v1/users/%d/donations", user.ID+1), "", "", authorization)
 	assert.Equal(t, http.StatusForbidden, response.Code)
 }
 
@@ -1923,4 +1923,42 @@ func TestGetPaymentsOfAPeriodicDonation_AuthFail(t *testing.T) {
 	// Test no authorization header
 	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/periodic-donations/orders/%s/payments", periodicResp.Data.OrderNumber), "", "", "", cookie)
 	assert.Equal(t, http.StatusUnauthorized, response.Code)
+}
+
+func TestGetPrimeDonationReceipt_Fail(t *testing.T) {
+	var response *httptest.ResponseRecorder
+
+	// Mocking user
+	donorEmail := "prime-receipt-donor@twreporter.org"
+	user := createUser(donorEmail)
+	defer func() { deleteUser(user) }()
+	authorization, cookie := helperSetupAuth(user)
+	// Mocking user 2
+	donorMockEmail := "prime-receipt-donor-mock@twreporter.org"
+	userMock := createUser(donorMockEmail)
+	defer func() { deleteUser(userMock) }()
+
+	// Mocking donation
+	primeResp := createDefaultPrimeDonationRecord(user, creditCardPayMethod)
+	primeMockResp := createDefaultPrimeDonationRecord(userMock, creditCardPayMethod)
+
+	// Test no order number
+	response = serveHTTPWithCookies(http.MethodGet, "/v1/donations/prime/receipt", "", "", authorization, cookie)
+	assert.Equal(t, http.StatusBadRequest, response.Code)
+
+	// Test no cookie
+	response = serveHTTP(http.MethodGet, fmt.Sprintf("/v1/donations/prime/receipt?order=%s", primeResp.Data.OrderNumber), "", "", authorization)
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+
+	// Test no authorization header
+	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/donations/prime/receipt?order=%s", primeResp.Data.OrderNumber), "", "", "", cookie)
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+
+	// Test invalid order number: impossible order
+	response = serveHTTPWithCookies(http.MethodGet, "/v1/donations/prime/receipt?order=-1", "", "", authorization, cookie)
+	assert.Equal(t, http.StatusNotFound, response.Code)
+
+	// Test invalid order number: other's order
+	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/donations/prime/receipt?order=%s", primeMockResp.Data.OrderNumber), "", "", authorization, cookie)
+	assert.Equal(t, http.StatusForbidden, response.Code)
 }

@@ -29,7 +29,7 @@
 //
 //	httpclient := &http.Client{}
 //	client := graphql.NewClient("https://machinebox.io/graphql", graphql.WithHTTPClient(httpclient))
-package graphql
+package member_cms
 
 import (
 	"bytes"
@@ -126,10 +126,14 @@ func (c *Client) runWithJSON(ctx context.Context, req *Request, resp interface{}
 	r.Header.Set("Accept", "application/json; charset=utf-8")
 	for key, values := range req.Header {
 		for _, value := range values {
-			r.Header.Set(key, value)
+			r.Header.Add(key, value)
 		}
 	}
 	c.logf(">> headers: %v", r.Header)
+	if r.Host != "" {
+		req.Host = r.Host
+		c.logf(">> hosts: %s", r.Host)
+	}
 	r = r.WithContext(ctx)
 	res, err := c.httpClient.Do(r)
 	if err != nil {
@@ -201,6 +205,10 @@ func (c *Client) runWithPostFields(ctx context.Context, req *Request, resp inter
 		}
 	}
 	c.logf(">> headers: %v", r.Header)
+	if r.Host != "" {
+		req.Host = r.Host
+		c.logf(">> hosts: %s", r.Host)
+	}
 	r = r.WithContext(ctx)
 	res, err := c.httpClient.Do(r)
 	if err != nil {
@@ -276,6 +284,9 @@ type Request struct {
 	// Header represent any request headers that will be set
 	// when the request is made.
 	Header http.Header
+	// set host from header.set would failed with net/http package
+	// see more on issue: https://github.com/golang/go/issues/29865
+	Host string
 }
 
 // NewRequest makes a new Request with the specified string.
