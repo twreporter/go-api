@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.6.0-rc.1
+
+#### Notable Changes
+
+- fix
+  - success donation template link style
+
+#### Commits
+
+- [[`30dde491bf`](https://github.com/nodejs/node/commit/30dde491bf)] - **fix**: template link style (Aylie Chou)
+
 ### 7.6.0-rc.0
 
 #### Notable Changes
