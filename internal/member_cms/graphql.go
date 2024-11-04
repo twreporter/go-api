@@ -130,8 +130,8 @@ func (c *Client) runWithJSON(ctx context.Context, req *Request, resp interface{}
 		}
 	}
 	c.logf(">> headers: %v", r.Header)
-	if r.Host != "" {
-		req.Host = r.Host
+	if req.Host != "" {
+		r.Host = req.Host
 		c.logf(">> hosts: %s", r.Host)
 	}
 	r = r.WithContext(ctx)

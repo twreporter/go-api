@@ -1,5 +1,17 @@
 ## Unrelease
 
+### 7.6.0-rc.2
+
+#### Notable Changes
+
+- fix
+  - assign host value with `req.Host` instead of `req.Header.Set`
+
+#### Commits
+
+- [[`117cbb314a`](https://github.com/twreporter/go-api/commit/117cbb314a)] - **fix**: typo (Aylie Chou)
+- [[`d856988ae4`](https://github.com/twreporter/go-api/commit/d856988ae4)] - **fix**: incorrect `host` value (Aylie Chou)
+
 ### 7.6.0-rc.1
 
 #### Notable Changes
