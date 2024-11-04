@@ -1,9 +1,15 @@
 ## Unrelease
 
-### 7.6.0-rc.2
+## Released
+
+### 7.6.0 (Current)
 
 #### Notable Changes
 
+- feat
+  - add `/donations/prime/receipt` endpoint
+  - add function to post receipt from member cms
+  - update success donation template style
 - fix
   - assign host value with `req.Host` instead of `req.Header.Set`
 
@@ -11,28 +17,7 @@
 
 - [[`117cbb314a`](https://github.com/twreporter/go-api/commit/117cbb314a)] - **fix**: typo (Aylie Chou)
 - [[`d856988ae4`](https://github.com/twreporter/go-api/commit/d856988ae4)] - **fix**: incorrect `host` value (Aylie Chou)
-
-### 7.6.0-rc.1
-
-#### Notable Changes
-
-- fix
-  - success donation template link style
-
-#### Commits
-
 - [[`30dde491bf`](https://github.com/nodejs/node/commit/30dde491bf)] - **fix**: template link style (Aylie Chou)
-
-### 7.6.0-rc.0
-
-#### Notable Changes
-
-- feat
-  - add `/donations/prime/receipt` endpoint
-  - add function to post receipt from member cms
-
-#### Commits
-
 - [[`d7593c2025`](https://github.com/twreporter/go-api/commit/d7593c2025)] - **fix**: refresh token not blocking server initilize (Aylie Chou)
 - [[`96e3f6bcde`](https://github.com/twreporter/go-api/commit/96e3f6bcde)] - **fix**: add error hanlde if member cms api failed (Aylie Chou)
 - [[`5524af6cb9`](https://github.com/twreporter/go-api/commit/5524af6cb9)] - **fix**: add test case for `donation/prime/receipt` (Aylie Chou)
@@ -41,9 +26,7 @@
 - [[`5510afbaf2`](https://github.com/twreporter/go-api/commit/5510afbaf2)] - **feat**: add `/donations/prime/receipt` endpoint (Aylie Chou)
 - [[`32bece98c3`](https://github.com/twreporter/go-api/commit/32bece98c3)] - **feat**: add function to post receipt from member cms (Aylie Chou)
 
-## Released
-
-### 7.5.11 (Current)
+### 7.5.11
 
 #### Notable Changes
 
