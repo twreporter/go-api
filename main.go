@@ -20,7 +20,7 @@ import (
 	"github.com/twreporter/go-api/configs"
 	"github.com/twreporter/go-api/controllers"
 	"github.com/twreporter/go-api/globals"
-	"github.com/twreporter/go-api/internal/graphql"
+	member "github.com/twreporter/go-api/internal/member_cms"
 	"github.com/twreporter/go-api/internal/mongo"
 	"github.com/twreporter/go-api/routers"
 	"github.com/twreporter/go-api/services"
@@ -70,7 +70,7 @@ func main() {
 	client, err := mongo.NewClient(ctx, opts.ApplyURI(globals.Conf.DB.Mongo.URL).SetReadPreference(readpref.Nearest()))
 
 	log.Info("Connecting to Member CMS")
-	if err := graphql.NewClient(); err != nil {
+	if err := member.NewClient(); err != nil {
 		log.Infof("connecting to member cms failed. err: %+v", err)
 	}
 
