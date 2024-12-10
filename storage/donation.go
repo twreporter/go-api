@@ -2,18 +2,19 @@ package storage
 
 import (
 	"fmt"
+	"time"
 
 	"gopkg.in/guregu/null.v3"
 
-
-	"github.com/pkg/errors"
 	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 
 	"github.com/twreporter/go-api/models"
 )
 
 const (
-	YYYYMM = "200601" //YYYYMM format for time package
+	YYYYMM      = "200601" //YYYYMM format for time package
+	timezoneTPE = "Asia/Taipei"
 )
 
 // CreateAPeriodicDonation creates the draft record along with the first draft tap pay transaction
@@ -151,7 +152,7 @@ func (g *GormStorage) GetPaymentsOfAPeriodicDonation(periodicID uint, limit int,
 	return payments, total, nil
 }
 
-//TODO
+// TODO
 func (g *GormStorage) CreateAPayByOtherMethodDonation(m models.PayByOtherMethodDonation) error {
 	return nil
 }
@@ -160,16 +161,20 @@ func (g *GormStorage) GenerateReceiptSerialNumber(primeID uint, transactionTime 
 	var emptyString string
 	needCreateSerial := false
 	// get transaction month
-	if transactionTime.IsZero() == true {
+	if transactionTime.IsZero() {
 		return emptyString, errors.New("transaction time should not be nil")
 	}
-	month := transactionTime.Time.Format(YYYYMM)
+	tz, err := time.LoadLocation(timezoneTPE)
+	if err != nil {
+		return emptyString, err
+	}
+	month := transactionTime.Time.In(tz).Format(YYYYMM)
 
 	// start transaction
 	var serialNumber models.ReceiptSerialNumber
 	tx := g.db.Begin()
-	
-	err := tx.Raw("Select `serial_number` From `receipt_serial_numbers` Where YYYYMM = ? for update", month).Scan(&serialNumber).Error
+
+	err = tx.Raw("Select `serial_number` From `receipt_serial_numbers` Where YYYYMM = ? for update", month).Scan(&serialNumber).Error
 	if nil != err && !gorm.IsRecordNotFoundError(err) {
 		tx.Rollback()
 		return emptyString, errors.Wrap(err, fmt.Sprintf("select receipt serial number failed. month: %s", month))
@@ -177,10 +182,11 @@ func (g *GormStorage) GenerateReceiptSerialNumber(primeID uint, transactionTime 
 	needCreateSerial = gorm.IsRecordNotFoundError(err)
 
 	// generate receipt number
-	receiptNumber := fmt.Sprintf("A%s-%05d", month, serialNumber.SerialNumber + 1)
+	receiptNumber := fmt.Sprintf("A%s-%05d", month, serialNumber.SerialNumber+1)
 
 	// update receipt number
-	err = tx.Table("pay_by_prime_donations").Where("id = ?", primeID).Update("receipt_number", receiptNumber).Error; if nil != err {
+	err = tx.Table("pay_by_prime_donations").Where("id = ?", primeID).Update("receipt_number", receiptNumber).Error
+	if nil != err {
 		tx.Rollback()
 		return emptyString, errors.Wrap(err, fmt.Sprintf("update receipt number failed. primeID: %d, receipt number: %s", primeID, receiptNumber))
 	}
@@ -194,9 +200,10 @@ func (g *GormStorage) GenerateReceiptSerialNumber(primeID uint, transactionTime 
 			return emptyString, errors.Wrap(err, fmt.Sprintf("create receipt serail number failed. YYYYMM: %s", month))
 		}
 	} else {
-		err = tx.Model(&serialNumber).Where("YYYYMM = ?", month).UpdateColumn("serial_number", gorm.Expr("serial_number + ?", 1)).Error; if nil != err {
+		err = tx.Model(&serialNumber).Where("YYYYMM = ?", month).UpdateColumn("serial_number", gorm.Expr("serial_number + ?", 1)).Error
+		if nil != err {
 			tx.Rollback()
-			return emptyString, errors.Wrap(err, fmt.Sprintf("update serial number failed. month: %s, serial number: %d", month, serialNumber.SerialNumber + 1))
+			return emptyString, errors.Wrap(err, fmt.Sprintf("update serial number failed. month: %s, serial number: %d", month, serialNumber.SerialNumber+1))
 		}
 	}
 	tx.Commit()
