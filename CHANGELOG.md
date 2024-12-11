@@ -2,7 +2,18 @@
 
 ## Released
 
-### 7.6.0 (Current)
+### 7.6.1 (Current)
+
+#### Notable Changes
+
+- fix
+  - specific timezone for receipt number
+
+#### Commits
+
+- [[`f7a6b1f7c6`](https://github.com/twreporter/go-api/commit/f7a6b1f7c6)] - **fix**: specific timezone for receipt number (Aylie Chou)
+
+### 7.6.0
 
 #### Notable Changes
 
