@@ -1962,3 +1962,43 @@ func TestGetPrimeDonationReceipt_Fail(t *testing.T) {
 	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/donations/prime/receipt?order=%s", primeMockResp.Data.OrderNumber), "", "", authorization, cookie)
 	assert.Equal(t, http.StatusForbidden, response.Code)
 }
+
+func TestGetYearlyDonationReceipt_Fail(t *testing.T) {
+	var response *httptest.ResponseRecorder
+
+	// Mocking user
+	donorEmail := "yearly-receipt-donor@twreporter.org"
+	user := createUser(donorEmail)
+	defer func() { deleteUser(user) }()
+	authorization, cookie := helperSetupAuth(user)
+	// Mocking user 2
+	donorMockEmail := "yearly-receipt-donor-mock@twreporter.org"
+	userMock := createUser(donorMockEmail)
+	defer func() { deleteUser(userMock) }()
+
+	currentYear := time.Now().Year()
+
+	// Test no year
+	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/donations/receipt?email=%s", donorEmail), "", "", authorization, cookie)
+	assert.Equal(t, http.StatusNotFound, response.Code)
+
+	// Test no email
+	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/donations/receipt/%d", currentYear), "", "", authorization, cookie)
+	assert.Equal(t, http.StatusBadRequest, response.Code)
+
+	// Test no cookie
+	response = serveHTTP(http.MethodGet, fmt.Sprintf("/v1/donations/receipt/%d?email=%s", currentYear, donorEmail), "", "", authorization)
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+
+	// Test no authorization header
+	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/donations/receipt/%d?email=%s", currentYear, donorEmail), "", "", "", cookie)
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+
+	// Test invalid email: other's email
+	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/donations/receipt/%d?email=%s", currentYear, donorMockEmail), "", "", authorization, cookie)
+	assert.Equal(t, http.StatusForbidden, response.Code)
+
+	// Test invalid year: next year
+	response = serveHTTPWithCookies(http.MethodGet, fmt.Sprintf("/v1/donations/receipt/%d?email=%s", currentYear+1, donorMockEmail), "", "", authorization, cookie)
+	assert.Equal(t, http.StatusBadRequest, response.Code)
+}
