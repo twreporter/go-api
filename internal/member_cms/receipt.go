@@ -71,3 +71,26 @@ func PostPrimeDonationReceipt(receiptNumber string, orderNumber string) error {
 
 	return nil
 }
+
+func GetYearlyReceiptRequest(email string, year string) (*http.Request, error) {
+	if !globals.Conf.Features.MemberCMS {
+		return nil, errors.New("disable intergrating with member cms")
+	}
+	if len(email) == 0 {
+		return nil, errors.New("email is required")
+	}
+
+	url, err := GetApiBaseUrl()
+	if err != nil {
+		return nil, err
+	}
+	url = fmt.Sprintf("%s%s/%s/%s", url, receiptEndpoint, email, year)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	AppendRequiredHeader(req)
+
+	return req, nil
+}

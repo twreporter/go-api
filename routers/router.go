@@ -114,6 +114,7 @@ func SetupRouter(cf *controllers.ControllerFactory) (engine *gin.Engine) {
 		return mc.GetADonationOfAUser(c, globals.PrimeDonationType)
 	}))
 	v1Group.GET("/donations/prime/receipt", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.PassAuthUserID(), middlewares.SetCacheControl("no-store"), mc.GetPrimeDonationReceipt)
+	v1Group.GET("/donations/receipt/:year", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.PassAuthUserID(), middlewares.SetCacheControl("no-store"), mc.GetYearlyDonationReceipt)
 	v1Group.GET("/donations/prime/orders/:order/transaction_verification", middlewares.ValidateAuthentication(), middlewares.ValidateAuthorization(), middlewares.SetCacheControl("no-store"), ginResponseWrapper(mc.GetVerificationInfoOfADonation))
 
 	v1Group.POST("/donations/prime/line-notify", ginResponseWrapper(mc.PatchLinePayOfAUser))
