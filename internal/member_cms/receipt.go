@@ -11,7 +11,6 @@ import (
 )
 
 const receiptEndpoint = "/receipt"
-const yearlyReceiptPath = "yearly"
 
 func GetPrimeDonationReceiptRequest(receiptNumber string) (*http.Request, error) {
 	if !globals.Conf.Features.MemberCMS {
@@ -85,7 +84,7 @@ func GetYearlyReceiptRequest(email string, year string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	url = fmt.Sprintf("%s%s/%s/%s/%s", url, receiptEndpoint, yearlyReceiptPath, email, year)
+	url = fmt.Sprintf("%s%s/%s/%s", url, receiptEndpoint, email, year)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
