@@ -1,5 +1,17 @@
 ## Unrelease
 
+### 7.7.0-rc.0
+
+#### Notable Changes
+
+- feat
+  - add `/receipt/:year` endpoint & testcase
+
+#### Commits
+
+- [[`9dd551eddb`](https://github.com/twreporter/go-api/commit/9dd551eddb)] - **fix**: receipt api url (Aylie Chou)
+- [[`15edb3daaa`](https://github.com/twreporter/go-api/commit/15edb3daaa)] - **feat**: add `/receipt/:year` endpoint & testcase (Aylie Chou)
+
 ## Released
 
 ### 7.6.1 (Current)
