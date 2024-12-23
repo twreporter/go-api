@@ -36,7 +36,6 @@ type donationSuccessReqBody struct {
 	DonationLink      string   `json:"donation_link" binding:"required"`
 	DonationMethod    string   `json:"donation_method" binding:"required"`
 	DonationType      string   `json:"donation_type" binding:"required"`
-	DonationTypeEn    string   `json:"donation_type_en" binding:"required"`
 	Email             string   `json:"email" binding:"required"`
 	IsAutoPay         bool     `json:"is_auto_pay"`
 	Name              string   `json:"name"`
@@ -189,6 +188,7 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 	}
 
 	location, _ = time.LoadLocation(taipeiLocationName)
+	donationTypeEn := getDonationTypeEn(reqBody.DonationType)
 
 	var templateData = struct {
 		donationSuccessReqBody
@@ -204,7 +204,7 @@ func (contrl *MailController) SendDonationSuccessMail(c *gin.Context) (int, gin.
 		fmt.Sprintf("%d", time.Now().Year()),
 	}
 
-	templateName := fmt.Sprintf("success-donation-%s.tmpl", reqBody.DonationTypeEn)
+	templateName := fmt.Sprintf("success-donation-%s.tmpl", donationTypeEn)
 	if err = contrl.HTMLTemplate.ExecuteTemplate(&out, templateName, templateData); err != nil {
 		return http.StatusInternalServerError, gin.H{"status": "error", "message": "can not create donation success mail body"}, errors.WithStack(err)
 	}
@@ -312,4 +312,13 @@ func postMailServiceEndpoint(reqBody interface{}, endpoint string) error {
 	}
 
 	return nil
+}
+
+func getDonationTypeEn(donationType string) string {
+	switch donationType {
+	case "單筆捐款":
+		return "prime"
+	default:
+		return "periodic"
+	}
 }
