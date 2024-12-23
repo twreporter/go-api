@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.7.0-rc.1
+
+#### Notable Changes
+
+- fix
+  - get filename from donation type for donation thank you mail
+
+#### Commits
+
+- [[`57d8545449`](https://github.com/twreporter/go-api/commit/57d8545449)] - **fix**: get filename from donation type (Aylie Chou)
+
 ### 7.7.0-rc.0
 
 #### Notable Changes
