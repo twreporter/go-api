@@ -517,20 +517,15 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 	var donationLink string = origin + "/contribute/" + body.Frequency + "/" + body.OrderNumber + "?utm_source=supportsuccess&utm_medium=email"
 
 	var donationType string
-	var donationTypeEn string
 	switch body.Frequency {
 	case oneTimeFrequency:
 		donationType = "單筆捐款"
-		donationTypeEn = "prime"
 	case monthlyFrequency:
 		donationType = "定期定額"
-		donationTypeEn = "periodic"
 	case yearlyFrequency:
 		donationType = "定期定額"
-		donationTypeEn = "periodic"
 	default:
 		donationType = "捐款"
-		donationTypeEn = "periodic"
 	}
 
 	reqBody := donationSuccessReqBody{
@@ -538,7 +533,6 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 		Currency:       body.Currency,
 		DonationMethod: payMethodMap[body.PayMethod],
 		DonationType:   donationType,
-		DonationTypeEn: donationTypeEn,
 		DonationLink:   donationLink,
 		Email:          body.Cardholder.Email,
 		Name:           body.Cardholder.Name.ValueOrZero(),
@@ -1176,6 +1170,78 @@ func (mc *MembershipController) GetPrimeDonationReceipt(c *gin.Context) {
 
 	// Set headers to indicate this is a file download
 	filename := fmt.Sprintf("%s.pdf", d.OrderNumber)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	c.Header("Content-Type", resp.Header.Get("Content-Type"))
+
+	// Stream the file content back to the client
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+}
+
+func (mc *MembershipController) GetYearlyDonationReceipt(c *gin.Context) {
+	email := c.Query("email")
+	year := c.Param("year")
+	if len(email) == 0 || len(year) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "email & year is required"})
+		return
+	}
+
+	// Only last year & current year valid
+	yearInt, err := strconv.Atoi(year)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+	currentYear := time.Now().Year()
+	if yearInt > currentYear || yearInt < currentYear-1 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": fmt.Sprintf("year: %s is invalid", year)})
+		return
+	}
+
+	var u models.User
+	err = mc.Storage.GetByConditions(map[string]interface{}{
+		"email": email,
+	}, &u)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+	// Compare with the auth-user-id in context extracted from access_token
+	authUserID := c.Request.Context().Value(globals.AuthUserIDProperty)
+	_userID := uint(u.ID)
+	if fmt.Sprint(_userID) != fmt.Sprint(authUserID) {
+		c.JSON(http.StatusForbidden, gin.H{"status": "fail", "message": fmt.Sprintf("%s is forbidden to access", c.Request.RequestURI)})
+		return
+	}
+
+	req, err := member.GetYearlyReceiptRequest(email, year)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		status, obj, _ := toResponse(err)
+		c.JSON(status, obj)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		c.JSON(resp.StatusCode, gin.H{"status": "fail", "message": "cannot get receipt from member cms"})
+		return
+	}
+
+	// Set headers to indicate this is a file download
+	filename := fmt.Sprintf("《報導者》%s年度贊助收據.pdf", year)
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	c.Header("Content-Type", resp.Header.Get("Content-Type"))
 

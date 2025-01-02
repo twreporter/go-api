@@ -2,7 +2,22 @@
 
 ## Released
 
-### 7.6.1 (Current)
+### 7.7.0 (Current)
+
+#### Notable Changes
+
+- feat
+  - add `/receipt/:year` endpoint & testcase
+- fix
+  - get filename from donation type for donation thank you mail
+
+#### Commits
+
+- [[`57d8545449`](https://github.com/twreporter/go-api/commit/57d8545449)] - **fix**: get filename from donation type (Aylie Chou)
+- [[`9dd551eddb`](https://github.com/twreporter/go-api/commit/9dd551eddb)] - **fix**: receipt api url (Aylie Chou)
+- [[`15edb3daaa`](https://github.com/twreporter/go-api/commit/15edb3daaa)] - **feat**: add `/receipt/:year` endpoint & testcase (Aylie Chou)
+
+### 7.6.1
 
 #### Notable Changes
 
