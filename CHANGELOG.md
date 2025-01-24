@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.7.1-rc.0
+
+#### Notable Changes
+
+- fix
+  - update role mail template
+
+#### Commits
+
+- [[`c1e1f9aaa5`](https://github.com/twreporter/go-api/commit/c1e1f9aaa5)] - **fix**: update role mail template (Aylie Chou)
+
 ## Released
 
 ### 7.7.0 (Current)
