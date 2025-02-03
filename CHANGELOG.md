@@ -2,7 +2,19 @@
 
 ## Released
 
-### 7.7.0 (Current)
+### 7.7.2 (Current)
+
+#### Notable Changes
+
+- fix
+  - update role mail template
+
+#### Commits
+
+- [[`f89621261f`](https://github.com/twerporter/go-api/commit/f89621261f)] - **fix**: rol-trailblazer template wording (Aylie Chou)
+- [[`c1e1f9aaa5`](https://github.com/twreporter/go-api/commit/c1e1f9aaa5)] - **fix**: update role mail template (Aylie Chou)
+
+### 7.7.0
 
 #### Notable Changes
 
