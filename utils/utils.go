@@ -49,6 +49,7 @@ func GetProjectRoot() string {
 	type emptyStruct struct{}
 	const rootPkg = "main"
 
+	
 	// use the reflect package to retrieve current package path
 	// [go module name]/[package name]
 	// i.e. github.com/twreporter/go-api/utils
