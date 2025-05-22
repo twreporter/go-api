@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.7.3-rc.0
+
+#### Notable Changes
+
+- feat
+  - add `name` column to users table
+
+#### Commits
+
+- [[`9dd551eddb`](https://github.com/twreporter/go-api/commit/99ca00fce3)] - **feat**: add name column to users table (Howard Ou)
+
 ## Released
 
 ### 7.7.3 (Current)
