@@ -4,6 +4,9 @@
 
 #### Notable Changes
 
+- fix
+  - get infographic tag instead of filter style in /v2/index_page
+
 #### Commits
 
 - [[`09d311801e`](https://github.com/twreporter/go-api/commit/09d311801e)] - **fix**: use `const` instead of `var` (Aylie Chou)
