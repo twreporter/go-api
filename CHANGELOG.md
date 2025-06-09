@@ -1,5 +1,14 @@
 ## Unrelease
 
+### 7.7.3-rc.1
+
+#### Notable Changes
+
+#### Commits
+
+- [[`09d311801e`](https://github.com/twreporter/go-api/commit/09d311801e)] - **fix**: use `const` instead of `var` (Aylie Chou)
+- [[`6d72e114e7`](https://github.com/twreporter/go-api/commit/6d72e114e7)] - **fix**: get infographic tag instead of filter style (Aylie Chou)
+
 ### 7.7.3-rc.0
 
 #### Notable Changes
