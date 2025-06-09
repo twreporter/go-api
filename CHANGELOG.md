@@ -1,5 +1,28 @@
 ## Unrelease
 
+### 7.7.4-rc.1
+
+#### Notable Changes
+
+- fix
+  - get infographic tag instead of filter style in /v2/index_page
+
+#### Commits
+
+- [[`09d311801e`](https://github.com/twreporter/go-api/commit/09d311801e)] - **fix**: use `const` instead of `var` (Aylie Chou)
+- [[`6d72e114e7`](https://github.com/twreporter/go-api/commit/6d72e114e7)] - **fix**: get infographic tag instead of filter style (Aylie Chou)
+
+### 7.7.4-rc.0
+
+#### Notable Changes
+
+- feat
+  - add `name` column to users table
+
+#### Commits
+
+- [[`9dd551eddb`](https://github.com/twreporter/go-api/commit/99ca00fce3)] - **feat**: add name column to users table (Howard Ou)
+
 ## Released
 
 ### 7.7.3 (Current)
