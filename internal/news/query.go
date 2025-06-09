@@ -10,9 +10,9 @@ import (
 
 type Query struct {
 	query.Pagination
-	Filter Filter
-	Sort   SortBy
-	Full   bool
+	Filter         Filter
+	Sort           SortBy
+	Full           bool
 	ToggleBookmark bool
 }
 
@@ -41,18 +41,18 @@ const (
 	sortByUpdatedAt     = "updated_at"
 	sortByDescending    = "-"
 
-	queryFull          = "full"
-	querySlug          = "slug"
-	queryCategoryID    = "category_id"
-	querySubcategoryID = "subcategory_id"
-	queryTagID         = "tag_id"
-	queryPostID        = "id"
-	querySort          = "sort"
-	queryOffset        = "offset"
-	queryLimit         = "limit"
-	queryKeywords      = "keywords"
-	queryAuthorID      = "author_id"
-	queryLatestOrder   = "latest_order"
+	queryFull           = "full"
+	querySlug           = "slug"
+	queryCategoryID     = "category_id"
+	querySubcategoryID  = "subcategory_id"
+	queryTagID          = "tag_id"
+	queryPostID         = "id"
+	querySort           = "sort"
+	queryOffset         = "offset"
+	queryLimit          = "limit"
+	queryKeywords       = "keywords"
+	queryAuthorID       = "author_id"
+	queryLatestOrder    = "latest_order"
 	queryToggleBookmark = "toggleBookmark"
 )
 
@@ -118,6 +118,13 @@ func WithFilterState(state string) Option {
 func WithFilterStyle(style string) Option {
 	return func(q *Query) {
 		q.Filter.Style = style
+	}
+}
+
+// FilterTag adds the post tag filter on the query
+func WithFilterTag(queryTagID string) Option {
+	return func(q *Query) {
+		q.Filter.Tags = append(q.Filter.Tags, queryTagID)
 	}
 }
 
