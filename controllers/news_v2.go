@@ -133,7 +133,7 @@ func (nc *newsV2Controller) GetAPost(c *gin.Context) {
 				if bookmark, err = nc.SqlStorage.GetBookmarksForFullPost(ctx, authUserIdString, fullPost); err != nil {
 					log.WithField("detail", err).Errorf("%s", f.FormatStack(err))
 				} else {
-					if (bookmark.BookmarkID == 0) {
+					if bookmark.BookmarkID == 0 {
 						fullPost.BookmarkID = ""
 					} else {
 						fullPost.BookmarkID = fmt.Sprintf("%d", bookmark.BookmarkID)
@@ -355,7 +355,7 @@ func (nc *newsV2Controller) getIndexPageJobs() []job {
 		}, {
 			Name:  news.InfographicSection,
 			Type:  typePost,
-			Query: news.NewQuery(news.WithFilterStyle("interactive"), news.WithLimit(6)),
+			Query: news.NewQuery(news.WithFilterTag(news.InfographicID), news.WithLimit(6)),
 		}, {
 			Name:  news.TopicsSection,
 			Type:  typeTopic,
