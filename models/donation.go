@@ -55,6 +55,7 @@ type Cardholder struct {
 	AddressCity        null.String `gorm:"column:cardholder_address_city;type:varchar(45)" json:"address_city"`
 	AddressDetail      null.String `gorm:"column:cardholder_address_detail;type:varchar(255)" json:"address_detail"`
 	AddressZipCode     null.String `gorm:"column:cardholder_address_zip_code;type:varchar(10)" json:"address_zip_code"`
+	DonateReason       null.String `gorm:"column:cardholder_donate_reason;type:varchar(191)" json:"donate_reason"`
 }
 
 type Receipt struct {
@@ -168,38 +169,37 @@ type PeriodicDonation struct {
 }
 
 type GeneralDonation struct {
-	ID               uint        `json:"id"`
-	Type             string      `json:"type"`
-	Amount           uint        `json:"amount"`
-	CreatedAt        time.Time   `json:"created_at"`
-	OrderNumber      string      `json:"order_number"`
-	SendReceipt      string      `json:"send_receipt"`
-	Status           string      `json:"status"`
-	PayMethod        string      `json:"pay_method"`
-	BinCode          null.String `gorm:"column:card_info_bin_code" json:"bin_code,omitempty"`
-	CardLastFour     null.String `gorm:"column:card_info_last_four" json:"card_last_four, omitempty"`
-	CardType         null.String `gorm:"column:card_info_type" json:"card_type, omitempty"`
-	IsAnonymous      null.Bool   `gorm:"type:tinyint(1);default:0" json:"is_anonymous"`
-	FirstName        null.String `gorm:"column:cardholder_first_name" json:"first_name,omitempty"`
-	LastName         null.String `gorm:"column:cardholder_last_name" json:"last_name,omitempty"`
-	Header           null.String `gorm:"column:receipt_header" json:"receipt_header,omitempty"`
-	AddressCountry   null.String `gorm:"column:receipt_address_country" json:"address_country,omitempty"`
-	AddressState     null.String `gorm:"column:receipt_address_state" json:"address_state,omitempty"`
-	AddressCity      null.String `gorm:"column:receipt_address_city" json:"address_city,omitempty"`
-	AddressDetail    null.String `gorm:"column:receipt_address_detail" json:"address_detail,omitempty"`
-	AddressZipCode   null.String `gorm:"column:receipt_address_zip_code" json:"address_zip_code,omitempty"`
+	ID             uint        `json:"id"`
+	Type           string      `json:"type"`
+	Amount         uint        `json:"amount"`
+	CreatedAt      time.Time   `json:"created_at"`
+	OrderNumber    string      `json:"order_number"`
+	SendReceipt    string      `json:"send_receipt"`
+	Status         string      `json:"status"`
+	PayMethod      string      `json:"pay_method"`
+	BinCode        null.String `gorm:"column:card_info_bin_code" json:"bin_code,omitempty"`
+	CardLastFour   null.String `gorm:"column:card_info_last_four" json:"card_last_four, omitempty"`
+	CardType       null.String `gorm:"column:card_info_type" json:"card_type, omitempty"`
+	IsAnonymous    null.Bool   `gorm:"type:tinyint(1);default:0" json:"is_anonymous"`
+	Name           null.String `gorm:"column:cardholder_name" json:"last_name,omitempty"`
+	Header         null.String `gorm:"column:receipt_header" json:"receipt_header,omitempty"`
+	AddressCountry null.String `gorm:"column:receipt_address_country" json:"address_country,omitempty"`
+	AddressState   null.String `gorm:"column:receipt_address_state" json:"address_state,omitempty"`
+	AddressCity    null.String `gorm:"column:receipt_address_city" json:"address_city,omitempty"`
+	AddressDetail  null.String `gorm:"column:receipt_address_detail" json:"address_detail,omitempty"`
+	AddressZipCode null.String `gorm:"column:receipt_address_zip_code" json:"address_zip_code,omitempty"`
 }
 
 type Payment struct {
-	CreatedAt        time.Time   `json:"created_at"`
-	OrderNumber      string      `json:"order_number"`
-	Status           string      `json:"status"`
-	Amount           uint        `json:"amount"`
+	CreatedAt   time.Time `json:"created_at"`
+	OrderNumber string    `json:"order_number"`
+	Status      string    `json:"status"`
+	Amount      uint      `json:"amount"`
 }
 
 type ReceiptSerialNumber struct {
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
-	YYYYMM       string     `gorm:"type:varchar(6)" json:"YYYYMM"`
-	SerialNumber int        `gorm:"type:int(10)" json:"serial_number"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	YYYYMM       string    `gorm:"type:varchar(6)" json:"YYYYMM"`
+	SerialNumber int       `gorm:"type:int(10)" json:"serial_number"`
 }
