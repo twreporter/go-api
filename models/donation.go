@@ -181,7 +181,7 @@ type GeneralDonation struct {
 	CardLastFour   null.String `gorm:"column:card_info_last_four" json:"card_last_four, omitempty"`
 	CardType       null.String `gorm:"column:card_info_type" json:"card_type, omitempty"`
 	IsAnonymous    null.Bool   `gorm:"type:tinyint(1);default:0" json:"is_anonymous"`
-	Name           null.String `gorm:"column:cardholder_name" json:"last_name,omitempty"`
+	Name           null.String `gorm:"column:cardholder_name" json:"name,omitempty"`
 	Header         null.String `gorm:"column:receipt_header" json:"receipt_header,omitempty"`
 	AddressCountry null.String `gorm:"column:receipt_address_country" json:"address_country,omitempty"`
 	AddressState   null.String `gorm:"column:receipt_address_state" json:"address_state,omitempty"`
