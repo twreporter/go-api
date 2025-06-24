@@ -952,8 +952,7 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 
 func BuildUserFromCardholder(c *models.Cardholder) *models.User {
 	u := new(models.User)
-	u.FirstName = c.FirstName
-	u.LastName = c.LastName
+	u.Name = c.Name
 	u.Nickname = c.Nickname
 	u.SecurityID = c.SecurityID
 	u.Title = c.Title
