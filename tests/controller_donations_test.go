@@ -109,6 +109,7 @@ const (
 
 	testFirstName      = "測試者"
 	testLastName       = "報導者"
+	testName           = "報導者測試者"
 	testAddressCountry = "臺灣"
 	testAddressState   = "臺北市"
 	testAddressCity    = "中山區"
@@ -403,6 +404,7 @@ func testDonationCreateSuccess(t *testing.T, path string, userID uint, frequency
 
 	testCardholder := models.Cardholder{
 		PhoneNumber:    null.StringFrom(testPhoneNumber),
+		Name:           null.StringFrom(testName),
 		FirstName:      null.StringFrom(testFirstName),
 		LastName:       null.StringFrom(testLastName),
 		AddressCountry: null.StringFrom(testAddressCountry),
@@ -570,6 +572,7 @@ func createDefaultPeriodicDonationRecord(user models.User, frequency string) res
 			AddressCity:    null.StringFrom(testAddressCity),
 			AddressDetail:  null.StringFrom(testAddressDetail),
 			Email:          user.Email.ValueOrZero(),
+			Name:           null.StringFrom(testName),
 			FirstName:      null.StringFrom(testFirstName),
 			LastName:       null.StringFrom(testLastName),
 			SecurityID:     null.StringFrom(testSecurityID),
@@ -599,6 +602,7 @@ func createDefaultPrimeDonationRecord(user models.User, payMethod string) respon
 			AddressCity:    null.StringFrom(testAddressCity),
 			AddressDetail:  null.StringFrom(testAddressDetail),
 			Email:          user.Email.ValueOrZero(),
+			Name:           null.StringFrom(testName),
 			FirstName:      null.StringFrom(testFirstName),
 			LastName:       null.StringFrom(testLastName),
 			SecurityID:     null.StringFrom(testSecurityID),
@@ -1071,6 +1075,7 @@ func TestGetAPrimeDonationOfAUser(t *testing.T) {
 			assert.Equal(t, testAddressState, resBody.Data.Cardholder.AddressState.ValueOrZero())
 			assert.Equal(t, testAddressCity, resBody.Data.Cardholder.AddressCity.ValueOrZero())
 			assert.Equal(t, testAddressDetail, resBody.Data.Cardholder.AddressDetail.ValueOrZero())
+			assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
 			assert.Equal(t, testFirstName, resBody.Data.Cardholder.FirstName.ValueOrZero())
 			assert.Equal(t, testLastName, resBody.Data.Cardholder.LastName.ValueOrZero())
 			assert.Equal(t, testSecurityID, resBody.Data.Cardholder.SecurityID.ValueOrZero())
@@ -1123,6 +1128,7 @@ func TestGetAPeriodicDonationOfAUser(t *testing.T) {
 			assert.Equal(t, testAddressState, resBody.Data.Cardholder.AddressState.ValueOrZero())
 			assert.Equal(t, testAddressCity, resBody.Data.Cardholder.AddressCity.ValueOrZero())
 			assert.Equal(t, testAddressDetail, resBody.Data.Cardholder.AddressDetail.ValueOrZero())
+			assert.Equal(t, testName, resBody.Data.Cardholder.Name.ValueOrZero())
 			assert.Equal(t, testFirstName, resBody.Data.Cardholder.FirstName.ValueOrZero())
 			assert.Equal(t, testLastName, resBody.Data.Cardholder.LastName.ValueOrZero())
 			assert.Equal(t, testSecurityID, resBody.Data.Cardholder.SecurityID.ValueOrZero())

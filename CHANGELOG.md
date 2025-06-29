@@ -1,19 +1,40 @@
 ## Unrelease
 
-### 7.7.3-rc.0
+### 7.7.5-rc.0
 
 #### Notable Changes
 
+- feat
+  - add `cardholder_donate_reason` field
+  - add `Name` for User Modal
+- test
+  - add test case for cardholder_name
+
+#### Commits
+
+- [[`5f8da697b5`](https://github.com/twreporter/go-api/commit/5f8da697b5)] - **fix**: typo (Aylie Chou)
+- [[`9f8c56db97`](https://github.com/twreporter/go-api/commit/9f8c56db97)] - **fix**: add `Name` for User modal (Aylie Chou)
+- [[`eb24fb9746`](https://github.com/twreporter/go-api/commit/eb24fb9746)] - **fix**: update test case & migrations (Aylie Chou)
+- [[`856cf47c52`](https://github.com/twreporter/go-api/commit/856cf47c52)] - **feat**: add `cardholder_donate_reason` field (Aylie Chou)
+
+## Released
+
+### 7.7.4 (Current)
+
+#### Notable Changes
+
+- fix
+  - get infographic tag instead of filter style in /v2/index_page
 - feat
   - add `name` column to users table
 
 #### Commits
 
+- [[`09d311801e`](https://github.com/twreporter/go-api/commit/09d311801e)] - **fix**: use `const` instead of `var` (Aylie Chou)
+- [[`6d72e114e7`](https://github.com/twreporter/go-api/commit/6d72e114e7)] - **fix**: get infographic tag instead of filter style (Aylie Chou)
 - [[`9dd551eddb`](https://github.com/twreporter/go-api/commit/99ca00fce3)] - **feat**: add name column to users table (Howard Ou)
 
-## Released
-
-### 7.7.3 (Current)
+### 7.7.3
 
 #### Notable Changes
 
