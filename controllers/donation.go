@@ -68,6 +68,7 @@ const (
 	payMethodGoogle     = "google"
 	payMethodApple      = "apple"
 	payMethodSamsung    = "samsung"
+	payMethodATM        = "atm"
 
 	linePayMethodCreditCard = "CREDIT_CARD"
 	linePayMethodBalance    = "BALANCE"
@@ -79,6 +80,7 @@ const (
 	prime payType = iota
 	token
 	periodic
+	offline
 )
 
 // pay method collections
@@ -88,6 +90,7 @@ var payMethodCollections = []string{
 	payMethodGoogle,
 	payMethodApple,
 	payMethodSamsung,
+	payMethodATM,
 }
 
 var payMethodMap = map[string]string{
