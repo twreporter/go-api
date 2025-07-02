@@ -17,6 +17,7 @@ type User struct {
 	Bookmarks           []Bookmark        `gorm:"many2many:users_bookmarks;"`
 	MailGroups          []UsersMailgroups `gorm:"one2many:users_mailgroups;"`
 	Email               null.String       `gorm:"size:100" json:"email"`
+	Name                null.String       `gorm:"size:191" json:"name"` // k6 string default as varchar(191)
 	FirstName           null.String       `gorm:"size:50" json:"firstname"`
 	LastName            null.String       `gorm:"size:50" json:"lastname"`
 	Nickname            null.String       `gorm:"size:50" json:"nickname"`

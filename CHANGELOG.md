@@ -2,7 +2,24 @@
 
 ## Released
 
-### 7.7.4 (Current)
+### 7.7.5 (Current)
+
+#### Notable Changes
+
+- feat
+  - add `cardholder_donate_reason` field
+  - add `Name` for User Modal
+- test
+  - add test case for cardholder_name
+
+#### Commits
+
+- [[`5f8da697b5`](https://github.com/twreporter/go-api/commit/5f8da697b5)] - **fix**: typo (Aylie Chou)
+- [[`9f8c56db97`](https://github.com/twreporter/go-api/commit/9f8c56db97)] - **fix**: add `Name` for User modal (Aylie Chou)
+- [[`eb24fb9746`](https://github.com/twreporter/go-api/commit/eb24fb9746)] - **fix**: update test case & migrations (Aylie Chou)
+- [[`856cf47c52`](https://github.com/twreporter/go-api/commit/856cf47c52)] - **feat**: add `cardholder_donate_reason` field (Aylie Chou)
+
+### 7.7.4
 
 #### Notable Changes
 
