@@ -1,5 +1,17 @@
 ## Unrelease
 
+### 7.7.6-rc.0
+
+#### Notable Changes
+
+- feat
+  - add `order_number` related fields for Offline Donation
+  - add back `is_showofflinedonation` migration
+
+#### Commits
+
+- [[`032e12824e`](https://github.com/twreporter/go-api/commit/032e12824e)] - **feat**: Add order number for offline donation (Howard Ou)
+
 ## Released
 
 ### 7.7.5 (Current)
