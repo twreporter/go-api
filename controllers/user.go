@@ -36,6 +36,7 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		activated = &user.Activated.Time
 	}
 
+	// todo: remove mail list
 	mailGroups := make([]string, 0)
 	for _, group := range user.MailGroups {
 		for key, value := range globals.Conf.Mailchimp.InterestIDs {
@@ -51,18 +52,19 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
-		"user_id":               userID,
-		"first_name":            user.FirstName.String,
-		"last_name":             user.LastName.String,
-		"email":                 user.Email.String,
-		"registration_date":     user.RegistrationDate.Time,
-		"activated":             activated,
-		"roles":                 roles,
-		"read_preference":       readPreferenceArr,
-		"maillist":              mailGroups,
-		"agree_data_collection": user.AgreeDataCollection,
-		"read_posts_count":      user.ReadPostsCount,
-		"read_posts_sec":        user.ReadPostsSec,
+		"user_id":                userID,
+		"first_name":             user.FirstName.String,
+		"last_name":              user.LastName.String,
+		"email":                  user.Email.String,
+		"registration_date":      user.RegistrationDate.Time,
+		"activated":              activated,
+		"roles":                  roles,
+		"read_preference":        readPreferenceArr,
+		"maillist":               mailGroups,
+		"agree_data_collection":  user.AgreeDataCollection,
+		"read_posts_count":       user.ReadPostsCount,
+		"read_posts_sec":         user.ReadPostsSec,
+		"is_showofflinedonation": user.IsShowOfflineDonation,
 	},
 	}, nil
 }
@@ -95,6 +97,18 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 	// Call CreateMaillistOfUser to save the preferences.Maillist to DB
 	if err = mc.Storage.CreateMaillistOfUser(userID, maillists); err != nil {
 		return toResponse(err)
+	}
+
+	// Call UpdateUser to save preferences.IsShowOfflineDonation to DB
+	if preferences.IsShowOfflineDonation.Valid {
+		matchedUser, err := mc.Storage.GetUserByID(userID)
+		if err != nil {
+			return toResponse(err)
+		}
+		matchedUser.IsShowOfflineDonation = preferences.IsShowOfflineDonation.Bool
+		if err = mc.Storage.UpdateUser(matchedUser); err != nil {
+			return toResponse(err)
+		}
 	}
 
 	return http.StatusCreated, gin.H{"status": "ok", "record": preferences}, nil

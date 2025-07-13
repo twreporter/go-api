@@ -3,28 +3,29 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
-	"io/ioutil"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/twreporter/go-api/globals"
 	"github.com/twreporter/go-api/models"
 	"github.com/twreporter/go-api/storage"
+	"gopkg.in/guregu/null.v3"
 )
 
 type (
-  userData struct {
-	ID                  uint `json:"id"`
-	AgreeDataCollection bool `json:"agree_data_collection"`
-	ReadPostsCount      int  `json:"read_posts_count"`
-	ReadPostsSec        int  `json:"read_posts_sec"`
-  }
+	userData struct {
+		ID                  uint `json:"id"`
+		AgreeDataCollection bool `json:"agree_data_collection"`
+		ReadPostsCount      int  `json:"read_posts_count"`
+		ReadPostsSec        int  `json:"read_posts_sec"`
+	}
 
-  responseBodyUser struct {
-	Status string   `json:"status"`
-	Data   userData `json:"data"`
-  }
+	responseBodyUser struct {
+		Status string   `json:"status"`
+		Data   userData `json:"data"`
+	}
 )
 
 func TestGetUser_Success(t *testing.T) {
@@ -67,8 +68,9 @@ func TestSetUser_Success(t *testing.T) {
 
 	// Mocking preferences
 	preferences := models.UserPreference{
-		ReadPreference: []string{"international", "cross_straits"},
-		Maillist:       InterestIDsKeys,
+		ReadPreference:        []string{"international", "cross_straits"},
+		Maillist:              InterestIDsKeys,
+		IsShowOfflineDonation: null.NewBool(true, true),
 	}
 	payload, _ := json.Marshal(preferences)
 
