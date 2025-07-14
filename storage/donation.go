@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 
+	"github.com/twreporter/go-api/internal/member_cms"
 	"github.com/twreporter/go-api/models"
 )
 
@@ -104,27 +106,71 @@ func (g *GormStorage) UpdatePeriodicAndCardTokenDonationInTRX(periodicID uint, m
 	return nil
 }
 
-func (g *GormStorage) GetDonationsOfAUser(userID string, limit int, offset int) ([]models.GeneralDonation, int, error) {
-	var donations []models.GeneralDonation
+func (g *GormStorage) GetDonationsOfAUser(userID string, limit int, offset int, isOffline bool) ([]models.GeneralDonation, int, error) {
+	type GraphQLResponse struct {
+		GetDonationsOfAUser []models.GeneralDonation `json:"getDonationsOfAUser"`
+	}
+
 	var totalPrime int
 	var totalPeriodic int
 	var err error
+	var rawResp interface{}
+	var resp GraphQLResponse
+	var donations []models.GeneralDonation
+	totalOffline := 0
 
-	// build query statement
-	defaultColumns := "id, amount, order_number, created_at, send_receipt, status, pay_method, cardholder_first_name, cardholder_last_name, receipt_header, receipt_address_country, receipt_address_state, receipt_address_city, receipt_address_detail, receipt_address_zip_code, card_info_bin_code, card_info_last_four, card_info_type, is_anonymous"
-	selectColumnsPrime := fmt.Sprintf("%s, %s", defaultColumns, "'prime' as type")
-	queryPrime := g.db.Table("pay_by_prime_donations").Select(selectColumnsPrime).Where("user_id = ?", userID).QueryExpr()
-	selectColumnsPeriodic := fmt.Sprintf("%s, %s", defaultColumns, "'periodic' as type")
-	queryPeriodic := g.db.Table("periodic_donations").Select(selectColumnsPeriodic).Where("user_id = ?", userID).QueryExpr()
-	statement := g.db.Raw("? UNION ?", queryPrime, queryPeriodic).Order("created_at desc").Limit(limit).Offset(offset)
+	// Get donations from member-cms
+	queryDonationReq := member_cms.NewRequest(`
+		query GetDonationsOfAUser($userId: String!, $hasOffline: Boolean, $skip: Int, $take: Int) {
+			getDonationsOfAUser(userID: $userId, hasOffline: $hasOffline, skip: $skip, take: $take) {
+				type
+				amount
+				attribute
+				card_info_bin_code
+				card_info_last_four
+				card_info_type
+				cardholder_name
+				created_at
+				is_anonymous
+				order_number
+				pay_method
+				receipt_address_city
+				receipt_address_country
+				receipt_address_detail
+				receipt_address_state
+				receipt_address_zip_code
+				receipt_header
+				send_receipt
+				sponsorship_resource
+				status
+			}
+		}
+	`)
+	queryDonationReq.Var("userId", userID)
+	queryDonationReq.Var("hasOffline", isOffline)
+	queryDonationReq.Var("take", limit)
+	queryDonationReq.Var("skip", offset)
+
+	rawResp, err = member_cms.Query(queryDonationReq)
+	if err != nil {
+		return nil, 0, err
+	}
+	// Marshal the interface{} back into JSON bytes
+	var jsonBytes []byte
+	jsonBytes, err = json.Marshal(rawResp)
+	if err != nil {
+		return nil, 0, err
+	}
+	// Unmarshal into GraphQLResponse
+	err = json.Unmarshal(jsonBytes, &resp)
+	if err != nil {
+		return nil, 0, err
+	}
+	donations = resp.GetDonationsOfAUser
 
 	// build count statement
 	primeCountStatement := g.db.Table("pay_by_prime_donations").Where("user_id = ?", userID)
 	periodicCountStatement := g.db.Table("periodic_donations").Where("user_id = ?", userID)
-
-	if err = statement.Scan(&donations).Error; err != nil {
-		return nil, 0, err
-	}
 	if err = primeCountStatement.Count(&totalPrime).Error; err != nil {
 		return nil, 0, err
 	}
@@ -132,7 +178,14 @@ func (g *GormStorage) GetDonationsOfAUser(userID string, limit int, offset int) 
 		return nil, 0, err
 	}
 
-	return donations, totalPrime + totalPeriodic, nil
+	if isOffline {
+		offlineCountStatement := g.db.Table("OfflineDonation").Where("user_id = ?", userID)
+		if err = offlineCountStatement.Count(&totalOffline).Error; err != nil {
+			return nil, 0, err
+		}
+	}
+
+	return donations, totalPrime + totalPeriodic + totalOffline, nil
 }
 
 func (g *GormStorage) GetPaymentsOfAPeriodicDonation(periodicID uint, limit int, offset int) ([]models.Payment, int, error) {

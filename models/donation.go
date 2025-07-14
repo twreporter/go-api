@@ -169,25 +169,27 @@ type PeriodicDonation struct {
 }
 
 type GeneralDonation struct {
-	ID             uint        `json:"id"`
-	Type           string      `json:"type"`
-	Amount         uint        `json:"amount"`
-	CreatedAt      time.Time   `json:"created_at"`
-	OrderNumber    string      `json:"order_number"`
-	SendReceipt    string      `json:"send_receipt"`
-	Status         string      `json:"status"`
-	PayMethod      string      `json:"pay_method"`
-	BinCode        null.String `gorm:"column:card_info_bin_code" json:"bin_code,omitempty"`
-	CardLastFour   null.String `gorm:"column:card_info_last_four" json:"card_last_four, omitempty"`
-	CardType       null.String `gorm:"column:card_info_type" json:"card_type, omitempty"`
-	IsAnonymous    null.Bool   `gorm:"type:tinyint(1);default:0" json:"is_anonymous"`
-	Name           null.String `gorm:"column:cardholder_name" json:"name,omitempty"`
-	Header         null.String `gorm:"column:receipt_header" json:"receipt_header,omitempty"`
-	AddressCountry null.String `gorm:"column:receipt_address_country" json:"address_country,omitempty"`
-	AddressState   null.String `gorm:"column:receipt_address_state" json:"address_state,omitempty"`
-	AddressCity    null.String `gorm:"column:receipt_address_city" json:"address_city,omitempty"`
-	AddressDetail  null.String `gorm:"column:receipt_address_detail" json:"address_detail,omitempty"`
-	AddressZipCode null.String `gorm:"column:receipt_address_zip_code" json:"address_zip_code,omitempty"`
+	ID                  uint        `json:"id"`
+	Type                string      `json:"type"`
+	Amount              uint        `json:"amount"`
+	CreatedAt           time.Time   `json:"created_at"`
+	OrderNumber         string      `json:"order_number"`
+	SendReceipt         string      `json:"send_receipt"`
+	Status              string      `json:"status"`
+	PayMethod           string      `json:"pay_method"`
+	BinCode             null.String `gorm:"column:card_info_bin_code" json:"bin_code,omitempty"`
+	CardLastFour        null.String `gorm:"column:card_info_last_four" json:"card_last_four, omitempty"`
+	CardType            null.String `gorm:"column:card_info_type" json:"card_type, omitempty"`
+	IsAnonymous         null.Bool   `gorm:"type:tinyint(1);default:0" json:"is_anonymous"`
+	Name                null.String `gorm:"column:cardholder_name" json:"name,omitempty"`
+	Header              null.String `gorm:"column:receipt_header" json:"receipt_header,omitempty"`
+	AddressCountry      null.String `gorm:"column:receipt_address_country" json:"address_country,omitempty"`
+	AddressState        null.String `gorm:"column:receipt_address_state" json:"address_state,omitempty"`
+	AddressCity         null.String `gorm:"column:receipt_address_city" json:"address_city,omitempty"`
+	AddressDetail       null.String `gorm:"column:receipt_address_detail" json:"address_detail,omitempty"`
+	AddressZipCode      null.String `gorm:"column:receipt_address_zip_code" json:"address_zip_code,omitempty"`
+	Attribite           null.String `json:"attribute,omitempty"`
+	SponsorshipResource null.String `json:"sponsorship_resource,omitempty"`
 }
 
 type Payment struct {

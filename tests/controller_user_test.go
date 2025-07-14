@@ -19,7 +19,7 @@ type (
 		AgreeDataCollection   bool `json:"agree_data_collection"`
 		ReadPostsCount        int  `json:"read_posts_count"`
 		ReadPostsSec          int  `json:"read_posts_sec"`
-		IsShowOfflineDonation bool `json:"is_showOfflineDonation"`
+		IsShowOfflineDonation bool `json:"is_showofflinedonation"`
 	}
 
 	responseBodyUser struct {

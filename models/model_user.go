@@ -45,7 +45,7 @@ type User struct {
 	AgreeDataCollection   bool            `gorm:"type:tinyint(1);default:1" json:"agree_data_collection"`
 	ReadPostsCount        int             `gorm:"type:int(10);unsigned" json:"read_posts_count"`
 	ReadPostsSec          int             `gorm:"type:int(10);unsigned" json:"read_posts_sec"`
-	IsShowOfflineDonation bool            `gorm:"type:tinyint(1);default:0" json:"is_showofflinedonation"`
+	IsShowOfflineDonation bool            `gorm:"column:is_showofflinedonation;type:tinyint(1);default:0" json:"is_showofflinedonation"`
 }
 
 // Role represents a user role
