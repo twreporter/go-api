@@ -1830,34 +1830,6 @@ func ValidateRecordRequest(t *testing.T, body io.ReadCloser) bool {
 	return true
 }
 
-func TestGetDonationsOfAUser_Success(t *testing.T) {
-	var resBody responseBodyForList
-
-	// Mocking user
-	donorEmail := "get-donations-donor@twreporter.org"
-	user := createUser(donorEmail)
-	defer func() { deleteUser(user) }()
-	authorization, _ := helperSetupAuth(user)
-
-	// Mocking donation
-	primeResp := createDefaultPrimeDonationRecord(user, creditCardPayMethod)
-	// make sure prime donation create before periodic donation since result would order by created_at
-	time.Sleep(500 * time.Millisecond)
-	periodicResp := createDefaultPeriodicDonationRecord(user, monthlyFrequency)
-
-	// Send request to test GetDonationsOfAUser function
-	response := serveHTTP(http.MethodGet, fmt.Sprintf("/v1/users/%d/donations", user.ID), "", "", authorization)
-	resBodyInBytes, _ := ioutil.ReadAll(response.Result().Body)
-	json.Unmarshal(resBodyInBytes, &resBody)
-	assert.Equal(t, http.StatusOK, response.Code)
-	assert.Equal(t, 2, resBody.Meta.Total)
-	assert.Equal(t, 10, resBody.Meta.Limit)
-	assert.Equal(t, 0, resBody.Meta.Offset)
-	assert.Equal(t, 2, len(resBody.Records))
-	assert.Equal(t, periodicResp.Data.ID, resBody.Records[0].ID)
-	assert.Equal(t, primeResp.Data.ID, resBody.Records[1].ID)
-}
-
 func TestGetDonationsOfAUser_InvalidUserID(t *testing.T) {
 	// Mocking user
 	donorEmail := "get-donations-donor@twreporter.org"

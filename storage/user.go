@@ -18,12 +18,12 @@ import (
 func (gs *GormStorage) GetUserByID(userID string) (models.User, error) {
 	user := models.User{}
 
-	// SELECT * FROM users WHERE ID = $userID and join roles and user_mailgroups tables
+	// SELECT * FROM users WHERE ID = $userID and join roles tables
 	// roles association: fileter out expired_at < current, and get max(weight) records
 	err := gs.db.Preload("Roles", func(db *gorm.DB) *gorm.DB {
 		filterExpired := "users_roles.expired_at IS NULL OR users_roles.expired_at > CURDATE()"
 		return db.Where(filterExpired).Order("roles.weight DESC, users_roles.updated_at DESC").Limit(1)
-	}).Preload("MailGroups").First(&user, "id = ?", userID).Error
+	}).First(&user, "id = ?", userID).Error
 
 	if err != nil {
 		return user, errors.Wrap(err, fmt.Sprintf("get user(id: %s) error", userID))

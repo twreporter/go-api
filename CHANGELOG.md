@@ -1,5 +1,20 @@
 ## Unrelease
 
+### 7.7.6-rc.1
+
+#### Notable Changes
+
+- feat
+  - get union donation from member cms
+  - add `is_showOfflineDonation` in user model
+
+#### Commits
+
+- [[`beeb9d32f4`](https://github.com/twreporter/go-api/commit/beeb9d32f4)] - **fix**: typo (Aylie Chou)
+- [[`b9ec161e58`](https://github.com/twreporter/go-api/commit/b9ec161e58)] - **feat(donation)**: get union donation from member cms (Aylie Chou)
+- [[`4c2039f4b5`](https://github.com/twreporter/go-api/commit/4c2039f4b5)] - **fix(user)**: remove mailchimp related code (Aylie Chou)
+- [[`b879950b0d`](https://github.com/twreporter/go-api/commit/b879950b0d)] - **feat(user)**: add `is_showOfflineDonation` (Aylie Chou)
+
 ### 7.7.6-rc.0
 
 #### Notable Changes
