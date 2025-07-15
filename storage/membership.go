@@ -37,7 +37,6 @@ type MembershipStorage interface {
 	InsertUserByReporterAccount(models.ReporterAccount) (models.User, error)
 	UpdateOAuthData(models.OAuthAccount) (models.OAuthAccount, error)
 	UpdateReporterAccount(models.ReporterAccount) error
-	CreateMaillistOfUser(string, []string) error
 	UpdateReadPreferenceOfUser(string, []string) error
 	UpdateUser(models.User) error
 	AssignRoleToUser(models.User, string) error
@@ -61,7 +60,7 @@ type MembershipStorage interface {
 	CreateAPeriodicDonation(*models.PeriodicDonation, *models.PayByCardTokenDonation) error
 	DeleteAPeriodicDonation(uint, models.PayByCardTokenDonation) error
 	UpdatePeriodicAndCardTokenDonationInTRX(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
-	GetDonationsOfAUser(string, int, int) ([]models.GeneralDonation, int, error)
+	GetDonationsOfAUser(string, int, int, bool) ([]models.GeneralDonation, int, error)
 	GetPaymentsOfAPeriodicDonation(uint, int, int) ([]models.Payment, int, error)
 	GenerateReceiptSerialNumber(uint, null.Time) (string, error)
 }

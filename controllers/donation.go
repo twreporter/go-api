@@ -1043,12 +1043,13 @@ func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H,
 	userID := c.Param("userID")
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	offset, _ := strconv.Atoi(c.Query("offset"))
+	isOffline, _ := strconv.ParseBool(c.Query("offline"))
 
 	if limit == 0 {
 		limit = 10
 	}
 
-	donations, total, err := mc.Storage.GetDonationsOfAUser(userID, limit, offset)
+	donations, total, err := mc.Storage.GetDonationsOfAUser(userID, limit, offset, isOffline)
 	if err != nil {
 		return toResponse(err)
 	}

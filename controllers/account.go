@@ -374,23 +374,8 @@ func (mc *MembershipController) Onboarding(c *gin.Context) (int, gin.H, error) {
 		return toResponse(err)
 	}
 
-	// Convert maillist values using the mapping array
-	maillists := make([]string, 0)
-	for _, maillist := range preferences.Maillist {
-		convertedMaillist, exists := globals.Conf.Mailchimp.InterestIDs[maillist]
-		if !exists {
-			return http.StatusBadRequest, gin.H{"status": "error", "message": "invalid maillist value"}, errors.New("Invalid maillist value")
-		}
-		maillists = append(maillists, convertedMaillist)
-	}
-
 	// Call UpdateReadPreferenceOfUser to save the preferences.ReadPreference to DB
 	if err = mc.Storage.UpdateReadPreferenceOfUser(userID, preferences.ReadPreference); err != nil {
-		return toResponse(err)
-	}
-
-	// Call CreateMaillistOfUser to save the preferences.Maillist to DB
-	if err = mc.Storage.CreateMaillistOfUser(userID, maillists); err != nil {
 		return toResponse(err)
 	}
 
