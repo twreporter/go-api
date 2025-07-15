@@ -188,7 +188,7 @@ type GeneralDonation struct {
 	AddressCity         null.String `gorm:"column:receipt_address_city" json:"address_city,omitempty"`
 	AddressDetail       null.String `gorm:"column:receipt_address_detail" json:"address_detail,omitempty"`
 	AddressZipCode      null.String `gorm:"column:receipt_address_zip_code" json:"address_zip_code,omitempty"`
-	Attribite           null.String `json:"attribute,omitempty"`
+	Attribute           null.String `json:"attribute,omitempty"`
 	SponsorshipResource null.String `json:"sponsorship_resource,omitempty"`
 }
 
