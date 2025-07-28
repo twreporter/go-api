@@ -39,6 +39,11 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		readPreferenceArr = strings.Split(user.ReadPreference.String, ",")
 	}
 
+	isPeriodicPatron, err := mc.Storage.IsPeriodicPatron(userID)
+	if err != nil {
+		return toResponse(err)
+	}
+
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
 		"user_id":                userID,
 		"first_name":             user.FirstName.String,
@@ -52,6 +57,7 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 		"read_posts_count":       user.ReadPostsCount,
 		"read_posts_sec":         user.ReadPostsSec,
 		"is_showofflinedonation": user.IsShowOfflineDonation,
+		"is_periodic_patron":     isPeriodicPatron,
 	},
 	}, nil
 }

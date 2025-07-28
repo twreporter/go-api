@@ -43,6 +43,7 @@ type MembershipStorage interface {
 	GetRoles(models.User) ([]models.Role, error)
 	HasRole(user models.User, roleKey string) (bool, error)
 	IsTrailblazer(email string) (bool, error)
+	IsPeriodicPatron(string) (bool, error)
 
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)

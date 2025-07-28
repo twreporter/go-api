@@ -345,3 +345,15 @@ func (gs *GormStorage) IsTrailblazer(email string) (bool, error) {
 
 	return result.Sum >= 500, nil
 }
+
+func (gs *GormStorage) IsPeriodicPatron(userID string) (bool, error) {
+	var total int
+	var err error
+
+	periodicCountStatement := gs.db.Table("periodic_donations").Where("user_id = ? AND last_success_at >= DATE_FORMAT(NOW() - INTERVAL 1 MONTH, '%Y-%m-01')", userID)
+	if err = periodicCountStatement.Count(&total).Error; err != nil {
+		return false, err
+	}
+
+	return total > 0, nil
+}

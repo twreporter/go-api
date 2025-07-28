@@ -20,6 +20,7 @@ type (
 		ReadPostsCount        int  `json:"read_posts_count"`
 		ReadPostsSec          int  `json:"read_posts_sec"`
 		IsShowOfflineDonation bool `json:"is_showofflinedonation"`
+		IsPeriodicPatron      bool `json:"is_periodic_patron"`
 	}
 
 	responseBodyUser struct {
