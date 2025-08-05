@@ -1049,16 +1049,28 @@ func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H,
 		limit = 10
 	}
 
-	donations, total, err := mc.Storage.GetDonationsOfAUser(userID, limit, offset, isOffline)
-	if err != nil {
-		return toResponse(err)
+	if !globals.Conf.Features.MemberCMS || !globals.Conf.Features.OfflineDonation {
+		donations, total, err := mc.Storage.GetDonationsOfAUser(userID, limit, offset)
+		if err != nil {
+			return toResponse(err)
+		}
+		return http.StatusOK, gin.H{"status": "ok", "records": donations, "meta": models.MetaOfResponse{
+			Total:  total,
+			Offset: offset,
+			Limit:  limit,
+		}}, nil
+	} else {
+		donations, total, err := mc.Storage.GetDonationsOfAUserFromMemberCMS(userID, limit, offset, isOffline)
+		if err != nil {
+			return toResponse(err)
+		}
+		return http.StatusOK, gin.H{"status": "ok", "records": donations, "meta": models.MetaOfResponse{
+			Total:  total,
+			Offset: offset,
+			Limit:  limit,
+		}}, nil
 	}
 
-	return http.StatusOK, gin.H{"status": "ok", "records": donations, "meta": models.MetaOfResponse{
-		Total:  total,
-		Offset: offset,
-		Limit:  limit,
-	}}, nil
 }
 
 // GetADonationOfAUser returns a donation of a user
