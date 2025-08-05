@@ -1,5 +1,20 @@
 ## Unrelease
 
+### 7.7.6-rc.2
+
+#### Notable Changes
+
+- feat
+  - add `IsPeriodicPatron` func
+- fix
+  - add feature toggle for offline donation
+
+#### Commits
+
+- [[`5defb99c4d`](https://github.com/twreporter/go-api/commit/5defb99c4d)] - **fix**: pre-calculate date before query (Aylie Chou)
+- [[`8383eb5641`](https://github.com/twreporter/go-api/commit/8383eb5641)] - **feat**: add `IsPeriodicPatron` func (Aylie Chou)
+- [[`dbc81a04cc`](https://github.com/twreporter/go-api/commit/dbc81a04cc)] - **feat**: add feature toggle for offline donation (Aylie Chou)
+
 ### 7.7.6-rc.1
 
 #### Notable Changes

@@ -43,6 +43,7 @@ type MembershipStorage interface {
 	GetRoles(models.User) ([]models.Role, error)
 	HasRole(user models.User, roleKey string) (bool, error)
 	IsTrailblazer(email string) (bool, error)
+	IsPeriodicPatron(string) (bool, error)
 
 	/** Bookmark methods **/
 	GetABookmarkBySlug(string) (models.Bookmark, error)
@@ -60,7 +61,8 @@ type MembershipStorage interface {
 	CreateAPeriodicDonation(*models.PeriodicDonation, *models.PayByCardTokenDonation) error
 	DeleteAPeriodicDonation(uint, models.PayByCardTokenDonation) error
 	UpdatePeriodicAndCardTokenDonationInTRX(uint, models.PeriodicDonation, models.PayByCardTokenDonation) error
-	GetDonationsOfAUser(string, int, int, bool) ([]models.GeneralDonation, int, error)
+	GetDonationsOfAUser(string, int, int) ([]models.GeneralDonation, int, error)
+	GetDonationsOfAUserFromMemberCMS(string, int, int, bool) ([]models.GeneralDonation, int, error)
 	GetPaymentsOfAPeriodicDonation(uint, int, int) ([]models.Payment, int, error)
 	GenerateReceiptSerialNumber(uint, null.Time) (string, error)
 }

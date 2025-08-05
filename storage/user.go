@@ -345,3 +345,20 @@ func (gs *GormStorage) IsTrailblazer(email string) (bool, error) {
 
 	return result.Sum >= 500, nil
 }
+
+func (gs *GormStorage) IsPeriodicPatron(userID string) (bool, error) {
+	var total int
+	var err error
+
+	// Calculate the first day of the previous month
+	now := time.Now()
+	firstOfThisMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	firstOfPrevMonth := firstOfThisMonth.AddDate(0, -1, 0)
+
+	periodicCountStatement := gs.db.Table("periodic_donations").Where("user_id = ? AND last_success_at >= ?", userID, firstOfPrevMonth)
+	if err = periodicCountStatement.Count(&total).Error; err != nil {
+		return false, err
+	}
+
+	return total > 0, nil
+}
