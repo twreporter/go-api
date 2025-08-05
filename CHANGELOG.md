@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.7.6-rc.3
+
+#### Notable Changes
+
+- chore
+  - fix docker not found when build
+
+#### Commits
+
+- [[`d90e924e51`](https://github.com/twreporter/go-api/commit/d90e924e51)] - **chore**: fix docker not found when build (Aylie Chou)
+
 ### 7.7.6-rc.2
 
 #### Notable Changes
