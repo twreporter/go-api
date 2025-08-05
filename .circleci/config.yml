@@ -96,6 +96,13 @@ jobs:
           at: /go/src/github.com/twreporter/go-api
 
       - run:
+          name: Install Docker CLI (if not present)
+          command: |
+            if ! command -v docker; then
+              apt-get update && apt-get install -y docker.io
+            fi
+
+      - run:
           name: Setup custom environment variables
           command: |
             # K8S_CLUSTER_NAME is defined in the organization context twreporter.
