@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.7.6-rc.4
+
+#### Notable Changes
+
+- fix
+  - remove neticrm integration
+
+#### Commits
+
+- [[`fb37c047a2`](https://github.com/twreporter/go-api/commit/fb37c047a2)] - **fix**: remove neticrm integration (Aylie Chou)
+
 ### 7.7.6-rc.3
 
 #### Notable Changes
