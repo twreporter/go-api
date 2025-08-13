@@ -1,72 +1,37 @@
 ## Unrelease
 
-### 7.7.6-rc.4
+## Released
 
-#### Notable Changes
-
-- fix
-  - remove neticrm integration
-
-#### Commits
-
-- [[`fb37c047a2`](https://github.com/twreporter/go-api/commit/fb37c047a2)] - **fix**: remove neticrm integration (Aylie Chou)
-
-### 7.7.6-rc.3
-
-#### Notable Changes
-
-- chore
-  - fix docker not found when build
-
-#### Commits
-
-- [[`d90e924e51`](https://github.com/twreporter/go-api/commit/d90e924e51)] - **chore**: fix docker not found when build (Aylie Chou)
-
-### 7.7.6-rc.2
+### 7.7.6 (Current)
 
 #### Notable Changes
 
 - feat
   - add `IsPeriodicPatron` func
+  - get union donation from member cms
+  - add `is_showOfflineDonation` in user model
+  - add `order_number` related fields for Offline Donation
+  - add back `is_showofflinedonation` migration
 - fix
   - add feature toggle for offline donation
+  - remove neticrm integration
+- chore
+  - fix docker not found when build
 
 #### Commits
 
+- [[`fb37c047a2`](https://github.com/twreporter/go-api/commit/fb37c047a2)] - **fix**: remove neticrm integration (Aylie Chou)
+- [[`d90e924e51`](https://github.com/twreporter/go-api/commit/d90e924e51)] - **chore**: fix docker not found when build (Aylie Chou)
 - [[`5defb99c4d`](https://github.com/twreporter/go-api/commit/5defb99c4d)] - **fix**: pre-calculate date before query (Aylie Chou)
 - [[`8383eb5641`](https://github.com/twreporter/go-api/commit/8383eb5641)] - **feat**: add `IsPeriodicPatron` func (Aylie Chou)
 - [[`dbc81a04cc`](https://github.com/twreporter/go-api/commit/dbc81a04cc)] - **feat**: add feature toggle for offline donation (Aylie Chou)
-
-### 7.7.6-rc.1
-
-#### Notable Changes
-
-- feat
-  - get union donation from member cms
-  - add `is_showOfflineDonation` in user model
-
-#### Commits
-
 - [[`beeb9d32f4`](https://github.com/twreporter/go-api/commit/beeb9d32f4)] - **fix**: typo (Aylie Chou)
 - [[`b9ec161e58`](https://github.com/twreporter/go-api/commit/b9ec161e58)] - **feat(donation)**: get union donation from member cms (Aylie Chou)
 - [[`4c2039f4b5`](https://github.com/twreporter/go-api/commit/4c2039f4b5)] - **fix(user)**: remove mailchimp related code (Aylie Chou)
 - [[`b879950b0d`](https://github.com/twreporter/go-api/commit/b879950b0d)] - **feat(user)**: add `is_showOfflineDonation` (Aylie Chou)
-
-### 7.7.6-rc.0
-
-#### Notable Changes
-
-- feat
-  - add `order_number` related fields for Offline Donation
-  - add back `is_showofflinedonation` migration
-
-#### Commits
-
 - [[`032e12824e`](https://github.com/twreporter/go-api/commit/032e12824e)] - **feat**: Add order number for offline donation (Howard Ou)
 
-## Released
-
-### 7.7.5 (Current)
+### 7.7.5
 
 #### Notable Changes
 
