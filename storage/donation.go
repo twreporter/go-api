@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 
+	"github.com/twreporter/go-api/internal/member_cms"
 	"github.com/twreporter/go-api/models"
 )
 
@@ -133,6 +135,88 @@ func (g *GormStorage) GetDonationsOfAUser(userID string, limit int, offset int) 
 	}
 
 	return donations, totalPrime + totalPeriodic, nil
+}
+
+func (g *GormStorage) GetDonationsOfAUserFromMemberCMS(userID string, limit int, offset int, isOffline bool) ([]models.GeneralDonation, int, error) {
+	type GraphQLResponse struct {
+		GetDonationsOfAUser []models.GeneralDonation `json:"getDonationsOfAUser"`
+	}
+
+	var totalPrime int
+	var totalPeriodic int
+	var err error
+	var rawResp interface{}
+	var resp GraphQLResponse
+	var donations []models.GeneralDonation
+	totalOffline := 0
+
+	// Get donations from member-cms
+	queryDonationReq := member_cms.NewRequest(`
+		query GetDonationsOfAUser($userId: String!, $hasOffline: Boolean, $skip: Int, $take: Int) {
+			getDonationsOfAUser(userID: $userId, hasOffline: $hasOffline, skip: $skip, take: $take) {
+				type
+				amount
+				attribute
+				card_info_bin_code
+				card_info_last_four
+				card_info_type
+				cardholder_name
+				created_at
+				is_anonymous
+				order_number
+				pay_method
+				receipt_address_city
+				receipt_address_country
+				receipt_address_detail
+				receipt_address_state
+				receipt_address_zip_code
+				receipt_header
+				send_receipt
+				sponsorship_resource
+				status
+			}
+		}
+	`)
+	queryDonationReq.Var("userId", userID)
+	queryDonationReq.Var("hasOffline", isOffline)
+	queryDonationReq.Var("take", limit)
+	queryDonationReq.Var("skip", offset)
+
+	rawResp, err = member_cms.Query(queryDonationReq)
+	if err != nil {
+		return nil, 0, err
+	}
+	// Marshal the interface{} back into JSON bytes
+	var jsonBytes []byte
+	jsonBytes, err = json.Marshal(rawResp)
+	if err != nil {
+		return nil, 0, err
+	}
+	// Unmarshal into GraphQLResponse
+	err = json.Unmarshal(jsonBytes, &resp)
+	if err != nil {
+		return nil, 0, err
+	}
+	donations = resp.GetDonationsOfAUser
+
+	// build count statement
+	primeCountStatement := g.db.Table("pay_by_prime_donations").Where("user_id = ?", userID)
+	periodicCountStatement := g.db.Table("periodic_donations").Where("user_id = ?", userID)
+	if err = primeCountStatement.Count(&totalPrime).Error; err != nil {
+		return nil, 0, err
+	}
+	if err = periodicCountStatement.Count(&totalPeriodic).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if isOffline {
+		offlineCountStatement := g.db.Table("OfflineDonation").Where("user_id = ?", userID)
+		if err = offlineCountStatement.Count(&totalOffline).Error; err != nil {
+			return nil, 0, err
+		}
+	}
+
+	return donations, totalPrime + totalPeriodic + totalOffline, nil
 }
 
 func (g *GormStorage) GetPaymentsOfAPeriodicDonation(periodicID uint, limit int, offset int) ([]models.Payment, int, error) {

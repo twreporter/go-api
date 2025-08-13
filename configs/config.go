@@ -77,10 +77,6 @@ news:
     index_page_timeout: 5s
     author_page_timeout: 5s
     review_page_timeout: 5s
-neticrm:
-    project_id: "" # gcp project id
-    pub_topic: "" # pub/sub topic
-    slack_webhook: "" # slack notify webhook
 mailchimp:
     interest_ids:
         featured: 2f1c91a75a # 報導者精選
@@ -89,6 +85,7 @@ mailchimp:
 features:
     enable_rolemail: false
     integrate_with_member_cms: false
+    offline_donation: false
 membercms:
     url: "" # member cms api server url
     host: "" # member cms server hostname
@@ -98,20 +95,19 @@ membercms:
 `)
 
 type ConfYaml struct {
-	Environment string           `yaml:"environment"`
-	Cors        CorsConfig       `yaml:"cors"`
-	App         AppConfig        `yaml:"app"`
-	Email       EmailConfig      `yaml:"email"`
-	DB          DBConfig         `yaml:"db"`
-	Oauth       OauthConfig      `yaml:"oauth"`
-	Donation    DonationConfig   `yaml:"donation"`
-	Algolia     AlgoliaConfig    `ymal:"algolia"`
-	Encrypt     EncryptConfig    `yaml:"encrypt"`
-	News        NewsConfig       `yaml:"news"`
-	Neticrm     NeticrmPubConfig `yaml:"neticrm"`
-	Mailchimp   MailchimpConfig  `yaml:"mailchimp"`
-	Features    FeaturesConfig   `yaml:"features"`
-	MemberCMS   MemberCMSConfig  `yaml:"memberCMS"`
+	Environment string          `yaml:"environment"`
+	Cors        CorsConfig      `yaml:"cors"`
+	App         AppConfig       `yaml:"app"`
+	Email       EmailConfig     `yaml:"email"`
+	DB          DBConfig        `yaml:"db"`
+	Oauth       OauthConfig     `yaml:"oauth"`
+	Donation    DonationConfig  `yaml:"donation"`
+	Algolia     AlgoliaConfig   `ymal:"algolia"`
+	Encrypt     EncryptConfig   `yaml:"encrypt"`
+	News        NewsConfig      `yaml:"news"`
+	Mailchimp   MailchimpConfig `yaml:"mailchimp"`
+	Features    FeaturesConfig  `yaml:"features"`
+	MemberCMS   MemberCMSConfig `yaml:"memberCMS"`
 }
 
 type CorsConfig struct {
@@ -214,19 +210,14 @@ type NewsConfig struct {
 	ReviewPageTimeout time.Duration `yaml:"review_page_timeout"`
 }
 
-type NeticrmPubConfig struct {
-	ProjectID    string `yaml:"project_id"`
-	Topic        string `yaml:"pub_topic"`
-	SlackWebhook string `yaml:"slack_webhook"`
-}
-
 type MailchimpConfig struct {
 	InterestIDs map[string]string `yaml:"interest_ids"`
 }
 
 type FeaturesConfig struct {
-	EnableRolemail bool `yaml:"enable_rolemail"`
-	MemberCMS      bool `yaml:"integrate_with_member_cms"`
+	EnableRolemail  bool `yaml:"enable_rolemail"`
+	MemberCMS       bool `yaml:"integrate_with_member_cms"`
+	OfflineDonation bool `yaml:"offline_donation"`
 }
 
 type MemberCMSConfig struct {
@@ -320,11 +311,6 @@ func buildConf() ConfYaml {
 	conf.News.AuthorPageTimeout = viper.GetDuration("news.author_page_timeout")
 	conf.News.ReviewPageTimeout = viper.GetDuration("news.review_page_timeout")
 
-	// Neticrm
-	conf.Neticrm.ProjectID = viper.GetString("neticrm.project_id")
-	conf.Neticrm.Topic = viper.GetString("neticrm.pub_topic")
-	conf.Neticrm.SlackWebhook = viper.GetString("neticrm.slack_webhook")
-
 	// Mailchimp
 	conf.Mailchimp.InterestIDs = make(map[string]string)
 	conf.Mailchimp.InterestIDs["featured"] = viper.GetString("mailchimp.interest_ids.featured")
@@ -334,6 +320,7 @@ func buildConf() ConfYaml {
 	// Feature Toggles
 	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
 	conf.Features.MemberCMS = viper.GetBool("features.integrate_with_member_cms")
+	conf.Features.OfflineDonation = viper.GetBool("features.offline_donation")
 
 	// Member cms config
 	conf.MemberCMS.Url = viper.GetString("membercms.url")

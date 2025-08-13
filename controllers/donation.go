@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"bytes"
-	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -22,8 +21,6 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/twreporter/go-mod-lib/pkg/cloudpub"
-	"github.com/twreporter/go-mod-lib/pkg/slack"
 	f "github.com/twreporter/logformatter"
 	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/guregu/null.v3"
@@ -68,6 +65,7 @@ const (
 	payMethodGoogle     = "google"
 	payMethodApple      = "apple"
 	payMethodSamsung    = "samsung"
+	payMethodATM        = "atm"
 
 	linePayMethodCreditCard = "CREDIT_CARD"
 	linePayMethodBalance    = "BALANCE"
@@ -79,6 +77,7 @@ const (
 	prime payType = iota
 	token
 	periodic
+	offline
 )
 
 // pay method collections
@@ -88,6 +87,7 @@ var payMethodCollections = []string{
 	payMethodGoogle,
 	payMethodApple,
 	payMethodSamsung,
+	payMethodATM,
 }
 
 var payMethodMap = map[string]string{
@@ -677,21 +677,6 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	// send success mail asynchronously
 	go mc.sendDonationThankYouMail(*resp)
 
-	// publish to cloud pub/sub
-	ms := []*cloudpub.Message{
-		&cloudpub.Message{
-			ID:          periodicDonation.ID,
-			OrderNumber: periodicDonation.OrderNumber,
-			Type:        globals.PeriodicDonationType,
-		},
-		&cloudpub.Message{
-			ID:          tokenDonation.ID,
-			OrderNumber: tokenDonation.OrderNumber,
-			Type:        globals.TokenDonationType,
-		},
-	}
-	go publishToNeticrm(ms)
-
 	// Concurrently update the user's activated time
 	go func(email string) {
 		matchedUser, err := mc.Storage.GetUserByEmail(email)
@@ -862,16 +847,6 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		}(reqBody.Cardholder.Email)
 	}
 
-	// publish to cloud pub/sub
-	ms := []*cloudpub.Message{
-		&cloudpub.Message{
-			ID:          primeDonation.ID,
-			OrderNumber: primeDonation.OrderNumber,
-			Type:        globals.PrimeDonationType,
-		},
-	}
-	go publishToNeticrm(ms)
-
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
 
@@ -934,14 +909,6 @@ func (mc *MembershipController) PatchADonationOfAUser(c *gin.Context, donationTy
 		}, nil
 	}
 
-	// publish to cloud pub/sub
-	ms := []*cloudpub.Message{
-		&cloudpub.Message{
-			OrderNumber: orderNumber,
-			Type:        donationType,
-		},
-	}
-	go publishToNeticrm(ms)
 	if donationType == globals.PrimeDonationType {
 		// post member cms to create receipt
 		go member.PostPrimeDonationReceipt("", orderNumber)
@@ -985,15 +952,6 @@ func (mc *MembershipController) UpdateUserDataByCardholder(c *models.Cardholder,
 		}
 		return
 	}
-
-	// publish to cloud pub/sub
-	ms := []*cloudpub.Message{
-		&cloudpub.Message{
-			ID:   userID,
-			Type: globals.UserType,
-		},
-	}
-	go publishToNeticrm(ms)
 }
 
 // GetPaymentsOfAPeriodicDonation returns the payments list of a periodic donation
@@ -1040,21 +998,34 @@ func (mc *MembershipController) GetDonationsOfAUser(c *gin.Context) (int, gin.H,
 	userID := c.Param("userID")
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	offset, _ := strconv.Atoi(c.Query("offset"))
+	isOffline, _ := strconv.ParseBool(c.Query("offline"))
 
 	if limit == 0 {
 		limit = 10
 	}
 
-	donations, total, err := mc.Storage.GetDonationsOfAUser(userID, limit, offset)
-	if err != nil {
-		return toResponse(err)
+	if !globals.Conf.Features.MemberCMS || !globals.Conf.Features.OfflineDonation {
+		donations, total, err := mc.Storage.GetDonationsOfAUser(userID, limit, offset)
+		if err != nil {
+			return toResponse(err)
+		}
+		return http.StatusOK, gin.H{"status": "ok", "records": donations, "meta": models.MetaOfResponse{
+			Total:  total,
+			Offset: offset,
+			Limit:  limit,
+		}}, nil
+	} else {
+		donations, total, err := mc.Storage.GetDonationsOfAUserFromMemberCMS(userID, limit, offset, isOffline)
+		if err != nil {
+			return toResponse(err)
+		}
+		return http.StatusOK, gin.H{"status": "ok", "records": donations, "meta": models.MetaOfResponse{
+			Total:  total,
+			Offset: offset,
+			Limit:  limit,
+		}}, nil
 	}
 
-	return http.StatusOK, gin.H{"status": "ok", "records": donations, "meta": models.MetaOfResponse{
-		Total:  total,
-		Offset: offset,
-		Limit:  limit,
-	}}, nil
 }
 
 // GetADonationOfAUser returns a donation of a user
@@ -1378,15 +1349,6 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 				}
 			}
 		}(mail.Cardholder.Email)
-
-		// publish to cloud pub/sub
-		ms := []*cloudpub.Message{
-			&cloudpub.Message{
-				OrderNumber: callbackPayload.OrderNumber,
-				Type:        globals.PrimeDonationType,
-			},
-		}
-		go publishToNeticrm(ms)
 	}
 
 	return http.StatusOK, gin.H{}, nil
@@ -1718,13 +1680,4 @@ func validateLinePayMethod(method string) bool {
 	}
 
 	return valid
-}
-
-func publishToNeticrm(ms []*cloudpub.Message) {
-	ctx := context.Background()
-	errors := cloudpub.PublishNotifications(ctx, ms)
-
-	if errors != nil {
-		slack.NeticrmNotify(ctx, errors)
-	}
 }
