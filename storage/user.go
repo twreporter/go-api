@@ -130,6 +130,7 @@ func (gs *GormStorage) InsertUserByOAuth(omodel models.OAuthAccount) (user model
 		Email:            omodel.Email,
 		FirstName:        omodel.FirstName,
 		LastName:         omodel.LastName,
+		Name:             omodel.Name,
 		Gender:           omodel.Gender,
 		Privilege:        constants.PrivilegeRegistered,
 		RegistrationDate: null.TimeFrom(time.Now()),
