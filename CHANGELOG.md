@@ -1,5 +1,17 @@
 ## Unrelease
 
+### 7.7.7-rc.1
+
+#### Notable Changes
+
+- fix
+  - sync oauth Name to user
+
+#### Commits
+
+- [[`2cebb8853d`](https://github.com/twreporter/go-api/commit/2cebb8853d)] - **fix**: sync oauth Name to user (Howard Ou)
+
+
 ## Released
 
 ### 7.7.6 (Current)
