@@ -77,7 +77,7 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 		return toResponse(err)
 	}
 
-	// Call UpdateUser to save preferences.IsShowOfflineDonation to DB
+	// Call UpdateUser to save preferences.ShouldMergeOfflineDonation to DB
 	if preferences.ShouldMergeOfflineDonation.Valid {
 		matchedUser, err := mc.Storage.GetUserByID(userID)
 		if err != nil {
