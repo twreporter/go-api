@@ -27,7 +27,7 @@
 + agree_data_collection: true (boolean) - True if user agree analytics data collection
 + read_posts_count: 19 (number) - Total count of user reading posts
 + read_posts_sec: 3360 (number) - Total time of user reading posts; digit is second.
-+ is_showofflinedonation: true (boolean) - true if user wants to show offline donations
++ should_merge_offline_donation_by_identity: true (boolean) - true if user wants to show offline donations
 
 ### UserAnalytics
 + user_id: 123 (string) - The unique identifier of the user
@@ -95,7 +95,7 @@ Get user related data (e.g. preferences, activation status, subscribed topics)
 
 ### Set user [POST]
 
-Set user related data (e.g. preferences, subscribed topics and is_showOfflineDonation)
+Set user related data (e.g. preferences, subscribed topics and should_merge_offline_donation_by_identity)
 
 + Parameters
     + id: 123 (string) - The unique identifier of the user
@@ -124,7 +124,7 @@ Set user related data (e.g. preferences, subscribed topics and is_showOfflineDon
             + health
             + sport
             + all
-        + is_showofflinedonation (boolean) - true if user wants to show offline donations
+        + should_merge_offline_donation_by_identity (boolean) - true if user wants to show offline donations
 
 + Response 201 (application/json)
 
