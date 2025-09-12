@@ -5,6 +5,6 @@ import (
 )
 
 type UserPreference struct {
-	ReadPreference        []string  `json:"read_preference"`
-	IsShowOfflineDonation null.Bool `json:"is_showofflinedonation"`
+	ReadPreference             []string  `json:"read_preference"`
+	ShouldMergeOfflineDonation null.Bool `json:"should_merge_offline_donation_by_identity"`
 }

@@ -15,12 +15,12 @@ import (
 
 type (
 	userData struct {
-		ID                    uint `json:"id"`
-		AgreeDataCollection   bool `json:"agree_data_collection"`
-		ReadPostsCount        int  `json:"read_posts_count"`
-		ReadPostsSec          int  `json:"read_posts_sec"`
-		IsShowOfflineDonation bool `json:"is_showofflinedonation"`
-		IsPeriodicPatron      bool `json:"is_periodic_patron"`
+		ID                         uint `json:"id"`
+		AgreeDataCollection        bool `json:"agree_data_collection"`
+		ReadPostsCount             int  `json:"read_posts_count"`
+		ReadPostsSec               int  `json:"read_posts_sec"`
+		ShouldMergeOfflineDonation bool `json:"should_merge_offline_donation_by_identity"`
+		IsPeriodicPatron           bool `json:"is_periodic_patron"`
 	}
 
 	responseBodyUser struct {
@@ -36,11 +36,11 @@ func TestGetUser_Success(t *testing.T) {
 	jwt := generateIDToken(user)
 	as := storage.NewGormStorage(Globs.GormDB)
 	if err := as.UpdateUser(models.User{
-		ID:                    user.ID,
-		AgreeDataCollection:   true,
-		ReadPostsCount:        19,
-		ReadPostsSec:          3360,
-		IsShowOfflineDonation: true,
+		ID:                         user.ID,
+		AgreeDataCollection:        true,
+		ReadPostsCount:             19,
+		ReadPostsSec:               3360,
+		ShouldMergeOfflineDonation: true,
 	}); nil != err {
 		fmt.Println(err.Error())
 	}
@@ -55,7 +55,7 @@ func TestGetUser_Success(t *testing.T) {
 	assert.Equal(t, updatedUser.AgreeDataCollection, resBody.Data.AgreeDataCollection)
 	assert.Equal(t, updatedUser.ReadPostsCount, resBody.Data.ReadPostsCount)
 	assert.Equal(t, updatedUser.ReadPostsSec, resBody.Data.ReadPostsSec)
-	assert.Equal(t, updatedUser.IsShowOfflineDonation, resBody.Data.IsShowOfflineDonation)
+	assert.Equal(t, updatedUser.ShouldMergeOfflineDonation, resBody.Data.ShouldMergeOfflineDonation)
 }
 
 func TestSetUser_Success(t *testing.T) {
@@ -65,8 +65,8 @@ func TestSetUser_Success(t *testing.T) {
 
 	// Mocking preferences
 	preferences := models.UserPreference{
-		ReadPreference:        []string{"international", "cross_straits"},
-		IsShowOfflineDonation: null.NewBool(true, true),
+		ReadPreference:             []string{"international", "cross_straits"},
+		ShouldMergeOfflineDonation: null.NewBool(true, true),
 	}
 	payload, _ := json.Marshal(preferences)
 

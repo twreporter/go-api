@@ -45,19 +45,19 @@ func (mc *MembershipController) GetUser(c *gin.Context) (int, gin.H, error) {
 	}
 
 	return http.StatusOK, gin.H{"status": "success", "data": gin.H{
-		"user_id":                userID,
-		"first_name":             user.FirstName.String,
-		"last_name":              user.LastName.String,
-		"email":                  user.Email.String,
-		"registration_date":      user.RegistrationDate.Time,
-		"activated":              activated,
-		"roles":                  roles,
-		"read_preference":        readPreferenceArr,
-		"agree_data_collection":  user.AgreeDataCollection,
-		"read_posts_count":       user.ReadPostsCount,
-		"read_posts_sec":         user.ReadPostsSec,
-		"is_showofflinedonation": user.IsShowOfflineDonation,
-		"is_periodic_patron":     isPeriodicPatron,
+		"user_id":               userID,
+		"first_name":            user.FirstName.String,
+		"last_name":             user.LastName.String,
+		"email":                 user.Email.String,
+		"registration_date":     user.RegistrationDate.Time,
+		"activated":             activated,
+		"roles":                 roles,
+		"read_preference":       readPreferenceArr,
+		"agree_data_collection": user.AgreeDataCollection,
+		"read_posts_count":      user.ReadPostsCount,
+		"read_posts_sec":        user.ReadPostsSec,
+		"should_merge_offline_donation_by_identity": user.ShouldMergeOfflineDonation,
+		"is_periodic_patron":                        isPeriodicPatron,
 	},
 	}, nil
 }
@@ -77,13 +77,13 @@ func (mc *MembershipController) SetUser(c *gin.Context) (int, gin.H, error) {
 		return toResponse(err)
 	}
 
-	// Call UpdateUser to save preferences.IsShowOfflineDonation to DB
-	if preferences.IsShowOfflineDonation.Valid {
+	// Call UpdateUser to save preferences.ShouldMergeOfflineDonation to DB
+	if preferences.ShouldMergeOfflineDonation.Valid {
 		matchedUser, err := mc.Storage.GetUserByID(userID)
 		if err != nil {
 			return toResponse(err)
 		}
-		matchedUser.IsShowOfflineDonation = preferences.IsShowOfflineDonation.Bool
+		matchedUser.ShouldMergeOfflineDonation = preferences.ShouldMergeOfflineDonation.Bool
 		if err = mc.Storage.UpdateUser(matchedUser); err != nil {
 			return toResponse(err)
 		}
