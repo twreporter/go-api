@@ -1,5 +1,19 @@
 ## Unrelease
 
+### 7.7.7-rc.2
+
+#### Notable Changes
+
+- fix
+  - use new added db column for offline donation
+    - add `users.should_merge_offline_donation_by_identity`
+    - drop `users.is_showofflinedonation`
+
+#### Commits
+
+- [[`20af8eea0e`](https://github.com/twreporter/go-api/commit/20af8eea0e)] - **fix**: typo in comment (Aylie Chou)
+- [[`f759d327ec`](https://github.com/twreporter/go-api/commit/f759d327ec)] - **fix**: use new added db column for offline donation (Aylie Chou)
+
 ### 7.7.7-rc.1
 
 #### Notable Changes
