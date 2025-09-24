@@ -1,5 +1,16 @@
 ## Unrelease
 
+### 7.7.8-rc.0
+
+#### Notable Changes
+
+- fix
+  - remove mailchimp related tables & config
+
+#### Commits
+
+- [[`c885617500`](https://github.com/twreporter/go-api/commit/c885617500)] - **fix**: remove mailchimp related tables & config (Aylie Chou)
+
 ## Released
 
 ### 7.7.7 (Current)
