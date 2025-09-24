@@ -77,11 +77,6 @@ news:
     index_page_timeout: 5s
     author_page_timeout: 5s
     review_page_timeout: 5s
-mailchimp:
-    interest_ids:
-        featured: 2f1c91a75a # 報導者精選
-        behind_the_scenes: 219df4131b # 採訪幕後故事
-        operational_journal: ca9d491549 # 報導者營運手記
 features:
     enable_rolemail: false
     integrate_with_member_cms: false
@@ -105,7 +100,6 @@ type ConfYaml struct {
 	Algolia     AlgoliaConfig   `ymal:"algolia"`
 	Encrypt     EncryptConfig   `yaml:"encrypt"`
 	News        NewsConfig      `yaml:"news"`
-	Mailchimp   MailchimpConfig `yaml:"mailchimp"`
 	Features    FeaturesConfig  `yaml:"features"`
 	MemberCMS   MemberCMSConfig `yaml:"memberCMS"`
 }
@@ -210,10 +204,6 @@ type NewsConfig struct {
 	ReviewPageTimeout time.Duration `yaml:"review_page_timeout"`
 }
 
-type MailchimpConfig struct {
-	InterestIDs map[string]string `yaml:"interest_ids"`
-}
-
 type FeaturesConfig struct {
 	EnableRolemail  bool `yaml:"enable_rolemail"`
 	MemberCMS       bool `yaml:"integrate_with_member_cms"`
@@ -310,12 +300,6 @@ func buildConf() ConfYaml {
 	conf.News.IndexPageTimeout = viper.GetDuration("news.index_page_timeout")
 	conf.News.AuthorPageTimeout = viper.GetDuration("news.author_page_timeout")
 	conf.News.ReviewPageTimeout = viper.GetDuration("news.review_page_timeout")
-
-	// Mailchimp
-	conf.Mailchimp.InterestIDs = make(map[string]string)
-	conf.Mailchimp.InterestIDs["featured"] = viper.GetString("mailchimp.interest_ids.featured")
-	conf.Mailchimp.InterestIDs["behind_the_scenes"] = viper.GetString("mailchimp.interest_ids.behind_the_scenes")
-	conf.Mailchimp.InterestIDs["operational_journal"] = viper.GetString("mailchimp.interest_ids.operational_journal")
 
 	// Feature Toggles
 	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
