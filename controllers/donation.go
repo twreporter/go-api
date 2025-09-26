@@ -552,6 +552,20 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 
 }
 
+// sendRoleUpdateMessage sends a role update message via pub/sub
+func (mc *MembershipController) sendRoleUpdateMessage(email string) {
+	if mc.PubSubService == nil {
+		log.Errorf("PubSubService is not available, cannot send role update message for email: %s", email)
+		return
+	}
+
+	go func() {
+		if err := mc.PubSubService.PublishRoleUpdate(email); err != nil {
+			log.WithField("email", email).Errorf("Failed to publish role update message: %v", err)
+		}
+	}()
+}
+
 func (mc *MembershipController) sendAssignRoleMail(roleKey string, email string) {
 	var mailPath string
 
@@ -677,7 +691,7 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 	// send success mail asynchronously
 	go mc.sendDonationThankYouMail(*resp)
 
-	// Concurrently update the user's activated time
+	// Concurrently update the user's activated time and send role update message
 	go func(email string) {
 		matchedUser, err := mc.Storage.GetUserByEmail(email)
 		if nil != err {
@@ -691,26 +705,8 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 			log.Errorf("Error updating user activated time: %v", err)
 		}
 
-		// Call AssignRoleToUser to assign role to user
-		var role string
-		isTrailblazer, err := mc.Storage.IsTrailblazer(email)
-		if err != nil {
-			log.Errorf("Error checking user donations: %v", err)
-		}
-		if isTrailblazer {
-			role = constants.RoleTrailblazer
-		} else {
-			role = constants.RoleActionTaker
-		}
-		roleCheck, _ := mc.Storage.HasRole(matchedUser, role)
-		err = mc.Storage.AssignRoleToUser(matchedUser, role)
-		if err != nil {
-			log.Errorf("Error updating user role: %v", err)
-		}
-
-		if !roleCheck {
-			go mc.sendAssignRoleMail(role, email)
-		}
+		// Send role update message via pub/sub
+		mc.sendRoleUpdateMessage(email)
 	}(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
@@ -814,9 +810,9 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 		// send donation successful email
 		go mc.sendDonationThankYouMail(*resp)
 
-		// Concurrently update the user's activated time
+		// Concurrently update the user's activated time and send role update message
 		go func(email string) {
-			matchedUser, err := mc.Storage.GetUserByEmail(reqBody.Cardholder.Email)
+			matchedUser, err := mc.Storage.GetUserByEmail(email)
 			if nil != err {
 				log.Errorf("Error retrieving user data: %v", err)
 				return
@@ -828,22 +824,8 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 				log.Errorf("Error updating user activated time: %v", err)
 			}
 
-			// Call AssignRoleToUser to assign role to user
-			HasTrailblazer, err := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
-			if err != nil {
-				log.Errorf("Error checking user roles: %v", err)
-			}
-			if !HasTrailblazer {
-				roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
-				err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
-				if err != nil {
-					log.Errorf("Error updating user role: %v", err)
-				}
-
-				if !roleCheck {
-					go mc.sendAssignRoleMail(constants.RoleActionTaker, reqBody.Cardholder.Email)
-				}
-			}
+			// Send role update message via pub/sub
+			mc.sendRoleUpdateMessage(email)
 		}(reqBody.Cardholder.Email)
 	}
 
@@ -1318,7 +1300,7 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 		mail.BuildFromPrimeDonationModel(d)
 		go mc.sendDonationThankYouMail(*mail)
 
-		// Concurrently update the user's activated time
+		// Concurrently update the user's activated time and send role update message
 		go func(email string) {
 			matchedUser, err := mc.Storage.GetUserByEmail(email)
 			if nil != err {
@@ -1332,22 +1314,8 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 				log.Errorf("Error updating user activated time: %v", err)
 			}
 
-			// Call AssignRoleToUser to assign role to user
-			HasTrailblazer, err := mc.Storage.HasRole(matchedUser, constants.RoleTrailblazer)
-			if err != nil {
-				log.Errorf("Error checking user roles: %v", err)
-			}
-			if !HasTrailblazer {
-				roleCheck, _ := mc.Storage.HasRole(matchedUser, constants.RoleActionTaker)
-				err = mc.Storage.AssignRoleToUser(matchedUser, constants.RoleActionTaker)
-				if err != nil {
-					log.Errorf("Error updating user role: %v", err)
-				}
-
-				if !roleCheck {
-					go mc.sendAssignRoleMail(constants.RoleActionTaker, email)
-				}
-			}
+			// Send role update message via pub/sub
+			mc.sendRoleUpdateMessage(email)
 		}(mail.Cardholder.Email)
 	}
 

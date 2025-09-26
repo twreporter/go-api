@@ -1,17 +1,30 @@
 package controllers
 
 import (
+	log "github.com/sirupsen/logrus"
+	"github.com/twreporter/go-api/services"
 	"github.com/twreporter/go-api/storage"
 )
 
 // NewMembershipController ...
 func NewMembershipController(s storage.MembershipStorage) *MembershipController {
-	return &MembershipController{s}
+	pubSubService, err := services.NewPubSubService()
+	if err != nil {
+		// Log error but don't fail the controller creation
+		// The service will handle pub/sub failures gracefully
+		log.WithField("error", err).Error("Failed to initialize PubSubService, role update messages will not be sent")
+	}
+
+	return &MembershipController{
+		Storage:       s,
+		PubSubService: pubSubService,
+	}
 }
 
 // MembershipController ...
 type MembershipController struct {
-	Storage storage.MembershipStorage
+	Storage       storage.MembershipStorage
+	PubSubService *services.PubSubService
 }
 
 // Close is the method of Controller interface
@@ -20,5 +33,13 @@ func (mc *MembershipController) Close() error {
 	if err != nil {
 		return err
 	}
+
+	// Close pub/sub service if it exists
+	if mc.PubSubService != nil {
+		if closeErr := mc.PubSubService.Close(); closeErr != nil {
+			return closeErr
+		}
+	}
+
 	return nil
 }
