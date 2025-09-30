@@ -19,11 +19,6 @@ type PubSubService struct {
 	ctx    context.Context
 }
 
-// RoleUpdateMessage represents the message structure for role update notifications
-type RoleUpdateMessage struct {
-	Email string `json:"email"`
-}
-
 // NewPubSubService creates a new Pub/Sub service instance
 func NewPubSubService() (*PubSubService, error) {
 	ctx := context.Background()
@@ -38,29 +33,33 @@ func NewPubSubService() (*PubSubService, error) {
 	}, nil
 }
 
-// PublishRoleUpdate publishes a role update message to the appropriate topic
-func (ps *PubSubService) PublishRoleUpdate(email string) error {
-	topicName := globals.Conf.PubSub.TopicName
+// Publish publishes a message to the specified topic
+func (ps *PubSubService) Publish(topicName string, data interface{}, attributes map[string]string) error {
 	topic := ps.client.Topic(topicName)
 
-	// Create the message
-	message := RoleUpdateMessage{
-		Email: email,
+	// Marshal the data to JSON
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal message data")
 	}
 
-	// Marshal the message to JSON
-	data, err := json.Marshal(message)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal role update message")
+	// Set default attributes if none provided
+	if attributes == nil {
+		attributes = make(map[string]string)
+	}
+
+	// Add default timestamp and source if not already set
+	if _, exists := attributes["timestamp"]; !exists {
+		attributes["timestamp"] = time.Now().Format(time.RFC3339)
+	}
+	if _, exists := attributes["source"]; !exists {
+		attributes["source"] = "go-api"
 	}
 
 	// Create the pub/sub message
 	msg := &pubsub.Message{
-		Data: data,
-		Attributes: map[string]string{
-			"timestamp": time.Now().Format(time.RFC3339),
-			"source":    "go-api",
-		},
+		Data:       jsonData,
+		Attributes: attributes,
 	}
 
 	// Publish the message
@@ -73,8 +72,7 @@ func (ps *PubSubService) PublishRoleUpdate(email string) error {
 	log.WithFields(log.Fields{
 		"topic":     topicName,
 		"messageID": messageID,
-		"email":     email,
-	}).Info("Successfully published role update message")
+	}).Info("Successfully published message")
 
 	return nil
 }

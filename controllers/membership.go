@@ -15,16 +15,23 @@ func NewMembershipController(s storage.MembershipStorage) *MembershipController 
 		log.WithField("error", err).Error("Failed to initialize PubSubService, role update messages will not be sent")
 	}
 
+	var roleUpdateService *services.RoleUpdateService
+	if pubSubService != nil {
+		roleUpdateService = services.NewRoleUpdateService(pubSubService)
+	}
+
 	return &MembershipController{
-		Storage:       s,
-		PubSubService: pubSubService,
+		Storage:           s,
+		PubSubService:     pubSubService,
+		RoleUpdateService: roleUpdateService,
 	}
 }
 
 // MembershipController ...
 type MembershipController struct {
-	Storage       storage.MembershipStorage
-	PubSubService *services.PubSubService
+	Storage           storage.MembershipStorage
+	PubSubService     *services.PubSubService
+	RoleUpdateService *services.RoleUpdateService
 }
 
 // Close is the method of Controller interface

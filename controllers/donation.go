@@ -554,13 +554,13 @@ func (mc *MembershipController) sendDonationThankYouMail(body clientResp) {
 
 // sendRoleUpdateMessage sends a role update message via pub/sub
 func (mc *MembershipController) sendRoleUpdateMessage(email string) {
-	if mc.PubSubService == nil {
-		log.Errorf("PubSubService is not available, cannot send role update message for email: %s", email)
+	if mc.RoleUpdateService == nil {
+		log.Errorf("RoleUpdateService is not available, cannot send role update message for email: %s", email)
 		return
 	}
 
 	go func() {
-		if err := mc.PubSubService.PublishRoleUpdate(email); err != nil {
+		if err := mc.RoleUpdateService.PublishRoleUpdate(email); err != nil {
 			log.WithField("email", email).Errorf("Failed to publish role update message: %v", err)
 		}
 	}()
