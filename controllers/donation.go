@@ -705,9 +705,10 @@ func (mc *MembershipController) CreateAPeriodicDonationOfAUser(c *gin.Context) (
 			log.Errorf("Error updating user activated time: %v", err)
 		}
 
-		// Send role update message via pub/sub
-		mc.sendRoleUpdateMessage(email)
 	}(reqBody.Cardholder.Email)
+
+	// Send role update message via pub/sub
+	mc.sendRoleUpdateMessage(reqBody.Cardholder.Email)
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
 }
@@ -824,9 +825,10 @@ func (mc *MembershipController) CreateADonationOfAUser(c *gin.Context) (int, gin
 				log.Errorf("Error updating user activated time: %v", err)
 			}
 
-			// Send role update message via pub/sub
-			mc.sendRoleUpdateMessage(email)
 		}(reqBody.Cardholder.Email)
+
+		// Send role update message via pub/sub
+		mc.sendRoleUpdateMessage(reqBody.Cardholder.Email)
 	}
 
 	return http.StatusCreated, gin.H{"status": "success", "data": resp}, nil
@@ -1313,10 +1315,10 @@ func (mc *MembershipController) PatchLinePayOfAUser(c *gin.Context) (int, gin.H,
 			if nil != err {
 				log.Errorf("Error updating user activated time: %v", err)
 			}
-
-			// Send role update message via pub/sub
-			mc.sendRoleUpdateMessage(email)
 		}(mail.Cardholder.Email)
+
+		// Send role update message via pub/sub
+		mc.sendRoleUpdateMessage(mail.Cardholder.Email)
 	}
 
 	return http.StatusOK, gin.H{}, nil
