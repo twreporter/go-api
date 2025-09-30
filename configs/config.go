@@ -92,6 +92,11 @@ membercms:
     email: "" # headless account email
     password: "" # headless account password
     session_max_age: 86400 # stateless session expire maxAge (sec)
+pubsub:
+    project_id: "coastal-run-106202" # Google Cloud Pub/Sub project ID
+    dev_topic_name: "dev-role-update" # Development environment topic name
+    staging_topic_name: "staging-role-update" # Staging environment topic name
+    prod_topic_name: "role-update" # Production environment topic name
 `)
 
 type ConfYaml struct {
@@ -108,6 +113,7 @@ type ConfYaml struct {
 	Mailchimp   MailchimpConfig `yaml:"mailchimp"`
 	Features    FeaturesConfig  `yaml:"features"`
 	MemberCMS   MemberCMSConfig `yaml:"memberCMS"`
+	PubSub      PubSubConfig    `yaml:"pubsub"`
 }
 
 type CorsConfig struct {
@@ -228,6 +234,29 @@ type MemberCMSConfig struct {
 	SessionMaxAge int64  `yaml:"session_max_age"`
 }
 
+type PubSubConfig struct {
+	ProjectID        string `yaml:"project_id"`
+	TopicName        string // This will be set based on environment
+	DevTopicName     string `yaml:"dev_topic_name"`
+	StagingTopicName string `yaml:"staging_topic_name"`
+	ProdTopicName    string `yaml:"prod_topic_name"`
+}
+
+// GetTopicName returns the appropriate topic name based on environment
+func (p *PubSubConfig) GetTopicName(environment string) string {
+	switch environment {
+	case "development":
+		return p.DevTopicName
+	case "staging":
+		return p.StagingTopicName
+	case "production":
+		return p.ProdTopicName
+	default:
+		// Default to development for safety
+		return p.DevTopicName
+	}
+}
+
 func init() {
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()        // read in environment variables that match
@@ -328,6 +357,15 @@ func buildConf() ConfYaml {
 	conf.MemberCMS.Email = viper.GetString("membercms.email")
 	conf.MemberCMS.Password = viper.GetString("membercms.password")
 	conf.MemberCMS.SessionMaxAge = viper.GetInt64("membercms.session_max_age")
+
+	// PubSub config
+	conf.PubSub.ProjectID = viper.GetString("pubsub.project_id")
+	conf.PubSub.DevTopicName = viper.GetString("pubsub.dev_topic_name")
+	conf.PubSub.StagingTopicName = viper.GetString("pubsub.staging_topic_name")
+	conf.PubSub.ProdTopicName = viper.GetString("pubsub.prod_topic_name")
+
+	// Resolve topic name based on environment
+	conf.PubSub.TopicName = conf.PubSub.GetTopicName(conf.Environment)
 
 	return conf
 }

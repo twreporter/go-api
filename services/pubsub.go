@@ -27,7 +27,7 @@ type RoleUpdateMessage struct {
 // NewPubSubService creates a new Pub/Sub service instance
 func NewPubSubService() (*PubSubService, error) {
 	ctx := context.Background()
-	client, err := pubsub.NewClient(ctx, "coastal-run-106202")
+	client, err := pubsub.NewClient(ctx, globals.Conf.PubSub.ProjectID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create pub/sub client")
 	}
@@ -38,24 +38,9 @@ func NewPubSubService() (*PubSubService, error) {
 	}, nil
 }
 
-// getTopicName returns the appropriate topic name based on environment
-func (ps *PubSubService) getTopicName() string {
-	switch globals.Conf.Environment {
-	case globals.DevelopmentEnvironment:
-		return "dev-role-update"
-	case globals.StagingEnvironment:
-		return "staging-role-update"
-	case globals.ProductionEnvironment:
-		return "role-update"
-	default:
-		// Default to development for safety
-		return "dev-role-update"
-	}
-}
-
 // PublishRoleUpdate publishes a role update message to the appropriate topic
 func (ps *PubSubService) PublishRoleUpdate(email string) error {
-	topicName := ps.getTopicName()
+	topicName := globals.Conf.PubSub.TopicName
 	topic := ps.client.Topic(topicName)
 
 	// Create the message
