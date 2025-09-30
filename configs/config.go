@@ -93,7 +93,7 @@ membercms:
     password: "" # headless account password
     session_max_age: 86400 # stateless session expire maxAge (sec)
 pubsub:
-    project_id: "coastal-run-106202" # Google Cloud Pub/Sub project ID
+    project_id: "" # Google Cloud Pub/Sub project ID
     dev_topic_name: "dev-role-update" # Development environment topic name
     staging_topic_name: "staging-role-update" # Staging environment topic name
     prod_topic_name: "role-update" # Production environment topic name
