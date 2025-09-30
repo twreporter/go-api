@@ -86,6 +86,7 @@ features:
     enable_rolemail: false
     integrate_with_member_cms: false
     offline_donation: false
+    enable_role_update_pubsub: false
 membercms:
     url: "" # member cms api server url
     host: "" # member cms server hostname
@@ -221,9 +222,10 @@ type MailchimpConfig struct {
 }
 
 type FeaturesConfig struct {
-	EnableRolemail  bool `yaml:"enable_rolemail"`
-	MemberCMS       bool `yaml:"integrate_with_member_cms"`
-	OfflineDonation bool `yaml:"offline_donation"`
+	EnableRolemail         bool `yaml:"enable_rolemail"`
+	MemberCMS              bool `yaml:"integrate_with_member_cms"`
+	OfflineDonation        bool `yaml:"offline_donation"`
+	EnableRoleUpdatePubSub bool `yaml:"enable_role_update_pubsub"`
 }
 
 type MemberCMSConfig struct {
@@ -350,6 +352,7 @@ func buildConf() ConfYaml {
 	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
 	conf.Features.MemberCMS = viper.GetBool("features.integrate_with_member_cms")
 	conf.Features.OfflineDonation = viper.GetBool("features.offline_donation")
+	conf.Features.EnableRoleUpdatePubSub = viper.GetBool("features.enable_role_update_pubsub")
 
 	// Member cms config
 	conf.MemberCMS.Url = viper.GetString("membercms.url")
