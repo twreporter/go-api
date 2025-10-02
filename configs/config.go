@@ -81,12 +81,16 @@ features:
     enable_rolemail: false
     integrate_with_member_cms: false
     offline_donation: false
+    enable_role_update_pubsub: false
 membercms:
     url: "" # member cms api server url
     host: "" # member cms server hostname
     email: "" # headless account email
     password: "" # headless account password
     session_max_age: 86400 # stateless session expire maxAge (sec)
+pubsub:
+    project_id: "" # Google Cloud Pub/Sub project ID
+    topic_name: "role-update" # Topic name (can be overridden by environment variables)
 `)
 
 type ConfYaml struct {
@@ -102,6 +106,7 @@ type ConfYaml struct {
 	News        NewsConfig      `yaml:"news"`
 	Features    FeaturesConfig  `yaml:"features"`
 	MemberCMS   MemberCMSConfig `yaml:"memberCMS"`
+	PubSub      PubSubConfig    `yaml:"pubsub"`
 }
 
 type CorsConfig struct {
@@ -205,9 +210,10 @@ type NewsConfig struct {
 }
 
 type FeaturesConfig struct {
-	EnableRolemail  bool `yaml:"enable_rolemail"`
-	MemberCMS       bool `yaml:"integrate_with_member_cms"`
-	OfflineDonation bool `yaml:"offline_donation"`
+	EnableRolemail         bool `yaml:"enable_rolemail"`
+	MemberCMS              bool `yaml:"integrate_with_member_cms"`
+	OfflineDonation        bool `yaml:"offline_donation"`
+	EnableRoleUpdatePubSub bool `yaml:"enable_role_update_pubsub"`
 }
 
 type MemberCMSConfig struct {
@@ -216,6 +222,11 @@ type MemberCMSConfig struct {
 	Email         string `yaml:"email"`
 	Password      string `yaml:"password"`
 	SessionMaxAge int64  `yaml:"session_max_age"`
+}
+
+type PubSubConfig struct {
+	ProjectID string `yaml:"project_id"`
+	TopicName string `yaml:"topic_name"`
 }
 
 func init() {
@@ -305,6 +316,7 @@ func buildConf() ConfYaml {
 	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
 	conf.Features.MemberCMS = viper.GetBool("features.integrate_with_member_cms")
 	conf.Features.OfflineDonation = viper.GetBool("features.offline_donation")
+	conf.Features.EnableRoleUpdatePubSub = viper.GetBool("features.enable_role_update_pubsub")
 
 	// Member cms config
 	conf.MemberCMS.Url = viper.GetString("membercms.url")
@@ -312,6 +324,10 @@ func buildConf() ConfYaml {
 	conf.MemberCMS.Email = viper.GetString("membercms.email")
 	conf.MemberCMS.Password = viper.GetString("membercms.password")
 	conf.MemberCMS.SessionMaxAge = viper.GetInt64("membercms.session_max_age")
+
+	// PubSub config
+	conf.PubSub.ProjectID = viper.GetString("pubsub.project_id")
+	conf.PubSub.TopicName = viper.GetString("pubsub.topic_name")
 
 	return conf
 }
