@@ -95,9 +95,7 @@ membercms:
     session_max_age: 86400 # stateless session expire maxAge (sec)
 pubsub:
     project_id: "" # Google Cloud Pub/Sub project ID
-    dev_topic_name: "dev-role-update" # Development environment topic name
-    staging_topic_name: "staging-role-update" # Staging environment topic name
-    prod_topic_name: "role-update" # Production environment topic name
+    topic_name: "role-update" # Topic name (can be overridden by environment variables)
 `)
 
 type ConfYaml struct {
@@ -237,26 +235,8 @@ type MemberCMSConfig struct {
 }
 
 type PubSubConfig struct {
-	ProjectID        string `yaml:"project_id"`
-	TopicName        string // This will be set based on environment
-	DevTopicName     string `yaml:"dev_topic_name"`
-	StagingTopicName string `yaml:"staging_topic_name"`
-	ProdTopicName    string `yaml:"prod_topic_name"`
-}
-
-// GetTopicName returns the appropriate topic name based on environment
-func (p *PubSubConfig) GetTopicName(environment string) string {
-	switch environment {
-	case "development":
-		return p.DevTopicName
-	case "staging":
-		return p.StagingTopicName
-	case "production":
-		return p.ProdTopicName
-	default:
-		// Default to development for safety
-		return p.DevTopicName
-	}
+	ProjectID string `yaml:"project_id"`
+	TopicName string `yaml:"topic_name"`
 }
 
 func init() {
@@ -363,12 +343,7 @@ func buildConf() ConfYaml {
 
 	// PubSub config
 	conf.PubSub.ProjectID = viper.GetString("pubsub.project_id")
-	conf.PubSub.DevTopicName = viper.GetString("pubsub.dev_topic_name")
-	conf.PubSub.StagingTopicName = viper.GetString("pubsub.staging_topic_name")
-	conf.PubSub.ProdTopicName = viper.GetString("pubsub.prod_topic_name")
-
-	// Resolve topic name based on environment
-	conf.PubSub.TopicName = conf.PubSub.GetTopicName(conf.Environment)
+	conf.PubSub.TopicName = viper.GetString("pubsub.topic_name")
 
 	return conf
 }
