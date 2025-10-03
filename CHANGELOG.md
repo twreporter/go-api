@@ -1,5 +1,21 @@
 ## Unrelease
 
+### 7.7.8-rc.1
+
+#### Notable Changes
+
+- feat
+  - refactor donation role assignment to use pub/sub messaging
+
+#### Commits
+
+- [[`401d35ec86`](https://github.com/twreporter/go-api/commit/401d35ec86)] - **feat**: refactor donation role assignment to use pub/sub messaging (Howard Ou)
+- [[`37e7ee5c0b`](https://github.com/twreporter/go-api/commit/37e7ee5c0b)] - **fix**: call sendRoleUpdateMessage alone (Howard Ou)
+- [[`3adb89160e`](https://github.com/twreporter/go-api/commit/3adb89160e)] - **fix**: move envs to config (Howard Ou)
+- [[`bd2696c77b`](https://github.com/twreporter/go-api/commit/bd2696c77b)] - **fix**: remove project ID (Howard Ou)
+- [[`3b4f3f6689`](https://github.com/twreporter/go-api/commit/3b4f3f6689)] - **refactor**: decouple Pub/Sub service from role update functionality (Howard Ou)
+- [[`a4d5f6840d`](https://github.com/twreporter/go-api/commit/a4d5f6840d)] - **feat**: add feature toggle for role-update (Howard Ou)
+
 ### 7.7.8-rc.0
 
 #### Notable Changes
