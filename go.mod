@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.52.0 // indirect
+	cloud.google.com/go/pubsub v1.0.1
 	github.com/algolia/algoliasearch-client-go/v3 v3.16.0
 	github.com/auth0/go-jwt-middleware v0.0.0-20170425171159-5493cabe49f7
 	github.com/aws/aws-sdk-go v1.34.28

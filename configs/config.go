@@ -77,21 +77,20 @@ news:
     index_page_timeout: 5s
     author_page_timeout: 5s
     review_page_timeout: 5s
-mailchimp:
-    interest_ids:
-        featured: 2f1c91a75a # 報導者精選
-        behind_the_scenes: 219df4131b # 採訪幕後故事
-        operational_journal: ca9d491549 # 報導者營運手記
 features:
     enable_rolemail: false
     integrate_with_member_cms: false
     offline_donation: false
+    enable_role_update_pubsub: false
 membercms:
     url: "" # member cms api server url
     host: "" # member cms server hostname
     email: "" # headless account email
     password: "" # headless account password
     session_max_age: 86400 # stateless session expire maxAge (sec)
+pubsub:
+    project_id: "" # Google Cloud Pub/Sub project ID
+    topic_name: "role-update" # Topic name (can be overridden by environment variables)
 `)
 
 type ConfYaml struct {
@@ -105,9 +104,9 @@ type ConfYaml struct {
 	Algolia     AlgoliaConfig   `ymal:"algolia"`
 	Encrypt     EncryptConfig   `yaml:"encrypt"`
 	News        NewsConfig      `yaml:"news"`
-	Mailchimp   MailchimpConfig `yaml:"mailchimp"`
 	Features    FeaturesConfig  `yaml:"features"`
 	MemberCMS   MemberCMSConfig `yaml:"memberCMS"`
+	PubSub      PubSubConfig    `yaml:"pubsub"`
 }
 
 type CorsConfig struct {
@@ -210,14 +209,11 @@ type NewsConfig struct {
 	ReviewPageTimeout time.Duration `yaml:"review_page_timeout"`
 }
 
-type MailchimpConfig struct {
-	InterestIDs map[string]string `yaml:"interest_ids"`
-}
-
 type FeaturesConfig struct {
-	EnableRolemail  bool `yaml:"enable_rolemail"`
-	MemberCMS       bool `yaml:"integrate_with_member_cms"`
-	OfflineDonation bool `yaml:"offline_donation"`
+	EnableRolemail         bool `yaml:"enable_rolemail"`
+	MemberCMS              bool `yaml:"integrate_with_member_cms"`
+	OfflineDonation        bool `yaml:"offline_donation"`
+	EnableRoleUpdatePubSub bool `yaml:"enable_role_update_pubsub"`
 }
 
 type MemberCMSConfig struct {
@@ -226,6 +222,11 @@ type MemberCMSConfig struct {
 	Email         string `yaml:"email"`
 	Password      string `yaml:"password"`
 	SessionMaxAge int64  `yaml:"session_max_age"`
+}
+
+type PubSubConfig struct {
+	ProjectID string `yaml:"project_id"`
+	TopicName string `yaml:"topic_name"`
 }
 
 func init() {
@@ -311,16 +312,11 @@ func buildConf() ConfYaml {
 	conf.News.AuthorPageTimeout = viper.GetDuration("news.author_page_timeout")
 	conf.News.ReviewPageTimeout = viper.GetDuration("news.review_page_timeout")
 
-	// Mailchimp
-	conf.Mailchimp.InterestIDs = make(map[string]string)
-	conf.Mailchimp.InterestIDs["featured"] = viper.GetString("mailchimp.interest_ids.featured")
-	conf.Mailchimp.InterestIDs["behind_the_scenes"] = viper.GetString("mailchimp.interest_ids.behind_the_scenes")
-	conf.Mailchimp.InterestIDs["operational_journal"] = viper.GetString("mailchimp.interest_ids.operational_journal")
-
 	// Feature Toggles
 	conf.Features.EnableRolemail = viper.GetBool("features.enable_rolemail")
 	conf.Features.MemberCMS = viper.GetBool("features.integrate_with_member_cms")
 	conf.Features.OfflineDonation = viper.GetBool("features.offline_donation")
+	conf.Features.EnableRoleUpdatePubSub = viper.GetBool("features.enable_role_update_pubsub")
 
 	// Member cms config
 	conf.MemberCMS.Url = viper.GetString("membercms.url")
@@ -328,6 +324,10 @@ func buildConf() ConfYaml {
 	conf.MemberCMS.Email = viper.GetString("membercms.email")
 	conf.MemberCMS.Password = viper.GetString("membercms.password")
 	conf.MemberCMS.SessionMaxAge = viper.GetInt64("membercms.session_max_age")
+
+	// PubSub config
+	conf.PubSub.ProjectID = viper.GetString("pubsub.project_id")
+	conf.PubSub.TopicName = viper.GetString("pubsub.topic_name")
 
 	return conf
 }
