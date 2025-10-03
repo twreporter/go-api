@@ -1,11 +1,15 @@
 ## Unrelease
 
-### 7.7.8-rc.1
+## Released
+
+### 7.7.8 (Current)
 
 #### Notable Changes
 
 - feat
   - refactor donation role assignment to use pub/sub messaging
+- fix
+  - remove mailchimp related tables & config
 
 #### Commits
 
@@ -15,21 +19,9 @@
 - [[`bd2696c77b`](https://github.com/twreporter/go-api/commit/bd2696c77b)] - **fix**: remove project ID (Howard Ou)
 - [[`3b4f3f6689`](https://github.com/twreporter/go-api/commit/3b4f3f6689)] - **refactor**: decouple Pub/Sub service from role update functionality (Howard Ou)
 - [[`a4d5f6840d`](https://github.com/twreporter/go-api/commit/a4d5f6840d)] - **feat**: add feature toggle for role-update (Howard Ou)
-
-### 7.7.8-rc.0
-
-#### Notable Changes
-
-- fix
-  - remove mailchimp related tables & config
-
-#### Commits
-
 - [[`c885617500`](https://github.com/twreporter/go-api/commit/c885617500)] - **fix**: remove mailchimp related tables & config (Aylie Chou)
 
-## Released
-
-### 7.7.7 (Current)
+### 7.7.7
 
 #### Notable Changes
 
