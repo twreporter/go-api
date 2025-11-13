@@ -18,6 +18,7 @@ type Query struct {
 
 type Filter struct {
 	Slug          string
+	Slugs         []string
 	State         string
 	Style         string
 	IsFeatured    null.Bool
@@ -180,8 +181,13 @@ func ParsePostListQuery(c *gin.Context) *Query {
 	if len(c.QueryArray(queryTagID)) > 0 {
 		q.Filter.Tags = c.QueryArray(queryTagID)
 	}
+
 	if len(c.QueryArray(queryPostID)) > 0 {
 		q.Filter.IDs = c.QueryArray(queryPostID)
+	}
+
+	if len(c.QueryArray(querySlug)) > 0 {
+		q.Filter.Slugs = c.QueryArray(querySlug)
 	}
 
 	if toggleBookmark, err := strconv.ParseBool(c.Query(queryToggleBookmark)); err == nil {
