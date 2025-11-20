@@ -228,6 +228,10 @@ func ParseTopicListQuery(c *gin.Context) *Query {
 
 	q = defaultQuery
 
+	if len(c.QueryArray(querySlug)) > 0 {
+		q.Filter.Slugs = c.QueryArray(querySlug)
+	}
+
 	// Parse pagination
 	if offset, err := strconv.Atoi(c.Query(queryOffset)); err == nil {
 		q.Offset = offset
