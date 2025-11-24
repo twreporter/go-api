@@ -1,5 +1,18 @@
 ## Unrelease
 
+### 7.7.9-rc.0
+
+#### Notable Changes
+
+- feat
+  - support slugs query for `/v2/topics`
+  - support slug array in `/v2/posts` filter
+
+#### Commits
+
+- [[`0e315cff10`](https://github.com/twreporter/go-api/commit/0e315cff10)] - **feat**: support slugs query for `/v2/topics` (Aylie Chou)
+- [[`64f5e0e20e`](https://github.com/twreporter/go-api/commit/64f5e0e20e)] - **feat**: support slug array in `/v2/posts` filter (Aylie Chou)
+
 ## Released
 
 ### 7.7.8 (Current)
