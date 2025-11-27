@@ -87,6 +87,7 @@ type categorySet struct {
 
 type mongoFilter struct {
 	Slug        string               `mongo:"slug"`
+	Slugs       []string             `mongo:"slug"`
 	State       string               `mongo:"state"`
 	Style       string               `mongo:"style"`
 	IsFeatured  null.Bool            `mongo:"isFeatured"`
@@ -122,6 +123,10 @@ func (mf mongoFilter) BuildElements() []bson.E {
 			v := fieldV.Interface().(string)
 			if v != "" {
 				elements = append(elements, mongo.BuildElement(tag, v))
+			}
+		case []string:
+			if v, ok := mongo.BuildArray(fieldV.Interface().([]string)); ok {
+				elements = append(elements, mongo.BuildElement(tag, mongo.BuildDocument(mongo.OpIn, v)))
 			}
 		case int:
 			v := fieldV.Interface().(int)
@@ -221,6 +226,7 @@ func (mf mongoFilter) BuildElements() []bson.E {
 func fromFilter(f Filter) mongoFilter {
 	return mongoFilter{
 		Slug:        f.Slug,
+		Slugs:       f.Slugs,
 		State:       f.State,
 		Style:       f.Style,
 		IsFeatured:  f.IsFeatured,
