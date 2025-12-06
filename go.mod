@@ -41,7 +41,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/twreporter/logformatter v0.0.0-20200211094126-60fe42618206
 	github.com/ugorji/go v1.2.6 // indirect
-	go.mongodb.org/mongo-driver v1.4.6
+	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
